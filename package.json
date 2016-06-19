@@ -50,7 +50,9 @@
     "express": "4.14.0",
     "express-ws": "1.0.0",
     "react": "15.1.0",
-    "react-dom": "15.1.0"
+    "react-dom": "15.1.0",
+    "node-uuid": "1.4.7",
+    "websocket": "1.0.23"
   },
   "publishConfig": {
     "tag": "next"

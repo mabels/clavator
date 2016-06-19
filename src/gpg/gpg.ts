@@ -1,11 +1,13 @@
 
-const spawn = require('child_process').spawn;
 
+import {spawn} from 'child_process';
 import * as ListSecretKeys from "./list_secret_keys";
 import * as path from "path";
 import * as fs from "fs";
 import * as pse from "../pinentry/server";
 import * as Ac from "./agent_conf";
+import * as stream from 'stream';
+import * as Uuid from 'node-uuid';
 
 export class KeyGen {
     keyType: string;
@@ -35,7 +37,7 @@ class Result {
     stdOut: string = "";
     stdErr: string = "";
     stdIn: string = "";
-    env: {} = {};
+    env: { [id:string]: string; } = {};
     exitCode: number;
 
     constructor() {
@@ -47,15 +49,15 @@ class Result {
         return this;
     }
 
-    addEnv(key, value) {
+    addEnv(key: string, value: string) {
         this.env[key] = value;
         return this;
     }
 
-    run(cmd: string, attributes: string[], cb: (Result) => void) {
+    run(cmd: string, attributes: string[], cb: (res: Result) => void) {
         const c = spawn(cmd, attributes, { env: this.env });
         if (this.stdIn && this.stdIn.length > 0) {
-            let Readable = require('stream').Readable;
+            let Readable = stream.Readable;
             var s = new Readable();
             s.push(this.stdIn);
             s.push(null);
@@ -65,9 +67,9 @@ class Result {
             //     //c.stdin.close();
             //   });
         }
-        c.stdout.on('data', (data) => { this.stdOut += data });
-        c.stderr.on('data', (data) => { this.stdErr += data });
-        c.on('close', (code) => {
+        c.stdout.on('data', (data: string) => { this.stdOut += data });
+        c.stderr.on('data', (data: string) => { this.stdErr += data });
+        c.on('close', (code: number) => {
             this.exitCode = code;
             cb(this);
         });
@@ -92,11 +94,11 @@ export class Gpg {
         return this;
     }
 
-    public started(cb: (any) => void) {
+    public started(cb: (s: any) => void) {
 
     }
 
-    run(attributes: string[], stdIn: string, cb: (Result) => void) {
+    run(attributes: string[], stdIn: string, cb: (res: Result) => void) {
         if (this.homeDir) {
             attributes.splice(0, 0, this.homeDir);
             attributes.splice(0, 0, '--homedir')
@@ -104,7 +106,7 @@ export class Gpg {
         //console.log(attributes);
         let result = (new Result()).setStdIn(stdIn);
         if (this.pinEntryServer) {
-            result.addEnv('F_MOD_HOME')
+            result.addEnv('F_MOD_HOME', "xxx");
             result.addEnv('S_PINENTRY_SOCKET', this.pinEntryServer.socketFile);
         }
         result.run(this.gpgCmd, attributes, cb);
@@ -141,11 +143,11 @@ export class Gpg {
             }
             let pp = "pinentry-program";
             let pv = pinentryPath;
-            let al = ag.find(pp);
-            if (!al) {
-                al = new Ac.AgentLine([pp, pv].join(" "));
+            let als = ag.find(pp);
+            if (!als) {
+                als = [new Ac.AgentLine([pp, pv].join(" "))];
             }
-            al.value = pv;
+            als.forEach((al: Ac.AgentLine) => { al.value = pv });
             ag.write_file(gpgAgentFname, (err: string) => {
                 if (err) {
                     cb(err);
@@ -163,9 +165,9 @@ export class Gpg {
                 cb(err);
             }
             this.write_agent_conf(pinentryPath, (err) => {
-                let uuid = require('node-uuid').v4();
+                let uuid = Uuid.v4();
                 let pinentrySocket = path.join(this.homeDir, 'S.pinentry.' + uuid);
-                pse.start(pinentrySocket, (err, ps) => {
+                pse.start(pinentrySocket, (err: string, ps: any) => {
                     this.pinEntryServer = ps;
                     cb(err);
                 });

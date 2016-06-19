@@ -2,9 +2,11 @@
 //const readline = require('readline');
 //import * as WebSocketClient from "websocket";
 
+import * as readline from "readline";
+import {client} as WebSocketClient from 'websocket';
+
+
 export function client(socket: any) {
-    let readline = require("readline");
-    let WebSocketClient = require('websocket').client;
     let winston = require('winston');
     let log = new (winston.Logger)({
         transports: [
@@ -16,12 +18,12 @@ export function client(socket: any) {
     log.info('pinentry-client started:' + session);
 
     let client = new WebSocketClient();
-    client.on('connectFailed', (error) => {
+    client.on('connectFailed', (error : Error) => {
         log.error('Connect Error: ' + error.toString());
     });
 
     client.on('connect', (connection: any) => {
-        connection.on('error', (error) => {
+        connection.on('error', (error: Error) => {
             log.error("Connection Error: " + error.toString());
         });
         connection.on('close', function() {

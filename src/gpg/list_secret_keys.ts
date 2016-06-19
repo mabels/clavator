@@ -29,7 +29,7 @@ export class Uid {
   }
 }
 
-let Ciphers = {
+const Ciphers : { [id:string]: string; } = {
     22: "ed25519",
     1: "rsa"
 }
@@ -78,8 +78,8 @@ const reCrNl = /\r?\n/;
 // const reKeyId = /^\s+([0-9A-F]+)\s*$/;
 
 export function run(str: string) : SecretKey[] {
-  let ret = []
-  let currentSec = null;
+  let ret : SecretKey[] = [];
+  let currentSec : SecretKey = null;
   str.split(reCrNl).forEach((line: string) => {
     if (!line.trim().length) { return }
     let match = line.split(':');

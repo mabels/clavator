@@ -1,5 +1,5 @@
 
-import * as Ac from "../gpg/agent_conf";
+import * as Ac from "../src/gpg/agent_conf";
 import * as fs from "fs";
 
 const AgentConfString = `

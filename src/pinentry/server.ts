@@ -1,16 +1,15 @@
 
 import * as http from 'http';
+import {server} as WebSocketServer from 'websocket';
+import * as readline from "readline";
+
 
 export class PinEntryServer {
   socketFile: string;
 }
 
 export function start(socket: any, options: { [id: string]: any; } = {}) {
-
-    let WebSocketServer = require('websocket').server;
-    let readline = require("readline");
     let winston = require('winston');
-
     let log = new (winston.Logger)({
         transports: [
             new (winston.transports.File)({ filename: '/Users/menabe/Software/kawin/meno/pinentry-server.log' })

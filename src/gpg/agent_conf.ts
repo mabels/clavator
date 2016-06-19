@@ -40,7 +40,7 @@ export class AgentConf {
   public add(al: AgentLine) {
     this.byKey[al.key] = this.byKey[al.key] || [];
     // hack the missing predeclation of includes ES7
-    if (!this.byKey[al.key]['includes'](al)) {
+    if (!(<any>this.byKey[al.key])['includes'](al)) {
       al.nr = this.lines.length;
       this.byKey[al.key].push(al);
       this.lines.push(al);
