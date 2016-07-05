@@ -2,8 +2,8 @@
 //const readline = require('readline');
 //import * as WebSocketClient from "websocket";
 
-import * as readline from "readline";
-import {client} as WebSocketClient from 'websocket';
+import * as readline from 'readline';
+import {client as WebSocketClient} from 'websocket';
 
 
 export function client(socket: any) {
@@ -51,7 +51,7 @@ export function client(socket: any) {
             log.info("Received:" + recv);
             connection.send(recv);
         }
-        connection.on('message', function(message) {
+        connection.on('message', (message: any) => {
             if (message.type === 'utf8') {
                 let msg = JSON.parse(message.utf8Data);
                 if (msg.session == session) {

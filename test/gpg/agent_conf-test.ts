@@ -1,6 +1,11 @@
 
-import * as Ac from "../src/gpg/agent_conf";
+import { assert } from 'chai';
+import * as React from 'react';
+import { shallow } from 'enzyme';
+
+import * as Ac from "../../src/gpg/agent_conf";
 import * as fs from "fs";
+
 
 const AgentConfString = `
 # starting  comment

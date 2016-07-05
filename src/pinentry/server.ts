@@ -1,15 +1,14 @@
 
-import * as http from 'http';
-import {server} as WebSocketServer from 'websocket';
+import * as http from "http";
 import * as readline from "readline";
-
+import {server as WebSocketServer} from 'websocket';
+import * as winston from 'winston';
 
 export class PinEntryServer {
   socketFile: string;
 }
 
 export function start(socket: any, options: { [id: string]: any; } = {}) {
-    let winston = require('winston');
     let log = new (winston.Logger)({
         transports: [
             new (winston.transports.File)({ filename: '/Users/menabe/Software/kawin/meno/pinentry-server.log' })
@@ -35,14 +34,14 @@ export function start(socket: any, options: { [id: string]: any; } = {}) {
         autoAcceptConnections: false
     });
 
-    function originIsAllowed(origin) {
+    function originIsAllowed(origin: any) {
         // put logic here to detect whether the specified origin is allowed.
         return true;
     }
 
 
 
-    wsServer.on('request', (request) => {
+    wsServer.on('request', (request: any) => {
         if (!originIsAllowed(request.origin)) {
             // Make sure we only accept requests from an allowed origin
             request.reject();
@@ -57,7 +56,7 @@ export function start(socket: any, options: { [id: string]: any; } = {}) {
             log.info("Send:" + json);
             connection.send(json);
         }
-        connection.on('message', function(message) {
+        connection.on('message', (message: any) => {
             if (message.type === 'utf8') {
                 let msg = JSON.parse(message.utf8Data);
                 log.info('Received Message: ' + msg.type + ":" + msg.session);
@@ -97,7 +96,7 @@ export function start(socket: any, options: { [id: string]: any; } = {}) {
                 }
             }
         });
-        connection.on('close', function(reasonCode, description) {
+        connection.on('close', (reasonCode: number, description: string) => {
             log.info(' Peer ' + connection.remoteAddress + ' disconnected.');
         });
     });
