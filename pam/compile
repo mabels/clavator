@@ -1,0 +1,1 @@
+g++ -std=c++11 -o pam_clavator.so  pam_clavator.cpp -shared -fPIC -lboost_filesystem -lpam
