@@ -41,6 +41,8 @@ namespace fs = boost::filesystem;
 
 #include "pem_ssh.hpp"
 #include "system_cmd.hpp"
+#include "matcher.hpp"
+#include "ssh_authorized_keys.hpp"
 
 
 
@@ -121,6 +123,37 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
   if ((pwd = getpwnam(user)) == NULL) {
     return (PAM_USER_UNKNOWN);
   }
+
+  auto sshKeys = SshAuthorizedKeys::read(substPattern("HOMEDIR", pwd->pw_dir, cfg.ssh_authorized_keys_fname.value).c_str());
+  for (auto &v : sshKeys.get()) {
+     D((v.dump().c_str()));
+  }
+
+  auto gpgConfFile = substPattern("HOMEDIR", pwd->pw_dir, cfg.gpg_conf.value);
+  fs::path dotGnupgDir(fs::path(gpgConfFile.c_str()).remove_filename());
+  if (!fs::is_directory(dotGnupgDir)) {
+    SystemCmd mkdir_p(pwd, "/bin/mkdir");
+    mkdir_p.arg("-p");
+    mkdir_p.arg("--mode=0700");
+    mkdir_p.arg(dotGnupgDir.c_str());
+    mkdir_p.run(pamh);
+    if (mkdir_p.getStatus()) {
+      D((mkdir_p.dump().c_str()));
+      return PAM_AUTH_ERR;
+    }
+  }
+
+  SystemCmd kill_gpg_connect_agent(pwd, cfg.gpg_connect_agent.value);
+  kill_gpg_connect_agent.arg("--no-autostart");
+  kill_gpg_connect_agent.arg("KILLAGENT");
+  kill_gpg_connect_agent.arg("/bye");
+  kill_gpg_connect_agent.run(pamh);
+  if (kill_gpg_connect_agent.getStatus()) {
+    D((kill_gpg_connect_agent.dump().c_str()));
+    return PAM_AUTH_ERR;
+  }
+
+
   /* get password */
   pam_err = pam_get_item(pamh, PAM_CONV, (const void **)&conv);
   if (pam_err != PAM_SUCCESS) {
@@ -162,29 +195,6 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
   // D((substPattern("HOMEDIR", pwd->pw_dir, cfg.gpg_agent_conf.value).c_str()));
   // D((substPattern("HOMEDIR", pwd->pw_dir, cfg.gpg_conf.value).c_str()));
 
-  auto gpgConfFile = substPattern("HOMEDIR", pwd->pw_dir, cfg.gpg_conf.value);
-  fs::path dotGnupgDir(fs::path(gpgConfFile.c_str()).remove_filename());
-  if (!fs::is_directory(dotGnupgDir)) {
-    SystemCmd mkdir_p(pwd, "/bin/mkdir");
-    mkdir_p.arg("-p");
-    mkdir_p.arg("--mode=0700");
-    mkdir_p.arg(dotGnupgDir.c_str());
-    mkdir_p.run(pamh);
-    if (mkdir_p.getStatus()) {
-      D((mkdir_p.dump().c_str()));
-      return PAM_AUTH_ERR;
-    }
-  }
-
-  SystemCmd kill_gpg_connect_agent(pwd, cfg.gpg_connect_agent.value);
-  kill_gpg_connect_agent.arg("--no-autostart");
-  kill_gpg_connect_agent.arg("KILLAGENT");
-  kill_gpg_connect_agent.arg("/bye");
-  kill_gpg_connect_agent.run(pamh);
-  if (kill_gpg_connect_agent.getStatus()) {
-    D((kill_gpg_connect_agent.dump().c_str()));
-    return PAM_AUTH_ERR;
-  }
   /* compare passwords */
   // if ((!pwd->pw_passwd[0] && (flags & PAM_DISALLOW_NULL_AUTHTOK)) ||
   //     (crypt_password = crypt(password, pwd->pw_passwd)) == NULL ||
