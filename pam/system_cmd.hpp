@@ -1,3 +1,4 @@
+#include "run_as.hpp"
 
 class SystemCmd {
 private:
@@ -49,12 +50,7 @@ public:
     return ret.str();
   }
   int run(pam_handle_t *pamh) {
-    pid_t pid = fork();
-    if (pid == 0) {
-      PAM_MODUTIL_DEF_PRIVS(privs);
-      int ret = pam_modutil_drop_priv(pamh, &privs, pwd);
-      setuid(pwd->pw_uid);
-      seteuid(pwd->pw_uid);
+    status = RunAs::run(pamh, pwd, [this]() {
       char *argv[args.size()+1];
       argv[args.size()] = 0;
       for (size_t i = 0; i < args.size(); ++i) {
@@ -66,13 +62,8 @@ public:
           envp[i] = (char *)envs[i].c_str();
       }
       D((dump().c_str()));
-      ret = execve(exec.c_str(), argv, envp);
-      //std::cout << ">>>>" << pwd->pw_uid << ":" << getuid() <<
-      //  ":" << ret << ":" << privs.is_dropped << std::endl;
-      return ret;
-    } else {
-      waitpid(pid, &status, 0);
-      return status;
-    }
+      return execve(exec.c_str(), argv, envp);
+    });
+    return status;
   }
 };

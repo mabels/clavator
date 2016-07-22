@@ -35,14 +35,30 @@ namespace fs = boost::filesystem;
 #endif
 #endif
 
+#ifndef __APPLE_CC__
 #include <security/pam_modutil.h>
+#endif
 #include <security/pam_appl.h>
 #include <security/pam_modules.h>
+
+static std::string trim(const std::string &str,
+                 const std::string &whitespace = " \t") {
+  const auto strBegin = str.find_first_not_of(whitespace);
+  if (strBegin == std::string::npos)
+    return ""; // no content
+
+  const auto strEnd = str.find_last_not_of(whitespace);
+  const auto strRange = strEnd - strBegin + 1;
+
+  return str.substr(strBegin, strRange);
+}
+
 
 #include "pem_ssh.hpp"
 #include "system_cmd.hpp"
 #include "matcher.hpp"
 #include "ssh_authorized_keys.hpp"
+#include "gpg_agent_conf.hpp"
 
 
 
@@ -56,6 +72,7 @@ public:
   Matcher<std::string> gpg;
   Matcher<std::string> gpg_agent_conf;
   Matcher<std::string> gpg_conf;
+  Matcher<std::string> pinentry_dispatcher;
   Matcher<bool> debug;
   Config() :
     ssh_authorized_keys_fname("ssh_authorized_keys_fname=", ".ssh/authorized_keys", matchers),
@@ -64,6 +81,7 @@ public:
     gpg("gpg=", "/usr/local/bin/gpg2", matchers),
     gpg_agent_conf("gpg_agent_conf=", ".gnupg/gpg-agent.conf", matchers),
     gpg_conf("gpg_conf=", ".gnupg/gpg.conf", matchers),
+    pinentry_dispatcher("pinentry_dispatcher=", ".gnupg/pinentry_dispatcher.sh", matchers),
     debug("debug", false, matchers) {
  }
 
@@ -142,6 +160,40 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
       return PAM_AUTH_ERR;
     }
   }
+
+  RunAs::run(pamh, pwd, [pwd, cfg]() {
+    auto gpgAgentConfFname = substPattern("HOMEDIR", pwd->pw_dir, cfg.gpg_agent_conf.value);
+    auto gpgAgentConf = GpgAgentConf::read(gpgAgentConfFname.c_str());
+    gpgAgentConf.updateLine(GpgAgentConf::Line("enable-ssh-support", ""));
+    auto pinentryDispatcher = substPattern("HOMEDIR", pwd->pw_dir, cfg.pinentry_dispatcher.value);
+    // D((pinentry_dispatcher.c_str()));
+    auto prev = gpgAgentConf.getByKey("pinentry-program");
+    std::string prevPinentryDispatcher;
+    if (!prev.empty()) {
+      prevPinentryDispatcher = prev.back()->getValue();
+    }
+    auto pinentryPrograms = gpgAgentConf.updateLine(GpgAgentConf::Line("pinentry-program", pinentryDispatcher));
+    {
+      std::stringstream s2;
+      s2 << "pinentryPrograms:" << pinentryPrograms.empty()
+        << ":"  << pinentryPrograms.size();
+      if (!pinentryPrograms.empty()) {
+        s2 << ":" << pinentryPrograms.back()->getValue();
+        s2 << ":" << pinentryDispatcher;
+        s2 << ":" << prevPinentryDispatcher;
+      }
+      D((s2.str().c_str()));
+    }
+    if (!pinentryPrograms.empty() && pinentryPrograms.back()->getValue() != prevPinentryDispatcher) {
+      //pinentry-program /usr/local/MacGPG2/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac
+      std::stringstream s2;
+      s2 << "pinentry-program update:" << prevPinentryDispatcher << "!=" << pinentryDispatcher;
+      D((s2.str().c_str()));
+    }
+    gpgAgentConf.write();
+    return 0;
+  });
+
 
   SystemCmd kill_gpg_connect_agent(pwd, cfg.gpg_connect_agent.value);
   kill_gpg_connect_agent.arg("--no-autostart");
