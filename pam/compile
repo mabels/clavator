@@ -1,1 +1,5 @@
 g++ -g -std=c++11 -o pam_clavator.so  pam_clavator.cpp -shared -fPIC -lboost_filesystem -lpam
+
+g++ -std=c++11 -Wall -Wextra \
+-pthread -g -std=c++11 -o pinentry  pinentry.cpp -lboost_filesystem -lboost_system
+

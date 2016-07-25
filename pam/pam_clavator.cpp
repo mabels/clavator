@@ -23,6 +23,8 @@
 #include "boost/filesystem/path.hpp"
 namespace fs = boost::filesystem;
 
+#include "easylogging++.h"
+
 #define PAM_DEBUG
 #ifdef PAM_DEBUG
 #ifndef __APPLE_CC__
@@ -53,14 +55,28 @@ static std::string trim(const std::string &str,
   return str.substr(strBegin, strRange);
 }
 
+std::string substPattern(const char *pat, const char *val, const std::string &str) {
+  // boost::regex_replace(out, s.begin(), s.end(),
+  //     e1, format_string, boost::match_default | boost::format_all);
+  std::stringstream s2;
+  s2 << val;
+  s2 << "/";
+  s2 << str;
+  return s2.str();
+}
+
+std::string DirName(std::string source) {
+    source.erase(std::find(source.rbegin(), source.rend(), '/').base(), source.end());
+    return source;
+}
+
 
 #include "pem_ssh.hpp"
 #include "system_cmd.hpp"
 #include "matcher.hpp"
 #include "ssh_authorized_keys.hpp"
 #include "gpg_agent_conf.hpp"
-
-
+#include "pin_entry_dispatcher.hpp"
 
 class Config {
 private:
@@ -73,6 +89,7 @@ public:
   Matcher<std::string> gpg_agent_conf;
   Matcher<std::string> gpg_conf;
   Matcher<std::string> pinentry_dispatcher;
+  Matcher<std::string> pinentry_os_default;
   Matcher<bool> debug;
   Config() :
     ssh_authorized_keys_fname("ssh_authorized_keys_fname=", ".ssh/authorized_keys", matchers),
@@ -82,6 +99,7 @@ public:
     gpg_agent_conf("gpg_agent_conf=", ".gnupg/gpg-agent.conf", matchers),
     gpg_conf("gpg_conf=", ".gnupg/gpg.conf", matchers),
     pinentry_dispatcher("pinentry_dispatcher=", ".gnupg/pinentry_dispatcher.sh", matchers),
+    pinentry_os_default("pinentry_os_default", "/usr/local/MacGPG2/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac", matchers),
     debug("debug", false, matchers) {
  }
 
@@ -101,21 +119,7 @@ public:
   }
 };
 
-std::string substPattern(const char *pat, const char *val, const std::string &str) {
-  // boost::regex_replace(out, s.begin(), s.end(),
-  //     e1, format_string, boost::match_default | boost::format_all);
-  std::stringstream s2;
-  s2 << val;
-  s2 << "/";
-  s2 << str;
-  return s2.str();
-}
-
-std::string DirName(std::string source) {
-    source.erase(std::find(source.rbegin(), source.rend(), '/').base(), source.end());
-    return source;
-}
-
+INITIALIZE_EASYLOGGINGPP
 
 extern "C" {
 
@@ -132,6 +136,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
   Config cfg;
 
   D(("pam_sm_authenticate"));
+  START_EASYLOGGINGPP(argc, argv);
   cfg.parse_cfg(flags, argc, argv);
 
   /* identify user */
@@ -168,7 +173,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
     auto pinentryDispatcher = substPattern("HOMEDIR", pwd->pw_dir, cfg.pinentry_dispatcher.value);
     // D((pinentry_dispatcher.c_str()));
     auto prev = gpgAgentConf.getByKey("pinentry-program");
-    std::string prevPinentryDispatcher;
+    std::string prevPinentryDispatcher(cfg.pinentry_os_default.value);
     if (!prev.empty()) {
       prevPinentryDispatcher = prev.back()->getValue();
     }
@@ -189,6 +194,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
       std::stringstream s2;
       s2 << "pinentry-program update:" << prevPinentryDispatcher << "!=" << pinentryDispatcher;
       D((s2.str().c_str()));
+      PinEntryDispatcher::write(pinentryDispatcher, prevPinentryDispatcher);
     }
     gpgAgentConf.write();
     return 0;
