@@ -1,6 +1,8 @@
 import * as React from 'react';
 import './app.less';
-import './app-state';
+import AppState from './app-state';
+
+import * as ListSecretKeys from '../gpg/list_secret_keys';
 
 
 export class KeyChainList extends React.Component<{}, AppState> {
@@ -12,23 +14,23 @@ export class KeyChainList extends React.Component<{}, AppState> {
   public static contextTypes = {
    socket: React.PropTypes.object
   };
- 
+
 
   componentWillReceiveProps(nextProps: any, nextContext: any) {
-    debugger
+    // debugger
   }
 
   shouldComponentUpdate(nextProps: any,  nextState: any,  nextContext: any) : boolean {
-    debugger
+    // debugger
     return true;
   }
 
   componentWillUpdate(nextProps: any, nextState: any, nextContext: any) {
-    debugger
+    // debugger
   }
 
   componentDidUpdate(prevProps: any, prevState: any, prevContext: any) {
-    debugger
+    // debugger
   }
 
 

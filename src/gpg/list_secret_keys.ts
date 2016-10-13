@@ -14,13 +14,14 @@ export class Uid {
   comment: string;
   created: number;
   id: string;
+  key: string;
 
   //uid:u::::1464699940::A319A573075CF1606705BDA9FD5F07E5AD24F257::Meno Abels <meno.abels@adviser.com>:::::::::
   fill(match: string[]) {
     debugArray(match);
     this.trust = match[1];
     this.created = parseInt(match[5], 10);
-    this.id = match[7];
+    this.key = this.id = match[7];
     let nae = reNameAndEmail.exec(match[9]);
     this.name = nae[1];
     this.email = nae[2];
@@ -41,6 +42,7 @@ export class Key {
   funky: string;
   bits: number;
   keyId: string;
+  key: string;
   created: number;
   expires: number;
   uses: string[] = [];
@@ -57,7 +59,7 @@ export class Key {
     this.trust = match[1];
     this.bits = parseInt(match[2], 10);
     this.cipher = Ciphers[match[3]] || 'UNK'+match[3];
-    this.keyId = match[4];
+    this.key = this.keyId = match[4];
     this.created = parseInt(match[5], 10);
     this.expires = parseInt(match[6], 10);
     this.funky = match[14];
@@ -91,8 +93,11 @@ export function run(str: string) : SecretKey[] {
       case 'uid':
         currentSec.uids.push((new Uid()).fill(match));
         break;
-      default:
+      case 'ssb':
         currentSec.subKeys.push((new Key()).fill(match));
+        break;
+      default:
+        console.warn("unknown type:", match[0]);
     }
   });
   return ret;

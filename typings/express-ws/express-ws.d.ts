@@ -6,6 +6,7 @@ declare module 'express-ws' {
       interface ExpressWebSocket {
         on(event: 'message', handler: (message: any) => void): void;
         on(event: string, handler: Function): void;
+        send(data: any, handler: Function): void;
         send(data: any): void;
       }
     }

@@ -55,6 +55,7 @@ class Result {
     }
 
     run(cmd: string, attributes: string[], cb: (res: Result) => void) {
+      console.log("run=["+cmd+"]", attributes);
         const c = spawn(cmd, attributes, { env: this.env });
         if (this.stdIn && this.stdIn.length > 0) {
             let Readable = stream.Readable;
@@ -81,15 +82,15 @@ export class Gpg {
     pinEntryServer: pse.PinEntryServer;
     gpgCmd: string = "gpg2";
 
-    public setPinentryUrl(url: string) {
+    public setPinentryUrl(url: string) : Gpg {
         return this;
     }
-    public setHomeDir(fname: string) {
+    public setHomeDir(fname: string) : Gpg {
         this.homeDir = fname;
         return this;
     }
 
-    public setGpgCmd(cmd: string) {
+    public setGpgCmd(cmd: string) : Gpg {
         this.gpgCmd = cmd;
         return this;
     }

@@ -1,6 +1,8 @@
+import * as ListSecretKeys from '../gpg/list_secret_keys';
 
 interface AppState {
-  messages: string[];
+  secretKeys: ListSecretKeys.SecretKey[];
   objectId: number;
   socket: WebSocket;
 }
+export default AppState;
