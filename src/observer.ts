@@ -4,6 +4,8 @@ import * as expressWsTs from 'express-ws';
 import * as Gpg from './gpg/gpg';
 import * as ListSecretKeys from "./gpg/list_secret_keys";
 
+import * as Message from './message';
+
 
 class GpgListSecretKeysObserver {
   public observer: Observer;
@@ -20,18 +22,14 @@ class GpgListSecretKeysObserver {
   }
 
   public register(ws: expressWsTs.ExpressWebSocket) {
-    if (this.observer.wss.length == 1) {
-      clearTimeout(this.timeoutId);
-      this.action();
-    } else {
-      ws.send("Init-Message");
-    }
+    clearTimeout(this.timeoutId);
+    this.action([ws]);
   }
 
-  public action() {
+  public action(wss=this.observer.wss) {
     this.actionCount++;
-    console.log("actionCount:", this.actionCount, this.observer.wss.length, this.gpg);
-    if (!this.observer.wss.length) {
+    //console.log("actionCount:", this.actionCount, this.observer.wss.length, this.gpg);
+    if (!wss.length) {
       return;
     }
     this.gpg.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
@@ -41,25 +39,20 @@ class GpgListSecretKeysObserver {
       }
       let cnt = 0;
       let found = false;
-      for (let ws of this.observer.wss) {
+      for (let ws of wss) {
         cnt++;
         found = true;
-        console.log("sending", cnt);
-        ws.send(JSON.stringify(keys), (error: any) => {
-          console.log("completed", cnt);
+        ws.send(Message.prepare("KeyChainList", keys), (error: any) => {
           if (--cnt <= 0) {
             this.timeoutId = setTimeout(this.action.bind(this), 5000);
           }
         });
       }
-      if (!found) {
-        this.timeoutId = setTimeout(this.action.bind(this), 5000);
-      }
     });
   }
 
   public start() {
-    console.log("started");
+    // console.log("started");
   }
 
 }

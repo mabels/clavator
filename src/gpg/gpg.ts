@@ -9,29 +9,8 @@ import * as Ac from "./agent_conf";
 import * as stream from 'stream';
 import * as Uuid from 'node-uuid';
 
-export class KeyGen {
-    keyType: string;
-    keyLength: number;
-    keyUsage: string[];
-    nameReal: string;
-    nameEmail: string;
-    nameComment: string;
-    expireDate: string;
+import * as KeyGen from './key-gen';
 
-    command() {
-        return [
-            "Key-Type: " + this.keyType,
-            "Key-Length: " + this.keyLength,
-            "Key-Usage: " + this.keyUsage.join(","),
-            "Name-Real: " + this.nameReal,
-            "Name-Email: " + this.nameEmail,
-            "Expire-Date: " + this.expireDate,
-            "%commit",
-            "%echo done"
-        ].join("\n");
-    }
-
-}
 
 class Result {
     stdOut: string = "";
@@ -176,7 +155,7 @@ export class Gpg {
         });
     }
 
-    public gen_key(keyGen: KeyGen, cb: (err: string) => void) {
+    public gen_key(keyGen: KeyGen.KeyGen, cb: (err: string) => void) {
         if (!this.pinEntryServer) {
             cb("need a to run connect_pinentry");
             return;
