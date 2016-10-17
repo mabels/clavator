@@ -55,7 +55,7 @@ static std::string trim(const std::string &str,
   return str.substr(strBegin, strRange);
 }
 
-std::string substPattern(const char *pat, const char *val, const std::string &str) {
+std::string substPattern(const char *, const char *val, const std::string &str) {
   // boost::regex_replace(out, s.begin(), s.end(),
   //     e1, format_string, boost::match_default | boost::format_all);
   std::stringstream s2;
@@ -103,7 +103,7 @@ public:
     debug("debug", false, matchers) {
  }
 
-  void parse_cfg(int flags, int argc, const char **argv) {
+  void parse_cfg(int, int argc, const char **argv) {
     for (int i = 0; i < argc; ++i) {
       for (auto &matcher : matchers) {
         if (matcher->match(argv[i])) {
@@ -147,7 +147,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
     return (PAM_USER_UNKNOWN);
   }
 
-  auto sshKeys = SshAuthorizedKeys::read(substPattern("HOMEDIR", pwd->pw_dir, cfg.ssh_authorized_keys_fname.value).c_str());
+  auto sshKeys = PamClavator::SshAuthorizedKeys::read(substPattern("HOMEDIR", pwd->pw_dir, cfg.ssh_authorized_keys_fname.value).c_str());
   for (auto &v : sshKeys.get()) {
      D((v.dump().c_str()));
   }
@@ -155,7 +155,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
   auto gpgConfFile = substPattern("HOMEDIR", pwd->pw_dir, cfg.gpg_conf.value);
   fs::path dotGnupgDir(fs::path(gpgConfFile.c_str()).remove_filename());
   if (!fs::is_directory(dotGnupgDir)) {
-    SystemCmd mkdir_p(pwd, "/bin/mkdir");
+    PamClavator::SystemCmd mkdir_p(pwd, "/bin/mkdir");
     mkdir_p.arg("-p");
     mkdir_p.arg("--mode=0700");
     mkdir_p.arg(dotGnupgDir.c_str());
@@ -166,7 +166,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
     }
   }
 
-  RunAs::run(pamh, pwd, [pwd, cfg]() {
+  PamClavator::RunAs::run(pamh, pwd, [pwd, cfg]() {
     auto gpgAgentConfFname = substPattern("HOMEDIR", pwd->pw_dir, cfg.gpg_agent_conf.value);
     auto gpgAgentConf = GpgAgentConf::read(gpgAgentConfFname.c_str());
     gpgAgentConf.updateLine(GpgAgentConf::Line("enable-ssh-support", ""));
@@ -201,7 +201,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
   });
 
 
-  SystemCmd kill_gpg_connect_agent(pwd, cfg.gpg_connect_agent.value);
+  PamClavator::SystemCmd kill_gpg_connect_agent(pwd, cfg.gpg_connect_agent.value);
   kill_gpg_connect_agent.arg("--no-autostart");
   kill_gpg_connect_agent.arg("KILLAGENT");
   kill_gpg_connect_agent.arg("/bye");
@@ -263,28 +263,23 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
   return (pam_err);
 }
 
-PAM_EXTERN int pam_sm_setcred(pam_handle_t *pamh, int flags, int argc,
-                              const char *argv[]) {
+PAM_EXTERN int pam_sm_setcred(pam_handle_t *, int , int , const char *[]) {
   return (PAM_SUCCESS);
 }
 
-PAM_EXTERN int pam_sm_acct_mgmt(pam_handle_t *pamh, int flags, int argc,
-                                const char *argv[]) {
+PAM_EXTERN int pam_sm_acct_mgmt(pam_handle_t *, int , int , const char *[]) {
   return (PAM_SUCCESS);
 }
 
-PAM_EXTERN int pam_sm_open_session(pam_handle_t *pamh, int flags, int argc,
-                                   const char *argv[]) {
+PAM_EXTERN int pam_sm_open_session(pam_handle_t *, int, int, const char *[]) {
   return (PAM_SUCCESS);
 }
 
-PAM_EXTERN int pam_sm_close_session(pam_handle_t *pamh, int flags, int argc,
-                                    const char *argv[]) {
+PAM_EXTERN int pam_sm_close_session(pam_handle_t *, int , int , const char *[]) {
   return (PAM_SUCCESS);
 }
 
-PAM_EXTERN int pam_sm_chauthtok(pam_handle_t *pamh, int flags, int argc,
-                                const char *argv[]) {
+PAM_EXTERN int pam_sm_chauthtok(pam_handle_t *, int , int , const char *[]) {
   return (PAM_SERVICE_ERR);
 }
 

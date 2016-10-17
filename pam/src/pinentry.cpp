@@ -3,7 +3,7 @@
  * just read the socket and send to stdout
  */
 
-#include <ext/stdio_filebuf.h>
+// #include <ext/stdio_filebuf.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
@@ -49,7 +49,7 @@ std::string getSockFname() {
   return socket_path.str();
 }
 
-static volatile bool loop = true;
+// static volatile bool loop = true;
 
 void stop(boost::asio::local::stream_protocol::socket &socket) {
   socket.get_io_service().stop();
@@ -60,7 +60,7 @@ void toStdout(boost::asio::local::stream_protocol::socket &socket,
   boost::asio::async_read(
       socket, coutBuf, boost::asio::transfer_at_least(1),
       [&socket, &cout, &coutBuf](boost::system::error_code const &err,
-                                 std::size_t len) {
+                                 std::size_t ) {
         if (err) {
           LOG(ERROR) << "socket read failed:" << err;
           stop(socket);
@@ -69,7 +69,7 @@ void toStdout(boost::asio::local::stream_protocol::socket &socket,
         boost::asio::async_write(
             cout, coutBuf,
             [&socket, &cout, &coutBuf](boost::system::error_code const &err,
-                                       std::size_t len) {
+                                       std::size_t ) {
               if (err) {
                 LOG(ERROR) << "socket write failed:" << err;
                 stop(socket);
@@ -85,7 +85,7 @@ void fromStdin(boost::asio::local::stream_protocol::socket &socket,
   boost::asio::async_read(
       cin, cinBuf, boost::asio::transfer_at_least(1),
       [&socket, &cin, &cinBuf](boost::system::error_code const &err,
-                               std::size_t len) {
+                               std::size_t ) {
         if (err) {
           LOG(ERROR) << "cin read failed:" << err;
           stop(socket);
@@ -94,7 +94,7 @@ void fromStdin(boost::asio::local::stream_protocol::socket &socket,
         boost::asio::async_write(
             socket, cinBuf,
             [&socket, &cin, &cinBuf](boost::system::error_code const &err,
-                                     std::size_t len) {
+                                     std::size_t ) {
               if (err) {
                 LOG(ERROR) << "socket write failed:" << err;
                 stop(socket);

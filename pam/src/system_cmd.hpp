@@ -1,5 +1,6 @@
 #include "run_as.hpp"
 
+namespace PamClavator {
 class SystemCmd {
 private:
   const struct passwd *pwd;
@@ -67,3 +68,4 @@ public:
     return status;
   }
 };
+}
