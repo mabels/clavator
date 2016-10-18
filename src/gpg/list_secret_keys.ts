@@ -30,6 +30,24 @@ export class Uid {
   }
 }
 
+class FingerPrint {
+  fpr: string;
+  fill(match: string[]) {
+    debugArray(match);
+    this.fpr = match[9];
+    return this;
+  }
+}
+
+class Group {
+  grp: string;
+  fill(match: string[]) {
+    debugArray(match);
+    this.grp = match[9];
+    return this;
+  }
+}
+
 const Ciphers : { [id:string]: string; } = {
     22: "ed25519",
     1: "rsa"
@@ -46,6 +64,8 @@ export class Key {
   created: number;
   expires: number;
   uses: string[] = [];
+  group: Group = new Group();
+  fingerPrint: FingerPrint = new FingerPrint();
 
 // sec:u:256:22:19B013CF06A4BEEF:1464699940:1622379940::u:::cESCA:::#::ed25519::
 // ssb:u:256:22:258DE0ECF59BF6FC:1464700731:1622380731:::::a:::+::ed25519:
@@ -82,19 +102,28 @@ const reCrNl = /\r?\n/;
 export function run(str: string) : SecretKey[] {
   let ret : SecretKey[] = [];
   let currentSec : SecretKey = null;
+  let currentKey : Key = null;
   str.split(reCrNl).forEach((line: string) => {
     if (!line.trim().length) { return }
     let match = line.split(':');
     switch (match[0]) {
       case 'sec':
         currentSec = (new SecretKey()).fill(match);
+        currentKey = currentSec;
         ret.push(currentSec);
         break;
       case 'uid':
         currentSec.uids.push((new Uid()).fill(match));
         break;
       case 'ssb':
-        currentSec.subKeys.push((new Key()).fill(match));
+        currentKey = (new Key()).fill(match);
+        currentSec.subKeys.push(currentKey);
+        break;
+      case 'fpr':
+        currentKey.fingerPrint.fill(match)
+        break;
+      case 'grp':
+        currentKey.group.fill(match)
         break;
       default:
         console.warn("unknown type:", match[0]);
