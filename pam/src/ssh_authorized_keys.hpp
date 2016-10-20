@@ -19,15 +19,15 @@ public:
   const std::string data;
   const std::string name;
   const std::string from_data_style;
-  const std::string from_data_funny;
+  const std::string from_data_modulo;
   const std::string from_data_pubkey;
 
 public:
   Key(bool ok, const std::string &style, const std::string &data,
       const std::string &name, const std::string &from_data_style,
-      const std::string &from_data_funny, const std::string &from_data_pubkey)
+      const std::string &from_data_modulo, const std::string &from_data_pubkey)
       : ok(ok), style(style), data(data), name(name),
-        from_data_style(from_data_style), from_data_funny(from_data_funny),
+        from_data_style(from_data_style), from_data_modulo(from_data_modulo),
         from_data_pubkey(from_data_pubkey) {}
 
   bool isOk() const { return ok; }
@@ -56,14 +56,14 @@ public:
   }
 
   static bool fill(const std::string &data, std::string &from_data_style,
-                   std::string &from_data_funny,
+                   std::string &from_data_modulo,
                    std::string &from_data_pubkey) {
     auto str = Base64::decode(data);
     auto strData = std::istringstream(str);
     if (!getPart(str.size(), strData, from_data_style)) {
       return false;
     }
-    if (!getPart(str.size(), strData, from_data_funny)) {
+    if (!getPart(str.size(), strData, from_data_modulo)) {
       return false;
     }
     if (!getPart(str.size(), strData, from_data_pubkey)) {
@@ -98,9 +98,9 @@ private:
 public:
   const std::vector<Key> &get() const { return keys; }
 
-  static SshAuthorizedKeys read(const char *fname) {
+  //  std::ifstream fstream(fname, std::ios_base::in | std::ios_base::binary);
+  static SshAuthorizedKeys read(std::istream &fname) {
     SshAuthorizedKeys ret(fname);
-    std::ifstream fstream(fname, std::ios_base::in | std::ios_base::binary);
     for (std::string str; std::getline(fstream, str);) {
       str = boost::trim_copy(str);
       std::vector<std::string> strVec;
@@ -120,15 +120,15 @@ public:
         data = strVec[1];
       }
       std::string from_data_style;
-      std::string from_data_funny;
+      std::string from_data_modulo;
       std::string from_data_pubkey;
       bool ok =
-          Key::fill(data, from_data_style, from_data_funny, from_data_pubkey);
+          Key::fill(data, from_data_style, from_data_modulo, from_data_pubkey);
       ret.keys.push_back(Key(ok, style, data, name, from_data_style,
-                             from_data_funny, from_data_pubkey));
+                             from_data_modulo, from_data_pubkey));
       // }
     }
-    fstream.close();
+    // fstream.close();
     return ret;
   }
 };

@@ -119,39 +119,7 @@ public:
   }
 };
 
-INITIALIZE_EASYLOGGINGPP
-
-extern "C" {
-
-PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
-                                   const char *argv[]) {
-  struct pam_conv *conv;
-  struct pam_message msg;
-  const struct pam_message *msgp;
-  struct pam_response *resp;
-  struct passwd *pwd;
-  const char *user;
-  //char *crypt_password, *password;
-  int pam_err, retry;
-  Config cfg;
-
-  D(("pam_sm_authenticate"));
-  START_EASYLOGGINGPP(argc, argv);
-  cfg.parse_cfg(flags, argc, argv);
-
-  /* identify user */
-  if ((pam_err = pam_get_user(pamh, &user, NULL)) != PAM_SUCCESS) {
-    return (pam_err);
-  }
-  if ((pwd = getpwnam(user)) == NULL) {
-    return (PAM_USER_UNKNOWN);
-  }
-
-  auto sshKeys = PamClavator::SshAuthorizedKeys::read(substPattern("HOMEDIR", pwd->pw_dir, cfg.ssh_authorized_keys_fname.value).c_str());
-  for (auto &v : sshKeys.get()) {
-     D((v.dump().c_str()));
-  }
-
+int create_gnupg_dir() {
   auto gpgConfFile = substPattern("HOMEDIR", pwd->pw_dir, cfg.gpg_conf.value);
   fs::path dotGnupgDir(fs::path(gpgConfFile.c_str()).remove_filename());
   if (!fs::is_directory(dotGnupgDir)) {
@@ -165,7 +133,10 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
       return PAM_AUTH_ERR;
     }
   }
+  return PAM_SUCCESS;
+}
 
+int setup_gpgagent_conf() {
   PamClavator::RunAs::run(pamh, pwd, [pwd, cfg]() {
     auto gpgAgentConfFname = substPattern("HOMEDIR", pwd->pw_dir, cfg.gpg_agent_conf.value);
     auto gpgAgentConf = GpgAgentConf::read(gpgAgentConfFname.c_str());
@@ -199,16 +170,88 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
     gpgAgentConf.write();
     return 0;
   });
+  return PAM_SUCCESS;
+}
+
+int gpgagent_start() {
+    PamClavator::SystemCmd kill_gpg_connect_agent(pwd, cfg.gpg_connect_agent.value);
+    kill_gpg_connect_agent.arg("--no-autostart");
+    kill_gpg_connect_agent.arg("KILLAGENT");
+    kill_gpg_connect_agent.arg("/bye");
+    kill_gpg_connect_agent.run(pamh);
+    if (kill_gpg_connect_agent.getStatus()) {
+      D((kill_gpg_connect_agent.dump().c_str()));
+      return PAM_AUTH_ERR;
+    }
+    return PAM_SUCCESS;
+}
+
+int check_does_we_have_a_card() {
+  // gpg2 --card-status --with-colon
+  // check does we have one card!
+  // extract fpr' use third fpr
+  // gpg2 --list-secret-keys --with-colon
+  // find keys from extracted fpr's
+}
+
+int create_csr_from_card() {
+  /*
+      gpgsm -a --batch --gen-key <<EOF
+Key-Type: RSA
+Key-Length: 1024
+Key-Grip: <GROUP from key with found fpr>
+Key-Usage: sign
+Name-DN: CN=ssh-auth
+Not-Before: 2011-11-11
+Not-After: 2106-02-06
+Subject-Key-Id: C083EC516CCEEFE80403CCA7CC3782A017C99142
+Extension: 2.5.29.19 c 30060101ff020101
+Extension: 1.3.6.1.4.1.11591.2.2.2 n 0101ff
+Signing-Key: C083EC516CCEEFE80403CCA7CC3782A017C99142
+%commit
+EOF
+    gpgsm --verify unknown how this works
+  */
+}
 
 
-  PamClavator::SystemCmd kill_gpg_connect_agent(pwd, cfg.gpg_connect_agent.value);
-  kill_gpg_connect_agent.arg("--no-autostart");
-  kill_gpg_connect_agent.arg("KILLAGENT");
-  kill_gpg_connect_agent.arg("/bye");
-  kill_gpg_connect_agent.run(pamh);
-  if (kill_gpg_connect_agent.getStatus()) {
-    D((kill_gpg_connect_agent.dump().c_str()));
-    return PAM_AUTH_ERR;
+INITIALIZE_EASYLOGGINGPP
+
+extern "C" {
+
+
+PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
+                                   const char *argv[]) {
+  struct pam_conv *conv;
+  struct pam_message msg;
+  const struct pam_message *msgp;
+  struct pam_response *resp;
+  struct passwd *pwd;
+  const char *user;
+  //char *crypt_password, *password;
+  int pam_err, retry;
+  Config cfg;
+
+  D(("pam_sm_authenticate"));
+  START_EASYLOGGINGPP(argc, argv);
+  cfg.parse_cfg(flags, argc, argv);
+
+  /* identify user */
+  if ((pam_err = pam_get_user(pamh, &user, NULL)) != PAM_SUCCESS) {
+    return (pam_err);
+  }
+  if ((pwd = getpwnam(user)) == NULL) {
+    return (PAM_USER_UNKNOWN);
+  }
+
+  if ((pam_err = create_gnupg_dir()) != PAM_SUCCESS) {
+    return pam_err;
+  }
+  if ((pam_err = setup_gpgagent_conf()) != PAM_SUCCESS) {
+    return pam_err;
+  }
+  if ((pam_err = gpgagent_start()) != PAM_SUCCESS) {
+    return pam_err;
   }
 
 
@@ -249,17 +292,16 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
   pin += password;
   D((pin.c_str()));
 
-  // D((substPattern("HOMEDIR", pwd->pw_dir, cfg.ssh_authorized_keys_fname.value).c_str()));
-  // D((substPattern("HOMEDIR", pwd->pw_dir, cfg.gpg_agent_conf.value).c_str()));
-  // D((substPattern("HOMEDIR", pwd->pw_dir, cfg.gpg_conf.value).c_str()));
+  create_csr_from_card();
 
-  /* compare passwords */
-  // if ((!pwd->pw_passwd[0] && (flags & PAM_DISALLOW_NULL_AUTHTOK)) ||
-  //     (crypt_password = crypt(password, pwd->pw_passwd)) == NULL ||
-  //     strcmp(crypt_password, pwd->pw_passwd) != 0)
-  //pam_err = PAM_AUTH_ERR;
-  // else
-  	pam_err = PAM_SUCCESS;
+  auto sshKeys = PamClavator::SshAuthorizedKeys::read(substPattern("HOMEDIR", pwd->pw_dir, cfg.ssh_authorized_keys_fname.value).c_str());
+  for (auto &v : sshKeys.get()) {
+     // compare pubkeyBits from Cert with
+     // pubkeyBits of sshKey
+     // if it match login
+     D((v.dump().c_str()));
+  }
+	pam_err = PAM_SUCCESS;
   return (pam_err);
 }
 

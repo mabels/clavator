@@ -22,3 +22,6 @@ find_package(Threads REQUIRED)
 
 add_executable(test_ssh_authorized_keys test_ssh_authorized_keys.cpp)
 add_test(test_ssh_authorized_keys test_ssh_authorized_keys)
+
+add_executable(test_list_secret_keys test_list_secret_keys.cpp)
+add_test(test_list_secret_keys test_list_secret_keys)
