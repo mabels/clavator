@@ -26,3 +26,8 @@ add_test(test_ssh_authorized_keys test_ssh_authorized_keys)
 add_executable(test_list_secret_keys test_list_secret_keys.cpp)
 add_test(test_list_secret_keys test_list_secret_keys)
 target_link_libraries(test_list_secret_keys ${Boost_LIBRARIES})
+
+add_executable(test_gpg_card_status test_gpg_card_status.cpp)
+add_test(test_gpg_card_status test_gpg_card_status)
+target_link_libraries(test_gpg_card_status ${Boost_LIBRARIES})
+

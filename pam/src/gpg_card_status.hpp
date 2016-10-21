@@ -1,3 +1,5 @@
+#include <string>
+#include <map>
 
 #include <boost/algorithm/string.hpp>
 
@@ -6,8 +8,9 @@ public:
   size_t id;
   size_t mode;
   size_t bits;
-  size_t maxpinlens;
-  size_t pinretries;
+  size_t maxpinlen;
+  size_t pinretry;
+  size_t sigcount;
   size_t cafpr;
   std::string fpr;
   size_t fprtime;
@@ -51,7 +54,7 @@ public:
   size_t cafpr;
 
   std::vector<KeyState>::iterator allocKeyState(size_t slot) {
-    for(size_t i = keyStates.length; i <= slot; ++i) {
+    for(size_t i = keyStates.size(); i <= slot; ++i) {
         keyStates.push_back(KeyState());
     }
     return keyStates.begin() + slot;
@@ -59,10 +62,11 @@ public:
 
 
   typedef std::function<void(Gpg2CardStatus &gcs, const std::vector<std::string> &strs)> GcsAction;
-  static std::map<std::string, GcsAction> actor() {
+  static std::map<std::string, GcsAction> actors() {
     static std::map<std::string, GcsAction> ret = {
       { "Reader", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
-        gcs.reader = strs[1];
+        std::vector<std::string> rest(strs.begin()+1, strs.end());
+        gcs.reader = boost::algorithm::join(rest, ":");
       } },
       { "version", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
         gcs.version = strs[1];
@@ -72,7 +76,8 @@ public:
         gcs.vendor = boost::algorithm::join(rest, ":");
       } },
       { "serial", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
-        gcs.serial = strs[1];
+        std::vector<std::string> rest(strs.begin()+1, strs.end());
+        gcs.serial = boost::algorithm::join(rest, ":");
       } },
       { "name", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
         std::vector<std::string> rest(strs.begin()+1, strs.end());
@@ -95,48 +100,60 @@ public:
         gcs.forcepin = boost::algorithm::join(rest, ":");
       } },
       { "keyattr", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
-        size_t id = std::stoi(strs[1]);
+        char *end;
+        size_t id = std::strtoul(strs[1].c_str(), &end, 10);
         auto ki = gcs.allocKeyState(id-1);
         ki->id = id;
-        ki->mode = std::stoi(strs[2]);
-        ki->bits = std::stoi(strs[3]);
+        ki->mode = std::strtoul(strs[2].c_str(), &end, 10);
+        ki->bits = std::strtoul(strs[3].c_str(), &end, 10);
       } },
       { "maxpinlen", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
-        for (auto si = strs.begin()+1, i = 0; si != strs.end(); ++si, ++i) {
+        size_t i = 0;
+        for (auto si = strs.begin()+1; si != strs.end(); ++si, ++i) {
           auto ki = gcs.allocKeyState(i);
-          ki->maxpinlen = std::stoi(*si);
+          char *end;
+          ki->maxpinlen = std::strtoul(si->c_str(), &end, 10);
         }
       } },
       { "pinretry", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
-        for (auto si = strs.begin()+1, i = 0; si != strs.end(); ++si, ++i) {
+        size_t i = 0;
+        for (auto si = strs.begin()+1; si != strs.end(); ++si, ++i) {
           auto ki = gcs.allocKeyState(i);
-          ki->pinretry = std::stoi(*si);
+          char *end;
+          ki->pinretry = std::strtoul(si->c_str(), &end, 10);
         }
       } },
       { "sigcount", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
-        gcs.sigcount = std::stoi(strs[1]);
-        for (auto si = strs.begin()+2, i = 0; si != strs.end(); ++si, ++i) {
+        char *end;
+        gcs.sigcount = std::strtoul(strs[1].c_str(), &end, 10);
+        size_t i = 0;
+        for (auto si = strs.begin()+2; si != strs.end(); ++si, ++i) {
           auto ki = gcs.allocKeyState(i);
-          ki->sigcount = std::stoi(*si);
+          ki->sigcount = std::strtoul(si->c_str(), &end, 10);
         }
       } },
       { "cafpr", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
-        gcs.cafpr = std::stoi(strs[1]);
-        for (auto si = strs.begin()+2, i = 0; si != strs.end(); ++si, ++i) {
+        char *end;
+        gcs.cafpr = std::strtoul(strs[1].c_str(), &end, 10);
+        size_t i = 0;
+        for (auto si = strs.begin()+2; si != strs.end(); ++si, ++i) {
           auto ki = gcs.allocKeyState(i);
-          ki->cafpr = std::stoi(*si);
+          ki->cafpr = std::strtoul(si->c_str(), &end, 10);
         }
       } },
       { "fpr", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
-        for (auto si = strs.begin()+1, i = 0; si != strs.end(); ++si, ++i) {
+        size_t i = 0;
+        for (auto si = strs.begin()+1; si != strs.end(); ++si, ++i) {
           auto ki = gcs.allocKeyState(i);
           ki->fpr = *si;
         }
       } },
       { "fprtime", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
-        for (auto si = strs.begin()+1, i = 0; si != strs.end(); ++si, ++i) {
+        size_t i = 0;
+        for (auto si = strs.begin()+1; si != strs.end(); ++si, ++i) {
           auto ki = gcs.allocKeyState(i);
-          ki->fprtime = std::stoi(*si);
+          char *end;
+          ki->fprtime = std::strtoul(si->c_str(), &end, 10);
         }
       } },
     };
@@ -146,22 +163,29 @@ public:
   static std::vector<Gpg2CardStatus> read(std::istream &istream) {
     std::vector<Gpg2CardStatus> gcs;
     std::vector<Gpg2CardStatus>::iterator gcsi = gcs.end();
-    std::map<std::string, GcsAction> actors;
+    std::map<std::string, GcsAction> actors = Gpg2CardStatus::actors();
     std::string line;
     while (std::getline(istream, line)) {
+      boost::trim(line);
+      if (line.back() == ':') {
+        line.erase(line.end()-1);
+      }
       std::vector<std::string> strs;
       boost::split(strs, line, boost::is_any_of(":"));
       if (strs[0] == "Reader") {
-        gcsi = gcs.insert(gcs.last(), Gpg2CardStatus());
+        gcsi = gcs.insert(gcs.end(), Gpg2CardStatus());
       }
       if (gcsi == gcs.end()) {
         continue;
       }
-      auto action = actor.find(strs[0]);
-      if (action == actor.end()) {
+      // std::cerr << "ReqAction:" << strs[0] << std::endl;
+      auto action = actors.find(strs[0]);
+      if (action == actors.end()) {
+        std::cerr << "RejAction:" << strs[0] << std::endl;
         continue;
       }
-      (action.second)(*gcsi, strs);
+      // std::cerr << "Action:" << action->first << std::endl;
+      (action->second)(*gcsi, strs);
     }
     return gcs;
   }
