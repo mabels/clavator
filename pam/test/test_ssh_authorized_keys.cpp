@@ -8,7 +8,7 @@ using namespace cascara;
 #include "../src/ssh_authorized_keys.hpp"
 #include "../src/base64.hpp"
 
-str::stringstream sample_authorized_keys() {
+std::stringstream sample_authorized_keys() {
   std::stringstream myfile;
   myfile <<"# comment\n";
   myfile << "     # comment\n";
@@ -23,7 +23,7 @@ str::stringstream sample_authorized_keys() {
 int main() {
   describe("ssh_authorized_keys", []() {
     it("read ssk_authorized_keys", []() {
-      std::istream istr = sample_authorized_keys();
+      auto istr = sample_authorized_keys();
       auto skeys = PamClavator::SshAuthorizedKeys::read(istr);
       assert.equal(skeys.get().size(), 7, "size");
       assert.equal(skeys.get()[0].isOk(), false, "0 false");

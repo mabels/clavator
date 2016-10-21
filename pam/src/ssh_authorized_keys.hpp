@@ -90,17 +90,17 @@ public:
 class SshAuthorizedKeys {
 public:
 private:
-  const std::string fname;
+  //const std::string fname;
   std::vector<Key> keys;
 
-  SshAuthorizedKeys(const char *fname) : fname(fname) {}
+  //SshAuthorizedKeys(const char *fname) : fname(fname) {}
 
 public:
   const std::vector<Key> &get() const { return keys; }
 
   //  std::ifstream fstream(fname, std::ios_base::in | std::ios_base::binary);
-  static SshAuthorizedKeys read(std::istream &fname) {
-    SshAuthorizedKeys ret(fname);
+  static SshAuthorizedKeys read(std::istream &fstream) {
+    SshAuthorizedKeys ret;
     for (std::string str; std::getline(fstream, str);) {
       str = boost::trim_copy(str);
       std::vector<std::string> strVec;

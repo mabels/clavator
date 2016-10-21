@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.7)
 project (pamClavatorTest)
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${pamClavatorTest_SOURCE_DIR}/${CMAKE_BUILD_TYPE}/${CMAKE_SYSTEM_NAME})
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -DTEST")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -DTEST -g")
 if (${CMAKE_COMPILER_IS_GNUCXX})
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 endif()
@@ -25,3 +25,4 @@ add_test(test_ssh_authorized_keys test_ssh_authorized_keys)
 
 add_executable(test_list_secret_keys test_list_secret_keys.cpp)
 add_test(test_list_secret_keys test_list_secret_keys)
+target_link_libraries(test_list_secret_keys ${Boost_LIBRARIES})

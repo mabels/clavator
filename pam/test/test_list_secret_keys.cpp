@@ -7,34 +7,34 @@ using namespace cascara;
 
 
 void testListSecretKeys(std::vector<SecretKey> &s) {
-    assert.equal(s.length, 3);
-    assert.equal(s[0].keyId, "1A5D93796CF70ADF");
-    assert.equal(s[1].keyId, "23C4790FEF6E173F");
-    assert.equal(s[2].keyId, "19B013CF06A4BEEF");
-    assert.equal(s[2].funky, '#');
-    assert.equal(s[2].fingerPrint.fpr, "F36846C4A7DEFD55F492069C19B013CF06A4BEEF");
-    assert.equal(s[2].group.grp, "75E60BCBF5E25BBBF0E701CD55BC79F4C03BC320");
-    assert.equal(s[2].subKeys.length, 3);
-    assert.equal(s[2].subKeys[0].type, 'ssb');
-    assert.equal(s[2].subKeys[0].cipher, 'rsa');
-    assert.equal(s[2].subKeys[0].bits, 4096);
-    assert.equal(s[2].subKeys[0].keyId, '28E66F405F1BE34D');
+    assert.equal(s.size(), 3);
+    assert.equal(s[0].key.keyId, "1A5D93796CF70ADF");
+    assert.equal(s[1].key.keyId, "23C4790FEF6E173F");
+    assert.equal(s[2].key.keyId, "19B013CF06A4BEEF");
+    assert.equal(s[2].key.modulo, "#");
+    assert.equal(s[2].key.fingerPrint.fpr, "F36846C4A7DEFD55F492069C19B013CF06A4BEEF");
+    assert.equal(s[2].key.group.grp, "75E60BCBF5E25BBBF0E701CD55BC79F4C03BC320");
+    assert.equal(s[2].subKeys.size(), 3);
+    assert.equal(s[2].subKeys[0].type, "ssb");
+    assert.equal(s[2].subKeys[0].cipher, "rsa");
+    assert.equal(s[2].subKeys[0].bits, 4096u);
+    assert.equal(s[2].subKeys[0].keyId, "28E66F405F1BE34D");
     assert.equal(s[2].subKeys[0].created, 1464700773, "Created");
     assert.equal(s[2].subKeys[0].expires, 1622380773, "Expires");
     assert.equal(s[2].subKeys[0].fingerPrint.fpr, "2D32339F24A537406437181A28E66F405F1BE34D", "ssbfpr");
     assert.equal(s[2].subKeys[0].group.grp, "C083EC516CCEEFE80403CCA7CC3782A017C99142", "ssbGroup");
-    assert.deepEqual(s[2].subKeys[1].uses, ['a', 'e', 's']);
-    assert.equal(s[2].uids.length, 1);
+    assert.deepEqual(s[2].subKeys[0].uses, {'a', 'e', 's'});
+    assert.equal(s[2].uids.size(), 1);
     assert.equal(s[2].uids[0].trust, "u");
     assert.equal(s[2].uids[0].name, "Meno Abels");
     assert.equal(s[2].uids[0].email, "meno.abels@adviser.com");
-    assert.equal(s[2].uids[0].comment, null);
+    assert.equal(s[2].uids[0].comment, "");
 }
 
 int main() {
-  describe('ListSecretKeys', []() -> {
+  describe("ListSecretKeys", []() {
 
-    it("listSecretKeys", []() -> {
+    it("listSecretKeys", []() {
       std::stringstream s2;
       s2 << "sec:-:2048:1:1A5D93796CF70ADF:1333149072:1493647783::-:::escaESCA:::+::::\n";
       s2 << "fpr:::::::::547484819BCCDBDA0E73858F1A5D93796CF70ADF:\n";
@@ -63,8 +63,9 @@ int main() {
       s2 << "ssb:u:4096:1:3D851A5DF09DEB9C:1465218921:1622898921:::::es:::D2760001240102010006041775630000:::\n";
       s2 << "fpr:::::::::B3B94966DF73077EFA734EC83D851A5DF09DEB9C:\n";
       s2 << "grp:::::::::2DC62D282D308E58A8C7C4F7652955AC146860D2:\n";
-      testListSecretKeys(lsk.run(s2));
+      auto vss = SecretKey::read(s2);
+      testListSecretKeys(vss);
     });
   });
-
+  exit();
 }
