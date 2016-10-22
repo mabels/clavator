@@ -9,7 +9,7 @@ class Oid {
 public:
   std::vector<uint32_t> oid;
 
-  std::string toString() {
+  std::string toString() const {
     const char *dot = "";
     std::stringstream out;
     for (auto i : oid) {

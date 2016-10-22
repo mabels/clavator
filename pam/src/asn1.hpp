@@ -223,5 +223,12 @@ public:
     }
   }
 
+  static std::vector<Asn1>::const_iterator skip(uint8_t type, std::vector<Asn1>::const_iterator begin, std::vector<Asn1>::const_iterator end) {
+    size_t ofs;
+    for (ofs = 0; (begin+ofs) != end && ((begin+ofs)->type == type); ++ofs) {
+    }
+    return begin + ofs;
+  }
+
 
 };

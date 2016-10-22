@@ -39,6 +39,10 @@ add_executable(test_asn1 test_asn1.cpp)
 add_test(test_asn1 test_asn1)
 target_link_libraries(test_asn1 ${Boost_LIBRARIES})
 
+add_executable(test_cert_match_ssh_auth test_cert_match_ssh_auth.cpp)
+add_test(test_cert_match_ssh_auth test_cert_match_ssh_auth)
+target_link_libraries(test_cert_match_ssh_auth ${Boost_LIBRARIES})
+
 add_executable(test_oid test_oid.cpp)
 add_test(test_oid test_oid)
 target_link_libraries(test_oid ${Boost_LIBRARIES})
