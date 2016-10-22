@@ -27,8 +27,7 @@ if(APPLE)
   set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
 endif()
 
-#include(CMakeLists-easyloggingpp.txt)
-
+include(CMakeLists-easyloggingpp.txt)
 include(CMakeLists-cascara.txt)
 
 

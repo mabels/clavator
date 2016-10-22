@@ -23,7 +23,7 @@
 #include "boost/filesystem/path.hpp"
 namespace fs = boost::filesystem;
 
-#include "easylogging++.h"
+#include <easylogging++.h>
 
 #define PAM_DEBUG
 #ifdef PAM_DEBUG
