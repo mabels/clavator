@@ -37,7 +37,7 @@ public:
     return d.str();
   }
 
-  static bool getPart(size_t len, std::istringstream &str, std::string &dest) {
+  static bool getPart(size_t len, std::istream &str, std::string &dest) {
     uint32_t plen = 0;
     str.read(((char *)(&plen)), sizeof(plen));
     plen = ntohl(plen);
@@ -59,7 +59,7 @@ public:
                    std::string &from_data_modulo,
                    std::string &from_data_pubkey) {
     auto str = Base64::decode(data);
-    auto strData = std::istringstream(str);
+    std::stringstream strData(str);
     if (!getPart(str.size(), strData, from_data_style)) {
       return false;
     }

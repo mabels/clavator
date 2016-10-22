@@ -7,8 +7,7 @@ using namespace cascara;
 
 #include "../src/gpg_card_status.hpp"
 
-std::stringstream gpg_card_status() {
-  std::stringstream s2;
+void gpg_card_status(std::stringstream &s2) {
   for (int i = 0; i < 3; ++i) {
     s2 << "Reader:Yubico Yubikey 4 OTP U2F CCID:AID:D2760001240102010006041775630000:openpgp-card:\n";
     s2 << "version:0201:\n";
@@ -30,13 +29,13 @@ std::stringstream gpg_card_status() {
     s2 << "fpr:F78D5B547A9BB0E8A174C0F5060FF53CB3A32992:B3B94966DF73077EFA734EC83D851A5DF09DEB9C:2D32339F24A537406437181A28E66F405F1BE34D:\n";
     s2 << "fprtime:1465218501:1465218921:1464700773:\n";
   }
-  return s2;
 }
 
 int main() {
   describe("gpg_card_status", []() {
     it("read gpg_card_status", []() {
-      std::stringstream gcss = gpg_card_status();
+      std::stringstream gcss;
+      gpg_card_status(gcss);
       auto css = Gpg2CardStatus::read(gcss);
       assert.equal(css.size(), 3, "size");
       for (auto &cs : css) {

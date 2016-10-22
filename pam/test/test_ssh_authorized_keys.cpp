@@ -8,8 +8,7 @@ using namespace cascara;
 #include "../src/ssh_authorized_keys.hpp"
 #include "../src/base64.hpp"
 
-std::stringstream sample_authorized_keys() {
-  std::stringstream myfile;
+void sample_authorized_keys(std::stringstream &myfile) {
   myfile <<"# comment\n";
   myfile << "     # comment\n";
   myfile << "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDIQpC2scaVXEaNuwtq4n6Vtht2WHYxtDFKe44JNFEsZGyQjyL9c2qkmQQGCF+2g3HrIPDTCCCWQ3GUiXGAlQ0/rf6sLqcm4YMXt+hgHU5VeciUIDEySCKdCPC419wFPBw6oKdcN1pLoIdWoF4LRDcjcrKKAlkdNJ/oLnl716piLdchABO9NXGxBpkLsJGK8qw390O1ZqZMe9wEAL9l/A1/49v8LfzELp0/fhSmiXphTVI/zNVIp/QIytXzRg74xcYpBjHk1TQZHuz/HYYsWwccnu7vYaTDX0CCoAyEt599f9u+JQ4oW0qyLO0ie7YcmR6nGEW4DMsPcfdqqo2VyYy4ix3U5RI2JcObfP0snYwPtAdVeeeReXi3c/E7bGLeCcwdFeFBfHSA9PDGxWVlxh/oCJaE7kP7eBhXNjN05FodVdNczKI5T9etfQ9VHILFrvpEREg1+OTiI58RmwjxS5ThloqXvr/nZzhIwTsED0KNW8wE4pjyotDJ8jaW2d7oVIMdWqE2M9Z1sLqDDdhHdVMFxk6Hl2XfqeqO2Jnst7qzbHAN/S3hvSwysixWJEcLDVG+cg1KRwz4qafCU5oHSp8aNNOk4RZozboFjac17nOmfPfnjC/LLayjSkEBZ+eFi+njZRLDN92k3PvHYFEB3USbHYzICsuDcf+L4cslX03g7w== openpgp:0x5F1BE34D\n";
@@ -17,13 +16,13 @@ std::stringstream sample_authorized_keys() {
   myfile << "     \n";
   myfile << "     ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDIQpC2sc openpgp:0x5F1BE34D     \n";
   myfile << "     \n";
-  return myfile;
 }
 
 int main() {
   describe("ssh_authorized_keys", []() {
     it("read ssk_authorized_keys", []() {
-      auto istr = sample_authorized_keys();
+      std::stringstream istr;
+      sample_authorized_keys(istr);
       auto skeys = PamClavator::SshAuthorizedKeys::read(istr);
       assert.equal(skeys.get().size(), 7, "size");
       assert.equal(skeys.get()[0].isOk(), false, "0 false");
