@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.7)
 project (pamClavatorTest)
-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${pamClavatorTest_SOURCE_DIR}/${CMAKE_BUILD_TYPE}/${CMAKE_SYSTEM_NAME})
+#SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${pamClavatorTest_SOURCE_DIR}/${CMAKE_BUILD_TYPE}/${CMAKE_SYSTEM_NAME})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -DTEST -g")
 if (${CMAKE_COMPILER_IS_GNUCXX})
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
@@ -31,3 +31,14 @@ add_executable(test_gpg_card_status test_gpg_card_status.cpp)
 add_test(test_gpg_card_status test_gpg_card_status)
 target_link_libraries(test_gpg_card_status ${Boost_LIBRARIES})
 
+add_executable(test_pem test_pem.cpp)
+add_test(test_pem test_pem)
+target_link_libraries(test_pem ${Boost_LIBRARIES})
+
+add_executable(test_asn1 test_asn1.cpp)
+add_test(test_asn1 test_asn1)
+target_link_libraries(test_asn1 ${Boost_LIBRARIES})
+
+add_executable(test_oid test_oid.cpp)
+add_test(test_oid test_oid)
+target_link_libraries(test_oid ${Boost_LIBRARIES})

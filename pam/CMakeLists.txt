@@ -1,9 +1,9 @@
 cmake_minimum_required (VERSION 2.8.7)
 #include(CTest)
 project (pamClavator)
-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${pamClavator_SOURCE_DIR}/${CMAKE_BUILD_TYPE}/${CMAKE_SYSTEM_NAME})
-SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${pamClavator_SOURCE_DIR}/${CMAKE_BUILD_TYPE}/${CMAKE_SYSTEM_NAME})
-SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${pamClavator_SOURCE_DIR}/${CMAKE_BUILD_TYPE}/${CMAKE_SYSTEM_NAME})
+#SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${pamClavator_SOURCE_DIR}/${CMAKE_BUILD_TYPE}/${CMAKE_SYSTEM_NAME})
+#SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${pamClavator_SOURCE_DIR}/${CMAKE_BUILD_TYPE}/${CMAKE_SYSTEM_NAME})
+#SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${pamClavator_SOURCE_DIR}/${CMAKE_BUILD_TYPE}/${CMAKE_SYSTEM_NAME})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra")
 
 if (${CMAKE_COMPILER_IS_GNUCXX})
@@ -42,16 +42,15 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 
 #find_package(Threads REQUIRED)
 
-include_directories(.)
-#set(CMAKE_SHARED_LINKER_FLAGS "-lpam")
+#include_directories(.)
+set(CMAKE_SHARED_LINKER_FLAGS "-lpam")
 #set(CMAKE_STATIC_LINKER_FLAGS "-lpam")
 
-file(GLOB SOURCES "src/*.cpp")
-add_library(pamClavator SHARED ${SOURCES})
+#file(GLOB SOURCES "src/*.cpp")
+add_library(pamClavator SHARED src/pam_clavator.cpp)
 target_link_libraries(pamClavator ${Boost_LIBRARIES})
 
-
-add_library(pamClavatorStatic STATIC ${SOURCES})
+add_library(pamClavatorStatic STATIC src/pam_clavator.cpp)
 target_link_libraries(pamClavatorStatic ${Boost_LIBRARIES})
 set_target_properties(pamClavatorStatic PROPERTIES OUTPUT_NAME pamClavator)
 

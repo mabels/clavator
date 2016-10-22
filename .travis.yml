@@ -1,3 +1,14 @@
 language: node_js
+dist: trusty
+
 node_js:
-  - "4.2.0"
+  - "6.8.1"
+
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y libboost-all-dev cmake
+
+script:
+  - (cd pam && cmake -DCMAKE_BUILD_TYPE=Release . && make)
+  - (cd pam && ctest)
+  - npm install && npm test

@@ -99,9 +99,9 @@ public:
   const std::vector<Key> &get() const { return keys; }
 
   //  std::ifstream fstream(fname, std::ios_base::in | std::ios_base::binary);
-  static SshAuthorizedKeys read(std::istream &fstream) {
+  static SshAuthorizedKeys read(std::istream &stream) {
     SshAuthorizedKeys ret;
-    for (std::string str; std::getline(fstream, str);) {
+    for (std::string str; std::getline(stream, str);) {
       str = boost::trim_copy(str);
       std::vector<std::string> strVec;
       boost::algorithm::split(strVec, str, boost::algorithm::is_any_of("\t "),

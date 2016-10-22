@@ -28,7 +28,7 @@ console.log(s[2].subKeys)
       assert.equal(s[2].subKeys[0].expires, 1622380773, "Expires");
       assert.equal(s[2].subKeys[0].fingerPrint.fpr, "2D32339F24A537406437181A28E66F405F1BE34D", "ssbfpr");
       assert.equal(s[2].subKeys[0].group.grp, "C083EC516CCEEFE80403CCA7CC3782A017C99142", "ssbGroup");
-      assert.deepEqual(s[2].subKeys[1].uses, ['a', 'e', 's']);
+      assert.deepEqual(s[2].subKeys[0].uses, ['a', 'e', 's']);
       assert.equal(s[2].uids.length, 1);
       assert.equal(s[2].uids[0].trust, "u");
       assert.equal(s[2].uids[0].name, "Meno Abels");

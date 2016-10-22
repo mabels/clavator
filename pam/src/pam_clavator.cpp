@@ -119,7 +119,7 @@ public:
   }
 };
 
-int create_gnupg_dir() {
+int create_gnupg_dir(pam_handle_t *pamh, const struct passwd *pwd, const Config &cfg) {
   auto gpgConfFile = substPattern("HOMEDIR", pwd->pw_dir, cfg.gpg_conf.value);
   fs::path dotGnupgDir(fs::path(gpgConfFile.c_str()).remove_filename());
   if (!fs::is_directory(dotGnupgDir)) {
@@ -136,7 +136,7 @@ int create_gnupg_dir() {
   return PAM_SUCCESS;
 }
 
-int setup_gpgagent_conf() {
+int setup_gpgagent_conf(pam_handle_t *pamh, const struct passwd *pwd, const Config &cfg) {
   PamClavator::RunAs::run(pamh, pwd, [pwd, cfg]() {
     auto gpgAgentConfFname = substPattern("HOMEDIR", pwd->pw_dir, cfg.gpg_agent_conf.value);
     auto gpgAgentConf = GpgAgentConf::read(gpgAgentConfFname.c_str());
@@ -173,7 +173,7 @@ int setup_gpgagent_conf() {
   return PAM_SUCCESS;
 }
 
-int gpgagent_start() {
+int gpgagent_start(pam_handle_t *pamh, const struct passwd *pwd, const Config &cfg) {
     PamClavator::SystemCmd kill_gpg_connect_agent(pwd, cfg.gpg_connect_agent.value);
     kill_gpg_connect_agent.arg("--no-autostart");
     kill_gpg_connect_agent.arg("KILLAGENT");
@@ -192,6 +192,7 @@ int check_does_we_have_a_card() {
   // extract fpr' use third fpr
   // gpg2 --list-secret-keys --with-colon
   // find keys from extracted fpr's
+  return PAM_SUCCESS;
 }
 
 int create_csr_from_card() {
@@ -212,6 +213,7 @@ Signing-Key: C083EC516CCEEFE80403CCA7CC3782A017C99142
 EOF
     gpgsm --verify unknown how this works
   */
+  return PAM_SUCCESS;
 }
 
 
@@ -244,13 +246,13 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
     return (PAM_USER_UNKNOWN);
   }
 
-  if ((pam_err = create_gnupg_dir()) != PAM_SUCCESS) {
+  if ((pam_err = create_gnupg_dir(pamh, pwd, cfg)) != PAM_SUCCESS) {
     return pam_err;
   }
-  if ((pam_err = setup_gpgagent_conf()) != PAM_SUCCESS) {
+  if ((pam_err = setup_gpgagent_conf(pamh, pwd, cfg)) != PAM_SUCCESS) {
     return pam_err;
   }
-  if ((pam_err = gpgagent_start()) != PAM_SUCCESS) {
+  if ((pam_err = gpgagent_start(pamh, pwd, cfg)) != PAM_SUCCESS) {
     return pam_err;
   }
 
@@ -294,7 +296,10 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
 
   create_csr_from_card();
 
-  auto sshKeys = PamClavator::SshAuthorizedKeys::read(substPattern("HOMEDIR", pwd->pw_dir, cfg.ssh_authorized_keys_fname.value).c_str());
+  auto fname = substPattern("HOMEDIR", pwd->pw_dir, cfg.ssh_authorized_keys_fname.value);
+  std::ifstream fstream(fname.c_str(), std::ios_base::in | std::ios_base::binary);
+  auto sshKeys = PamClavator::SshAuthorizedKeys::read(fstream);
+  fstream.close();
   for (auto &v : sshKeys.get()) {
      // compare pubkeyBits from Cert with
      // pubkeyBits of sshKey
