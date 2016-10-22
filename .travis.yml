@@ -6,7 +6,7 @@ node_js:
 
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get install -y libboost-all-dev cmake
+  - sudo apt-get install -y libboost-all-dev cmake libpam0g-dev
 
 script:
   - (cd pam && cmake -DCMAKE_BUILD_TYPE=Release . && make)

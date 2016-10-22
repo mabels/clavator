@@ -122,7 +122,7 @@ public:
   static std::vector<SecretKey> read(std::istream &istream) {
     std::vector<SecretKey> ret;
     std::vector<SecretKey>::iterator currentSec;
-    Key *currentKey;
+    Key *currentKey = 0;
     std::string line;
     while (std::getline(istream, line)) {
       std::vector<std::string> strs;
@@ -135,9 +135,9 @@ public:
         currentSec->uids.push_back(Uid::fill(strs));
       } else if (strs[0] == "ssb") {
         currentKey = &(*currentSec->subKeys.insert(currentSec->subKeys.end(), Key().fill(strs)));
-      } else if (strs[0] == "fpr") {
+      } else if (currentKey && strs[0] == "fpr") {
         currentKey->fingerPrint.fill(strs);
-      } else if (strs[0] == "grp") {
+      } else if (currentKey && strs[0] == "grp") {
         currentKey->group.fill(strs);
       } else {
         std::cerr << "SecretKey: unkown-type=" << strs[0] << std::endl;
