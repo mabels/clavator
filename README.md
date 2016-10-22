@@ -1,5 +1,7 @@
 # clavator
 
+[![Build Status](https://travis-ci.org/mabels/clavator.svg?branch=master)](https://travis-ci.org/mabels/clavator)
+
 ## Getting started
 
 In a first terminal:
