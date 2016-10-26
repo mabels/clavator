@@ -242,9 +242,18 @@ boost::optional<std::string> check_does_we_have_a_card(pam_handle_t *pamh, const
 
 std::string date_yyyy_mm_dd(std::chrono::time_point<std::chrono::system_clock> now) {
   auto time = std::chrono::system_clock::to_time_t(now);
+#if __GNUC__ <= 4 && !defined(__clang__)
+  char buffer [80];
+  timeinfo = localtime (&rawtime);
+  strftime(buffer,sizeof(buffer),"%Y-%m-%d",timeinfo);
+  return std::string(buffer);
+#else
   std::stringstream s2;
   s2 << std::put_time(std::localtime(&time), "%Y-%m-%d");
   return s2.str();
+#endif
+
+
 }
 
 boost::optional<Pem> create_cert_from_card(pam_handle_t *pamh, const struct passwd *pwd, const Config &cfg, const std::string& grp) {
