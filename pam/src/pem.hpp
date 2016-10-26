@@ -18,6 +18,9 @@ class PubKey {
 public:
   std::string key;
   std::string modulus;
+  bool operator==(const PubKey& obj) const {
+    return this->key == obj.key && this->modulus == obj.modulus;
+  }
 };
 
 class Pem {
@@ -25,6 +28,12 @@ public:
   std::string type;
   std::vector<std::string> base64;
   std::string binary;
+
+  bool operator==(const Pem& obj) const {
+    return this->type == obj.type &&
+           std::equal(this->base64.begin(), this->base64.end(), obj.base64.begin()) &&
+           this->binary == obj.binary;
+  }
 
   boost::optional<std::vector<PubKey>> pubKey() const {
     auto asn1 = Asn1::read(binary.begin(), binary.end());

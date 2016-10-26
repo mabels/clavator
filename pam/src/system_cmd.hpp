@@ -30,7 +30,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include "run_as.hpp"
+namespace PamClavator {
+//#include "run_as.hpp"
 
 // #include <ipaddress/result.hpp>
 //
@@ -48,12 +49,20 @@ public:
     int saved_flags = fcntl(this->fd, F_GETFL);
     fcntl(this->fd, F_SETFL, saved_flags & ~O_NONBLOCK);
   }
+  bool operator==(const FileDescriptor& obj) const {
+    return this->fd == obj.fd;
+  }
 };
 
 class Pipe {
   std::shared_ptr<FileDescriptor> read;
   std::shared_ptr<FileDescriptor> write;
 public:
+  bool operator==(const Pipe& obj) const {
+    return this->read == obj.read &&
+           this->write == obj.write;
+  }
+
   int getRead() const { return read->getFd(); }
   int getWrite() const { return write->getFd(); }
   static boost::optional<Pipe> create() {
@@ -385,5 +394,6 @@ public:
     return sr;
   }
 };
+}
 
 #endif

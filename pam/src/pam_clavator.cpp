@@ -79,6 +79,7 @@ std::string DirName(std::string source) {
 
 // #include "pem_ssh.hpp"
 #include "system_cmd.hpp"
+#include "run_as.hpp"
 #include "matcher.hpp"
 #include "ssh_authorized_keys.hpp"
 #include "gpg_agent_conf.hpp"
@@ -133,7 +134,7 @@ int create_gnupg_dir(pam_handle_t *pamh, const struct passwd *pwd, const Config 
   auto gpgConfFile = substPattern("HOMEDIR", pwd->pw_dir, cfg.gpg_conf.value);
   fs::path dotGnupgDir(fs::path(gpgConfFile.c_str()).remove_filename());
   if (!fs::is_directory(dotGnupgDir)) {
-     SystemCmd mkdir_p(pwd, "/bin/mkdir");
+     PamClavator::SystemCmd mkdir_p(pwd, "/bin/mkdir");
     mkdir_p.arg("-p");
     mkdir_p.arg("--mode=0700");
     mkdir_p.arg(dotGnupgDir.c_str());
@@ -184,7 +185,7 @@ int setup_gpgagent_conf(pam_handle_t *pamh, const struct passwd *pwd, const Conf
 }
 
 int gpgagent_start(pam_handle_t *pamh, const struct passwd *pwd, const Config &cfg) {
-     SystemCmd kill_gpg_connect_agent(pwd, cfg.gpg_connect_agent.value);
+     PamClavator::SystemCmd kill_gpg_connect_agent(pwd, cfg.gpg_connect_agent.value);
     kill_gpg_connect_agent.arg("--no-autostart");
     kill_gpg_connect_agent.arg("KILLAGENT");
     kill_gpg_connect_agent.arg("/bye");
@@ -197,7 +198,7 @@ int gpgagent_start(pam_handle_t *pamh, const struct passwd *pwd, const Config &c
 }
 
 boost::optional<std::string> check_does_we_have_a_card(pam_handle_t *pamh, const struct passwd *pwd, const Config &cfg) {
-  SystemCmd gpg2cardStatusCmd(pwd, cfg.gpg.value);
+  PamClavator::SystemCmd gpg2cardStatusCmd(pwd, cfg.gpg.value);
   gpg2cardStatusCmd.arg("--card-status");
   gpg2cardStatusCmd.arg("--with-colon");
   auto sr = gpg2cardStatusCmd.run(pamh);
@@ -207,7 +208,7 @@ boost::optional<std::string> check_does_we_have_a_card(pam_handle_t *pamh, const
   }
   auto gpg2cardStatus = Gpg2CardStatus::read(sr.getSout());
 
-  SystemCmd gpg2listSecretKeysCmd(pwd, cfg.gpg.value);
+  PamClavator::SystemCmd gpg2listSecretKeysCmd(pwd, cfg.gpg.value);
   gpg2listSecretKeysCmd.arg("--list-secret-keys");
   gpg2listSecretKeysCmd.arg("--with-colon");
   sr = gpg2listSecretKeysCmd.run(pamh);
@@ -277,7 +278,7 @@ EOF
   compare pubkeys pem und ssh
     gpgsm --verify unknown how this works
   */
-  SystemCmd gpgsmGenkey(pwd, cfg.gpgsm.value);
+  PamClavator::SystemCmd gpgsmGenkey(pwd, cfg.gpgsm.value);
   auto now = std::chrono::system_clock::now();
   gpgsmGenkey.arg("-a").arg("--batch").arg("--gen-key");
   gpgsmGenkey
