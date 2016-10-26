@@ -6,6 +6,8 @@ using namespace cascara;
 
 #include "../src/pem.hpp"
 
+#include <easylogging++.h>
+INITIALIZE_EASYLOGGINGPP
 
 int main() {
   describe("Pem", []() {

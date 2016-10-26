@@ -6,6 +6,9 @@ using namespace cascara;
 #include "../src/oid.hpp"
 
 
+#include <easylogging++.h>
+INITIALIZE_EASYLOGGINGPP
+
 int main() {
   describe("Oid", []() {
     it("read", []() {

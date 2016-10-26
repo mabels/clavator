@@ -21,6 +21,7 @@ using namespace cascara;
 #define EXEC_CAT "/bin/cat"
 #endif
 
+#include <easylogging++.h>
 INITIALIZE_EASYLOGGINGPP
 int main() {
   describe("SystemCmd", []() {

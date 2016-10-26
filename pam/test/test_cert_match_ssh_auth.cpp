@@ -11,6 +11,10 @@ using namespace cascara;
 #include "../src/ssh_authorized_keys.hpp"
 
 
+#include <easylogging++.h>
+INITIALIZE_EASYLOGGINGPP
+
+
 std::vector<Asn1> pem_cert_string() {
   std::stringstream pemCertStr;
   pemCertStr  << "-----BEGIN CERTIFICATE REQUEST-----\n";
@@ -53,9 +57,6 @@ PamClavator::Key sample_authorized_keys() {
   assert.equal(skeys.get().size(), 1, "size");
   return skeys.get()[0];
 }
-
-
-INITIALIZE_EASYLOGGINGPP
 
 int main() {
   describe("CertMatchSshAuth", []() {

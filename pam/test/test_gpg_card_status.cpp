@@ -5,6 +5,10 @@
 #include <cascara/cascara.hpp>
 using namespace cascara;
 
+
+#include <easylogging++.h>
+INITIALIZE_EASYLOGGINGPP
+
 #include "../src/gpg_card_status.hpp"
 
 void gpg_card_status(std::stringstream &s2) {

@@ -1,6 +1,10 @@
 
 
 
+#include <easylogging++.h>
+INITIALIZE_EASYLOGGINGPP
+
+
 #include <cascara/cascara.hpp>
 using namespace cascara;
 

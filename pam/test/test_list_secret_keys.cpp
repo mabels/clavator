@@ -5,6 +5,8 @@ using namespace cascara;
 
 #include "../src/gpg_list_secret_keys.hpp"
 
+#include <easylogging++.h>
+INITIALIZE_EASYLOGGINGPP
 
 void testListSecretKeys(std::vector<SecretKey> &s) {
     assert.equal(s.size(), 3);
@@ -30,6 +32,7 @@ void testListSecretKeys(std::vector<SecretKey> &s) {
     assert.equal(s[2].uids[0].email, "meno.abels@adviser.com");
     assert.equal(s[2].uids[0].comment, "");
 }
+
 
 int main() {
   describe("ListSecretKeys", []() {

@@ -8,6 +8,9 @@ using namespace cascara;
 #include "../src/ssh_authorized_keys.hpp"
 #include "../src/base64.hpp"
 
+#include <easylogging++.h>
+INITIALIZE_EASYLOGGINGPP
+
 void sample_authorized_keys(std::stringstream &myfile) {
   myfile <<"# comment\n";
   myfile << "     # comment\n";
