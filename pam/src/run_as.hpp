@@ -7,10 +7,12 @@ public:
   static int run(pam_handle_t *, const struct passwd *pwd, const std::function<int()>&action) {
     pid_t pid = fork();
     if (pid == 0) {
-      // PAM_MODUTIL_DEF_PRIVS(privs);
-      // int ret = pam_modutil_drop_priv(pamh, &privs, pwd);
-      setuid(pwd->pw_uid);
-      seteuid(pwd->pw_uid);
+      if (setuid(pwd->pw_uid) < 0) {
+        return -1;
+      }
+      if (seteuid(pwd->pw_uid) < 0) {
+        return -1;
+      }
       return action();
     } else {
       int status;
