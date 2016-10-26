@@ -1,3 +1,5 @@
+#ifndef __PAM_CLAVATOR__
+#define __PAM_CLAVATOR__
 
 namespace PamClavator {
 class RunAs {
@@ -19,3 +21,5 @@ public:
 };
 
 }
+
+#endif

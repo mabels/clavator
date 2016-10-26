@@ -18,12 +18,18 @@
 #include <sstream>
 #include <iostream>
 #include <algorithm>
+#include <chrono>
+#include <iomanip>
 
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
+#include <boost/optional.hpp>
+
 namespace fs = boost::filesystem;
 
 #include <easylogging++.h>
+
+#include "pem.hpp"
 
 #define PAM_DEBUG
 #ifdef PAM_DEBUG
@@ -71,11 +77,13 @@ std::string DirName(std::string source) {
 }
 
 
-#include "pem_ssh.hpp"
+// #include "pem_ssh.hpp"
 #include "system_cmd.hpp"
 #include "matcher.hpp"
 #include "ssh_authorized_keys.hpp"
 #include "gpg_agent_conf.hpp"
+#include "gpg_card_status.hpp"
+#include "gpg_list_secret_keys.hpp"
 #include "pin_entry_dispatcher.hpp"
 
 class Config {
@@ -86,6 +94,7 @@ public:
   Matcher<std::string> password_prompt;
   Matcher<std::string> gpg_connect_agent;
   Matcher<std::string> gpg;
+  Matcher<std::string> gpgsm;
   Matcher<std::string> gpg_agent_conf;
   Matcher<std::string> gpg_conf;
   Matcher<std::string> pinentry_dispatcher;
@@ -96,6 +105,7 @@ public:
     password_prompt("password_prompt=", "pincode: ", matchers),
     gpg_connect_agent("gpg_connect_agent=", "/usr/local/bin/gpg-connect-agent", matchers),
     gpg("gpg=", "/usr/local/bin/gpg2", matchers),
+    gpgsm("gpgsm=", "/usr/local/bin/gpgsm", matchers),
     gpg_agent_conf("gpg_agent_conf=", ".gnupg/gpg-agent.conf", matchers),
     gpg_conf("gpg_conf=", ".gnupg/gpg.conf", matchers),
     pinentry_dispatcher("pinentry_dispatcher=", ".gnupg/pinentry_dispatcher.sh", matchers),
@@ -123,7 +133,7 @@ int create_gnupg_dir(pam_handle_t *pamh, const struct passwd *pwd, const Config 
   auto gpgConfFile = substPattern("HOMEDIR", pwd->pw_dir, cfg.gpg_conf.value);
   fs::path dotGnupgDir(fs::path(gpgConfFile.c_str()).remove_filename());
   if (!fs::is_directory(dotGnupgDir)) {
-    PamClavator::SystemCmd mkdir_p(pwd, "/bin/mkdir");
+     SystemCmd mkdir_p(pwd, "/bin/mkdir");
     mkdir_p.arg("-p");
     mkdir_p.arg("--mode=0700");
     mkdir_p.arg(dotGnupgDir.c_str());
@@ -137,7 +147,7 @@ int create_gnupg_dir(pam_handle_t *pamh, const struct passwd *pwd, const Config 
 }
 
 int setup_gpgagent_conf(pam_handle_t *pamh, const struct passwd *pwd, const Config &cfg) {
-  PamClavator::RunAs::run(pamh, pwd, [pwd, cfg]() {
+   PamClavator::RunAs::run(pamh, pwd, [pwd, cfg]() {
     auto gpgAgentConfFname = substPattern("HOMEDIR", pwd->pw_dir, cfg.gpg_agent_conf.value);
     auto gpgAgentConf = GpgAgentConf::read(gpgAgentConfFname.c_str());
     gpgAgentConf.updateLine(GpgAgentConf::Line("enable-ssh-support", ""));
@@ -174,7 +184,7 @@ int setup_gpgagent_conf(pam_handle_t *pamh, const struct passwd *pwd, const Conf
 }
 
 int gpgagent_start(pam_handle_t *pamh, const struct passwd *pwd, const Config &cfg) {
-    PamClavator::SystemCmd kill_gpg_connect_agent(pwd, cfg.gpg_connect_agent.value);
+     SystemCmd kill_gpg_connect_agent(pwd, cfg.gpg_connect_agent.value);
     kill_gpg_connect_agent.arg("--no-autostart");
     kill_gpg_connect_agent.arg("KILLAGENT");
     kill_gpg_connect_agent.arg("/bye");
@@ -186,21 +196,63 @@ int gpgagent_start(pam_handle_t *pamh, const struct passwd *pwd, const Config &c
     return PAM_SUCCESS;
 }
 
-int check_does_we_have_a_card() {
+boost::optional<std::string> check_does_we_have_a_card(pam_handle_t *pamh, const struct passwd *pwd, const Config &cfg) {
+  SystemCmd gpg2cardStatusCmd(pwd, cfg.gpg.value);
+  gpg2cardStatusCmd.arg("--card-status");
+  gpg2cardStatusCmd.arg("--with-colon");
+  auto sr = gpg2cardStatusCmd.run(pamh);
+  if (sr.exitCode) {
+    D((gpg2cardStatusCmd.dump().c_str()));
+    return boost::none;
+  }
+  auto gpg2cardStatus = Gpg2CardStatus::read(sr.getSout());
+
+  SystemCmd gpg2listSecretKeysCmd(pwd, cfg.gpg.value);
+  gpg2listSecretKeysCmd.arg("--list-secret-keys");
+  gpg2listSecretKeysCmd.arg("--with-colon");
+  sr = gpg2listSecretKeysCmd.run(pamh);
+  if (sr.exitCode) {
+    D((gpg2listSecretKeysCmd.dump().c_str()));
+    return boost::none;
+  }
+  auto gpg2listSecretKeys = SecretKey::read(sr.getSout());
   // gpg2 --card-status --with-colon
   // check does we have one card!
   // extract fpr' use third fpr
   // gpg2 --list-secret-keys --with-colon
   // find keys from extracted fpr's
-  return PAM_SUCCESS;
+  for (auto gcs : gpg2cardStatus) {
+    if (gcs.keyStates.size() < 3) {
+      continue;
+    }
+    auto &fpr = gcs.keyStates[2].fpr;
+    for (auto glsk : gpg2listSecretKeys) {
+       if (glsk.key.fingerPrint.fpr == fpr) {
+         return glsk.key.group.grp;
+       }
+       for (auto ssb : glsk.subKeys) {
+         if (ssb.fingerPrint.fpr == fpr) {
+           return ssb.group.grp;
+         }
+       }
+    }
+  }
+  return boost::none;
 }
 
-int create_csr_from_card() {
+std::string date_yyyy_mm_dd(std::chrono::time_point<std::chrono::system_clock> now) {
+  auto time = std::chrono::system_clock::to_time_t(now);
+  std::stringstream s2;
+  s2 << std::put_time(std::localtime(&time), "%Y-%m-%d");
+  return s2.str();
+}
+
+boost::optional<Pem> create_cert_from_card(pam_handle_t *pamh, const struct passwd *pwd, const Config &cfg, const std::string& grp) {
   /*
       gpgsm -a --batch --gen-key <<EOF
 Key-Type: RSA
 Key-Length: 1024
-Key-Grip: <GROUP from key with found fpr>
+Key-Grip: C083EC516CCEEFE80403CCA7CC3782A017C99142
 Key-Usage: sign
 Name-DN: CN=ssh-auth
 Not-Before: 2011-11-11
@@ -211,9 +263,39 @@ Extension: 1.3.6.1.4.1.11591.2.2.2 n 0101ff
 Signing-Key: C083EC516CCEEFE80403CCA7CC3782A017C99142
 %commit
 EOF
+  gpgsm --import < pem
+  gpgsm --delete-key CN=xxxx
+  compare pubkeys pem und ssh
     gpgsm --verify unknown how this works
   */
-  return PAM_SUCCESS;
+  SystemCmd gpgsmGenkey(pwd, cfg.gpgsm.value);
+  auto now = std::chrono::system_clock::now();
+  gpgsmGenkey.arg("-a").arg("--batch").arg("--gen-key");
+  gpgsmGenkey
+    .pushSin("Key-Type: RSA\n")
+    .pushSin("Key-Length: 1024\n")
+    .pushSin("Key-Grip: ").pushSin(grp).pushSin("\n")
+    .pushSin("Key-Usage: sign\n")
+    .pushSin("Serial: ").pushSin("random").pushSin("\n")
+    .pushSin("Name-DN: CN=ssh-").pushSin("random").pushSin("\n")
+    .pushSin("Not-Before: ").pushSin(date_yyyy_mm_dd(now)).pushSin("\n")
+    .pushSin("Not-After: ").pushSin(date_yyyy_mm_dd(now + std::chrono::hours(24))).pushSin("\n")
+  //  .pushSin("Subject-Key-Id: ").pushSin(grp).pushSin("\n")
+  //  .pushSin("Extension: 2.5.29.19 c 30060101ff020101\n")
+  //  .pushSin("Extension: 1.3.6.1.4.1.11591.2.2.2 n 0101ff\n")
+  //  .pushSin("Signing-Key: ").pushSin(grp).pushSin("\n")
+    .pushSin("%commit\n");
+  auto sr = gpgsmGenkey.run(pamh);
+  if (sr.exitCode) {
+    D((gpgsmGenkey.dump().c_str()));
+    return  boost::none;
+  }
+  auto pem = Pem::read(sr.getSout());
+  if (pem.size() != 1) {
+    D(("no valid pem found"));
+    return boost::none;
+  }
+  return pem[0];
 }
 
 
@@ -240,26 +322,29 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
 
   /* identify user */
   if ((pam_err = pam_get_user(pamh, &user, NULL)) != PAM_SUCCESS) {
+    D(("pam_sm_authenticate:pam_get_user"));
     return (pam_err);
   }
   if ((pwd = getpwnam(user)) == NULL) {
+    D(("pam_sm_authenticate:getpwname"));
     return (PAM_USER_UNKNOWN);
   }
 
-  if ((pam_err = create_gnupg_dir(pamh, pwd, cfg)) != PAM_SUCCESS) {
-    return pam_err;
-  }
-  if ((pam_err = setup_gpgagent_conf(pamh, pwd, cfg)) != PAM_SUCCESS) {
-    return pam_err;
-  }
-  if ((pam_err = gpgagent_start(pamh, pwd, cfg)) != PAM_SUCCESS) {
-    return pam_err;
-  }
+  // if ((pam_err = create_gnupg_dir(pamh, pwd, cfg)) != PAM_SUCCESS) {
+  //   return pam_err;
+  // }
+  // if ((pam_err = setup_gpgagent_conf(pamh, pwd, cfg)) != PAM_SUCCESS) {
+  //   return pam_err;
+  // }
+  // if ((pam_err = gpgagent_start(pamh, pwd, cfg)) != PAM_SUCCESS) {
+  //   return pam_err;
+  // }
 
 
   /* get password */
   pam_err = pam_get_item(pamh, PAM_CONV, (const void **)&conv);
   if (pam_err != PAM_SUCCESS) {
+    D(("pam_sm_authenticate:pam_get_item PAM_CONV"));
     return (PAM_SYSTEM_ERR);
   }
   msg.msg_style = PAM_PROMPT_ECHO_OFF;
@@ -284,9 +369,11 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
     }
   }
   if (pam_err == PAM_CONV_ERR) {
+    D(("pam_sm_authenticate:pam_get_item PAM_CONV-1"));
     return (pam_err);
   }
   if (pam_err != PAM_SUCCESS) {
+    D(("pam_sm_authenticate:pam_get_item PAM_CONV-2"));
     return (PAM_AUTH_ERR);
   }
 
@@ -294,20 +381,37 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
   pin += password;
   D((pin.c_str()));
 
-  create_csr_from_card();
+  auto grp = check_does_we_have_a_card(pamh, pwd, cfg);
+  if (grp == boost::none) {
+    D(("pam_sm_authenticate:pam_get_item check_does_we_have_a_card"));
+    return (PAM_AUTH_ERR);
+  }
 
+  auto pem = create_cert_from_card(pamh, pwd, cfg, *grp);
+  if (pem == boost::none) {
+    D(("pam_sm_authenticate:pam_get_item check_does_we_have_a_card"));
+    return (PAM_AUTH_ERR);
+  }
+  auto pemPubKeys = pem->pubKey();
+  if (pemPubKeys == boost::none) {
+    D(("pam_sm_authenticate:pemPubKey faild"));
+    return (PAM_AUTH_ERR);
+  }
   auto fname = substPattern("HOMEDIR", pwd->pw_dir, cfg.ssh_authorized_keys_fname.value);
   std::ifstream fstream(fname.c_str(), std::ios_base::in | std::ios_base::binary);
-  auto sshKeys = PamClavator::SshAuthorizedKeys::read(fstream);
+  auto sshKeys =  PamClavator::SshAuthorizedKeys::read(fstream);
   fstream.close();
-  for (auto &v : sshKeys.get()) {
-     // compare pubkeyBits from Cert with
-     // pubkeyBits of sshKey
-     // if it match login
-     D((v.dump().c_str()));
+  for (auto ppk : *pemPubKeys) {
+    for (auto &v : sshKeys.get()) {
+      if (ppk.modulus == v.from_data_modulo &&
+          ppk.key == v.from_data_pubkey) {
+        D(("found key in SshAuthorizedKeys"));
+        return (PAM_SUCCESS);
+      }
+    }
   }
-	pam_err = PAM_SUCCESS;
-  return (pam_err);
+  D(("pem Key not found in ssh_authorized_keys"));
+  return PAM_AUTH_ERR;
 }
 
 PAM_EXTERN int pam_sm_setcred(pam_handle_t *, int , int , const char *[]) {

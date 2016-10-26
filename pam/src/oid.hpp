@@ -1,3 +1,6 @@
+#ifndef __OID__
+#define __OID__
+
 #include <string>
 #include <sstream>
 #include <vector>
@@ -52,3 +55,5 @@ public:
     return Some(ret);
   }
 };
+
+#endif

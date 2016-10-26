@@ -1,4 +1,5 @@
-
+#ifndef __SSH_AUTHORIZED_KEYS__
+#define __SSH_AUTHORIZED_KEYS__
 
 #include <arpa/inet.h>
 
@@ -133,3 +134,4 @@ public:
   }
 };
 }
+#endif

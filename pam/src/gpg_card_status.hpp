@@ -1,3 +1,6 @@
+#ifndef __GPG_CARD_STATUS__
+#define __GPG_CARD_STATUS__
+
 #include <string>
 #include <map>
 
@@ -190,3 +193,5 @@ public:
     return gcs;
   }
 };
+
+#endif

@@ -46,3 +46,7 @@ target_link_libraries(test_cert_match_ssh_auth ${Boost_LIBRARIES})
 add_executable(test_oid test_oid.cpp)
 add_test(test_oid test_oid)
 target_link_libraries(test_oid ${Boost_LIBRARIES})
+
+add_executable(test_system_cmd test_system_cmd.cpp)
+add_test(test_system_cmd test_system_cmd)
+target_link_libraries(test_system_cmd ${Boost_LIBRARIES})

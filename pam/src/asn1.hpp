@@ -1,3 +1,5 @@
+#ifndef __ASN1__
+#define __ASN1__
 
 #include <string>
 #include <iomanip>
@@ -232,3 +234,5 @@ public:
 
 
 };
+
+#endif

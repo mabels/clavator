@@ -1,4 +1,5 @@
-
+#ifndef __PIN_ENTRY_DISPATCHER__
+#define __PIN_ENTRY_DISPATCHER__
 
 class PinEntryDispatcher {
 public:
@@ -17,3 +18,5 @@ public:
     outFile.close();
   }
 };
+
+#endif

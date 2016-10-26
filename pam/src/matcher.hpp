@@ -1,3 +1,5 @@
+#ifndef __BASE_MATCHER__
+#define __BASE_MATCHER__
 
 class BaseMatcher {
 public:
@@ -46,3 +48,5 @@ template<> bool Matcher<bool>::match(const char *argv) {
   }
   return false;
 }
+
+#endif

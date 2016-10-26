@@ -1,3 +1,6 @@
+#ifndef __GPG_AGENT_CONF__
+#define __GPG_AGENT_CONF__
+
 
 #include <fstream>
 #include <map>
@@ -162,3 +165,5 @@ public:
     return ret;
   }
 };
+
+#endif

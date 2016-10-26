@@ -1,3 +1,5 @@
+#ifndef __GPG_LIST_SECRET_KEYS__
+#define __GPG_LIST_SECRET_KEYS__
 
 #include <map>
 #include <vector>
@@ -146,3 +148,5 @@ public:
     return ret;
   }
 };
+
+#endif

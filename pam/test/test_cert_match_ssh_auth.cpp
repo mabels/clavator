@@ -55,6 +55,8 @@ PamClavator::Key sample_authorized_keys() {
 }
 
 
+INITIALIZE_EASYLOGGINGPP
+
 int main() {
   describe("CertMatchSshAuth", []() {
 
