@@ -30,43 +30,43 @@ int main() {
     //     assert.equal(0, SystemCmd("/bin/sleep").arg("60").run().exitCode);
     // });
     it("not launched", [&pwd]() {
-        assert.isFalse(SystemCmd(pwd, "WTF").run(0).ok);
+        assert.isFalse(PamClavator::SystemCmd(pwd, "WTF").run(0).ok);
     });
     it("syncron sleep", [&pwd]() {
       auto start = std::chrono::high_resolution_clock::now(); //measure time starting here
-      assert.isTrue(SystemCmd(pwd, EXEC_SLEEP).arg("1").run(0).ok, "sleep should be ok");
+      assert.isTrue(PamClavator::SystemCmd(pwd, EXEC_SLEEP).arg("1").run(0).ok, "sleep should be ok");
       auto end = std::chrono::high_resolution_clock::now(); //end measurement here
       auto elapsed = end - start;
 
       assert.isTrue(std::chrono::microseconds{1000000} <= elapsed, "time is not ok");
     });
     it("launched", [&pwd]() {
-        assert.isTrue(SystemCmd(pwd, EXEC_TRUE).run(0).ok);
+        assert.isTrue(PamClavator::SystemCmd(pwd, EXEC_TRUE).run(0).ok);
     });
     it("return ok", [&pwd]() {
-        assert.equal(0, SystemCmd(pwd, EXEC_TRUE).run(0).exitCode);
+        assert.equal(0, PamClavator::SystemCmd(pwd, EXEC_TRUE).run(0).exitCode);
     });
     it("return false", [&pwd]() {
-        assert.equal(1, SystemCmd(pwd, EXEC_FALSE).run(0).exitCode);
+        assert.equal(1, PamClavator::SystemCmd(pwd, EXEC_FALSE).run(0).exitCode);
     });
     it("stdout empty", [&pwd]() {
-        assert.isTrue(SystemCmd(pwd, EXEC_TRUE).run(0).getSout().str().empty());
+        assert.isTrue(PamClavator::SystemCmd(pwd, EXEC_TRUE).run(0).getSout().str().empty());
     });
     it("stderr empty", [&pwd]() {
-        assert.isTrue(SystemCmd(pwd, EXEC_TRUE).run(0).getSerr().str().empty());
+        assert.isTrue(PamClavator::SystemCmd(pwd, EXEC_TRUE).run(0).getSerr().str().empty());
     });
 
     it("stdout hello world", [&pwd]() {
-        assert.equal(SystemCmd(pwd, EXEC_ECHO).arg("hello world").run(0).getSout().str(), "hello world\n");
-        assert.equal(SystemCmd(pwd, EXEC_ECHO).arg("hello world").run(0).getSerr().str(), "");
+        assert.equal(PamClavator::SystemCmd(pwd, EXEC_ECHO).arg("hello world").run(0).getSout().str(), "hello world\n");
+        assert.equal(PamClavator::SystemCmd(pwd, EXEC_ECHO).arg("hello world").run(0).getSerr().str(), "");
     });
     it("stderr output", [&pwd]() {
-        assert.isTrue(SystemCmd(pwd, EXEC_GREP).arg("---Fehler").run(0).getSout().str().empty());
-        assert.isFalse(SystemCmd(pwd, EXEC_GREP).arg("---Fehler").run(0).getSerr().str().empty());
+        assert.isTrue(PamClavator::SystemCmd(pwd, EXEC_GREP).arg("---Fehler").run(0).getSout().str().empty());
+        assert.isFalse(PamClavator::SystemCmd(pwd, EXEC_GREP).arg("---Fehler").run(0).getSerr().str().empty());
     });
     it("stdin to stdout", [&pwd]() {
-        assert.equal(SystemCmd(pwd, EXEC_CAT).pushSin("hello world").run(0).getSout().str(), "hello world");
-        assert.equal(SystemCmd(pwd, EXEC_CAT).pushSin("hello world").run(0).getSerr().str(), "");
+        assert.equal(PamClavator::SystemCmd(pwd, EXEC_CAT).pushSin("hello world").run(0).getSout().str(), "hello world");
+        assert.equal(PamClavator::SystemCmd(pwd, EXEC_CAT).pushSin("hello world").run(0).getSerr().str(), "");
     });
   });
   exit();
