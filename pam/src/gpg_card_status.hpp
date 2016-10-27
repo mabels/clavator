@@ -5,6 +5,7 @@
 #include <map>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/optional.hpp>
 
 class KeyState {
 public:
@@ -17,6 +18,26 @@ public:
   size_t cafpr;
   std::string fpr;
   size_t fprtime;
+};
+
+class Reader {
+public:
+  std::string model;
+  std::string aid;
+  std::string cardid;
+  std::string type;
+  static boost::optional<Reader> fill(const std::vector<std::string> &match) {
+    if (!(match.size() >= 5 && match[0] == "Reader")) {
+      LOG(ERROR) << "no Reader Line:" << boost::algorithm::join(match, ":");
+      return boost::none;
+    }
+    Reader ret;
+    ret.model = match[1];
+    ret.aid = match[2];
+    ret.cardid = match[3];
+    ret.type = match[4];
+    return ret;
+  }
 };
 
 class Gpg2CardStatus {
@@ -42,7 +63,7 @@ class Gpg2CardStatus {
   fprtime:1465218501:1465218921:1464700773:
   */
 public:
-  std::string reader;
+  Reader reader;
   std::string version;
   std::string vendor;
   std::string serial;
@@ -64,43 +85,56 @@ public:
   }
 
 
-  typedef std::function<void(Gpg2CardStatus &gcs, const std::vector<std::string> &strs)> GcsAction;
+  typedef std::function<bool(Gpg2CardStatus &gcs, const std::vector<std::string> &strs)> GcsAction;
   static std::map<std::string, GcsAction> actors() {
     static std::map<std::string, GcsAction> ret = {
       { "Reader", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
-        std::vector<std::string> rest(strs.begin()+1, strs.end());
-        gcs.reader = boost::algorithm::join(rest, ":");
+        auto reader = Reader::fill(strs);
+        if (reader == boost::none) {
+          return false;
+        }
+        gcs.reader = *reader;
+        return true;
       } },
       { "version", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
         gcs.version = strs[1];
+        return true;
       } },
       { "vendor", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
         std::vector<std::string> rest(strs.begin()+1, strs.end());
         gcs.vendor = boost::algorithm::join(rest, ":");
+        return true;
       } },
       { "serial", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
         std::vector<std::string> rest(strs.begin()+1, strs.end());
         gcs.serial = boost::algorithm::join(rest, ":");
+        return true;
       } },
       { "name", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
         std::vector<std::string> rest(strs.begin()+1, strs.end());
         gcs.name = boost::algorithm::join(rest, " ");
+        return true;
       } },
       { "lang", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
         gcs.lang = strs[1];
+        return true;
       } },
       { "sex", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
         gcs.sex = strs[1];
+        return true;
       } },
       { "url", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
         gcs.url = strs[1];
+        return true;
       } },
       { "login", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
         gcs.login = strs[1];
+        return true;
       } },
       { "forcepin", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
         std::vector<std::string> rest(strs.begin()+1, strs.end());
         gcs.forcepin = boost::algorithm::join(rest, ":");
+        return true;
       } },
       { "keyattr", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
         char *end;
@@ -109,6 +143,7 @@ public:
         ki->id = id;
         ki->mode = std::strtoul(strs[2].c_str(), &end, 10);
         ki->bits = std::strtoul(strs[3].c_str(), &end, 10);
+        return true;
       } },
       { "maxpinlen", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
         size_t i = 0;
@@ -117,6 +152,7 @@ public:
           char *end;
           ki->maxpinlen = std::strtoul(si->c_str(), &end, 10);
         }
+        return true;
       } },
       { "pinretry", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
         size_t i = 0;
@@ -125,6 +161,7 @@ public:
           char *end;
           ki->pinretry = std::strtoul(si->c_str(), &end, 10);
         }
+        return true;
       } },
       { "sigcount", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
         char *end;
@@ -134,6 +171,7 @@ public:
           auto ki = gcs.allocKeyState(i);
           ki->sigcount = std::strtoul(si->c_str(), &end, 10);
         }
+        return true;
       } },
       { "cafpr", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
         char *end;
@@ -143,6 +181,7 @@ public:
           auto ki = gcs.allocKeyState(i);
           ki->cafpr = std::strtoul(si->c_str(), &end, 10);
         }
+        return true;
       } },
       { "fpr", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
         size_t i = 0;
@@ -150,6 +189,7 @@ public:
           auto ki = gcs.allocKeyState(i);
           ki->fpr = *si;
         }
+        return true;
       } },
       { "fprtime", [](Gpg2CardStatus &gcs, const std::vector<std::string> &strs) {
         size_t i = 0;
@@ -158,6 +198,7 @@ public:
           char *end;
           ki->fprtime = std::strtoul(si->c_str(), &end, 10);
         }
+        return true;
       } },
     };
     return ret;
@@ -188,7 +229,10 @@ public:
         continue;
       }
       // std::cerr << "Action:" << action->first << std::endl;
-      (action->second)(*gcsi, strs);
+      if (!(action->second)(*gcsi, strs)) {
+          gcs.erase(gcsi);
+          gcsi = gcs.end();
+      }
     }
     return gcs;
   }

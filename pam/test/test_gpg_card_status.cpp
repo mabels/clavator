@@ -43,7 +43,10 @@ int main() {
       auto css = Gpg2CardStatus::read(gcss);
       assert.equal(css.size(), 3, "size");
       for (auto &cs : css) {
-        assert.equal(cs.reader, "Yubico Yubikey 4 OTP U2F CCID:AID:D2760001240102010006041775630000:openpgp-card");
+        assert.equal(cs.reader.model, "Yubico Yubikey 4 OTP U2F CCID");
+        assert.equal(cs.reader.aid, "AID");
+        assert.equal(cs.reader.cardid, "D2760001240102010006041775630000");
+        assert.equal(cs.reader.type, "openpgp-card");
         assert.equal(cs.version, "0201");
         assert.equal(cs.vendor, "0006:Yubico");
         assert.equal(cs.serial, "04177563");

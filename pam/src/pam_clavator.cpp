@@ -94,6 +94,7 @@ std::string DirName(std::string source) {
 #include "gpg_agent_conf.hpp"
 #include "gpg_card_status.hpp"
 #include "gpg_list_secret_keys.hpp"
+#include "gpg_keyinfo_list.hpp"
 #include "pin_entry_dispatcher.hpp"
 
 #ifdef __APPLE_CC__
@@ -229,37 +230,31 @@ boost::optional<std::string> check_does_we_have_a_card(pam_handle_t *pamh, const
   }
   auto gpg2cardStatus = Gpg2CardStatus::read(sr.getSout());
 
-  PamClavator::SystemCmd gpg2listSecretKeysCmd(pwd, cfg.gpg.value);
-  gpg2listSecretKeysCmd.arg("--list-secret-keys");
-  gpg2listSecretKeysCmd.arg("--with-colon");
-  sr = gpg2listSecretKeysCmd.run(pamh);
+  PamClavator::SystemCmd gpgConnectAgent(pwd, cfg.gpg_connect_agent.value);
+  gpgConnectAgent.arg("keyinfo --list");
+  gpgConnectAgent.arg("/bye");
+  sr = gpgConnectAgent.run(pamh);
   if (sr.exitCode) {
-    LOG(ERROR) << gpg2listSecretKeysCmd.dump();
+    LOG(ERROR) << gpgConnectAgent.dump();
     return boost::none;
   }
-  auto gpg2listSecretKeys = SecretKey::read(sr.getSout());
+  auto gpgKeyInfoList = GpgKeyInfo::read(sr.getSout());
   // gpg2 --card-status --with-colon
   // check does we have one card!
   // extract fpr' use third fpr
   // gpg2 --list-secret-keys --with-colon
   // find keys from extracted fpr's
-  for (auto gcs : gpg2cardStatus) {
-    if (gcs.keyStates.size() < 3) {
+  for (auto ki : gpgKeyInfoList) {
+    if (ki.keyId != "OPENPGP.3") {
       continue;
     }
-    auto &fpr = gcs.keyStates[2].fpr;
-    for (auto glsk : gpg2listSecretKeys) {
-       if (glsk.key.fingerPrint.fpr == fpr) {
-         return glsk.key.group.grp;
-       }
-       for (auto ssb : glsk.subKeys) {
-         if (ssb.fingerPrint.fpr == fpr) {
-           return ssb.group.grp;
-         }
+    for (auto cs : gpg2cardStatus) {
+       if (cs.reader.cardid == ki.cardid) {
+         return ki.group;
        }
     }
-    LOG(ERROR) << "no card found for fpr[" << fpr << "]";
-  } 
+    LOG(ERROR) << "no card found for Group[" << ki.group << "]";
+  }
   return boost::none;
 }
 
