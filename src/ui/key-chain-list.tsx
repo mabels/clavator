@@ -77,7 +77,7 @@ export class KeyChainList
     let d = new Date(1000*ticks);
     return (
       <span key={ticks}>
-      {d.getFullYear()}-{d.getMonth()}-{d.getDate()}
+      {d.getFullYear()}-{d.getMonth() + 1}-{d.getDate()}
       </span>
     )
   }
