@@ -61,12 +61,12 @@ int main() {
       auto ret = Pem::read(s2);
       auto asn1s = Asn1::read(ret[0].binary.begin(), ret[0].binary.end());
       // Asn1::dump(asn1s);
-      assert.equal(asn1s.size(), 1);
+      assert.equal(asn1s.size(), 1u);
       auto asn1 = asn1s[0];
       assert.equal(asn1.type, ((uint8_t)0x30));
       assert.equal(asn1.hlen, 4ul);
       assert.equal(asn1.len, 552ul);
-      assert.equal(asn1.contains.size(), 3);
+      assert.equal(asn1.contains.size(), 3u);
       const std::vector<size_t> ofs = {
         0, 4, 8, 10, 13, 16, 18, 29, 31,
         33, 35, 37, 42, 77, 79, 94,

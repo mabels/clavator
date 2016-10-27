@@ -48,7 +48,7 @@ Pem pem_cert_string() {
   pemCertStr  << "MuMCWo2Z7koef1Aka8vRYknI8g==\n";
   pemCertStr  << "-----END CERTIFICATE-----\n";
   auto pems = Pem::read(pemCertStr);
-  assert.equal(pems.size(), 1, "pem read failed");
+  assert.equal(pems.size(), 1u, "pem read failed");
   return pems[0];
 }
 
@@ -56,7 +56,7 @@ PamClavator::Key sample_authorized_keys() {
   std::stringstream myfile;
   myfile << "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDIQpC2scaVXEaNuwtq4n6Vtht2WHYxtDFKe44JNFEsZGyQjyL9c2qkmQQGCF+2g3HrIPDTCCCWQ3GUiXGAlQ0/rf6sLqcm4YMXt+hgHU5VeciUIDEySCKdCPC419wFPBw6oKdcN1pLoIdWoF4LRDcjcrKKAlkdNJ/oLnl716piLdchABO9NXGxBpkLsJGK8qw390O1ZqZMe9wEAL9l/A1/49v8LfzELp0/fhSmiXphTVI/zNVIp/QIytXzRg74xcYpBjHk1TQZHuz/HYYsWwccnu7vYaTDX0CCoAyEt599f9u+JQ4oW0qyLO0ie7YcmR6nGEW4DMsPcfdqqo2VyYy4ix3U5RI2JcObfP0snYwPtAdVeeeReXi3c/E7bGLeCcwdFeFBfHSA9PDGxWVlxh/oCJaE7kP7eBhXNjN05FodVdNczKI5T9etfQ9VHILFrvpEREg1+OTiI58RmwjxS5ThloqXvr/nZzhIwTsED0KNW8wE4pjyotDJ8jaW2d7oVIMdWqE2M9Z1sLqDDdhHdVMFxk6Hl2XfqeqO2Jnst7qzbHAN/S3hvSwysixWJEcLDVG+cg1KRwz4qafCU5oHSp8aNNOk4RZozboFjac17nOmfPfnjC/LLayjSkEBZ+eFi+njZRLDN92k3PvHYFEB3USbHYzICsuDcf+L4cslX03g7w== openpgp:0x5F1BE34D\n";
   auto skeys = PamClavator::SshAuthorizedKeys::read(myfile);
-  assert.equal(skeys.get().size(), 1, "size");
+  assert.equal(skeys.get().size(), 1u, "size");
   return skeys.get()[0];
 }
 
@@ -82,7 +82,7 @@ int main() {
       auto sshkey = sample_authorized_keys();
       auto pem = pem_cert_string();
       auto asn1s = Asn1::read(pem.binary.begin(), pem.binary.end());
-      assert.equal(asn1s.size(), 1);
+      assert.equal(asn1s.size(), 1u);
       asn1s = Asn1::flat(asn1s);
       for (std::vector<Asn1>::const_iterator i = asn1s.begin(); i != asn1s.end(); ++i) {
         auto const &asn1 = *i;
@@ -108,9 +108,9 @@ int main() {
 
                 }
                 auto bit_string = Asn1::read(skippedNull, i->data_end);
-                assert.equal(bit_string.size(), 1);
+                assert.equal(bit_string.size(), 1u);
                 assert.equal(bit_string[0].type, ((uint8_t)0x30));
-                assert.equal(bit_string[0].contains.size(), 2);
+                assert.equal(bit_string[0].contains.size(), 2u);
                 assert.equal(bit_string[0].contains[0].type, ((uint8_t)0x2));
                 assert.equal(bit_string[0].contains[1].type, ((uint8_t)0x2));
                 std::string pubKey(bit_string[0].contains[0].data_begin, bit_string[0].contains[0].data_end);

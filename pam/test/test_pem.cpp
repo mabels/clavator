@@ -96,7 +96,7 @@ int main() {
 
       };
       auto ret = Pem::read(s2);
-      assert.equal(ret.size(), 3);
+      assert.equal(ret.size(), 3u);
       for (auto &pem : ret) {
         assert.equal(pem.type, "CERTIFICATE");
         assert.equal(pem.binary.size(), sizeof(binary));

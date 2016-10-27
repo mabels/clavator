@@ -27,7 +27,7 @@ int main() {
       std::stringstream istr;
       sample_authorized_keys(istr);
       auto skeys = PamClavator::SshAuthorizedKeys::read(istr);
-      assert.equal(skeys.get().size(), 7, "size");
+      assert.equal(skeys.get().size(), 7u, "size");
       assert.equal(skeys.get()[0].isOk(), false, "0 false");
       assert.equal(skeys.get()[1].isOk(), false, "1 false");
       assert.equal(skeys.get()[2].isOk(), true, "2 true");

@@ -19,7 +19,7 @@ int main() {
       s2 << "S KEYINFO EC5F333359383F725488E7DEC8B289EC521E5F39 T D2760001240102010006046450860000 OPENPGP.1 - - - - -\n";
       s2 << "OK\n";
       auto kil = GpgKeyInfo::read(s2);
-      assert.equal(kil.size(), 3);
+      assert.equal(kil.size(), 3u);
       assert.equal(kil[0].group, "C083EC516CCEEFE80403CCA7CC3782A017C99142");
       assert.equal(kil[0].trust, "T");
       assert.equal(kil[0].cardid, "D2760001240102010006046450860000");

@@ -41,7 +41,7 @@ int main() {
       std::stringstream gcss;
       gpg_card_status(gcss);
       auto css = Gpg2CardStatus::read(gcss);
-      assert.equal(css.size(), 3, "size");
+      assert.equal(css.size(), 3u, "size");
       for (auto &cs : css) {
         assert.equal(cs.reader.model, "Yubico Yubikey 4 OTP U2F CCID");
         assert.equal(cs.reader.aid, "AID");
@@ -56,7 +56,7 @@ int main() {
         assert.equal(cs.url, "");
         assert.equal(cs.login, "abels");
         assert.equal(cs.forcepin, "0::");
-        assert.equal(cs.keyStates.size(), 3);
+        assert.equal(cs.keyStates.size(), 3u);
         const char *fprs[] = {
           "F78D5B547A9BB0E8A174C0F5060FF53CB3A32992",
           "B3B94966DF73077EFA734EC83D851A5DF09DEB9C",
@@ -70,16 +70,16 @@ int main() {
         size_t id = 1;
         for (auto &ks: cs.keyStates) {
           assert.equal(ks.id, id);
-          assert.equal(ks.mode, 1);
-          assert.equal(ks.bits, 4096);
-          assert.equal(ks.maxpinlen, 127);
-          assert.equal(ks.pinretry, id==2?0:3);
+          assert.equal(ks.mode, 1u);
+          assert.equal(ks.bits, 4096u);
+          assert.equal(ks.maxpinlen, 127u);
+          assert.equal(ks.pinretry, id==2?0u:3u);
           assert.equal(ks.fpr, fprs[id-1]);
           assert.equal(ks.fprtime, fprtimes[id-1]);
           ++id;
         }
-        assert.equal(cs.sigcount, 16);
-        assert.equal(cs.cafpr, 0);
+        assert.equal(cs.sigcount, 16u);
+        assert.equal(cs.cafpr, 0u);
       }
     });
   });
