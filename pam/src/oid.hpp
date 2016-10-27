@@ -13,6 +13,10 @@ class Oid {
 public:
   std::vector<uint32_t> oid;
 
+  bool operator==(const Oid& obj) const {
+    return std::equal(this->oid.begin(), this->oid.end(), obj.oid.begin());
+  }
+
   std::string toString() const {
     const char *dot = "";
     std::stringstream out;
