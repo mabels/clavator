@@ -26,6 +26,13 @@ public:
   std::string aid;
   std::string cardid;
   std::string type;
+
+  bool operator==(const Reader& obj) const {
+	return  this->model == obj.model &&
+		this->aid == obj.aid &&
+		this->cardid == obj.cardid &&
+		this->type == obj.type;
+  }
   static boost::optional<Reader> fill(const std::vector<std::string> &match) {
     if (!(match.size() >= 5 && match[0] == "Reader")) {
       LOG(ERROR) << "no Reader Line:" << boost::algorithm::join(match, ":");
