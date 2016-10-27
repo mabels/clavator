@@ -20,6 +20,12 @@ public:
   std::string trust;
   std::string cardid;
   std::string keyId;
+  bool operator==(const GpgKeyInfo& obj) const {
+	return this->group == obj.group &&
+	 this->trust == obj.trust &&
+	 this->cardid == obj.cardid &&
+	 this->keyId == obj.keyId;
+  } 
 
   static boost::optional<GpgKeyInfo> fill(std::vector<std::string> match) {
     if (!(match.size() >= 6 && match[0] == "S" && match[1] == "KEYINFO")) {
