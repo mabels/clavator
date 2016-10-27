@@ -43,15 +43,15 @@ int main() {
       auto ret = Pem::read(s2);
       {
       auto oid = Oid::read(ret[0].binary.begin()+19, ret[0].binary.begin()+22);
-      assert.equal(oid.isSome(), true);
-      assert.deepEqual(oid.unwrap().oid, {2, 5, 4, 3});
-      assert.equal(oid.unwrap().toString(), "2.5.4.3");
+      assert.equal(oid != boost::none, true);
+      assert.deepEqual(oid->oid, {2, 5, 4, 3});
+      assert.equal(oid->toString(), "2.5.4.3");
       }
       {
       auto oid = Oid::read(ret[0].binary.begin()+35, ret[0].binary.begin()+44);
-      assert.equal(oid.isSome(), true);
-      assert.deepEqual(oid.unwrap().oid, {1, 2, 840, 113549, 1, 1, 1});
-      assert.equal(oid.unwrap().toString(), "1.2.840.113549.1.1.1");
+      assert.equal(oid != boost::none, true);
+      assert.deepEqual(oid->oid, {1, 2, 840, 113549, 1, 1, 1});
+      assert.equal(oid->toString(), "1.2.840.113549.1.1.1");
       }
     });
   });

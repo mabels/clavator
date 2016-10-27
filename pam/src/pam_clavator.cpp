@@ -24,6 +24,12 @@
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 #include <boost/optional.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/random_generator.hpp>
+
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
 
 namespace fs = boost::filesystem;
 
@@ -48,6 +54,7 @@ namespace fs = boost::filesystem;
 #endif
 #include <security/pam_appl.h>
 #include <security/pam_modules.h>
+
 
 static std::string trim(const std::string &str,
                  const std::string &whitespace = " \t") {
@@ -185,7 +192,7 @@ int setup_gpgagent_conf(pam_handle_t *pamh, const struct passwd *pwd, const Conf
 }
 
 int gpgagent_start(pam_handle_t *pamh, const struct passwd *pwd, const Config &cfg) {
-     PamClavator::SystemCmd kill_gpg_connect_agent(pwd, cfg.gpg_connect_agent.value);
+    PamClavator::SystemCmd kill_gpg_connect_agent(pwd, cfg.gpg_connect_agent.value);
     kill_gpg_connect_agent.arg("--no-autostart");
     kill_gpg_connect_agent.arg("KILLAGENT");
     kill_gpg_connect_agent.arg("/bye");
@@ -253,11 +260,10 @@ std::string date_yyyy_mm_dd(std::chrono::time_point<std::chrono::system_clock> n
   s2 << std::put_time(ltime, "%Y-%m-%d");
   return s2.str();
 #endif
-
-
 }
 
-boost::optional<Pem> create_cert_from_card(pam_handle_t *pamh, const struct passwd *pwd, const Config &cfg, const std::string& grp) {
+boost::optional<Pem> create_cert_from_card(pam_handle_t *pamh, const struct passwd *pwd,
+  const Config &cfg, const std::string& grp, std::string &uuid) {
   /*
       gpgsm -a --batch --gen-key <<EOF
 Key-Type: RSA
@@ -277,6 +283,7 @@ EOF
   gpgsm --delete-key CN=xxxx
   compare pubkeys pem und ssh
     gpgsm --verify unknown how this works
+    gpgsm --import --dry-run
   */
   PamClavator::SystemCmd gpgsmGenkey(pwd, cfg.gpgsm.value);
   auto now = std::chrono::system_clock::now();
@@ -286,8 +293,8 @@ EOF
     .pushSin("Key-Length: 1024\n")
     .pushSin("Key-Grip: ").pushSin(grp).pushSin("\n")
     .pushSin("Key-Usage: sign\n")
-    .pushSin("Serial: ").pushSin("random").pushSin("\n")
-    .pushSin("Name-DN: CN=ssh-").pushSin("random").pushSin("\n")
+    .pushSin("Serial: ").pushSin(uuid).pushSin("\n")
+    .pushSin("Name-DN: CN=").pushSin(uuid).pushSin("\n")
     .pushSin("Not-Before: ").pushSin(date_yyyy_mm_dd(now)).pushSin("\n")
     .pushSin("Not-After: ").pushSin(date_yyyy_mm_dd(now + std::chrono::hours(24))).pushSin("\n")
   //  .pushSin("Subject-Key-Id: ").pushSin(grp).pushSin("\n")
@@ -300,6 +307,13 @@ EOF
     D((gpgsmGenkey.dump().c_str()));
     return  boost::none;
   }
+  PamClavator::SystemCmd gpgsmImport(pwd, cfg.gpgsm.value);
+  gpgsmImport.arg("--import").arg("--dry-run").pushSin(sr.getSout().str());
+  auto srImport = gpgsmImport.run(pamh);
+  if (srImport.exitCode) {
+    D((gpgsmImport.dump().c_str()));
+    return  boost::none;
+  }
   auto pem = Pem::read(sr.getSout());
   if (pem.size() != 1) {
     D(("no valid pem found"));
@@ -308,6 +322,14 @@ EOF
   return pem[0];
 }
 
+
+std::string create_challenge() {
+  boost::uuids::random_generator gen;
+  auto challenge = boost::uuids::to_string(gen());
+  std::vector<std::string> strs;
+  boost::split(strs, challenge, boost::is_any_of("-"));
+  return boost::algorithm::join(strs, "");
+}
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -397,13 +419,14 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
     return (PAM_AUTH_ERR);
   }
 
-  auto pem = create_cert_from_card(pamh, pwd, cfg, *grp);
+  auto challenge = create_challenge();
+  auto pem = create_cert_from_card(pamh, pwd, cfg, *grp, challenge);
   if (pem == boost::none) {
     D(("pam_sm_authenticate:pam_get_item check_does_we_have_a_card"));
     return (PAM_AUTH_ERR);
   }
-  auto pemPubKeys = pem->pubKey();
-  if (pemPubKeys == boost::none) {
+  auto pemPubKey = pem->pubKey();
+  if (pemPubKey == boost::none) {
     D(("pam_sm_authenticate:pemPubKey faild"));
     return (PAM_AUTH_ERR);
   }
@@ -411,15 +434,16 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
   std::ifstream fstream(fname.c_str(), std::ios_base::in | std::ios_base::binary);
   auto sshKeys =  PamClavator::SshAuthorizedKeys::read(fstream);
   fstream.close();
-  for (auto ppk : *pemPubKeys) {
-    for (auto &v : sshKeys.get()) {
-      if (ppk.modulus == v.from_data_modulo &&
-          ppk.key == v.from_data_pubkey) {
+  for (auto &v : sshKeys.get()) {
+      if (pemPubKey->modulus == v.from_data_modulo &&
+          pemPubKey->key == v.from_data_pubkey &&
+          pemPubKey->serial == challenge) {
         D(("found key in SshAuthorizedKeys"));
         return (PAM_SUCCESS);
       }
-    }
   }
+  LOG(INFO) << "pem Key not found in ssh_authorized_keys:" <<
+    "challenge[" << pemPubKey->serial << "][" << challenge << "]";
   D(("pem Key not found in ssh_authorized_keys"));
   return PAM_AUTH_ERR;
 }

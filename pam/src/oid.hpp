@@ -6,7 +6,8 @@
 #include <vector>
 
 
-#include "../src/option.hpp"
+#include <boost/optional.hpp>
+// #include "../src/option.hpp"
 
 class Oid {
 public:
@@ -28,7 +29,7 @@ public:
     oid.push_back(val-(first*40));
   }
 
-  static Option<Oid> read(std::string::const_iterator begin, std::string::const_iterator end) {
+  static boost::optional<Oid> read(std::string::const_iterator begin, std::string::const_iterator end) {
     Oid ret;
     bool first = true;
     size_t bits = 0;
@@ -50,9 +51,9 @@ public:
       }
     }
     if (bits) {
-      return None<Oid>();
+      return boost::none;
     }
-    return Some(ret);
+    return ret;
   }
 };
 

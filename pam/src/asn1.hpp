@@ -4,7 +4,8 @@
 #include <string>
 #include <iomanip>
 
-#include "option.hpp"
+// #include "option.hpp"
+#include <boost/optional.hpp>
 /*
 ASN.1
 openssl asn1parse -inform PEM -in pem
@@ -112,17 +113,17 @@ public:
   std::string::const_iterator data_end;
   std::vector<Asn1> contains;
 
-  static Option<Asn1> parseItem(std::string::const_iterator begin, std::string::const_iterator end) {
+  static boost::optional<Asn1> parseItem(std::string::const_iterator begin, std::string::const_iterator end) {
       Asn1 ret;
-      if (begin == end) { return None<Asn1>(); }
+      if (begin == end) { return boost::none; }
       ret.type = *begin++;
-      if (begin == end) { return None<Asn1>(); }
+      if (begin == end) { return boost::none; }
       ret.len = ((uint8_t)(*begin++));
       ret.hlen = 2;
       if ((ret.type & 0xa0) == 0xa0) {
           ret.data_begin = begin;
           ret.data_end = begin;
-          return Some(ret);
+          return ret;
       }
       if ((ret.len & 0x80) == 0x80) {
         size_t len = ret.len & 0x7f;
@@ -130,41 +131,19 @@ public:
         ret.hlen += len;
         ret.len = 0;
         for (size_t i = 0; i < len; ++i) {
-          if (begin == end) { return None<Asn1>(); }
+          if (begin == end) { return boost::none; }
           ret.len += ((uint8_t)(*begin++)) << bits;
           bits -= 8;
         }
       }
-      // if (ret.len == 0x81) {
-      //   ret.hlen = 3;
-      //   if (begin == end) { return None<Asn1>(); }
-      //   ret.len = ((uint8_t)(*begin++));
-      // } else if (ret.len == 0x82) {
-      //    ret.hlen = 4;
-      //    if (begin == end) { return None<Asn1>(); }
-      //    uint8_t high = *begin++;
-      //    if (begin == end) { return None<Asn1>(); }
-      //    uint8_t low = *begin++;
-      //    ret.len = high<<8 | low;
-      // } else if (ret.len == 0x84) {
-      //    ret.hlen = 6;
-      //    if (begin == end) { return None<Asn1>(); }
-      //    uint8_t b24 = *begin++;
-      //    if (begin == end) { return None<Asn1>(); }
-      //    uint8_t b16 = *begin++;
-      //    if (begin == end) { return None<Asn1>(); }
-      //    uint8_t b8 = *begin++;
-      //    if (begin == end) { return None<Asn1>(); }
-      //    uint8_t b0 = *begin++;
-      //    ret.len = b24<<24 | b16<<16 | b8<<8 | b0;
-      // }
+
       ret.data_begin = begin;
       auto diff = end-begin;
       if (diff < 0 && ret.len > ((size_t)diff) ) {
-        return None<Asn1>();
+        return boost::none;
       }
       ret.data_end = begin+ret.len;
-      return Some(ret);
+      return ret;
   }
   static std::vector<Asn1> read(std::string::const_iterator begin, std::string::const_iterator end) {
     return read(begin, end, begin, 0);
@@ -174,10 +153,10 @@ public:
     std::vector<Asn1> ret;
     while (true) {
       auto oasn1 = parseItem(begin, end);
-      if (oasn1.isNone()) {
+      if (oasn1 == boost::none) {
           break;
       }
-      auto &asn1 = oasn1.unwrap();
+      auto &asn1 = *oasn1;
       asn1.level = level;
       asn1.ofs = begin - base;
 
@@ -207,14 +186,18 @@ public:
     return ret;
   }
 
+  void dump() const {
+    std::cerr << std::setw(5) << this->ofs
+        << ":dn=" << this->level
+        << "  hl=" << this->hlen
+        << " l=" << std::setw(4) << this->len
+        << " t=" << std::hex << ((size_t)this->type) << std::dec
+        << std::endl;
+  }
+
   static void dump(const std::vector<Asn1> &vasn1) {
     walk(vasn1, [](const Asn1 &asn1) {
-      std::cerr << std::setw(5) << asn1.ofs
-          << ":dn=" << asn1.level
-          << "  hl=" << asn1.hlen
-          << " l=" << std::setw(4) << asn1.len
-          << " t=" << std::hex << ((size_t)asn1.type) << std::dec
-          << std::endl;
+      asn1.dump();
     });
   }
 
