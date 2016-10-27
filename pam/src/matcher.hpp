@@ -28,7 +28,7 @@ public:
       } else {
         s2 << matchString << "=" << value << " preset=" << preset;
       }
-      D((s2.str().c_str()));
+      //D((s2.str().c_str()));
   }
 
 };

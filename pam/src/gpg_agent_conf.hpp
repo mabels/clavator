@@ -80,7 +80,7 @@ public:
       std::stringstream s2;
       s2 << "addLine:" << spLine->dump() << ":"
         << found->second.empty() << ":" << found->second.size();
-      D((s2.str().c_str()));
+      //LOG(INFO) << s2;
     }
     return found->second;
   }
@@ -101,7 +101,7 @@ public:
       if (!found->second.empty() && found->second.back()->getValue() == line.getValue()) {
         return found->second;
       }
-      D((line.getKey().c_str()));
+      //D((line.getKey().c_str()));
       lines.erase(std::remove_if(
         lines.begin(), lines.end(),
         [&line](const std::shared_ptr<Line> &i){

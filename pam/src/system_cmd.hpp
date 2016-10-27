@@ -87,7 +87,7 @@ class DuringExec {
     boost::asio::io_service io_service;
     void handle_completed(const char *tag) {
       --this->completed;
-      LOG(INFO) << "handle_completed:" << this->completed << ":" << tag;
+      //LOG(INFO) << "handle_completed:" << this->completed << ":" << tag;
       if (this->completed <= 0) {
         this->io_service.stop();
       }
@@ -182,7 +182,7 @@ public:
     auto data_str = sin.str();
     auto data_len = data_str.length();
     if (data_len <= 0) { 
-      LOG(ERROR) << "no stdin closing:" << ds.native_handle();
+      //LOG(ERROR) << "no stdin closing:" << ds.native_handle();
       ds.close(); 
       de.handle_completed("stdin");
       return; 
@@ -196,10 +196,10 @@ public:
       std::string sbuf;
       for (size_t i = 0; i < wlen; ++i) {
          sbuf += *si;
-         LOG(ERROR) << "[" << sbuf << "][" << *si << "][" << sinStr << "]";
+         //LOG(ERROR) << "[" << sbuf << "][" << *si << "][" << sinStr << "]";
          *di++ = *si++; 
       }
-      LOG(ERROR) << "async_write setup:[" << sbuf << "]:" << wlen << ":" << ofs << ":" << data_len << ":ds=" << ds.native_handle();
+      //LOG(ERROR) << "async_write setup:[" << sbuf << "]:" << wlen << ":" << ofs << ":" << data_len << ":ds=" << ds.native_handle();
       boost::asio::write(ds, boost::asio::buffer(buf.begin(), wlen),
                             [writer, &ofs, &sin, wlen, data_len, &ds, &de](boost::system::error_code &ec, std::size_t bytes_transferred) -> bool {
                               if (ec) {
@@ -209,19 +209,19 @@ public:
                                 return false;
                               } else {
                                 if (bytes_transferred != wlen) {
-                                  LOG(ERROR) << "async_write incomplete:" << bytes_transferred << ":" << wlen << ":" 
-                                     << ofs << ":" << data_len;
+                                  //LOG(ERROR) << "async_write incomplete:" << bytes_transferred << ":" << wlen << ":" 
+                                   //  << ofs << ":" << data_len;
                                   return false;
                                 }
-                                LOG(ERROR) << "async_write ok:" << bytes_transferred << ":" << wlen << ":" 
-                                     << ofs << ":" << data_len;
+                                //LOG(ERROR) << "async_write ok:" << bytes_transferred << ":" << wlen << ":" 
+                                //    << ofs << ":" << data_len;
                                 ofs += bytes_transferred;
                                 if (ofs < data_len) {
-                                  LOG(ERROR) << "next loop";
+                                  //LOG(ERROR) << "next loop";
                                   (writer)(ofs);
                                   return true;
                                 } else {
-                                  LOG(ERROR) << "close stdin:" << ds.native_handle() << ":[" << sin.str() << "]";
+                                  //LLOG(ERROR) << "close stdin:" << ds.native_handle() << ":[" << sin.str() << "]";
                                   //close(ds.native_handle());
                                   //ds.release();
                                   ds.close(); 

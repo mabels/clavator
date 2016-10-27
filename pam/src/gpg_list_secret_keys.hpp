@@ -10,6 +10,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 
+#include <easylogging++.h>
+
 class FingerPrint {
 public:
   std::string fpr;
@@ -142,7 +144,7 @@ public:
       } else if (currentKey && strs[0] == "grp") {
         currentKey->group.fill(strs);
       } else {
-        std::cerr << "SecretKey: unkown-type=" << strs[0] << std::endl;
+        LOG(ERROR) << "SecretKey: unkown-type=" << strs[0];
       }
     }
     return ret;

@@ -6,6 +6,8 @@
 
 // #include "option.hpp"
 #include <boost/optional.hpp>
+
+#include <easylogging++.h>
 /*
 ASN.1
 openssl asn1parse -inform PEM -in pem
@@ -170,12 +172,11 @@ public:
   }
 
   void dump() const {
-    std::cerr << std::setw(5) << this->ofs
+    LOG(INFO) << std::setw(5) << this->ofs
         << ":dn=" << this->level
         << "  hl=" << this->hlen
         << " l=" << std::setw(4) << this->len
-        << " t=" << std::hex << ((size_t)this->type) << std::dec
-        << std::endl;
+        << " t=" << std::hex << ((size_t)this->type) << std::dec;
   }
 
   static void dump(const std::vector<Asn1> &vasn1) {

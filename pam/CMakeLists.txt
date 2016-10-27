@@ -49,12 +49,12 @@ set(CMAKE_SHARED_LINKER_FLAGS "-lpam")
 add_library(pamClavator SHARED src/pam_clavator.cpp)
 target_link_libraries(pamClavator ${Boost_LIBRARIES})
 
-add_library(pamClavatorStatic STATIC src/pam_clavator.cpp)
-target_link_libraries(pamClavatorStatic ${Boost_LIBRARIES})
-set_target_properties(pamClavatorStatic PROPERTIES OUTPUT_NAME pamClavator)
+#add_library(pamClavatorStatic STATIC src/pam_clavator.cpp)
+#target_link_libraries(pamClavatorStatic ${Boost_LIBRARIES})
+#set_target_properties(pamClavatorStatic PROPERTIES OUTPUT_NAME pamClavator)
 
 
-install(TARGETS pamClavator pamClavatorStatic
+install(TARGETS pamClavator 
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib/static)

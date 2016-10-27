@@ -184,7 +184,7 @@ public:
       // std::cerr << "ReqAction:" << strs[0] << std::endl;
       auto action = actors.find(strs[0]);
       if (action == actors.end()) {
-        std::cerr << "RejAction:" << strs[0] << std::endl;
+        LOG(ERROR) << "RejAction:" << strs[0];
         continue;
       }
       // std::cerr << "Action:" << action->first << std::endl;

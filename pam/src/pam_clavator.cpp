@@ -37,6 +37,7 @@ namespace fs = boost::filesystem;
 
 #include "pem.hpp"
 
+#ifdef OFF
 #define PAM_DEBUG
 #ifdef PAM_DEBUG
 #ifndef __APPLE_CC__
@@ -44,8 +45,9 @@ namespace fs = boost::filesystem;
 #include <security/_pam_macros.h>
 #else
 #  define D(x) do {                                                     \
-    std::cout << "debug: " << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << x << std::endl; \
+    LOG(DEBUG) << "debug: " << __FILE__ << ":" << __LINE__ << " (" << __FUNCTION__ << "): " << x; \
   } while (0)
+#endif
 #endif
 #endif
 
@@ -94,6 +96,16 @@ std::string DirName(std::string source) {
 #include "gpg_list_secret_keys.hpp"
 #include "pin_entry_dispatcher.hpp"
 
+#ifdef __APPLE_CC__
+#define GPG_CONNECT_AGENT "/usr/local/bin/gpg-connect-agent"
+#define GPG "/usr/local/bin/gpg2"
+#define GPGSM "/usr/local/bin/gpgsm"
+#else
+#define GPG_CONNECT_AGENT "/usr/bin/gpg-connect-agent"
+#define GPG "/usr/bin/gpg2"
+#define GPGSM "/usr/bin/gpgsm"
+#endif
+
 class Config {
 private:
   std::vector<BaseMatcher*> matchers;
@@ -107,17 +119,19 @@ public:
   Matcher<std::string> gpg_conf;
   Matcher<std::string> pinentry_dispatcher;
   Matcher<std::string> pinentry_os_default;
+  Matcher<std::string> logfile;
   Matcher<bool> debug;
   Config() :
     ssh_authorized_keys_fname("ssh_authorized_keys_fname=", ".ssh/authorized_keys", matchers),
     password_prompt("password_prompt=", "pincode: ", matchers),
-    gpg_connect_agent("gpg_connect_agent=", "/usr/local/bin/gpg-connect-agent", matchers),
-    gpg("gpg=", "/usr/local/bin/gpg2", matchers),
-    gpgsm("gpgsm=", "/usr/local/bin/gpgsm", matchers),
+    gpg_connect_agent("gpg_connect_agent=", GPG_CONNECT_AGENT, matchers),
+    gpg("gpg=", GPG, matchers),
+    gpgsm("gpgsm=", GPGSM, matchers),
     gpg_agent_conf("gpg_agent_conf=", ".gnupg/gpg-agent.conf", matchers),
     gpg_conf("gpg_conf=", ".gnupg/gpg.conf", matchers),
     pinentry_dispatcher("pinentry_dispatcher=", ".gnupg/pinentry_dispatcher.sh", matchers),
     pinentry_os_default("pinentry_os_default", "/usr/local/MacGPG2/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac", matchers),
+    logfile("logfile", ".gnupg/pam_clavator.log", matchers),
     debug("debug", false, matchers) {
  }
 
@@ -147,7 +161,7 @@ int create_gnupg_dir(pam_handle_t *pamh, const struct passwd *pwd, const Config 
     mkdir_p.arg(dotGnupgDir.c_str());
     mkdir_p.run(pamh);
     if (mkdir_p.getStatus()) {
-      D((mkdir_p.dump().c_str()));
+      LOG(ERROR) << mkdir_p.dump();
       return PAM_AUTH_ERR;
     }
   }
@@ -176,13 +190,13 @@ int setup_gpgagent_conf(pam_handle_t *pamh, const struct passwd *pwd, const Conf
         s2 << ":" << pinentryDispatcher;
         s2 << ":" << prevPinentryDispatcher;
       }
-      D((s2.str().c_str()));
+      LOG(INFO) << s2.str();
     }
     if (!pinentryPrograms.empty() && pinentryPrograms.back()->getValue() != prevPinentryDispatcher) {
       //pinentry-program /usr/local/MacGPG2/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac
       std::stringstream s2;
       s2 << "pinentry-program update:" << prevPinentryDispatcher << "!=" << pinentryDispatcher;
-      D((s2.str().c_str()));
+      LOG(INFO) << s2.str();
       PinEntryDispatcher::write(pinentryDispatcher, prevPinentryDispatcher);
     }
     gpgAgentConf.write();
@@ -198,7 +212,7 @@ int gpgagent_start(pam_handle_t *pamh, const struct passwd *pwd, const Config &c
     kill_gpg_connect_agent.arg("/bye");
     kill_gpg_connect_agent.run(pamh);
     if (kill_gpg_connect_agent.getStatus()) {
-      D((kill_gpg_connect_agent.dump().c_str()));
+      LOG(ERROR) << kill_gpg_connect_agent.dump();
       return PAM_AUTH_ERR;
     }
     return PAM_SUCCESS;
@@ -210,7 +224,7 @@ boost::optional<std::string> check_does_we_have_a_card(pam_handle_t *pamh, const
   gpg2cardStatusCmd.arg("--with-colon");
   auto sr = gpg2cardStatusCmd.run(pamh);
   if (sr.exitCode) {
-    D((gpg2cardStatusCmd.dump().c_str()));
+    LOG(ERROR) << gpg2cardStatusCmd.dump();
     return boost::none;
   }
   auto gpg2cardStatus = Gpg2CardStatus::read(sr.getSout());
@@ -220,7 +234,7 @@ boost::optional<std::string> check_does_we_have_a_card(pam_handle_t *pamh, const
   gpg2listSecretKeysCmd.arg("--with-colon");
   sr = gpg2listSecretKeysCmd.run(pamh);
   if (sr.exitCode) {
-    D((gpg2listSecretKeysCmd.dump().c_str()));
+    LOG(ERROR) << gpg2listSecretKeysCmd.dump();
     return boost::none;
   }
   auto gpg2listSecretKeys = SecretKey::read(sr.getSout());
@@ -244,7 +258,8 @@ boost::optional<std::string> check_does_we_have_a_card(pam_handle_t *pamh, const
          }
        }
     }
-  }
+    LOG(ERROR) << "no card found for fpr[" << fpr << "]";
+  } 
   return boost::none;
 }
 
@@ -304,19 +319,19 @@ EOF
     .pushSin("%commit\n");
   auto sr = gpgsmGenkey.run(pamh);
   if (sr.exitCode) {
-    D((gpgsmGenkey.dump().c_str()));
+    LOG(ERROR) << gpgsmGenkey.dump();
     return  boost::none;
   }
   PamClavator::SystemCmd gpgsmImport(pwd, cfg.gpgsm.value);
   gpgsmImport.arg("--import").arg("--dry-run").pushSin(sr.getSout().str());
   auto srImport = gpgsmImport.run(pamh);
   if (srImport.exitCode) {
-    D((gpgsmImport.dump().c_str()));
+    LOG(ERROR) << gpgsmImport.dump();
     return  boost::none;
   }
   auto pem = Pem::read(sr.getSout());
   if (pem.size() != 1) {
-    D(("no valid pem found"));
+    LOG(ERROR) << "no valid pem found";
     return boost::none;
   }
   return pem[0];
@@ -348,19 +363,30 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
   int pam_err, retry;
   Config cfg;
 
-  D(("pam_sm_authenticate"));
-  START_EASYLOGGINGPP(argc, argv);
+
+  //D(("pam_sm_authenticate"));
+
+  //START_EASYLOGGINGPP(argc, argv);
+
   cfg.parse_cfg(flags, argc, argv);
 
   /* identify user */
   if ((pam_err = pam_get_user(pamh, &user, NULL)) != PAM_SUCCESS) {
-    D(("pam_sm_authenticate:pam_get_user"));
+    LOG(ERROR) << "pam_sm_authenticate:pam_get_user";
     return (pam_err);
   }
   if ((pwd = getpwnam(user)) == NULL) {
-    D(("pam_sm_authenticate:getpwname"));
+    LOG(ERROR) << "pam_sm_authenticate:getpwname";
     return (PAM_USER_UNKNOWN);
   }
+  el::Configurations defaultConf;
+  defaultConf.setToDefault();
+  defaultConf.setGlobally(el::ConfigurationType::ToStandardOutput, "false");
+  defaultConf.setGlobally(el::ConfigurationType::ToFile, "true");
+  auto logFname = substPattern("HOMEDIR", pwd->pw_dir, cfg.logfile.value);
+  defaultConf.setGlobally(el::ConfigurationType::Filename, logFname);
+  el::Loggers::reconfigureLogger("default", defaultConf);
+
 
   // if ((pam_err = create_gnupg_dir(pamh, pwd, cfg)) != PAM_SUCCESS) {
   //   return pam_err;
@@ -373,10 +399,11 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
   // }
 
 
+#ifdef NONEED
   /* get password */
   pam_err = pam_get_item(pamh, PAM_CONV, (const void **)&conv);
   if (pam_err != PAM_SUCCESS) {
-    D(("pam_sm_authenticate:pam_get_item PAM_CONV"));
+    LOG(ERROR) << "pam_sm_authenticate:pam_get_item PAM_CONV";
     return (PAM_SYSTEM_ERR);
   }
   msg.msg_style = PAM_PROMPT_ECHO_OFF;
@@ -401,33 +428,34 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
     }
   }
   if (pam_err == PAM_CONV_ERR) {
-    D(("pam_sm_authenticate:pam_get_item PAM_CONV-1"));
+    LOG(ERROR) << "pam_sm_authenticate:pam_get_item PAM_CONV-1";
     return (pam_err);
   }
   if (pam_err != PAM_SUCCESS) {
-    D(("pam_sm_authenticate:pam_get_item PAM_CONV-2"));
+    LOG(ERROR) << "pam_sm_authenticate:pam_get_item PAM_CONV-2";
     return (PAM_AUTH_ERR);
   }
 
   std::string pin("PIN:");
   pin += password;
   D((pin.c_str()));
+#endif
 
   auto grp = check_does_we_have_a_card(pamh, pwd, cfg);
   if (grp == boost::none) {
-    D(("pam_sm_authenticate:pam_get_item check_does_we_have_a_card"));
+    LOG(ERROR) << "pam_sm_authenticate:pam_get_item check_does_we_have_a_card";
     return (PAM_AUTH_ERR);
   }
 
   auto challenge = create_challenge();
   auto pem = create_cert_from_card(pamh, pwd, cfg, *grp, challenge);
   if (pem == boost::none) {
-    D(("pam_sm_authenticate:pam_get_item check_does_we_have_a_card"));
+    LOG(ERROR) << "pam_sm_authenticate:pam_get_item create_cert_from_card";
     return (PAM_AUTH_ERR);
   }
   auto pemPubKey = pem->pubKey();
   if (pemPubKey == boost::none) {
-    D(("pam_sm_authenticate:pemPubKey faild"));
+    LOG(ERROR) << "pam_sm_authenticate:pemPubKey faild";
     return (PAM_AUTH_ERR);
   }
   auto fname = substPattern("HOMEDIR", pwd->pw_dir, cfg.ssh_authorized_keys_fname.value);
@@ -438,13 +466,13 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
       if (pemPubKey->modulus == v.from_data_modulo &&
           pemPubKey->key == v.from_data_pubkey &&
           pemPubKey->serial == challenge) {
-        D(("found key in SshAuthorizedKeys"));
+        LOG(ERROR) << "found key in SshAuthorizedKeys";
         return (PAM_SUCCESS);
       }
   }
   LOG(INFO) << "pem Key not found in ssh_authorized_keys:" <<
     "challenge[" << pemPubKey->serial << "][" << challenge << "]";
-  D(("pem Key not found in ssh_authorized_keys"));
+  // D(("pem Key not found in ssh_authorized_keys"));
   return PAM_AUTH_ERR;
 }
 
