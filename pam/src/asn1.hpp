@@ -75,34 +75,6 @@ openssl asn1parse -inform PEM -in pem
 
 
 class Asn1 {
-
-  // static
-
-  // static Range seq_set(const Range &r) {
-  //     uint16_t len = *(r.begin+1);
-  //     uint16_t ofs = 2;
-  //     if (len == 0x82) {
-  //       len = (*(r.begin+2)<<8) | *(r.begin+3);
-  //       ofs = 4;
-  //     }
-  //     return Range(r.begin+ofs, r.begin+ofs+len);
-  // }
-  //
-  // std::map<uint8_t, Asn1Item> &actors() {
-  //   static std::set<Asn1Action> actors = {
-  //     Asn1Item(0x30, ),
-  //     Asn1Item(0x31, ),
-  //     Asn1Item(0xa0, ),
-  //     Asn1Item(0x02, ),
-  //     Asn1Item(0x05, ),
-  //     Asn1Item(0x06, ),
-  //     Asn1Item(0x13, ),
-  //     Asn1Item(0x17, ),
-  //     Asn1Item(0x18, )
-  //   }
-  //   return actors;
-  // }
-
 public:
   uint8_t type;
   size_t  hlen;
@@ -112,6 +84,17 @@ public:
   std::string::const_iterator data_begin;
   std::string::const_iterator data_end;
   std::vector<Asn1> contains;
+
+  bool operator==(const Asn1& obj) const {
+    return this->type == obj.type &&
+           this->hlen == obj.hlen &&
+           this->len == obj.len &&
+           this->level == obj.level &&
+           this->ofs == obj.ofs &&
+           std::equal(this->contains.begin(), this->contains.end(), obj.contains.begin()) &&
+           this->data_begin == obj.data_begin &&
+           this->data_end == obj.data_end;
+  }
 
   static boost::optional<Asn1> parseItem(std::string::const_iterator begin, std::string::const_iterator end) {
       Asn1 ret;
