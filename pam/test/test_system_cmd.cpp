@@ -25,6 +25,7 @@ using namespace cascara;
 
 #include <easylogging++.h>
 INITIALIZE_EASYLOGGINGPP
+
 int main() {
   describe("SystemCmd", []() {
     auto pwd = getpwnam(std::getenv("USER"));

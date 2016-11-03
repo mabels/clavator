@@ -11,8 +11,10 @@ public:
   const std::shared_ptr<Pipe> pipe;
   const Action action;
   const std::shared_ptr<FileDescriptor> myFd;
+  const int translateFd;
   PipeAction(const std::shared_ptr<Pipe> &pipe, const std::shared_ptr<FileDescriptor> &myFd,
-    PipeAction::Action action) : pipe(pipe), action(action), myFd(myFd) {}
+    PipeAction::Action action, int translateFd = -1) :
+    pipe(pipe), action(action), myFd(myFd), translateFd(translateFd) {}
 
   int childFd() const {
     if (myFd->getFd() == pipe->getRead()) {

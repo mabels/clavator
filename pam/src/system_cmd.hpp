@@ -55,7 +55,8 @@ private:
   const struct passwd *pwd;
   std::vector<std::string> args;
   std::vector<std::string> envs;
-  std::vector<PipeAction> inPipes;
+  std::vector<PipeAction> toChildPipes;
+  std::vector<PipeAction> fromMotherPipes;
   std::stringstream sin;
   const std::string exec;
   boost::optional<int> status;
@@ -67,12 +68,18 @@ public:
     arg(exec);
   }
 
-  SystemCmd &inPipe(const std::shared_ptr<Pipe> &pipe, const std::shared_ptr<FileDescriptor> &myFd, PipeAction::Action action) {
-    inPipes.push_back(PipeAction(pipe, myFd, action));
+  SystemCmd &toChildPipe(const std::shared_ptr<Pipe> &pipe, const std::shared_ptr<FileDescriptor> &myFd,
+    PipeAction::Action action) {
+    toChildPipes.push_back(PipeAction(pipe, myFd, action));
+    return *this;
+  }
+  SystemCmd &fromChildPipe(const std::shared_ptr<Pipe> &pipe, const std::shared_ptr<FileDescriptor> &myFd,
+    PipeAction::Action action) {
+    fromMotherPipes.push_back(PipeAction(pipe, myFd, action));
     return *this;
   }
 
-  boost::optional<int> getStatus() {
+  boost::optional<int> getStatus() const {
     return status;
   }
 
@@ -115,35 +122,8 @@ public:
     return ret.str();
   }
 
-  template<std::size_t N>
-  static void register_read(DuringExec &de, boost::asio::posix::stream_descriptor &ds,
-                            std::array<char, N> &buf,
-                            std::stringstream &output) {
-
-    //LOG(ERROR) << "register_read:" << ds.native_handle();
-    boost::asio::async_read(ds, boost::asio::buffer(buf.begin(), buf.size()), [&ds, &buf, &output, &de]
-                  (boost::system::error_code ec, std::size_t bytes_transferred) {
-                  // LOG(INFO) << "read:" << ec << ":" << bytes_transferred << std::endl;
-                  LOG(DEBUG) << "Read(" << ec << ", " << bytes_transferred << ")[" << "..." << "]";
-                  if (ec == boost::asio::error::eof || !ec) {
-                    // std::string s(buf.begin(), bytes_transferred);
-                    //std::cout << "Hello:" << bytes_transferred << ":" << s << std::endl;
-                    output.write(&buf.front(), bytes_transferred);
-                    if (!ec) {
-                      register_read(de, ds, buf, output);
-                    } else {
-                      de.handle_completed("std...");
-                    }
-                  } else if (ec) {
-                    LOG(ERROR) << "register_read failed:" << ec << ":" << bytes_transferred;
-                    de.handle_completed("std...");
-                    return;
-                  }
-                });
-  }
-
   void closeFdsMother(const DuringExec &de) const {
-    for (auto pa : de.pipeActions) {
+    for (auto pa : de.motherActions) {
       // LOG(DEBUG) << pa.myFd->getFd();
       close(pa.myFd->getFd());
     }
@@ -154,7 +134,7 @@ public:
       std::cout << errText << std::flush;
       std::cerr << errText << std::flush;
     }
-    for (auto pa : de.pipeActions) {
+    for (auto pa : de.clientActions) {
       // LOG(DEBUG) << pa.myFd->getFd();
       close(pa.childFd());
     }
@@ -162,10 +142,11 @@ public:
 
   void childExec(DuringExec &de, OptionalPassword &op) {
     op.destroy(); // wipe password from memory
-    int ifd = 0;
-    for (auto pa : de.pipeActions) {
-      if (ifd < 3) { close(ifd); dup2(pa.childFd(), ifd); }
-      ++ifd;
+    for (auto pa : de.clientActions) {
+      if (pa.translateFd >= 0) { close(pa.translateFd); dup2(pa.childFd(), pa.translateFd); }
+    }
+    for (auto pa : de.motherActions) {
+      if (pa.translateFd >= 0) { close(pa.translateFd); dup2(pa.childFd(), pa.translateFd); }
     }
     //closeFdsMother(de);
     // de.pipeWriters.erase(de.pipeWriters.begin(), de.pipeWriters.end()); // remove the possible entrie points to written data
@@ -242,14 +223,24 @@ public:
     }
     auto &stdoutPipe = *ostdoutPipe;
     auto &stderrPipe = *ostderrPipe;
-    boost::asio::posix::stream_descriptor sdOut(de.io_service, stdoutPipe->getRead());
-    boost::asio::posix::stream_descriptor sdErr(de.io_service, stderrPipe->getRead());
-    std::array<char, 4096> soutArray;
-    std::array<char, 4096> serrArray;
-    register_read<4096>(de, sdOut, soutArray, sr.getSout());
-    register_read<4096>(de, sdErr, serrArray, sr.getSerr());
-
-
+    PipeAction stdoutAction(stdoutPipe, stdoutPipe->getReadFd(),
+     [this, &sr](size_t len, const void **buf) -> size_t {
+       sr.getSout().write(static_cast<const char *>(*buf), len);
+       return len;
+     }, 1);
+    de.fromMotherPipe(stdoutAction);
+    PipeAction stderrAction(stderrPipe, stderrPipe->getReadFd(),
+     [this, &sr](size_t len, const void **buf) -> size_t {
+       sr.getSerr().write(static_cast<const char *>(*buf), len);
+       return len;
+     }, 2);
+    de.fromMotherPipe(stderrAction);
+    // boost::asio::posix::stream_descriptor sdOut(de.io_service, stdoutPipe->getRead());
+    // boost::asio::posix::stream_descriptor sdErr(de.io_service, stderrPipe->getRead());
+    // std::array<char, 4096> soutArray;
+    // std::array<char, 4096> serrArray;
+    // register_read<4096>(de, sdOut, soutArray, sr.getSout());
+    // register_read<4096>(de, sdErr, serrArray, sr.getSerr());
     auto ostdinPipe = Pipe::create();
     if (ostdinPipe == boost::none) {
       LOG(ERROR) << "stdin pipe creation error";
@@ -273,8 +264,8 @@ public:
       auto buflen = this->sin.readsome(&sinArray.front(), sinArray.size());
       *buf = &(sinArray.front());
       return buflen;
-    });
-    de.inPipe(stdinAction);
+    }, 0);
+    de.toChildPipe(stdinAction);
     // Close the writepipe for the read pipe in the Motherprocess
     // PipeAction stdoutAction(stdoutPipe, stdoutPipe->getWriteFd(),
     //   [](size_t, const void **) {return 0;});
@@ -283,14 +274,15 @@ public:
     //   [](size_t, const void **) {return 0;});
     // de.inPipe(stderrAction);
     // write<4096>(de, ofs, sdIn, sinArray, this->sin);
-    for (auto &i : this->inPipes) {
-      de.inPipe(i);
+    for (auto &i : this->toChildPipes) {
+      de.toChildPipe(i);
     }
+    for (auto &i : this->fromMotherPipes) {
+      de.fromMotherPipe(i);
+    }
+    de.startFromMotherPipeActions();
     sr.waitPid = launch(de, op);
-    // output Writing is initiated after the process is forkt
-    // to prefend that i have to clear the buffer(where the password is in)
-    // after fork.
-    de.startPipeActions();
+    de.startToChildPipeActions();
 
     //LOG(ERROR) << "sdErr-Leave";
     // char buf[1000];
@@ -318,6 +310,7 @@ public:
     return sr;
   }
 };
+
 }
 
 #endif

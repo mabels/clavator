@@ -15,16 +15,22 @@ class DuringExec {
   public:
     std::atomic<size_t> completed;
     boost::asio::io_service io_service;
-    std::vector<PipeAction> pipeActions;
-    std::vector<std::shared_ptr<PipeWriter>> pipeWriters;
+    std::vector<PipeAction> clientActions;
+    std::vector<PipeAction> motherActions;
+    std::vector<std::shared_ptr<PipeWriter>> clientWriters;
+    std::vector<std::shared_ptr<PipeWriter>> motherWriters;
 
     DuringExec() : completed(0) {}
 
+    size_t pipes() const {
+      return clientWriters.size() + motherWriters.size();
+    }
+
     void handle_completed(const char *what) {
       ++this->completed;
-      auto total = 1+1+1+pipeActions.size();
+      auto total = 1+1+1+pipes();
       LOG(DEBUG) << this->completed << "of" << total <<
-        ":" << pipeWriters.size() << "[" << what << "]";
+        ":" << pipes() << "[" << what << "]";
       //LOG(INFO) << "handle_completed:" << this->completed << ":" << tag;
       if (this->completed >= total) {
         LOG(DEBUG) << "handle_completed: stop";
@@ -32,15 +38,25 @@ class DuringExec {
       }
     }
 
-    void inPipe(const PipeAction &pa) {
-      pipeActions.push_back(pa);
-      // i->createStreamDescriptor(de.io_service, i->pipe.getWriteFd());
+    void toChildPipe(const PipeAction &pa) {
+      clientActions.push_back(pa);
     }
 
-    void startPipeActions() {
-      LOG(DEBUG) << "starting:" << pipeActions.size();
-      for (auto &pa : pipeActions) {
-        pipeWriters.push_back(PipeWriter::start(*this, pa));
+    void fromMotherPipe(const PipeAction &pa) {
+      motherActions.push_back(pa);
+    }
+
+    void startFromMotherPipeActions() {
+      LOG(DEBUG) << "startMotherPipeActions:" << motherActions.size();
+      for (auto &pa : motherActions) {
+        motherWriters.push_back(PipeWriter::startMother(*this, pa));
+      }
+    }
+
+    void startToChildPipeActions() {
+      LOG(DEBUG) << "startChildPipeActions:" << clientActions.size();
+      for (auto &pa : clientActions) {
+        clientWriters.push_back(PipeWriter::startClient(*this, pa));
       }
     }
 };
