@@ -26,14 +26,14 @@ class DuringExec {
       return clientWriters.size() + motherWriters.size();
     }
 
-    void handle_completed(const char *what) {
+    void handle_completed(const char *) {
       ++this->completed;
       auto total = 1+pipes();
-      LOG(DEBUG) << this->completed << "of" << total <<
-        ":" << pipes() << "[" << what << "]";
-      //LOG(INFO) << "handle_completed:" << this->completed << ":" << tag;
+      // LOG(DEBUG) << this->completed << "of" << total <<
+      //   ":" << pipes() << "[" << what << "]";
+      // LOG(INFO) << "handle_completed:" << this->completed << ":" << tag;
       if (this->completed >= total) {
-        LOG(DEBUG) << "handle_completed: stop";
+        // LOG(DEBUG) << "handle_completed: stop";
         this->io_service.stop();
       }
     }
@@ -47,14 +47,14 @@ class DuringExec {
     }
 
     void startFromMotherPipeActions() {
-      LOG(DEBUG) << "startMotherPipeActions:" << motherActions.size();
+      // LOG(DEBUG) << "startMotherPipeActions:" << motherActions.size();
       for (auto &pa : motherActions) {
         motherWriters.push_back(PipeWriter::startMother(*this, pa));
       }
     }
 
     void startToChildPipeActions() {
-      LOG(DEBUG) << "startChildPipeActions:" << clientActions.size();
+      // LOG(DEBUG) << "startChildPipeActions:" << clientActions.size();
       for (auto &pa : clientActions) {
         clientWriters.push_back(PipeWriter::startClient(*this, pa));
       }

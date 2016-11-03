@@ -123,6 +123,10 @@ public:
   }
 
   void closeFdsMother(const DuringExec &de) const {
+    for (auto pa : de.clientActions) {
+      // LOG(DEBUG) << pa.myFd->getFd();
+      close(pa.myFd->getFd());
+    }
     for (auto pa : de.motherActions) {
       // LOG(DEBUG) << pa.myFd->getFd();
       close(pa.myFd->getFd());
@@ -259,17 +263,23 @@ public:
     std::array<char, 4096> sinArray;
     // auto sinStr = this->sin.str();
     PipeAction stdinAction(stdinPipe, stdinPipe->getWriteFd(),
-     [this, &sinArray](size_t, const void **buf) -> size_t {
+     [this, &sinArray](size_t ofs, const void **buf) -> size_t {
       if (this->sin.eof()) {
         *buf = 0;
         return 0ul;
       }
       if (!this->sin.good()) {
-        LOG(ERROR) << "stream read error";
+        LOG(ERROR) << "stdin stream read error: ofs=" << ofs;
         *buf = 0;
         return 0ul;
       }
-      auto buflen = this->sin.readsome(&sinArray.front(), sinArray.size());
+      this->sin.seekg(ofs, this->sin.beg);
+      //char bufX[4096];
+      this->sin.read(&(sinArray.front()), sinArray.size());
+      //this->sin.read(*buf, sinArray.size());
+      auto buflen = this->sin.gcount();
+      // LOG(DEBUG) << "stdinAction:" << sinArray.size() << ":"
+      //   << buflen << ":" << this->sin.str().size();
       *buf = &(sinArray.front());
       return buflen;
     }, 0);

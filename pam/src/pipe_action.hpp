@@ -15,10 +15,9 @@ public:
   PipeAction(const std::shared_ptr<Pipe> &pipe, const std::shared_ptr<FileDescriptor> &myFd,
     PipeAction::Action action, int translateFd = -1) :
     pipe(pipe), action(action), myFd(myFd), translateFd(translateFd) {
-
-    LOG(DEBUG) << "read=" << pipe->getRead() << " write=" << pipe->getWrite()
-      << " my=" << myFd->getFd() << " child=" << this->childFd()
-      << " trans=" << translateFd;
+    // LOG(DEBUG) << "read=" << pipe->getRead() << " write=" << pipe->getWrite()
+    //   << " my=" << myFd->getFd() << " child=" << this->childFd()
+    //   << " trans=" << translateFd;
   }
 
   int childFd() const {

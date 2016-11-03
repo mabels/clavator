@@ -16,7 +16,7 @@ class PipeWriter {
   const PipeAction &pa;
   boost::asio::posix::stream_descriptor ds;
   size_t ofs;
-  std::vector<char> buf;
+  std::vector<char> readBuf;
   PipeWriter(DuringExec &de, const PipeAction &pa, size_t bufSize = 0);
   void startFromMother();
   void startToClient();

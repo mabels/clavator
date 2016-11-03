@@ -77,52 +77,57 @@ int main() {
         assert.isFalse(PamClavator::SystemCmd(pwd, EXEC_GREP).arg("---Fehler").run(0, op).getSerr().str().empty());
     });
 
-    it("stdin to stdout", [&pwd]() {
+
+    it("fd to stdout", [&pwd]() {
       OptionalPassword op;
-      std::cout << "-1-" << std::endl;
       for (auto sendSize = 0; sendSize < 1000000; sendSize += 1024) {
         std::stringstream sout;
         std::stringstream spattern;
         spattern << sendSize << ":";
-        std::cout << "-2-" << sendSize << std::endl;
         auto pattern = spattern.str();
         for (auto fill = 0; fill < sendSize; fill += pattern.size()) {
           sout << pattern;
         }
-        std::cout << "-3-" << sendSize << std::endl;
         std::string out = sout.str();
+        const char *cout = out.c_str();
+        auto oPipe = Pipe::create();
+        auto &pipe = *oPipe;
+        PamClavator::SystemCmd bash(pwd, EXEC_BASH);
+        bash.toChildPipe(pipe, pipe->getWriteFd(), [cout, &out](size_t ofs, const void **buf) {
+          if (ofs >= out.size()) {
+            *buf = 0;
+            return 0ul;
+          }
+          *buf = cout + ofs;
+          std::cout << ofs << ":" << out.size() << ":" << buf;
+          return out.size() - ofs;
+        });
+        std::stringstream fdRedirect;
+        fdRedirect << EXEC_CAT << "<&" << pipe->getWriteFd()->asString();
+        assert.equal(bash.arg("-c").arg(fdRedirect.str()).run(0, op).getSout().str(), out);
+      }
+    });
+
+    it("stdin to stdout", [&pwd]() {
+      OptionalPassword op;
+      // std::cout << "-1-" << std::endl;
+      for (size_t sendSize = 0; sendSize < 1000000; sendSize += 1024) {
+        std::stringstream sout;
+        std::stringstream spattern;
+        spattern << sendSize << ":";
+        // std::cout << "-2-" << sendSize << std::endl;
+        auto pattern = spattern.str();
+        for (auto fill = pattern.size(); fill < sendSize; fill += pattern.size()) {
+          sout << pattern;
+        }
+        std::string out = sout.str();
+        // std::cout << "-2.1-" << sendSize << ":" << out.size()+pattern.size() << std::endl;
+        assert.equal(sendSize <= out.size()+pattern.size(), true, "Size Missmatch");
         assert.equal(PamClavator::SystemCmd(pwd, EXEC_CAT).pushSin(out).run(0, op).getSout().str(), out);
-        std::cout << "-4-" << sendSize << std::endl;
       }
     });
     //
-    // it("fd to stdout", [&pwd]() {
-    //   OptionalPassword op;
-    //   for (auto sendSize = 0; sendSize < 1000000; sendSize += 1024) {
-    //     std::stringstream sout;
-    //     std::stringstream spattern;
-    //     spattern << sendSize << ":";
-    //     auto pattern = spattern.str();
-    //     for (auto fill = 0; fill < sendSize; fill += pattern.size()) {
-    //       sout << pattern;
-    //     }
-    //     std::string out = sout.str();
-    //     const char *cout = out.c_str();
-    //     auto oPipe = Pipe::create();
-    //     auto &pipe = *oPipe;
-    //     PamClavator::SystemCmd bash(pwd, EXEC_BASH);
-    //     bash.inPipe(pipe, pipe->getWriteFd(), [cout, &out](size_t ofs, const void **buf) {
-    //       if (ofs >= out.size()) {
-    //         return 0ul;
-    //       }
-    //       *buf = cout + ofs;
-    //       return out.size() - ofs;
-    //     });
-    //     std::stringstream fdRedirect;
-    //     fdRedirect << EXEC_CAT << "<&" << pipe->getWriteFd()->asString();
-    //     assert.equal(bash.arg("-c").arg(fdRedirect.str()).run(0, op).getSout().str(), out);
-    //   }
-    // });
+
 
   });
   exit();
