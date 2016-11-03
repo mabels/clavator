@@ -49,4 +49,22 @@ template<> bool Matcher<bool>::match(const char *argv) {
   return false;
 }
 
+template<> bool Matcher<size_t>::match(const char *argv) {
+  if (!strncmp(argv, matchString, strlen(matchString)-1)) {
+    std::stringstream convertor;
+    std::string numberString = matchString;
+    size_t number;
+    convertor << numberString;
+    convertor >> number;
+    if (convertor.fail()) {
+      LOG(ERROR) << "Not a Number!" << matchString;
+      return false;
+    }
+    value = number;
+    return true;
+  }
+  return false;
+}
+
+
 #endif

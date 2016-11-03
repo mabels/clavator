@@ -46,7 +46,7 @@ set(CMAKE_SHARED_LINKER_FLAGS "-lpam")
 #set(CMAKE_STATIC_LINKER_FLAGS "-lpam")
 
 #file(GLOB SOURCES "src/*.cpp")
-add_library(pamClavator SHARED src/pam_clavator.cpp)
+add_library(pamClavator SHARED src/pam_clavator.cpp src/pipe_writer.cpp)
 target_link_libraries(pamClavator ${Boost_LIBRARIES})
 
 #add_library(pamClavatorStatic STATIC src/pam_clavator.cpp)
