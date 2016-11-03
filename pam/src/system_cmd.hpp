@@ -144,7 +144,7 @@ public:
 
   void closeFdsMother(const DuringExec &de) const {
     for (auto pa : de.pipeActions) {
-      LOG(DEBUG) << pa.myFd->getFd();
+      // LOG(DEBUG) << pa.myFd->getFd();
       close(pa.myFd->getFd());
     }
   }
@@ -203,9 +203,10 @@ public:
       pid_t pid = fork();
       if (pid == 0) {
         childExec(de, op);
-      } else {
-        closeFdsChildren(de);
       }
+      // } else {
+      //   closeFdsChildren(de);
+      // }
       return pid;
   }
 
@@ -241,8 +242,6 @@ public:
     }
     auto &stdoutPipe = *ostdoutPipe;
     auto &stderrPipe = *ostderrPipe;
-    stderrPipe->getReadFd()->nonBlocking();
-    stderrPipe->getReadFd()->nonBlocking();
     boost::asio::posix::stream_descriptor sdOut(de.io_service, stdoutPipe->getRead());
     boost::asio::posix::stream_descriptor sdErr(de.io_service, stderrPipe->getRead());
     std::array<char, 4096> soutArray;
@@ -259,18 +258,24 @@ public:
     }
     auto &stdinPipe = *ostdinPipe;
     std::array<char, 4096> sinArray;
-    auto sinStr = this->sin.str();
+    // auto sinStr = this->sin.str();
     PipeAction stdinAction(stdinPipe, stdinPipe->getWriteFd(),
-     [sinStr, &sinArray](size_t ofs, const void **buf) {
-      if (ofs < sinStr.size()) {
-        std::copy(sinStr.begin()+ofs, sinStr.end(), sinArray.begin());
-        *buf = &sinArray.front();
-        return sinStr.size() - ofs;
+     [this, &sinArray](size_t, const void **buf) -> size_t {
+      if (this->sin.eof()) {
+        *buf = 0;
+        return 0ul;
       }
-      *buf = 0;
-      return 0ul;
+      if (!this->sin.good()) {
+        LOG(ERROR) << "stream read error";
+        *buf = 0;
+        return 0ul;
+      }
+      auto buflen = this->sin.readsome(&sinArray.front(), sinArray.size());
+      *buf = &(sinArray.front());
+      return buflen;
     });
     de.inPipe(stdinAction);
+    // Close the writepipe for the read pipe in the Motherprocess
     PipeAction stdoutAction(stdoutPipe, stdoutPipe->getWriteFd(),
       [](size_t, const void **) {return 0;});
     de.inPipe(stdoutAction);
@@ -304,7 +309,7 @@ public:
     // sr.waitPid = waitpid(pid, &sr.statusCode, WEXITED);
     // sr.exitCode = WEXITSTATUS(sr.statusCode);
     //LOG(INFO) << " WIFEXITED(status):" << WIFEXITED(status) << std::endl;
-    std::cout << sr.waitPid << ":" << sr.exitCode << "--" << sr.getSout().str() << "--" << sr.getSerr().str() << std::endl;
+    //std::cout << sr.waitPid << ":" << sr.exitCode << "--" << sr.getSout().str() << "--" << sr.getSerr().str() << std::endl;
     sr.ok = !(sr.exitCode == 42 && sr.getSout().str() == sr.getSerr().str() &&
       boost::starts_with(sr.getSout().str(), "[exec ") &&
       boost::ends_with(sr.getSout().str(), "]"));

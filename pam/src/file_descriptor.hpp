@@ -25,10 +25,10 @@ public:
     s2 << fd;
     return s2.str();
   }
-  void nonBlocking() const {
-    int saved_flags = fcntl(this->fd, F_GETFL);
-    fcntl(this->fd, F_SETFL, saved_flags & ~O_NONBLOCK);
-  }
+  // void nonBlocking() const {
+  //   int saved_flags = fcntl(this->fd, F_GETFL);
+  //   fcntl(this->fd, F_SETFL, saved_flags & ~O_NONBLOCK);
+  // }
   bool operator==(const FileDescriptor& obj) const {
     return this->fd == obj.fd;
   }

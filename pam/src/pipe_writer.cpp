@@ -12,23 +12,26 @@
 
 PipeWriter::PipeWriter(DuringExec &de, const PipeAction &pa)
     : de(de), pa(pa), ds(de.io_service, pa.myFd->getFd()), ofs(0) {
-  pa.myFd->nonBlocking();
-  start();
+  // pa.myFd->nonBlocking();
 }
 
 void PipeWriter::start() {
   const void *buf;
   auto len = pa.action(this->ofs, &buf);
+  LOG(DEBUG) << "pa.action:" << len;
   if (len > 0) {
     write(buf, len);
   } else {
     ds.close();
-    de.handle_completed("stdin");
+    std::stringstream s2;
+    s2 << "pipewriter:start:" << this << ":" << len << ":" << pa.myFd->getFd();
+    de.handle_completed(s2.str().c_str());
   }
 }
 
 void PipeWriter::write(const void *buf, size_t len) {
   if (len <= 0) {
+    LOG(DEBUG) << "write:nothing todo";
     this->start();
     return;
   }
@@ -37,8 +40,9 @@ void PipeWriter::write(const void *buf, size_t len) {
       if (ec || bytes_transferred > len) {
         LOG(ERROR) << "async_write failed:" << ec;
         ds.close();
-        de.handle_completed("stdin");
+        de.handle_completed("stdin-error");
       } else {
+        LOG(DEBUG) << "asio:write_callback";
         this->ofs += bytes_transferred;
         write(static_cast<const void *>(static_cast<const char *>(buf) + bytes_transferred),
               len - bytes_transferred);

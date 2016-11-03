@@ -20,10 +20,14 @@ class DuringExec {
 
     DuringExec() : completed(0) {}
 
-    void handle_completed(const char *) {
+    void handle_completed(const char *what) {
       ++this->completed;
+      auto total = 1+1+1+1+pipeWriters.size();
+      LOG(DEBUG) << this->completed << "of" << total <<
+        ":" << pipeWriters.size() << "[" << what << "]";
       //LOG(INFO) << "handle_completed:" << this->completed << ":" << tag;
-      if (this->completed >= 1+1+1+pipeWriters.size()) {
+      if (this->completed >= total) {
+        LOG(DEBUG) << "handle_completed: stop";
         this->io_service.stop();
       }
     }
@@ -34,6 +38,7 @@ class DuringExec {
     }
 
     void startPipeActions() {
+      LOG(DEBUG) << "starting:" << pipeActions.size();
       for (auto &pa : pipeActions) {
         pipeWriters.push_back(PipeWriter::start(*this, pa));
       }
