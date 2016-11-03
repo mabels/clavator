@@ -162,12 +162,12 @@ public:
 
   void childExec(DuringExec &de, OptionalPassword &op) {
     op.destroy(); // wipe password from memory
-    closeFdsMother(de);
     int ifd = 0;
     for (auto pa : de.pipeActions) {
       if (ifd < 3) { close(ifd); dup2(pa.childFd(), ifd); }
       ++ifd;
     }
+    //closeFdsMother(de);
     // de.pipeWriters.erase(de.pipeWriters.begin(), de.pipeWriters.end()); // remove the possible entrie points to written data
     if (setgid(pwd->pw_gid) < 0) {
       closeFdsChildren(de, "[exec setgid failed]");
@@ -276,12 +276,12 @@ public:
     });
     de.inPipe(stdinAction);
     // Close the writepipe for the read pipe in the Motherprocess
-    PipeAction stdoutAction(stdoutPipe, stdoutPipe->getWriteFd(),
-      [](size_t, const void **) {return 0;});
-    de.inPipe(stdoutAction);
-    PipeAction stderrAction(stderrPipe, stderrPipe->getWriteFd(),
-      [](size_t, const void **) {return 0;});
-    de.inPipe(stderrAction);
+    // PipeAction stdoutAction(stdoutPipe, stdoutPipe->getWriteFd(),
+    //   [](size_t, const void **) {return 0;});
+    // de.inPipe(stdoutAction);
+    // PipeAction stderrAction(stderrPipe, stderrPipe->getWriteFd(),
+    //   [](size_t, const void **) {return 0;});
+    // de.inPipe(stderrAction);
     // write<4096>(de, ofs, sdIn, sinArray, this->sin);
     for (auto &i : this->inPipes) {
       de.inPipe(i);

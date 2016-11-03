@@ -22,7 +22,7 @@ class DuringExec {
 
     void handle_completed(const char *what) {
       ++this->completed;
-      auto total = 1+1+1+1+pipeWriters.size();
+      auto total = 1+1+1+pipeActions.size();
       LOG(DEBUG) << this->completed << "of" << total <<
         ":" << pipeWriters.size() << "[" << what << "]";
       //LOG(INFO) << "handle_completed:" << this->completed << ":" << tag;
