@@ -18,7 +18,7 @@ PipeWriter::PipeWriter(DuringExec &de, const PipeAction &pa, const size_t bufSiz
 
 void PipeWriter::startFromMother() {
   //LOG(ERROR) << "register_read:" << ds.native_handle();
-  boost::asio::async_read(ds, boost::asio::buffer(buf),
+  ds.async_read_some(boost::asio::buffer(buf),
     [this](boost::system::error_code ec, std::size_t bytes_transferred) {
       // LOG(INFO) << "read:" << ec << ":" << bytes_transferred << std::endl;
       LOG(DEBUG) << "Read(" << buf.size() << ":" << pa.myFd->getFd() << ", " << ec << ", " << bytes_transferred << ")[" << "..." << "]";
