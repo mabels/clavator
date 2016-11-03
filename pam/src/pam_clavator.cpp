@@ -334,7 +334,7 @@ boost::optional<Pem> create_cert_from_card(pam_handle_t *pamh, const struct pass
     }
     auto &pwdPipe = *opwdPipe;
     LOG(DEBUG) << "create_cert_from_card: use predefined password";
-    gpgsmGenkey.inPipe(pwdPipe, pwdPipe->getWriteFd(), [&op](size_t ofs, const void **buf) {
+    gpgsmGenkey.toChildPipe(pwdPipe, pwdPipe->getWriteFd(), [&op](size_t ofs, const void **buf) {
       if (ofs >= op.getLen()) {
         return 0ul;
       }
@@ -343,7 +343,7 @@ boost::optional<Pem> create_cert_from_card(pam_handle_t *pamh, const struct pass
     });
     gpgsmGenkey.arg("--no-tty").arg("--batch");
     gpgsmGenkey.arg("--pinentry-mode").arg("loopback");
-    gpgsmGenkey.arg("--passphrase-fd").arg(pwdPipe->getWriteFd()->asString());
+    gpgsmGenkey.arg("--passphrase-fd").arg(pwdPipe->getReadFd()->asString());
   }
   gpgsmGenkey.arg("-a").arg("--batch").arg("--gen-key");
   gpgsmGenkey

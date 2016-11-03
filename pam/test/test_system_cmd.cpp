@@ -99,11 +99,11 @@ int main() {
             return 0ul;
           }
           *buf = cout + ofs;
-          std::cout << ofs << ":" << out.size() << ":" << buf;
+          // std::cout << ofs << ":" << out.size() << ":" << buf;
           return out.size() - ofs;
         });
         std::stringstream fdRedirect;
-        fdRedirect << EXEC_CAT << "<&" << pipe->getWriteFd()->asString();
+        fdRedirect << EXEC_CAT << " <&" << pipe->getReadFd()->asString();
         assert.equal(bash.arg("-c").arg(fdRedirect.str()).run(0, op).getSout().str(), out);
       }
     });
