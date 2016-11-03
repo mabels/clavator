@@ -18,18 +18,18 @@ class PipeWriter {
   size_t ofs;
   std::vector<char> buf;
   PipeWriter(DuringExec &de, const PipeAction &pa, size_t bufSize = 0);
-  void startMother();
-  void startClient();
+  void startFromMother();
+  void startToClient();
   void write(const void *buf, size_t len);
 public:
   static std::shared_ptr<PipeWriter> startMother(DuringExec &de, const PipeAction &pa) {
-    auto pw = new PipeWriter(de, pa);
-    pw->startMother();
+    auto pw = new PipeWriter(de, pa, 4096);
+    pw->startFromMother();
     return std::shared_ptr<PipeWriter>(pw);
   }
   static std::shared_ptr<PipeWriter> startClient(DuringExec &de, const PipeAction &pa) {
     auto pw = new PipeWriter(de, pa);
-    pw->startClient();
+    pw->startToClient();
     return std::shared_ptr<PipeWriter>(pw);
   }
 

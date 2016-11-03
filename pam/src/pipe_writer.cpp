@@ -12,15 +12,16 @@
 
 PipeWriter::PipeWriter(DuringExec &de, const PipeAction &pa, const size_t bufSize)
     : de(de), pa(pa), ds(de.io_service, pa.myFd->getFd()), ofs(0), buf(bufSize) {
+  buf.resize(bufSize);
   // pa.myFd->nonBlocking();
 }
 
-void PipeWriter::startMother() {
+void PipeWriter::startFromMother() {
   //LOG(ERROR) << "register_read:" << ds.native_handle();
   boost::asio::async_read(ds, boost::asio::buffer(buf),
     [this](boost::system::error_code ec, std::size_t bytes_transferred) {
       // LOG(INFO) << "read:" << ec << ":" << bytes_transferred << std::endl;
-      LOG(DEBUG) << "Read(" << pa.myFd->getFd() << ", " << ec << ", " << bytes_transferred << ")[" << "..." << "]";
+      LOG(DEBUG) << "Read(" << buf.size() << ":" << pa.myFd->getFd() << ", " << ec << ", " << bytes_transferred << ")[" << "..." << "]";
       if (ec == boost::asio::error::eof || !ec) {
         // std::string s(buf.begin(), bytes_transferred);
         //std::cout << "Hello:" << bytes_transferred << ":" << s << std::endl;
@@ -28,19 +29,19 @@ void PipeWriter::startMother() {
         this->pa.action(bytes_transferred, &buf);
         // output.write(&buf.front(), bytes_transferred);
         if (!ec) {
-          startMother();
+          startFromMother();
         } else {
           de.handle_completed("std...");
         }
       } else if (ec) {
         LOG(ERROR) << "register_read failed:" << ec << ":" << bytes_transferred;
         de.handle_completed("std...");
-        return;
       }
+      return false;
     });
 }
 
-void PipeWriter::startClient() {
+void PipeWriter::startToClient() {
   const void *buf;
   auto len = pa.action(this->ofs, &buf);
   LOG(DEBUG) << "pa.action:" << len;
@@ -57,7 +58,7 @@ void PipeWriter::startClient() {
 void PipeWriter::write(const void *buf, size_t len) {
   if (len <= 0) {
     LOG(DEBUG) << "write:nothing todo";
-    this->startClient();
+    this->startToClient();
     return;
   }
   boost::asio::write(ds, boost::asio::buffer(buf, len), [this, buf, len](boost::system::error_code &ec,
