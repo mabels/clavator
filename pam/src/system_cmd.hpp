@@ -129,7 +129,7 @@ public:
     }
   }
 
-  void closeFdsChildren(const DuringExec &de, const char *errText = 0) const {
+  void closeTranslatedFdsChildren(const DuringExec &de, const char *errText = 0) const {
     if (errText) {
       std::cout << errText << std::flush;
       std::cerr << errText << std::flush;
@@ -152,18 +152,18 @@ public:
     for (auto pa : de.motherActions) {
       if (pa.translateFd >= 0) { close(pa.translateFd); dup2(pa.childFd(), pa.translateFd); }
     }
-    //closeFdsMother(de);
+    closeFdsMother(de);
     // de.pipeWriters.erase(de.pipeWriters.begin(), de.pipeWriters.end()); // remove the possible entrie points to written data
     if (setgid(pwd->pw_gid) < 0) {
-      closeFdsChildren(de, "[exec setgid failed]");
+      closeTranslatedFdsChildren(de, "[exec setgid failed]");
       exit(42);
     }
     if (setuid(pwd->pw_uid) < 0) {
-      closeFdsChildren(de, "[exec setuid failed]");
+      closeTranslatedFdsChildren(de, "[exec setuid failed]");
       exit(42);
     }
     if (seteuid(pwd->pw_uid) < 0) {
-      closeFdsChildren(de, "[exec seteuid failed]");
+      closeTranslatedFdsChildren(de, "[exec seteuid failed]");
       exit(42);
     }
     char *argv[args.size()+1];
@@ -178,7 +178,7 @@ public:
     }
     if (execve(exec.c_str(), argv, envp) == -1) {
       // ACHTUNG HACK
-      closeFdsChildren(de, "[exec failed]");
+      closeTranslatedFdsChildren(de, "[exec failed]");
       exit(42);
     }
   }
@@ -188,10 +188,14 @@ public:
       pid_t pid = fork();
       if (pid == 0) {
         childExec(de, op);
+      } else {
+        for (auto pa : de.clientActions) {
+          close(pa.childFd());
+        }
+        for (auto pa : de.motherActions) {
+          close(pa.childFd());
+        }
       }
-      // } else {
-      //   closeFdsChildren(de);
-      // }
       return pid;
   }
 
