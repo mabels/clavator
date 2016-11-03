@@ -135,8 +135,12 @@ public:
       std::cerr << errText << std::flush;
     }
     for (auto pa : de.clientActions) {
-      // LOG(DEBUG) << pa.myFd->getFd();
-      close(pa.childFd());
+      if (pa.translateFd >= 0) { close(pa.translateFd); }
+      else { close(pa.childFd()); }
+    }
+    for (auto pa : de.motherActions) {
+      if (pa.translateFd >= 0) { close(pa.translateFd); }
+      else { close(pa.childFd()); }
     }
   }
 
