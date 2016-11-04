@@ -60,12 +60,19 @@ private:
   std::stringstream sin;
   const std::string exec;
   boost::optional<int> status;
+  typedef const std::function<bool(const SystemResult &sr, const SystemCmd &sc)> RetryAction;
+  std::vector<RetryAction> retryActions;
 public:
   SystemCmd(const struct passwd *pwd, const std::string &cmd) : pwd(pwd), exec(cmd) {
     arg(exec);
   }
   SystemCmd(const struct passwd *pwd, const char *cmd) : pwd(pwd), exec(cmd) {
     arg(exec);
+  }
+
+  SystemCmd &checkRetry(RetryAction retry) {
+    retryActions.push_back(retry);
+    return *this;
   }
 
   SystemCmd &toChildPipe(const std::shared_ptr<Pipe> &pipe, const std::shared_ptr<FileDescriptor> &myFd,
@@ -221,7 +228,7 @@ public:
     });
   }
 
-  SystemResult run(pam_handle_t *, OptionalPassword &op) {
+  SystemResult run(pam_handle_t *pamh, OptionalPassword &op, int retry = 0) {
     SystemResult sr;
     DuringExec de;
     boost::asio::signal_set sigchld(de.io_service, SIGCHLD);
@@ -324,6 +331,16 @@ public:
       boost::starts_with(sr.getSout().str(), "[exec ") &&
       boost::ends_with(sr.getSout().str(), "]"));
     sr.cmd = this->dump();
+    if (retry == 0) {
+      bool doRetry = false;
+      for (auto rt : this->retryActions) {
+        doRetry |= (rt)(sr, *this);
+      }
+      if (doRetry) {
+        LOG(INFO) << "retrying command:" << this->dump();
+        return run(pamh, op, retry + 1);
+      }
+    }
     //LOG(INFO) << sr.ok << ":" << dump();
     return sr;
   }

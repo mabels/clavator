@@ -6,8 +6,9 @@ private:
   char *value;
   size_t len;
   bool set;
+  bool doFree;
 public:
-  OptionalPassword() : value(0), len(0), set(false) {
+  OptionalPassword() : value(0), len(0), set(false), doFree(true) {
   }
   ~OptionalPassword() {
     destroy();
@@ -18,15 +19,18 @@ public:
   size_t getLen() const {
     return this->len;
   }
-  void own(char *value) {
+  void own(char *value, bool doFree = true) {
     this->value = value;
     this->len = strlen(value);
     this->set = true;
+    this->doFree = doFree;
   }
   void destroy() {
     if (value) {
       std::memset(value, 0, this->len);
-      free(value);
+      if (doFree) {
+        free(value);
+      }
       this->len = 0;
       value = 0;
     }

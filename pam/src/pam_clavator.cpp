@@ -12,6 +12,7 @@
 #include <sys/wait.h>
 #include <libgen.h>
 #include <sys/stat.h>
+#include <errno.h>
 
 #include <string>
 #include <vector>
@@ -124,10 +125,23 @@ public:
   Matcher<std::string> pinentry_os_default;
   Matcher<std::string> logfile;
   Matcher<bool> reset_gpg_agent;
+  Matcher<bool> try_first_pass;
   Matcher<bool> use_first_pass;
   Matcher<bool> ask_for_password;
   Matcher<bool> debug;
   Matcher<size_t> retries;
+
+//   try_first_pass
+// Before prompting the user for their password, the module first tries
+// the previous stacked module's password in case that satisfies this
+// module as well.
+// use_first_pass
+// The argument use_first_pass forces the module to use a previous stacked
+// modules password and will never prompt the user - if no password is
+// available or the password is not appropriate, the user will be
+//  denied access.
+
+
   Config() :
     ssh_authorized_keys_fname("ssh_authorized_keys_fname=", ".ssh/authorized_keys", matchers),
     password_prompt("password_prompt=", "pincode: ", matchers),
@@ -140,6 +154,7 @@ public:
     pinentry_os_default("pinentry_os_default", "/usr/local/MacGPG2/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac", matchers),
     logfile("logfile", ".gnupg/pam_clavator.log", matchers),
     reset_gpg_agent("reset_gpg_agent", false, matchers),
+    try_first_pass("try_first_pass", false, matchers),
     use_first_pass("use_first_pass", false, matchers),
     ask_for_password("ask_for_password", false, matchers),
     debug("debug", false, matchers),
@@ -216,8 +231,9 @@ int setup_gpgagent_conf(pam_handle_t *pamh, const struct passwd *pwd, const Conf
   return PAM_SUCCESS;
 }
 
-boost::optional<int> gpgagent_start(pam_handle_t *pamh, const struct passwd *pwd, const Config &cfg, OptionalPassword &op) {
-  if (!cfg.reset_gpg_agent.value) {
+boost::optional<int> gpgagent_start(pam_handle_t *pamh, const struct passwd *pwd, const Config &cfg,
+  OptionalPassword &op, bool force = false) {
+  if (!force && !cfg.reset_gpg_agent.value) {
     return boost::none;
   }
   // gpg-connect-agent "SCD RESET" /bye
@@ -242,6 +258,7 @@ boost::optional<int> gpgagent_start(pam_handle_t *pamh, const struct passwd *pwd
     LOG(ERROR) << start_gpg_connect_agent.dump();
     return PAM_AUTH_ERR;
   }
+  LOG(DEBUG) << "reset_gpg_agent done";
   return PAM_SUCCESS;
 }
 
@@ -300,40 +317,41 @@ std::string date_yyyy_mm_dd(std::chrono::time_point<std::chrono::system_clock> n
 }
 
 
+/*
+  gpgsm -a --batch --gen-key <<EOF
+  Key-Type: RSA
+  Key-Length: 1024
+  Key-Grip: C083EC516CCEEFE80403CCA7CC3782A017C99142
+  Key-Usage: sign
+  Name-DN: CN=ssh-auth
+  Not-Before: 2011-11-11
+  Not-After: 2106-02-06
+  Subject-Key-Id: C083EC516CCEEFE80403CCA7CC3782A017C99142
+  Extension: 2.5.29.19 c 30060101ff020101
+  Extension: 1.3.6.1.4.1.11591.2.2.2 n 0101ff
+  Signing-Key: C083EC516CCEEFE80403CCA7CC3782A017C99142
+  %commit
+  EOF
+  gpgsm --import < pem
+  gpgsm --delete-key CN=xxxx
+  compare pubkeys pem und ssh
+  gpgsm --verify unknown how this works
+  gpgsm --import --dry-run
+*/
 boost::optional<Pem> create_cert_from_card(pam_handle_t *pamh, const struct passwd *pwd,
-  const Config &cfg, const std::string& grp, const std::string &uuid, OptionalPassword &op) {
-  /*
-    gpgsm -a --batch --gen-key <<EOF
-    Key-Type: RSA
-    Key-Length: 1024
-    Key-Grip: C083EC516CCEEFE80403CCA7CC3782A017C99142
-    Key-Usage: sign
-    Name-DN: CN=ssh-auth
-    Not-Before: 2011-11-11
-    Not-After: 2106-02-06
-    Subject-Key-Id: C083EC516CCEEFE80403CCA7CC3782A017C99142
-    Extension: 2.5.29.19 c 30060101ff020101
-    Extension: 1.3.6.1.4.1.11591.2.2.2 n 0101ff
-    Signing-Key: C083EC516CCEEFE80403CCA7CC3782A017C99142
-    %commit
-    EOF
-    gpgsm --import < pem
-    gpgsm --delete-key CN=xxxx
-    compare pubkeys pem und ssh
-    gpgsm --verify unknown how this works
-    gpgsm --import --dry-run
-  */
-  PamClavator::SystemCmd gpgsmGenkey(pwd, cfg.gpgsm.value);
+  const Config &cfg, const std::string& grp, const std::string &uuid,
+  OptionalPassword &op) {
 
+  PamClavator::SystemCmd gpgsmGenkey(pwd, cfg.gpgsm.value);
   auto now = std::chrono::system_clock::now();
   if (op.some()) {
+    LOG(DEBUG) << "create_cert_from_card: use predefined password";
     auto opwdPipe = Pipe::create();
     if (opwdPipe == boost::none) {
       LOG(ERROR) << "can't create password passing pipe";
       return boost::none;
     }
     auto &pwdPipe = *opwdPipe;
-    LOG(DEBUG) << "create_cert_from_card: use predefined password";
     gpgsmGenkey.toChildPipe(pwdPipe, pwdPipe->getWriteFd(), [&op](size_t ofs, const void **buf) {
       if (ofs >= op.getLen()) {
         return 0ul;
@@ -360,13 +378,25 @@ boost::optional<Pem> create_cert_from_card(pam_handle_t *pamh, const struct pass
   //  .pushSin("Extension: 1.3.6.1.4.1.11591.2.2.2 n 0101ff\n")
   //  .pushSin("Signing-Key: ").pushSin(grp).pushSin("\n")
     .pushSin("%commit\n");
+  gpgsmGenkey.checkRetry([pamh, pwd, &cfg, &op](const SystemResult &sr,
+    const PamClavator::SystemCmd &) {
+    if (sr.exitCode) {
+      auto ret = gpgagent_start(pamh, pwd, cfg, op, true);
+      if (ret != boost::none && *ret != PAM_SUCCESS) {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  });
   auto sr = gpgsmGenkey.run(pamh, op);
   if (sr.exitCode) {
-    LOG(ERROR) << "GENKEY[" << gpgsmGenkey.dump() << "]["
-      << sr.getSout().str() << "][" << sr.getSerr().str() << "]";
+    LOG(ERROR) << "GENKEY[" << sr.exitCode << "][" <<
+      gpgsmGenkey.dump() << "][" << sr.getSout().str() <<
+      "][" << sr.getSerr().str() << "]";
     return  boost::none;
   }
-  LOG(DEBUG) << "GENKEY[" << sr.getSout().str() << "][" << sr.getSerr().str() << "]";
+  //LOG(DEBUG) << "GENKEY[" << sr.getSout().str() << "][" << sr.getSerr().str() << "]";
   PamClavator::SystemCmd gpgsmImport(pwd, cfg.gpgsm.value);
   gpgsmImport.arg("--import").arg("--dry-run").pushSin(sr.getSout().str());
   auto srImport = gpgsmImport.run(pamh, op);
@@ -392,47 +422,58 @@ std::string create_challenge() {
 }
 
 boost::optional<int> ask_for_password(pam_handle_t *pamh, const Config &cfg, OptionalPassword &password) {
-  if (!cfg.ask_for_password.value) {
-    LOG(DEBUG) << "ask_for_password is not set";
-    return boost::none;
-  }
+  // if (!cfg.ask_for_password.value) {
+  //   LOG(DEBUG) << "ask_for_password is not set";
+  //   return boost::none;
+  // }
   /* get password */
-  struct pam_conv *conv;
-  auto pam_err = pam_get_item(pamh, PAM_CONV, (const void **)&conv);
-  if (pam_err != PAM_SUCCESS) {
+  const char *pass;
+  int pam_err = pam_get_authtok(pamh, PAM_AUTHTOK, &pass, "Enter PIN:");
+  if (pam_err != PAM_SUCCESS || pass == NULL || *pass == 0) {
     LOG(ERROR) << "ask_for_password:pam_get_item PAM_CONV";
     return pam_err;
   }
-  struct pam_message msg;
-  msg.msg_style = PAM_PROMPT_ECHO_OFF;
-  msg.msg = (char *)cfg.password_prompt.value.c_str();
-  const struct pam_message *msgp = &msg;
-
-  struct pam_response *resp = NULL;
-  pam_err = (*conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
-  if (pam_err != PAM_SUCCESS) {
-    LOG(ERROR) << "ask_for_password:conf failed with:" << pam_err;
-    return pam_err;
-  }
-  if (resp != NULL) {
-    LOG(DEBUG) << "got password from ask_for_password";
-    password.own(resp->resp);
-    free(resp);
-  }
+  LOG(DEBUG) << "got password from ask_for_password";
+  password.own((char *)pass, false);
+  //
+  //
+  // struct pam_conv *conv;
+  // auto pam_err = pam_get_item(pamh, PAM_CONV, (const void **)&conv);
+  // if (pam_err != PAM_SUCCESS) {
+  //   LOG(ERROR) << "ask_for_password:pam_get_item PAM_CONV";
+  //   return pam_err;
+  // }
+  // struct pam_message msg;
+  // msg.msg_style = PAM_PROMPT_ECHO_OFF;
+  // msg.msg = (char *)cfg.password_prompt.value.c_str();
+  // const struct pam_message *msgp = &msg;
+  //
+  // struct pam_response *resp = NULL;
+  // pam_err = (*conv->conv)(1, &msgp, &resp, conv->appdata_ptr);
+  // if (pam_err != PAM_SUCCESS) {
+  //   LOG(ERROR) << "ask_for_password:conf failed with:" << pam_err;
+  //   return pam_err;
+  // }
+  // if (resp != NULL) {
+  //   LOG(DEBUG) << "got password from ask_for_password";
+  //   password.own(resp->resp);
+  //   free(resp);
+  // }
   return pam_err;
 }
 
-boost::optional<int> use_first_pass(pam_handle_t *pamh, const Config &cfg, OptionalPassword &password) {
-  if (!cfg.use_first_pass.value) {
-    return boost::none;
-  }
+boost::optional<int> get_authtok(pam_handle_t *pamh, const Config &, OptionalPassword &password) {
   char *tmp = 0;
   auto retval = pam_get_item(pamh, PAM_AUTHTOK, (const void **)&tmp);
-  if (retval != PAM_SUCCESS || tmp == 0) {
+  if (retval != PAM_SUCCESS) {
     LOG(ERROR) << "get password returned error: " << pam_strerror (pamh, retval) << " settings";
   } else {
-    password.own(tmp);
-    LOG(ERROR) << "got use first password";
+    if (tmp != 0) {
+      LOG(DEBUG) << "use password from PAM_AUTHTOK(!free)";
+      password.own(tmp, false);
+    } else {
+      LOG(DEBUG) << "don't got a PAM_AUTHTOK(!free)";
+    }
   }
   return retval;
 }
@@ -445,7 +486,6 @@ extern "C" {
 
 PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
                                    const char *argv[]) {
-  struct passwd *pwd;
   const char *user;
   int pam_err;
   Config cfg;
@@ -459,12 +499,18 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
   cfg.parse_cfg(flags, argc, argv);
 
   /* identify user */
-  if ((pam_err = pam_get_user(pamh, &user, NULL)) != PAM_SUCCESS) {
+  pam_err = pam_get_user(pamh, &user, 0);
+  if (pam_err != PAM_SUCCESS || user == 0) {
     LOG(ERROR) << "pam_sm_authenticate:pam_get_user";
     return (pam_err);
   }
-  if ((pwd = getpwnam(user)) == NULL) {
-    LOG(ERROR) << "pam_sm_authenticate:getpwname";
+
+  struct passwd pw_s;
+  struct passwd *pwd;
+  char buffer[1024];
+  pam_err = getpwnam_r(user, &pw_s, buffer, sizeof(buffer), &pwd);
+  if (pam_err != 0 || pwd == 0 || pwd->pw_dir == 0 || pwd->pw_dir[0] != '/') {
+    LOG(ERROR) << "pam_sm_authenticate:getpwname:" << strerror(errno);
     return (PAM_USER_UNKNOWN);
   }
   el::Configurations defaultConf;
@@ -476,18 +522,34 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
   el::Loggers::reconfigureLogger("default", defaultConf);
 
   // use_first_pass
-  auto ret_ufp = use_first_pass(pamh, cfg, password);
-  if (ret_ufp != boost::none && *ret_ufp != PAM_SUCCESS) {
+  if (cfg.ask_for_password.value) {
     auto ret = ask_for_password(pamh, cfg, password);
     if (ret != boost::none && *ret != PAM_SUCCESS) {
-        return pam_err;
+      LOG(ERROR) << "ask_for_password don't got a valid password";
+      return PAM_USER_UNKNOWN;
     }
-    return pam_err;
-  }
-  if (!cfg.use_first_pass.value && cfg.ask_for_password.value) {
-    auto ret = ask_for_password(pamh, cfg, password);
-    if (ret != boost::none && *ret != PAM_SUCCESS) {
-        return pam_err;
+  } else {
+    if (cfg.use_first_pass.value) {
+      auto ret_ufp = get_authtok(pamh, cfg, password);
+      if (ret_ufp == boost::none ||
+          *ret_ufp != PAM_SUCCESS ||
+          !password.some()) {
+        LOG(ERROR) << "get_authtok don't got a valid password";
+        return PAM_USER_UNKNOWN;
+      }
+    } else if (cfg.try_first_pass.value) {
+      auto ret_ufp = get_authtok(pamh, cfg, password);
+      if (ret_ufp == boost::none || *ret_ufp != PAM_SUCCESS) {
+        LOG(ERROR) << "get_authtok don't got a valid password";
+        return PAM_USER_UNKNOWN;
+      }
+      if (!password.some()) {
+        auto ret = ask_for_password(pamh, cfg, password);
+        if (ret == boost::none || *ret != PAM_SUCCESS) {
+          LOG(ERROR) << "ask_for_password don't got a valid password";
+          return pam_err;
+        }
+      }
     }
   }
 
@@ -529,7 +591,12 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
       if (pemPubKey->modulus == v.from_data_modulo &&
           pemPubKey->key == v.from_data_pubkey &&
           pemPubKey->serial == challenge) {
-        LOG(ERROR) << "found key in SshAuthorizedKeys";
+        LOG(INFO) << "found key in SshAuthorizedKeys";
+        auto retval = pam_set_item(pamh, PAM_AUTHTOK, challenge.c_str());
+        if (retval != PAM_SUCCESS) {
+          LOG(ERROR) << "set_item returned error:" << pam_strerror(pamh, retval);
+          return retval;
+        }
         return (PAM_SUCCESS);
       }
   }

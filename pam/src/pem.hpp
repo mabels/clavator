@@ -45,7 +45,7 @@ public:
         return boost::none;
       }
       auto pstring = *i;
-      pstring.dump();
+      //pstring.dump();
       if (pstring.type != ((uint8_t)0x13)) {
         LOG(ERROR) << "no PRINTABLESTRING:" << (size_t)(pstring.type);
         return boost::none;
@@ -115,7 +115,7 @@ public:
               return boost::none;
             }
             auto const &oid = *ooid;
-            LOG(INFO) << "found oid=" << oid.toString();
+            //LOG(INFO) << "found oid=" << oid.toString();
             auto commonName = getCommonName(pk, oid, i, asn1s.end());
             if (commonName == boost::none) {
               LOG(ERROR) << "commonName defect" << std::endl;
