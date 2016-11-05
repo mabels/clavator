@@ -262,7 +262,7 @@ int setup_gpgagent_conf(pam_handle_t *pamh, const struct passwd *pwd, const Conf
 bool force_kill(RetryActor &ra, const char *name) {
   LOG(INFO) << "forced kill of " << name;
   std::stringstream uidArg;
-  uidArg << "-" << ra.pwd->pw_uid;
+  uidArg << ra.pwd->pw_uid;
   auto signals = { SIGTERM, SIGKILL };
   for (auto sig : signals) {
     PamClavator::SystemCmd pkill(ra.pwd, ra.cfg.pkill.value);
@@ -275,35 +275,8 @@ bool force_kill(RetryActor &ra, const char *name) {
       LOG(ERROR) << "force_kill:failed:" << sr.asString();
       return false;
     }
+    //LOG(INFO) << sr.asString();
   }
-  // PamClavator::SystemCmd pgrep(ra.pwd, ra.cfg.pgrep.value);
-  // pgrep.arg(name);
-  // auto sr = pgrep.run(ra.pamh, ra.op);
-  // if (sr.exitCode) {
-  //   LOG(ERROR) << sr.asString();
-  //   return false;
-  // }
-  // std::string line;
-  // bool fail = false;
-  // while (std::getline(sr.getSout(), line)) {
-  //   char *end = 0;
-  //   pid_t pid = strtoul(line.c_str(), &end, 10);
-  //   // why 1 of course nobody wants to kill init
-  //   if (pid <= 1) { continue; }
-  //   kill(pid, SIGTERM);
-  //   int err = kill(pid, SIGKILL);
-  //   if (err != ESRCH) {
-  //     err = kill(pid, SIGKILL);
-  //     if (err != ESRCH) {
-  //       LOG(ERROR) << "failed to kill:" << pid << ":" << err;
-  //       fail = true;
-  //     }
-  //   }
-  // }
-  // if (fail) {
-  //     LOG(ERROR) << "kill of pid:" << pid << " failed!";
-  //     return false;
-  // }
   return true;
 }
 
@@ -553,7 +526,7 @@ boost::optional<int> get_authtok(pam_handle_t *pamh, const Config &, OptionalPas
       LOG(DEBUG) << "use password from PAM_AUTHTOK(!free)";
       password.own(tmp, false);
     } else {
-      LOG(DEBUG) << "don't got a PAM_AUTHTOK(!free)";
+      LOG(DEBUG) << "don't found PAM_AUTHTOK";
     }
   }
   return retval;
