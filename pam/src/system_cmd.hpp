@@ -52,7 +52,7 @@ namespace PamClavator {
 
 class SystemCmd {
 public:
-  typedef const std::function<bool(const SystemResult &sr, const SystemCmd &sc)> RetryAction;
+  typedef std::function<bool(const SystemResult &sr, const SystemCmd &sc)> RetryAction;
 private:
   const struct passwd *pwd;
   std::vector<std::string> args;
