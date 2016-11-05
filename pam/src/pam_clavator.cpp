@@ -417,7 +417,7 @@ boost::optional<Pem> create_cert_from_card(RetryActor &ra,
       return boost::none;
     }
     auto &pwdPipe = *opwdPipe;
-    gpgsmGenkey.toChildPipe(pwdPipe, pwdPipe->getWriteFd(), [&ra](size_t ofs, const void **buf) {
+    gpgsmGenkey.toChildPipe(pwdPipe, pwdPipe->getWriteFd(), [&ra](size_t ofs, const void **buf) -> size_t {
       if (ofs >= ra.op.getLen()) {
         return 0ul;
       }

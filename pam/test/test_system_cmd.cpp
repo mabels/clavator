@@ -93,7 +93,7 @@ int main() {
         auto oPipe = Pipe::create();
         auto &pipe = *oPipe;
         PamClavator::SystemCmd bash(pwd, EXEC_BASH);
-        bash.toChildPipe(pipe, pipe->getWriteFd(), [cout, &out](size_t ofs, const void **buf) {
+        bash.toChildPipe(pipe, pipe->getWriteFd(), [cout, &out](size_t ofs, const void **buf) -> size_t {
           if (ofs >= out.size()) {
             *buf = 0;
             return 0ul;
