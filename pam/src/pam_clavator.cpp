@@ -56,8 +56,8 @@ namespace fs = boost::filesystem;
 
 #ifndef __APPLE_CC__
 #include <security/pam_modutil.h>
-#endif
 #include <security/pam_ext.h>
+#endif
 #include <security/pam_appl.h>
 #include <security/pam_modules.h>
 
