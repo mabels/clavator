@@ -32,6 +32,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 
+#include <boost/bind/bind.hpp>
+
 namespace fs = boost::filesystem;
 
 #include <easylogging++.h>
@@ -121,6 +123,8 @@ public:
   Matcher<std::string> gpgsm;
   Matcher<std::string> gpg_agent_conf;
   Matcher<std::string> gpg_conf;
+  Matcher<std::string> pgrep;
+  Matcher<std::string> pkill;
   Matcher<std::string> pinentry_dispatcher;
   Matcher<std::string> pinentry_os_default;
   Matcher<std::string> logfile;
@@ -150,6 +154,8 @@ public:
     gpgsm("gpgsm=", GPGSM, matchers),
     gpg_agent_conf("gpg_agent_conf=", ".gnupg/gpg-agent.conf", matchers),
     gpg_conf("gpg_conf=", ".gnupg/gpg.conf", matchers),
+    pgrep("pgrep=", "/usr/bin/pgrep", matchers),
+    pkill("pkill=", "/usr/bin/pkill", matchers),
     pinentry_dispatcher("pinentry_dispatcher=", ".gnupg/pinentry_dispatcher.sh", matchers),
     pinentry_os_default("pinentry_os_default", "/usr/local/MacGPG2/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac", matchers),
     logfile("logfile", ".gnupg/pam_clavator.log", matchers),
@@ -177,6 +183,27 @@ public:
   }
 };
 
+
+class RetryActor {
+private:
+  static bool _action(RetryActor *ra, const SystemResult &sr,
+      const PamClavator::SystemCmd &sc);
+public:
+  pam_handle_t *pamh;
+  struct passwd *pwd;
+  const Config &cfg;
+  OptionalPassword &op;
+
+  RetryActor(pam_handle_t *pamh, struct passwd *pwd,
+       const Config &cfg, OptionalPassword &op) :
+       pamh(pamh), pwd(pwd), cfg(cfg), op(op) {}
+
+  PamClavator::SystemCmd::RetryAction get() {
+    return boost::bind(&RetryActor::_action, this, _1, _2);
+  }
+
+};
+
 int create_gnupg_dir(pam_handle_t *pamh, const struct passwd *pwd, const Config &cfg, OptionalPassword &op) {
   auto gpgConfFile = substPattern("HOMEDIR", pwd->pw_dir, cfg.gpg_conf.value);
   fs::path dotGnupgDir(fs::path(gpgConfFile.c_str()).remove_filename());
@@ -185,9 +212,9 @@ int create_gnupg_dir(pam_handle_t *pamh, const struct passwd *pwd, const Config 
     mkdir_p.arg("-p");
     mkdir_p.arg("--mode=0700");
     mkdir_p.arg(dotGnupgDir.c_str());
-    mkdir_p.run(pamh, op);
-    if (mkdir_p.getStatus()) {
-      LOG(ERROR) << mkdir_p.dump();
+    auto res = mkdir_p.run(pamh, op);
+    if (res.exitCode) {
+      LOG(ERROR) << res.asString();
       return PAM_AUTH_ERR;
     }
   }
@@ -231,67 +258,134 @@ int setup_gpgagent_conf(pam_handle_t *pamh, const struct passwd *pwd, const Conf
   return PAM_SUCCESS;
 }
 
-boost::optional<int> gpgagent_start(pam_handle_t *pamh, const struct passwd *pwd, const Config &cfg,
-  OptionalPassword &op, bool force = false) {
-  if (!force && !cfg.reset_gpg_agent.value) {
+bool force_kill(RetryActor &ra, const char *name) {
+  LOG(INFO) << "forced kill of " << name;
+  std::stringstream uidArg;
+  uidArg << "-" << ra.pwd->pw_uid;
+  auto signals = { SIGTERM, SIGKILL };
+  for (auto sig : signals) {
+    PamClavator::SystemCmd pkill(ra.pwd, ra.cfg.pkill.value);
+    std::stringstream sigArg;
+    sigArg << "-" << sig;
+    pkill.arg(sigArg.str()).arg("-U").arg(uidArg.str());
+    pkill.arg(name);
+    auto sr = pkill.run(ra.pamh, ra.op);
+    if (!sr.ok) {
+      LOG(ERROR) << "force_kill:failed:" << sr.asString();
+      return false;
+    }
+  }
+  // PamClavator::SystemCmd pgrep(ra.pwd, ra.cfg.pgrep.value);
+  // pgrep.arg(name);
+  // auto sr = pgrep.run(ra.pamh, ra.op);
+  // if (sr.exitCode) {
+  //   LOG(ERROR) << sr.asString();
+  //   return false;
+  // }
+  // std::string line;
+  // bool fail = false;
+  // while (std::getline(sr.getSout(), line)) {
+  //   char *end = 0;
+  //   pid_t pid = strtoul(line.c_str(), &end, 10);
+  //   // why 1 of course nobody wants to kill init
+  //   if (pid <= 1) { continue; }
+  //   kill(pid, SIGTERM);
+  //   int err = kill(pid, SIGKILL);
+  //   if (err != ESRCH) {
+  //     err = kill(pid, SIGKILL);
+  //     if (err != ESRCH) {
+  //       LOG(ERROR) << "failed to kill:" << pid << ":" << err;
+  //       fail = true;
+  //     }
+  //   }
+  // }
+  // if (fail) {
+  //     LOG(ERROR) << "kill of pid:" << pid << " failed!";
+  //     return false;
+  // }
+  return true;
+}
+
+boost::optional<int> gpgagent_start(RetryActor &ra, bool force = false) {
+  if (!force && !ra.cfg.reset_gpg_agent.value) {
     return boost::none;
   }
+  if (force && !force_kill(ra, "gpg-agent")) {
+      return PAM_AUTH_ERR;
+  }
+
   // gpg-connect-agent "SCD RESET" /bye
   // KILL running
-  PamClavator::SystemCmd kill_gpg_connect_agent(pwd, cfg.gpg_connect_agent.value);
+  PamClavator::SystemCmd kill_gpg_connect_agent(ra.pwd, ra.cfg.gpg_connect_agent.value);
   kill_gpg_connect_agent.arg("--no-autostart");
   kill_gpg_connect_agent.arg("KILLAGENT");
   kill_gpg_connect_agent.arg("/bye");
-  kill_gpg_connect_agent.run(pamh, op);
-  if (kill_gpg_connect_agent.getStatus()) {
-    LOG(ERROR) << kill_gpg_connect_agent.dump();
+  if (!force) {
+    kill_gpg_connect_agent.checkRetry(ra.get());
+  }
+  auto res = kill_gpg_connect_agent.run(ra.pamh, ra.op);
+  if (res.exitCode) {
+    LOG(ERROR) << res.asString();
     return PAM_AUTH_ERR;
   }
-  PamClavator::SystemCmd start_gpg_connect_agent(pwd, cfg.gpg_connect_agent.value);
+  PamClavator::SystemCmd start_gpg_connect_agent(ra.pwd, ra.cfg.gpg_connect_agent.value);
   start_gpg_connect_agent.arg("/subst");
   start_gpg_connect_agent.arg("/serverpid");
   start_gpg_connect_agent.arg("/let serverpid ${get serverpid}");
   start_gpg_connect_agent.arg("/echo $serverpid");
   start_gpg_connect_agent.arg("/bye");
-  start_gpg_connect_agent.run(pamh, op);
-  if (start_gpg_connect_agent.getStatus()) {
-    LOG(ERROR) << start_gpg_connect_agent.dump();
+  if (!force) {
+    start_gpg_connect_agent.checkRetry(ra.get());
+  }
+  res = start_gpg_connect_agent.run(ra.pamh, ra.op);
+  if (res.exitCode) {
+    LOG(ERROR) << res.asString();
     return PAM_AUTH_ERR;
   }
   LOG(DEBUG) << "reset_gpg_agent done";
   return PAM_SUCCESS;
 }
 
-boost::optional<std::string> check_does_we_have_a_card(pam_handle_t *pamh,
-  const struct passwd *pwd, const Config &cfg, OptionalPassword &op) {
-  PamClavator::SystemCmd gpg2cardStatusCmd(pwd, cfg.gpg.value);
+bool RetryActor::_action(RetryActor *ra, const SystemResult &sr, const PamClavator::SystemCmd &) {
+  if (sr.exitCode) {
+    auto ret = gpgagent_start(*ra, true);
+    if (ret != boost::none && *ret != PAM_SUCCESS) {
+      return false;
+    }
+    return true;
+  }
+  return false;
+}
+
+// gpg2 --card-status --with-colon
+// check does we have one card!
+// extract fpr' use third fpr
+// gpg2 --list-secret-keys --with-colon
+// find keys from extracted fpr's
+boost::optional<std::string> check_does_we_have_a_card(RetryActor &ra) {
+  PamClavator::SystemCmd gpg2cardStatusCmd(ra.pwd, ra.cfg.gpg.value);
   gpg2cardStatusCmd.arg("--card-status");
   gpg2cardStatusCmd.arg("--with-colon");
-  auto sr = gpg2cardStatusCmd.run(pamh, op);
+  gpg2cardStatusCmd.checkRetry(ra.get());
+  auto sr = gpg2cardStatusCmd.run(ra.pamh, ra.op);
   if (sr.exitCode) {
-    LOG(ERROR) << gpg2cardStatusCmd.dump();
+    LOG(ERROR) << sr.asString();
     return boost::none;
   }
   auto gpg2cardStatus = Gpg2CardStatus::read(sr.getSout());
 
-  PamClavator::SystemCmd gpgConnectAgent(pwd, cfg.gpg_connect_agent.value);
+  PamClavator::SystemCmd gpgConnectAgent(ra.pwd, ra.cfg.gpg_connect_agent.value);
   gpgConnectAgent.arg("keyinfo --list");
   gpgConnectAgent.arg("/bye");
-  sr = gpgConnectAgent.run(pamh, op);
+  gpgConnectAgent.checkRetry(ra.get());
+  sr = gpgConnectAgent.run(ra.pamh, ra.op);
   if (sr.exitCode) {
-    LOG(ERROR) << gpgConnectAgent.dump();
+    LOG(ERROR) << sr.asString();
     return boost::none;
   }
   auto gpgKeyInfoList = GpgKeyInfo::read(sr.getSout());
-  // gpg2 --card-status --with-colon
-  // check does we have one card!
-  // extract fpr' use third fpr
-  // gpg2 --list-secret-keys --with-colon
-  // find keys from extracted fpr's
   for (auto ki : gpgKeyInfoList) {
-    if (ki.keyId != "OPENPGP.3") {
-      continue;
-    }
+    if (ki.keyId != "OPENPGP.3") { continue; }
     for (auto cs : gpg2cardStatus) {
        if (cs.reader.cardid == ki.cardid) {
          return ki.group;
@@ -316,7 +410,6 @@ std::string date_yyyy_mm_dd(std::chrono::time_point<std::chrono::system_clock> n
 #endif
 }
 
-
 /*
   gpgsm -a --batch --gen-key <<EOF
   Key-Type: RSA
@@ -338,13 +431,11 @@ std::string date_yyyy_mm_dd(std::chrono::time_point<std::chrono::system_clock> n
   gpgsm --verify unknown how this works
   gpgsm --import --dry-run
 */
-boost::optional<Pem> create_cert_from_card(pam_handle_t *pamh, const struct passwd *pwd,
-  const Config &cfg, const std::string& grp, const std::string &uuid,
-  OptionalPassword &op) {
-
-  PamClavator::SystemCmd gpgsmGenkey(pwd, cfg.gpgsm.value);
+boost::optional<Pem> create_cert_from_card(RetryActor &ra,
+  const std::string& grp, const std::string &uuid) {
+  PamClavator::SystemCmd gpgsmGenkey(ra.pwd, ra.cfg.gpgsm.value);
   auto now = std::chrono::system_clock::now();
-  if (op.some()) {
+  if (ra.op.some()) {
     LOG(DEBUG) << "create_cert_from_card: use predefined password";
     auto opwdPipe = Pipe::create();
     if (opwdPipe == boost::none) {
@@ -352,12 +443,12 @@ boost::optional<Pem> create_cert_from_card(pam_handle_t *pamh, const struct pass
       return boost::none;
     }
     auto &pwdPipe = *opwdPipe;
-    gpgsmGenkey.toChildPipe(pwdPipe, pwdPipe->getWriteFd(), [&op](size_t ofs, const void **buf) {
-      if (ofs >= op.getLen()) {
+    gpgsmGenkey.toChildPipe(pwdPipe, pwdPipe->getWriteFd(), [&ra](size_t ofs, const void **buf) {
+      if (ofs >= ra.op.getLen()) {
         return 0ul;
       }
-      *buf = static_cast<const void *>(op.getValue() + ofs);
-      return op.getLen() - ofs;
+      *buf = static_cast<const void *>(ra.op.getValue() + ofs);
+      return ra.op.getLen() - ofs;
     });
     gpgsmGenkey.arg("--no-tty").arg("--batch");
     gpgsmGenkey.arg("--pinentry-mode").arg("loopback");
@@ -378,30 +469,19 @@ boost::optional<Pem> create_cert_from_card(pam_handle_t *pamh, const struct pass
   //  .pushSin("Extension: 1.3.6.1.4.1.11591.2.2.2 n 0101ff\n")
   //  .pushSin("Signing-Key: ").pushSin(grp).pushSin("\n")
     .pushSin("%commit\n");
-  gpgsmGenkey.checkRetry([pamh, pwd, &cfg, &op](const SystemResult &sr,
-    const PamClavator::SystemCmd &) {
-    if (sr.exitCode) {
-      auto ret = gpgagent_start(pamh, pwd, cfg, op, true);
-      if (ret != boost::none && *ret != PAM_SUCCESS) {
-        return false;
-      }
-      return true;
-    }
-    return false;
-  });
-  auto sr = gpgsmGenkey.run(pamh, op);
+  gpgsmGenkey.checkRetry(ra.get());
+  auto sr = gpgsmGenkey.run(ra.pamh, ra.op);
   if (sr.exitCode) {
-    LOG(ERROR) << "GENKEY[" << sr.exitCode << "][" <<
-      gpgsmGenkey.dump() << "][" << sr.getSout().str() <<
+    LOG(ERROR) << "GENKEY[" << sr.asString() << "][" << sr.getSout().str() <<
       "][" << sr.getSerr().str() << "]";
     return  boost::none;
   }
   //LOG(DEBUG) << "GENKEY[" << sr.getSout().str() << "][" << sr.getSerr().str() << "]";
-  PamClavator::SystemCmd gpgsmImport(pwd, cfg.gpgsm.value);
+  PamClavator::SystemCmd gpgsmImport(ra.pwd, ra.cfg.gpgsm.value);
   gpgsmImport.arg("--import").arg("--dry-run").pushSin(sr.getSout().str());
-  auto srImport = gpgsmImport.run(pamh, op);
+  auto srImport = gpgsmImport.run(ra.pamh, ra.op);
   if (srImport.exitCode) {
-    LOG(ERROR) << gpgsmImport.dump();
+    LOG(ERROR) << srImport.asString();
     return  boost::none;
   }
   auto pem = Pem::read(sr.getSout());
@@ -421,7 +501,7 @@ std::string create_challenge() {
   return boost::algorithm::join(strs, "");
 }
 
-boost::optional<int> ask_for_password(pam_handle_t *pamh, const Config &cfg, OptionalPassword &password) {
+boost::optional<int> ask_for_password(pam_handle_t *pamh, const Config &, OptionalPassword &password) {
   // if (!cfg.ask_for_password.value) {
   //   LOG(DEBUG) << "ask_for_password is not set";
   //   return boost::none;
@@ -491,11 +571,6 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
   Config cfg;
   OptionalPassword password;
 
-  //char *crypt_password, *password;
-  //D(("pam_sm_authenticate"));
-
-  //START_EASYLOGGINGPP(argc, argv);
-
   cfg.parse_cfg(flags, argc, argv);
 
   /* identify user */
@@ -559,21 +634,22 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
   // if ((pam_err = setup_gpgagent_conf(pamh, pwd, cfg)) != PAM_SUCCESS) {
   //   return pam_err;
   // }
+  RetryActor ra(pamh, pwd, cfg, password);
   {
-    auto ret = gpgagent_start(pamh, pwd, cfg, password);
+    auto ret = gpgagent_start(ra);
     if (ret != boost::none && *ret != PAM_SUCCESS) {
       return pam_err;
     }
   }
 
-  auto grp = check_does_we_have_a_card(pamh, pwd, cfg, password);
+  auto grp = check_does_we_have_a_card(ra);
   if (grp == boost::none) {
     LOG(ERROR) << "pam_sm_authenticate:pam_get_item check_does_we_have_a_card";
     return (PAM_AUTH_ERR);
   }
 
   auto challenge = create_challenge();
-  auto pem = create_cert_from_card(pamh, pwd, cfg, *grp, challenge, password);
+  auto pem = create_cert_from_card(ra, *grp, challenge);
   if (pem == boost::none) {
     LOG(ERROR) << "pam_sm_authenticate:pam_get_item create_cert_from_card";
     return (PAM_AUTH_ERR);

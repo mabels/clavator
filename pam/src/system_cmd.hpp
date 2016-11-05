@@ -51,6 +51,8 @@ namespace PamClavator {
 // using ipaddress::Ok;
 
 class SystemCmd {
+public:
+  typedef const std::function<bool(const SystemResult &sr, const SystemCmd &sc)> RetryAction;
 private:
   const struct passwd *pwd;
   std::vector<std::string> args;
@@ -59,8 +61,7 @@ private:
   std::vector<PipeAction> fromMotherPipes;
   std::stringstream sin;
   const std::string exec;
-  boost::optional<int> status;
-  typedef const std::function<bool(const SystemResult &sr, const SystemCmd &sc)> RetryAction;
+  // boost::optional<int> status;
   std::vector<RetryAction> retryActions;
 public:
   SystemCmd(const struct passwd *pwd, const std::string &cmd) : pwd(pwd), exec(cmd) {
@@ -86,9 +87,9 @@ public:
     return *this;
   }
 
-  boost::optional<int> getStatus() const {
-    return status;
-  }
+  // boost::optional<int> getStatus() const {
+  //   return status;
+  // }
 
   SystemCmd &env(const char *key, const char *value)  {
     std::string kv(key);
@@ -106,7 +107,7 @@ public:
   SystemCmd &pushSin(const char *part) { sin << part ; return *this; }
   SystemCmd &pushSin(const std::string &part) { sin << part ; return *this; }
 
-  std::string dump() const {
+  std::string asString() const {
     std::stringstream ret;
     const char *space = "";
     for (auto &v : envs) {
@@ -123,9 +124,9 @@ public:
       }
       first = false;
     }
-    if (status) {
-      ret << "=>" << *status;
-    }
+    // if (status) {
+    //   ret << "=>" << *status;
+    // }
     return ret.str();
   }
 
@@ -330,14 +331,14 @@ public:
     sr.ok = !(sr.exitCode == 42 && sr.getSout().str() == sr.getSerr().str() &&
       boost::starts_with(sr.getSout().str(), "[exec ") &&
       boost::ends_with(sr.getSout().str(), "]"));
-    sr.cmd = this->dump();
+    sr.cmdAsString = this->asString();
     if (retry == 0) {
       bool doRetry = false;
       for (auto rt : this->retryActions) {
         doRetry |= (rt)(sr, *this);
       }
       if (doRetry) {
-        LOG(INFO) << "retrying command:" << this->dump();
+        LOG(INFO) << "retrying command:" << sr.asString();
         return run(pamh, op, retry + 1);
       }
     }

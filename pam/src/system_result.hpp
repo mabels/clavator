@@ -6,15 +6,15 @@
 #include <memory>
 
 class SystemResult {
-  public:
   // gcc 4.8 is has a explict deleted constructor in std::stringstream
   std::shared_ptr<std::stringstream> _sout;
   std::shared_ptr<std::stringstream> _serr;
-  std::string cmd;
+public:
   bool ok;
   int statusCode;
   int exitCode;
   int waitPid;
+  std::string cmdAsString;
   SystemResult() : _sout(new std::stringstream()), _serr(new std::stringstream()),
     ok(false), statusCode(-1), exitCode(-1), waitPid(-1) {}
   std::stringstream& getSout() { return *_sout; }
@@ -26,6 +26,13 @@ class SystemResult {
     ret.ok = false;
     return ret;
   }
+  std::string asString() const {
+    std::stringstream s2;
+    s2 << "<ok["<< ok << "]sc[" << statusCode << "]ec[" << exitCode << "]"
+       << "wp[" << waitPid << "]cmd[" << cmdAsString << "]>";
+    return s2.str();
+  }
+
 };
 
 #endif
