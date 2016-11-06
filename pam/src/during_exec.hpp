@@ -27,13 +27,15 @@ class DuringExec {
       return clientWriters.size() + motherWriters.size();
     }
 
-    void handle_completed(const char *) {
+    void handle_completed(const char *tag, bool force = false) {
       ++this->completed;
       auto total = 1+pipes();
       // LOG(DEBUG) << this->completed << "of" << total <<
       //   ":" << pipes() << "[" << what << "]";
-      // LOG(INFO) << "handle_completed:" << this->completed << ":" << tag;
-      if (this->completed >= total) {
+      LOG(INFO) << "handle_completed:" << this << ":"
+        << this->completed << ":"
+        << total << ":" << tag << ":" << force;
+      if (this->completed >= total || force) {
         // LOG(DEBUG) << "handle_completed: stop";
         this->io_service.stop();
       }

@@ -35,7 +35,7 @@ void PipeWriter::startFromMother() {
         }
       } else if (ec) {
         LOG(ERROR) << "register_read failed:" << ec << ":" << bytes_transferred;
-        de.handle_completed("std...");
+        de.handle_completed("std...", true);
       }
       return false;
     });
@@ -62,7 +62,7 @@ void PipeWriter::write(const void *buf, size_t len) {
       if (ec || bytes_transferred > len) {
         LOG(ERROR) << "async_write failed:" << ec;
         ds.close();
-        de.handle_completed("stdin-error");
+        de.handle_completed("stdin-error", true);
       } else {
         this->ofs += bytes_transferred;
         // LOG(DEBUG) << "asio:write_callback:" << bytes_transferred
