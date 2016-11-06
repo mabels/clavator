@@ -38,12 +38,27 @@ public:
       LOG(ERROR) << "no Reader Line:" << boost::algorithm::join(match, ":");
       return boost::none;
     }
-    Reader ret;
-    ret.model = match[1];
-    ret.aid = match[2];
-    ret.cardid = match[3];
-    ret.type = match[4];
-    return ret;
+    // Reader:1050:0407:X:0:AID:D2760001240102010006046450860000:openpgp-card:
+    // Reader:Yubico Yubikey 4 OTP U2F CCID:AID:D2760001240102010006041775630000:openpgp-card:
+    if (match[2] == "AID") { 
+      Reader ret;
+      ret.model = match[1];
+      ret.aid = match[2];
+      ret.cardid = match[3];
+      ret.type = match[4];
+      return ret;
+    } else if (match[5] == "AID") {
+      Reader ret;
+      std::vector<std::string> rest = { match[1], match[2], match[3], match[4] };
+      ret.model = boost::algorithm::join(rest, ":");
+      ret.aid = match[5];
+      ret.cardid = match[6];
+      ret.type = match[7];
+      return ret;
+    } else {
+      LOG(ERROR) << "no Reader Line:" << boost::algorithm::join(match, ":");
+      return boost::none;
+    }
   }
 };
 
