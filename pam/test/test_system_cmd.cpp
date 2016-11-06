@@ -26,8 +26,25 @@ using namespace cascara;
 #include <easylogging++.h>
 INITIALIZE_EASYLOGGINGPP
 
+
+void dump(sigset_t signal_set) {
+  for (int i = 0; i < 32; ++i) {
+    if (sigismember(&signal_set, i)) {
+      std::cout << "1";
+    } else {
+      std::cout << "0";
+    }
+  }
+  std::cout << "|" << sizeof(sigset_t) << std::endl;
+}
+
 int main() {
-  describe("SystemCmd", []() {
+  sigset_t signal_set;
+  sigemptyset(&signal_set);
+  sigaddset(&signal_set, SIGCHLD);
+  sigprocmask(SIG_BLOCK, &signal_set, NULL); 
+
+  describe("SystemCmd", [signal_set]() {
     auto pwd = getpwnam(std::getenv("USER"));
     // it("simple echo", []() {
     //     assert.equal(0, SystemCmd("/bin/sleep").arg("60").run().exitCode);
@@ -127,7 +144,17 @@ int main() {
       }
     });
     //
-
+    it("stdin to stdout", [signal_set]() {
+      sigset_t signal_current;
+      sigemptyset(&signal_current);
+      sigprocmask(SIG_BLOCK, &signal_current, &signal_current);
+      dump(signal_set);
+      dump(signal_current);
+      assert.equal(memcmp(
+	static_cast<const void*>(&signal_current), 
+	static_cast<const void*>(&signal_set), 
+	sizeof(signal_current)), 0, "signal still block");
+    });
 
   });
   exit();

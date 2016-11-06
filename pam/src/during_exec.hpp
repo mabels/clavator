@@ -13,6 +13,7 @@
 
 class DuringExec {
   public:
+    sigset_t prev_signal_set;
     std::atomic<size_t> completed;
     boost::asio::io_service io_service;
     std::vector<PipeAction> clientActions;

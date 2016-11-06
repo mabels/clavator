@@ -235,10 +235,10 @@ public:
   SystemResult run(pam_handle_t *pamh, OptionalPassword &op, int retry = 0) {
     SystemResult sr;
     DuringExec de;
-    sigset_t signal_set;
-    sigemptyset(&signal_set);
-    sigaddset(&signal_set, SIGCHLD);
-    sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
+    sigset_t set_child_sig;
+    sigemptyset(&set_child_sig);
+    sigaddset(&set_child_sig, SIGCHLD);
+    sigprocmask(SIG_UNBLOCK, &set_child_sig, &de.prev_signal_set);
     boost::asio::signal_set sigchld(de.io_service, SIGCHLD);
     SystemCmd::handleSigChild(sigchld, sr, de);
     auto ostdoutPipe = Pipe::create();
@@ -327,6 +327,8 @@ public:
     // LOG(INFO) << "stderr:" << read(stderrPipe->getRead(), buf, sizeof(buf)) << std::endl;
     // LOG(INFO) << "enter run_one";
     de.io_service.run();
+
+    sigprocmask(SIG_BLOCK, &de.prev_signal_set, 0);
     //while (io_service.run_one()) {
     // LOG(INFO) << "loop run_one";
     //}
