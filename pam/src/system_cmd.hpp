@@ -197,10 +197,13 @@ public:
 
   pid_t launch(DuringExec &de, OptionalPassword &op) {
       //signal(SIGCHLD, SIG_IGN);
+      de.io_service.notify_fork(boost::asio::io_service::fork_prepare);
       pid_t pid = fork();
       if (pid == 0) {
+        de.io_service.notify_fork(boost::asio::io_service::fork_child);
         childExec(de, op);
       } else {
+	de.io_service.notify_fork(boost::asio::io_service::fork_parent);
         for (auto pa : de.clientActions) {
           close(pa.childFd());
         }
@@ -232,6 +235,10 @@ public:
   SystemResult run(pam_handle_t *pamh, OptionalPassword &op, int retry = 0) {
     SystemResult sr;
     DuringExec de;
+    sigset_t signal_set;
+    sigemptyset(&signal_set);
+    sigaddset(&signal_set, SIGCHLD);
+    sigprocmask(SIG_UNBLOCK, &signal_set, NULL);
     boost::asio::signal_set sigchld(de.io_service, SIGCHLD);
     SystemCmd::handleSigChild(sigchld, sr, de);
     auto ostdoutPipe = Pipe::create();

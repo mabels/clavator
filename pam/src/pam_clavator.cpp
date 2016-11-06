@@ -129,6 +129,7 @@ public:
   Matcher<std::string> pinentry_dispatcher;
   Matcher<std::string> pinentry_os_default;
   Matcher<std::string> logfile;
+  Matcher<bool> pkill_by_uid;
   Matcher<bool> reset_gpg_agent;
   Matcher<bool> try_first_pass;
   Matcher<bool> use_first_pass;
@@ -160,6 +161,7 @@ public:
     pinentry_dispatcher("pinentry_dispatcher=", ".gnupg/pinentry_dispatcher.sh", matchers),
     pinentry_os_default("pinentry_os_default", "/usr/local/MacGPG2/libexec/pinentry-mac.app/Contents/MacOS/pinentry-mac", matchers),
     logfile("logfile", ".gnupg/pam_clavator.log", matchers),
+    pkill_by_uid("pkill_by_uid", false, matchers),
     reset_gpg_agent("reset_gpg_agent", false, matchers),
     try_first_pass("try_first_pass", false, matchers),
     use_first_pass("use_first_pass", false, matchers),
@@ -268,7 +270,10 @@ bool force_kill(RetryActor &ra, const char *name) {
     PamClavator::SystemCmd pkill(ra.pwd, ra.cfg.pkill.value);
     std::stringstream sigArg;
     sigArg << "-" << sig;
-    pkill.arg(sigArg.str()).arg("-U").arg(uidArg.str());
+    pkill.arg(sigArg.str());
+    if (ra.cfg.pkill_by_uid.value) {
+	pkill.arg("-U").arg(uidArg.str());
+    }
     pkill.arg(name);
     auto sr = pkill.run(ra.pamh, ra.op);
     if (!sr.ok) {
