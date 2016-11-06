@@ -602,12 +602,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
     }
   }
 
-  // if ((pam_err = create_gnupg_dir(pamh, pwd, cfg)) != PAM_SUCCESS) {
-  //   return pam_err;
-  // }
-  // if ((pam_err = setup_gpgagent_conf(pamh, pwd, cfg)) != PAM_SUCCESS) {
-  //   return pam_err;
-  // }
+
   RetryActor ra(pamh, pwd, cfg, password);
   {
     auto ret = gpgagent_start(ra);
@@ -628,11 +623,13 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
     LOG(ERROR) << "pam_sm_authenticate:pam_get_item create_cert_from_card";
     return (PAM_AUTH_ERR);
   }
+
   auto pemPubKey = pem->pubKey();
   if (pemPubKey == boost::none) {
     LOG(ERROR) << "pam_sm_authenticate:pemPubKey faild";
     return (PAM_AUTH_ERR);
   }
+
   auto fname = substPattern("HOMEDIR", pwd->pw_dir, cfg.ssh_authorized_keys_fname.value);
   std::ifstream fstream(fname.c_str(), std::ios_base::in | std::ios_base::binary);
   auto sshKeys =  PamClavator::SshAuthorizedKeys::read(fstream);
@@ -642,11 +639,11 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
           pemPubKey->key == v.from_data_pubkey &&
           pemPubKey->serial == challenge) {
         LOG(INFO) << "found key in SshAuthorizedKeys";
-        auto retval = pam_set_item(pamh, PAM_AUTHTOK, challenge.c_str());
-        if (retval != PAM_SUCCESS) {
-          LOG(ERROR) << "set_item returned error:" << pam_strerror(pamh, retval);
-          return retval;
-        }
+//        auto retval = pam_set_item(pamh, PAM_AUTHTOK, challenge.c_str());
+//        if (retval != PAM_SUCCESS) {
+//          LOG(ERROR) << "set_item returned error:" << pam_strerror(pamh, retval);
+//          return retval;
+//        }
         return (PAM_SUCCESS);
       }
   }
