@@ -2,6 +2,7 @@
 
 import {spawn} from 'child_process';
 import * as ListSecretKeys from "./list_secret_keys";
+import * as CardStatus from "./card_status";
 import * as path from "path";
 import * as fs from "fs";
 import * as pse from "../pinentry/server";
@@ -103,6 +104,19 @@ export class Gpg {
             cb(null, ListSecretKeys.run(result.stdOut));
         });
     }
+
+    public card_status(cb: (err: string, keys: CardStatus.Gpg2CardStatus[]) => void) {
+        this.run(['--card-status', '--with-colons'], null, (result: Result) => {
+            if (result.exitCode != 0) {
+                cb("gpg exit with a error code:" + result.exitCode +
+                    "\n" + result.stdErr +
+                    "\n" + result.stdOut, null);
+                return;
+            }
+            cb(null, CardStatus.run(result.stdOut));
+        });
+    }
+
 
     write_pinentry_sh(fname: string, cb: (err: any) => void) {
         fs.writeFile(fname, [

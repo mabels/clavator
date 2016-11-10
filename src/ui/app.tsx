@@ -3,6 +3,7 @@ import './app.less';
 // import AppState from  './app-state';
 
 import { KeyChainList } from './key-chain-list';
+import { CardStatusList } from './card-status-list';
 import { CreateKey } from './create-key';
 
 import * as WsChannel from './ws-channel';
@@ -60,6 +61,7 @@ export class App extends React.Component<{}, AppState> {
     return (
       <div className="app">
           <KeyChainList channel={this.state.channel} />
+          <CardStatusList channel={this.state.channel} />
           <CreateKey channel={this.state.channel} />
       </div>
 

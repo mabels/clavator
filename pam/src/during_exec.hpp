@@ -29,7 +29,7 @@ class DuringExec {
 
     void handle_completed(const char *tag, bool force = false) {
       ++this->completed;
-      auto total = 1+pipes();
+      auto total = 1 + pipes();
       // LOG(DEBUG) << this->completed << "of" << total <<
       //   ":" << pipes() << "[" << what << "]";
       LOG(INFO) << "handle_completed:" << this << ":"
