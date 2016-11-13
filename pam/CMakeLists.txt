@@ -28,8 +28,8 @@ if(APPLE)
 endif()
 
 include(CMakeLists-easyloggingpp.txt)
-include(CMakeLists-cascara.txt)
 
+include(CMakeLists-cascara.txt)
 
 
 #set(SIMPLEWEB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/3rdparty/Simple-WebSocket-Server")
@@ -42,7 +42,7 @@ include(CMakeLists-cascara.txt)
 #find_package(Threads REQUIRED)
 
 #include_directories(.)
-set(CMAKE_SHARED_LINKER_FLAGS "-lpam")
+#set(CMAKE_SHARED_LINKER_FLAGS "-lpam")
 #set(CMAKE_STATIC_LINKER_FLAGS "-lpam")
 
 
@@ -50,7 +50,10 @@ set(CMAKE_SHARED_LINKER_FLAGS "-lpam")
 #file(GLOB SOURCES "src/*.cpp")
 add_library(pamClavator SHARED src/pam_clavator.cpp src/pipe_writer.cpp)
 target_link_libraries(pamClavator ${Boost_LIBRARIES})
+#target_link_libraries(pamClavator ${pam_LIBRARIES})
+target_link_libraries(pamClavator "-lpam")
 add_dependencies(pamClavator easyloggingpp)
+add_dependencies(pamClavator cascara)
 
 #add_library(pamClavatorStatic STATIC src/pam_clavator.cpp)
 #target_link_libraries(pamClavatorStatic ${Boost_LIBRARIES})
