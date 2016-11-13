@@ -87,92 +87,10 @@ std::string DirName(std::string source) {
 #include "pin_entry_dispatcher.hpp"
 #include "run_as.hpp"
 #include "ssh_authorized_keys.hpp"
+#include "config.hpp"
 #include "system_cmd.hpp"
 
-#ifdef __APPLE_CC__
-#define GPG_CONNECT_AGENT "/usr/local/bin/gpg-connect-agent"
-#define GPG "/usr/local/bin/gpg2"
-#define GPGSM "/usr/local/bin/gpgsm"
-#else
-#define GPG_CONNECT_AGENT "/usr/bin/gpg-connect-agent"
-#define GPG "/usr/bin/gpg2"
-#define GPGSM "/usr/bin/gpgsm"
-#endif
 
-class Config {
-private:
-  std::vector<BaseMatcher *> matchers;
-
-public:
-  Matcher<std::string> ssh_authorized_keys_fname;
-  Matcher<std::string> password_prompt;
-  Matcher<std::string> gpg_connect_agent;
-  Matcher<std::string> gpg;
-  Matcher<std::string> gpgsm;
-  Matcher<std::string> gpg_agent_conf;
-  Matcher<std::string> gpg_conf;
-  Matcher<std::string> pgrep;
-  Matcher<std::string> pkill;
-  Matcher<std::string> pinentry_dispatcher;
-  Matcher<std::string> pinentry_os_default;
-  Matcher<std::string> logfile;
-  Matcher<bool> pkill_by_uid;
-  Matcher<bool> reset_gpg_agent;
-  Matcher<bool> try_first_pass;
-  Matcher<bool> use_first_pass;
-  Matcher<bool> ask_for_password;
-  Matcher<bool> debug;
-  Matcher<size_t> retries;
-
-  //   try_first_pass
-  // Before prompting the user for their password, the module first tries
-  // the previous stacked module's password in case that satisfies this
-  // module as well.
-  // use_first_pass
-  // The argument use_first_pass forces the module to use a previous stacked
-  // modules password and will never prompt the user - if no password is
-  // available or the password is not appropriate, the user will be
-  //  denied access.
-
-  Config()
-      : ssh_authorized_keys_fname("ssh_authorized_keys_fname=",
-                                  ".ssh/authorized_keys", matchers),
-        password_prompt("password_prompt=", "pincode: ", matchers),
-        gpg_connect_agent("gpg_connect_agent=", GPG_CONNECT_AGENT, matchers),
-        gpg("gpg=", GPG, matchers), gpgsm("gpgsm=", GPGSM, matchers),
-        gpg_agent_conf("gpg_agent_conf=", ".gnupg/gpg-agent.conf", matchers),
-        gpg_conf("gpg_conf=", ".gnupg/gpg.conf", matchers),
-        pgrep("pgrep=", "/usr/bin/pgrep", matchers),
-        pkill("pkill=", "/usr/bin/pkill", matchers),
-        pinentry_dispatcher("pinentry_dispatcher=",
-                            ".gnupg/pinentry_dispatcher.sh", matchers),
-        pinentry_os_default("pinentry_os_default", "/usr/local/MacGPG2/libexec/"
-                                                   "pinentry-mac.app/Contents/"
-                                                   "MacOS/pinentry-mac",
-                            matchers),
-        logfile("logfile", ".gnupg/pam_clavator.log", matchers),
-        pkill_by_uid("pkill_by_uid", false, matchers),
-        reset_gpg_agent("reset_gpg_agent", false, matchers),
-        try_first_pass("try_first_pass", false, matchers),
-        use_first_pass("use_first_pass", false, matchers),
-        ask_for_password("ask_for_password", false, matchers),
-        debug("debug", false, matchers), retries("retries", 3, matchers) {}
-
-  void parse_cfg(int, int argc, const char **argv) {
-    for (int i = 0; i < argc; ++i) {
-      for (auto &matcher : matchers) {
-        if (matcher->match(argv[i])) {
-          break;
-        }
-      }
-    }
-    if (debug.value) {
-      for (auto &matcher : matchers) {
-        matcher->dump();
-      }
-    }
-  }
-};
 
 class RetryActor {
 private:
@@ -199,7 +117,7 @@ int create_gnupg_dir(pam_handle_t *pamh, const struct passwd *pwd,
   auto gpgConfFile = substPattern("HOMEDIR", pwd->pw_dir, cfg.gpg_conf.value);
   fs::path dotGnupgDir(fs::path(gpgConfFile.c_str()).remove_filename());
   if (!fs::is_directory(dotGnupgDir)) {
-    PamClavator::SystemCmd mkdir_p(pwd, "/bin/mkdir");
+    PamClavator::SystemCmd mkdir_p(pwd, "/bin/mkdir", cfg.launchctl.value);
     mkdir_p.arg("-p");
     mkdir_p.arg("--mode=0700");
     mkdir_p.arg(dotGnupgDir.c_str());
@@ -262,7 +180,8 @@ bool force_kill(RetryActor &ra, const char *name) {
   uidArg << ra.pwd->pw_uid;
   auto signals = {SIGTERM, SIGKILL};
   for (auto sig : signals) {
-    PamClavator::SystemCmd pkill(ra.pwd, ra.cfg.pkill.value);
+    PamClavator::SystemCmd pkill(ra.pwd, ra.cfg.pkill.value,
+      ra.cfg.launchctl.value);
     std::stringstream sigArg;
     sigArg << "-" << sig;
     pkill.arg(sigArg.str());
@@ -291,7 +210,8 @@ boost::optional<int> gpgagent_start(RetryActor &ra, bool force = false) {
   // gpg-connect-agent "SCD RESET" /bye
   // KILL running
   PamClavator::SystemCmd kill_gpg_connect_agent(ra.pwd,
-                                                ra.cfg.gpg_connect_agent.value);
+                                                ra.cfg.gpg_connect_agent.value,
+                                                ra.cfg.launchctl.value);
   kill_gpg_connect_agent.arg("--no-autostart");
   kill_gpg_connect_agent.arg("KILLAGENT");
   kill_gpg_connect_agent.arg("/bye");
@@ -304,7 +224,7 @@ boost::optional<int> gpgagent_start(RetryActor &ra, bool force = false) {
     return PAM_AUTH_ERR;
   }
   PamClavator::SystemCmd start_gpg_connect_agent(
-      ra.pwd, ra.cfg.gpg_connect_agent.value);
+      ra.pwd, ra.cfg.gpg_connect_agent.value, ra.cfg.launchctl.value);
   start_gpg_connect_agent.arg("/subst");
   start_gpg_connect_agent.arg("/serverpid");
   start_gpg_connect_agent.arg("/let serverpid ${get serverpid}");
@@ -340,7 +260,8 @@ bool RetryActor::_action(RetryActor *ra, const SystemResult &sr,
 // gpg2 --list-secret-keys --with-colon
 // find keys from extracted fpr's
 boost::optional<std::string> check_does_we_have_a_card(RetryActor &ra) {
-  PamClavator::SystemCmd gpg2cardStatusCmd(ra.pwd, ra.cfg.gpg.value);
+  PamClavator::SystemCmd gpg2cardStatusCmd(ra.pwd, ra.cfg.gpg.value,
+    ra.cfg.launchctl.value);
   gpg2cardStatusCmd.arg("--card-status");
   gpg2cardStatusCmd.arg("--with-colon");
   gpg2cardStatusCmd.checkRetry(ra.get());
@@ -352,7 +273,8 @@ boost::optional<std::string> check_does_we_have_a_card(RetryActor &ra) {
   auto gpg2cardStatus = Gpg2CardStatus::read(sr.getSout());
 
   PamClavator::SystemCmd gpgConnectAgent(ra.pwd,
-                                         ra.cfg.gpg_connect_agent.value);
+                                         ra.cfg.gpg_connect_agent.value,
+                                         ra.cfg.launchctl.value);
   gpgConnectAgent.arg("keyinfo --list");
   gpgConnectAgent.arg("/bye");
   gpgConnectAgent.checkRetry(ra.get());
@@ -415,7 +337,8 @@ date_yyyy_mm_dd(std::chrono::time_point<std::chrono::system_clock> now) {
 boost::optional<Pem> create_cert_from_card(RetryActor &ra,
                                            const std::string &grp,
                                            const std::string &uuid) {
-  PamClavator::SystemCmd gpgsmGenkey(ra.pwd, ra.cfg.gpgsm.value);
+  PamClavator::SystemCmd gpgsmGenkey(ra.pwd, ra.cfg.gpgsm.value,
+    ra.cfg.launchctl.value);
   auto now = std::chrono::system_clock::now();
   if (ra.op.some()) {
     LOG(DEBUG) << "create_cert_from_card: use predefined password";
@@ -471,7 +394,8 @@ boost::optional<Pem> create_cert_from_card(RetryActor &ra,
   }
   // LOG(DEBUG) << "GENKEY[" << sr.getSout().str() << "][" << sr.getSerr().str()
   // << "]";
-  PamClavator::SystemCmd gpgsmImport(ra.pwd, ra.cfg.gpgsm.value);
+  PamClavator::SystemCmd gpgsmImport(ra.pwd, ra.cfg.gpgsm.value,
+    ra.cfg.launchctl.value);
   gpgsmImport.arg("--import").arg("--dry-run").pushSin(sr.getSout().str());
   auto srImport = gpgsmImport.run(ra.pamh, ra.op);
   if (srImport.exitCode) {

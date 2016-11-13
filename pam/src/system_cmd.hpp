@@ -61,13 +61,16 @@ private:
   std::vector<PipeAction> fromMotherPipes;
   std::stringstream sin;
   const std::string exec;
+  const std::string launchctl;
   // boost::optional<int> status;
   std::vector<RetryAction> retryActions;
 public:
-  SystemCmd(const struct passwd *pwd, const std::string &cmd) : pwd(pwd), exec(cmd) {
+  SystemCmd(const struct passwd *pwd, const std::string &cmd,
+    const std::string &launchctl) : pwd(pwd), exec(cmd), launchctl(launchctl) {
     arg(exec);
   }
-  SystemCmd(const struct passwd *pwd, const char *cmd) : pwd(pwd), exec(cmd) {
+  SystemCmd(const struct passwd *pwd, const char *cmd,
+    const std::string &launchctl) : pwd(pwd), exec(cmd), launchctl(launchctl) {
     arg(exec);
   }
 
@@ -100,9 +103,18 @@ public:
   }
 
   template<typename Y>
-  SystemCmd &arg(Y part) { args.push_back(std::to_string(part)); return *this; }
-  SystemCmd &arg(const char *part) { args.push_back(part); return *this; }
-  SystemCmd &arg(const std::string &part) { args.push_back(part); return *this;}
+  SystemCmd &arg(Y part) {
+    // LOG(ERROR) << "arg:" << part;
+    args.push_back(std::to_string(part)); return *this;
+  }
+  SystemCmd &arg(const char *part) {
+    // LOG(ERROR) << "arg:" << part;
+    args.push_back(part); return *this;
+  }
+  SystemCmd &arg(const std::string &part) {
+    // LOG(ERROR) << "arg:" << part;
+    args.push_back(part); return *this;
+  }
 
   SystemCmd &pushSin(const char *part) { sin << part ; return *this; }
   SystemCmd &pushSin(const std::string &part) { sin << part ; return *this; }
@@ -156,6 +168,56 @@ public:
     }
   }
 
+#ifdef __APPLE_CC__
+  void runas(DuringExec &de, char *envp[]) {
+    std::stringstream suid;
+    suid << pwd->pw_uid;
+    args.insert(args.begin(), suid.str());
+    args.insert(args.begin(), "asuser");
+    args.insert(args.begin(), launchctl);
+    char *argv[args.size()+1];
+    argv[args.size()] = 0;
+    // std::ofstream write;
+    // write.open("doof", std::ios::out | std::ios::binary);
+    for (size_t i = 0; i < args.size(); ++i) {
+        argv[i] = (char *)args[i].c_str();
+        // write << i << ":" << argv[i] << std::endl;
+    }
+    // write.close();
+    if (execve(launchctl.c_str(), argv, envp) == -1) {
+      // ACHTUNG HACK
+      closeTranslatedFdsChildren(de, "[exec failed]");
+      exit(42);
+    }
+  }
+#else
+  void runas(DuringExec &de, char *envp[]) {
+    if (setgid(pwd->pw_gid) < 0) {
+      closeTranslatedFdsChildren(de, "[exec setgid failed]");
+      exit(42);
+    }
+    auto uid = getuid();
+    if (uid != pwd->pw_uid && setuid(pwd->pw_uid) < 0) {
+      closeTranslatedFdsChildren(de, "[exec setuid failed]");
+      exit(42);
+    }
+    if (uid != pwd->pw_uid && seteuid(pwd->pw_uid) < 0) {
+      closeTranslatedFdsChildren(de, "[exec seteuid failed]");
+      exit(42);
+    }
+    char *argv[args.size()+1];
+    argv[args.size()] = 0;
+    for (size_t i = 0; i < args.size(); ++i) {
+        argv[i] = (char *)args[i].c_str();
+    }
+    if (execve(exec.c_str(), argv, envp) == -1) {
+      // ACHTUNG HACK
+      closeTranslatedFdsChildren(de, "[exec failed]");
+      exit(42);
+    }
+  }
+#endif
+
   void childExec(DuringExec &de, OptionalPassword &op) {
     op.destroy(); // wipe password from memory
     for (auto pa : de.clientActions) {
@@ -166,33 +228,12 @@ public:
     }
     closeFdsMother(de);
     // de.pipeWriters.erase(de.pipeWriters.begin(), de.pipeWriters.end()); // remove the possible entrie points to written data
-    if (setgid(pwd->pw_gid) < 0) {
-      closeTranslatedFdsChildren(de, "[exec setgid failed]");
-      exit(42);
-    }
-    if (setuid(pwd->pw_uid) < 0) {
-      closeTranslatedFdsChildren(de, "[exec setuid failed]");
-      exit(42);
-    }
-    if (seteuid(pwd->pw_uid) < 0) {
-      closeTranslatedFdsChildren(de, "[exec seteuid failed]");
-      exit(42);
-    }
-    char *argv[args.size()+1];
-    argv[args.size()] = 0;
-    for (size_t i = 0; i < args.size(); ++i) {
-        argv[i] = (char *)args[i].c_str();
-    }
     char *envp[envs.size()+1];
     envp[envs.size()] = 0;
     for (size_t i = 0; i < envs.size(); ++i) {
         envp[i] = (char *)envs[i].c_str();
     }
-    if (execve(exec.c_str(), argv, envp) == -1) {
-      // ACHTUNG HACK
-      closeTranslatedFdsChildren(de, "[exec failed]");
-      exit(42);
-    }
+    runas(de, envp);
   }
 
   pid_t launch(DuringExec &de, OptionalPassword &op) {
@@ -203,7 +244,7 @@ public:
         de.io_service.notify_fork(boost::asio::io_service::fork_child);
         childExec(de, op);
       } else {
-	de.io_service.notify_fork(boost::asio::io_service::fork_parent);
+	      de.io_service.notify_fork(boost::asio::io_service::fork_parent);
         for (auto pa : de.clientActions) {
           close(pa.childFd());
         }

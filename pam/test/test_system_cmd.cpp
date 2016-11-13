@@ -42,7 +42,7 @@ int main() {
   sigset_t signal_set;
   sigemptyset(&signal_set);
   sigaddset(&signal_set, SIGCHLD);
-  sigprocmask(SIG_BLOCK, &signal_set, NULL); 
+  sigprocmask(SIG_BLOCK, &signal_set, NULL);
 
   describe("SystemCmd", [signal_set]() {
     auto pwd = getpwnam(std::getenv("USER"));
@@ -51,12 +51,12 @@ int main() {
     // });
     it("not launched", [&pwd]() {
       OptionalPassword op;
-        assert.isFalse(PamClavator::SystemCmd(pwd, "WTF").run(0, op).ok);
+        assert.isFalse(PamClavator::SystemCmd(pwd, "WTF", "/bin/launchctl").run(0, op).ok);
     });
     it("syncron sleep", [&pwd]() {
       OptionalPassword op;
       auto start = std::chrono::high_resolution_clock::now(); //measure time starting here
-      assert.isTrue(PamClavator::SystemCmd(pwd, EXEC_SLEEP).arg("1").run(0, op).ok, "sleep should be ok");
+      assert.isTrue(PamClavator::SystemCmd(pwd, EXEC_SLEEP, "/bin/launchctl").arg("1").run(0, op).ok, "sleep should be ok");
       auto end = std::chrono::high_resolution_clock::now(); //end measurement here
       auto elapsed = end - start;
 
@@ -64,34 +64,34 @@ int main() {
     });
     it("launched", [&pwd]() {
       OptionalPassword op;
-        assert.isTrue(PamClavator::SystemCmd(pwd, EXEC_TRUE).run(0, op).ok);
+        assert.isTrue(PamClavator::SystemCmd(pwd, EXEC_TRUE, "/bin/launchctl").run(0, op).ok);
     });
     it("return ok", [&pwd]() {
       OptionalPassword op;
-        assert.equal(0, PamClavator::SystemCmd(pwd, EXEC_TRUE).run(0, op).exitCode);
+        assert.equal(0, PamClavator::SystemCmd(pwd, EXEC_TRUE, "/bin/launchctl").run(0, op).exitCode);
     });
     it("return false", [&pwd]() {
       OptionalPassword op;
-        assert.equal(1, PamClavator::SystemCmd(pwd, EXEC_FALSE).run(0, op).exitCode);
+        assert.equal(1, PamClavator::SystemCmd(pwd, EXEC_FALSE, "/bin/launchctl").run(0, op).exitCode);
     });
     it("stdout empty", [&pwd]() {
       OptionalPassword op;
-        assert.isTrue(PamClavator::SystemCmd(pwd, EXEC_TRUE).run(0, op).getSout().str().empty());
+        assert.isTrue(PamClavator::SystemCmd(pwd, EXEC_TRUE, "/bin/launchctl").run(0, op).getSout().str().empty());
     });
     it("stderr empty", [&pwd]() {
       OptionalPassword op;
-        assert.isTrue(PamClavator::SystemCmd(pwd, EXEC_TRUE).run(0, op).getSerr().str().empty());
+        assert.isTrue(PamClavator::SystemCmd(pwd, EXEC_TRUE, "/bin/launchctl").run(0, op).getSerr().str().empty());
     });
 
     it("stdout hello world", [&pwd]() {
       OptionalPassword op;
-        assert.equal(PamClavator::SystemCmd(pwd, EXEC_ECHO).arg("hello world").run(0, op).getSout().str(), "hello world\n");
-        assert.equal(PamClavator::SystemCmd(pwd, EXEC_ECHO).arg("hello world").run(0, op).getSerr().str(), "");
+        assert.equal(PamClavator::SystemCmd(pwd, EXEC_ECHO, "/bin/launchctl").arg("hello world").run(0, op).getSout().str(), "hello world\n");
+        assert.equal(PamClavator::SystemCmd(pwd, EXEC_ECHO, "/bin/launchctl").arg("hello world").run(0, op).getSerr().str(), "");
     });
     it("stderr output", [&pwd]() {
       OptionalPassword op;
-        assert.isTrue(PamClavator::SystemCmd(pwd, EXEC_GREP).arg("---Fehler").run(0, op).getSout().str().empty());
-        assert.isFalse(PamClavator::SystemCmd(pwd, EXEC_GREP).arg("---Fehler").run(0, op).getSerr().str().empty());
+        assert.isTrue(PamClavator::SystemCmd(pwd, EXEC_GREP, "/bin/launchctl").arg("---Fehler").run(0, op).getSout().str().empty());
+        assert.isFalse(PamClavator::SystemCmd(pwd, EXEC_GREP, "/bin/launchctl").arg("---Fehler").run(0, op).getSerr().str().empty());
     });
 
 
@@ -109,7 +109,7 @@ int main() {
         const char *cout = out.c_str();
         auto oPipe = Pipe::create();
         auto &pipe = *oPipe;
-        PamClavator::SystemCmd bash(pwd, EXEC_BASH);
+        PamClavator::SystemCmd bash(pwd, EXEC_BASH, "/bin/launchctl");
         bash.toChildPipe(pipe, pipe->getWriteFd(), [cout, &out](size_t ofs, const void **buf) -> size_t {
           if (ofs >= out.size()) {
             *buf = 0;
@@ -140,7 +140,7 @@ int main() {
         std::string out = sout.str();
         // std::cout << "-2.1-" << sendSize << ":" << out.size()+pattern.size() << std::endl;
         assert.equal(sendSize <= out.size()+pattern.size(), true, "Size Missmatch");
-        assert.equal(PamClavator::SystemCmd(pwd, EXEC_CAT).pushSin(out).run(0, op).getSout().str(), out);
+        assert.equal(PamClavator::SystemCmd(pwd, EXEC_CAT, "/bin/launchctl").pushSin(out).run(0, op).getSout().str(), out);
       }
     });
     //
@@ -151,8 +151,8 @@ int main() {
       dump(signal_set);
       dump(signal_current);
       assert.equal(memcmp(
-	static_cast<const void*>(&signal_current), 
-	static_cast<const void*>(&signal_set), 
+	static_cast<const void*>(&signal_current),
+	static_cast<const void*>(&signal_set),
 	sizeof(signal_current)), 0, "signal still block");
     });
 

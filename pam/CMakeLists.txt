@@ -34,9 +34,9 @@ include(CMakeLists-cascara.txt)
 
 #set(SIMPLEWEB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/3rdparty/Simple-WebSocket-Server")
 #TODO: add requirement for version 1.0.1g (can it be done in one line?)
-find_package(OpenSSL REQUIRED)
+#find_package(OpenSSL REQUIRED)
 #find_package(PAM REQUIRED)
-include_directories(${OPENSSL_INCLUDE_DIR})
+#include_directories(${OPENSSL_INCLUDE_DIR})
 #include_directories(${SIMPLEWEB_INCLUDE_DIR})
 
 #find_package(Threads REQUIRED)
@@ -45,16 +45,19 @@ include_directories(${OPENSSL_INCLUDE_DIR})
 set(CMAKE_SHARED_LINKER_FLAGS "-lpam")
 #set(CMAKE_STATIC_LINKER_FLAGS "-lpam")
 
+
+
 #file(GLOB SOURCES "src/*.cpp")
 add_library(pamClavator SHARED src/pam_clavator.cpp src/pipe_writer.cpp)
 target_link_libraries(pamClavator ${Boost_LIBRARIES})
+add_dependencies(pamClavator easyloggingpp)
 
 #add_library(pamClavatorStatic STATIC src/pam_clavator.cpp)
 #target_link_libraries(pamClavatorStatic ${Boost_LIBRARIES})
 #set_target_properties(pamClavatorStatic PROPERTIES OUTPUT_NAME pamClavator)
 
 
-install(TARGETS pamClavator 
+install(TARGETS pamClavator
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib/static)

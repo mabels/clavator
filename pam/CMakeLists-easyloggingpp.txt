@@ -2,8 +2,8 @@ include(ExternalProject)
 ExternalProject_Add(
   easyloggingpp
 
-  GIT_REPOSITORY "${GITBASE}/mabels/easyloggingpp"
-  GIT_TAG "master"
+  GIT_REPOSITORY ${GITBASE}/mabels/easyloggingpp
+  GIT_TAG master
 
   UPDATE_COMMAND ""
 
@@ -19,5 +19,5 @@ ExternalProject_Get_Property(easyloggingpp install_dir)
 include_directories(${install_dir}/include)
 
 
-set(easyloggingpp_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/3rdparty/jsoncpp/include")
+set(easyloggingpp_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/3rdparty/easylogging/include")
 include_directories(${easyloggingpp_INCLUDE_DIRS})
