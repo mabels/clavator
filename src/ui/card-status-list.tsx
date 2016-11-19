@@ -122,6 +122,7 @@ export class CardStatusList
         {this.state.cardStatusList.map((cs: CardStatus.Gpg2CardStatus, idx : number) => {
           return (<table key={cs.serial}>
             <tbody>
+            <tr key={cs.serial}>
             <td>{cs.serial}</td>
             <td>{cs.name}</td>
             <td>{cs.login}</td>
@@ -140,7 +141,7 @@ export class CardStatusList
             <tbody>
             {cs.keyStates.map((ks: CardStatus.KeyState, idx : number) => {
               return (
-            <tr>
+            <tr key={ks.id}>
             <td>{ks.id}</td>
             <td>{ks.mode}</td>
             <td>{ks.bits}</td>
@@ -158,6 +159,7 @@ export class CardStatusList
             </td>
             <td>{cs.forcepin}</td>
             <td>{cs.sigcount}</td>
+            </tr>
             </tbody>
           </table>);
         })}

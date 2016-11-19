@@ -6,7 +6,10 @@ import * as expressWsTs from 'express-ws';
 const expressWs: typeof expressWsTs = expressWsTs;
 
 import * as Observer from './observer';
+import * as Dispatch from './dispatch';
 import * as Gpg from './gpg/gpg';
+
+import * as Message from './message';
 
 const app = express();
 expressWs(app);
@@ -16,6 +19,7 @@ app.use(express.static(join(process.cwd(), 'dist')));
 let gpg = new Gpg.Gpg();
 
 let observer = Observer.start(gpg);
+let dispatch = Dispatch.start(gpg);
 
 app.get('/', (req: expressTs.Request, res: expressTs.Response) => res.redirect('/index.html'));
 app.ws('/', (ws, req) => {
@@ -25,7 +29,12 @@ app.ws('/', (ws, req) => {
     console.log("close");
     observer.unregister(ws);
   });
-  ws.on('message', msg => console.log(msg));
+  // ws.on('data', msg:any => console.log(msg));
+  ws.on('message', payload => {
+    let msg = Message.fromData(payload);
+     console.log("onMessage")  
+    dispatch.run(ws, msg)
+  });
 });
 
 

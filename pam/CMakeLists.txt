@@ -55,12 +55,14 @@ target_link_libraries(pamClavator "-lpam")
 add_dependencies(pamClavator easyloggingpp)
 add_dependencies(pamClavator cascara)
 
-#add_library(pamClavatorStatic STATIC src/pam_clavator.cpp)
-#target_link_libraries(pamClavatorStatic ${Boost_LIBRARIES})
-#set_target_properties(pamClavatorStatic PROPERTIES OUTPUT_NAME pamClavator)
+add_executable(pamClavator_agent src/pam_clavator_agent.cpp src/pipe_writer.cpp)
+target_link_libraries(pamClavator_agent ${Boost_LIBRARIES})
+target_link_libraries(pamClavator_agent "-lpam")
+add_dependencies(pamClavator_agent easyloggingpp)
+add_dependencies(pamClavator_agent cascara)
 
 
-install(TARGETS pamClavator
+install(TARGETS pamClavator pamClavator_agent
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib/static)

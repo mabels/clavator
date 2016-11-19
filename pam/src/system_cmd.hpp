@@ -24,6 +24,8 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 
+#include <boost/exception/diagnostic_information.hpp> 
+#include <boost/exception_ptr.hpp> 
 
 #include <security/pam_appl.h>
 #include <security/pam_modules.h>
@@ -339,35 +341,45 @@ public:
       *buf = &(sinArray.front());
       return buflen;
     }, 0);
-    de.toChildPipe(stdinAction);
-    // Close the writepipe for the read pipe in the Motherprocess
-    // PipeAction stdoutAction(stdoutPipe, stdoutPipe->getWriteFd(),
-    //   [](size_t, const void **) {return 0;});
-    // de.inPipe(stdoutAction);
-    // PipeAction stderrAction(stderrPipe, stderrPipe->getWriteFd(),
-    //   [](size_t, const void **) {return 0;});
-    // de.inPipe(stderrAction);
-    // write<4096>(de, ofs, sdIn, sinArray, this->sin);
-    for (auto &i : this->toChildPipes) {
-      de.toChildPipe(i);
-    }
-    for (auto &i : this->fromMotherPipes) {
-      de.fromMotherPipe(i);
-    }
-    de.startFromMotherPipeActions();
-    sr.waitPid = launch(de, op);
-    de.startToChildPipeActions();
 
-    //LOG(ERROR) << "sdErr-Leave";
-    // char buf[1000];
-    // int len;
-    // LOG(INFO) << "stdout:" << (len=read(stdoutPipe->getRead(), buf, sizeof(buf))) << std::endl;
-    // LOG(INFO) << std::string(buf, len) << std::endl;
-    // LOG(INFO) << "stdout:" << (len=read(stdoutPipe->getRead(), buf, sizeof(buf))) << std::endl;
-    // LOG(INFO) << std::string(buf, len) << std::endl;
-    // LOG(INFO) << "stderr:" << read(stderrPipe->getRead(), buf, sizeof(buf)) << std::endl;
-    // LOG(INFO) << "enter run_one";
-    de.io_service.run();
+    try {
+      de.toChildPipe(stdinAction);
+      // Close the writepipe for the read pipe in the Motherprocess
+      // PipeAction stdoutAction(stdoutPipe, stdoutPipe->getWriteFd(),
+      //   [](size_t, const void **) {return 0;});
+      // de.inPipe(stdoutAction);
+      // PipeAction stderrAction(stderrPipe, stderrPipe->getWriteFd(),
+      //   [](size_t, const void **) {return 0;});
+      // de.inPipe(stderrAction);
+      // write<4096>(de, ofs, sdIn, sinArray, this->sin);
+      for (auto &i : this->toChildPipes) {
+        de.toChildPipe(i);
+      }
+      for (auto &i : this->fromMotherPipes) {
+        de.fromMotherPipe(i);
+      }
+      de.startFromMotherPipeActions();
+      sr.waitPid = launch(de, op);
+      de.startToChildPipeActions();
+
+      //LOG(ERROR) << "sdErr-Leave";
+      // char buf[1000];
+      // int len;
+      // LOG(INFO) << "stdout:" << (len=read(stdoutPipe->getRead(), buf, sizeof(buf))) << std::endl;
+      // LOG(INFO) << std::string(buf, len) << std::endl;
+      // LOG(INFO) << "stdout:" << (len=read(stdoutPipe->getRead(), buf, sizeof(buf))) << std::endl;
+      // LOG(INFO) << std::string(buf, len) << std::endl;
+      // LOG(INFO) << "stderr:" << read(stderrPipe->getRead(), buf, sizeof(buf)) << std::endl;
+      // LOG(INFO) << "enter run_one";
+      de.io_service.run();
+
+    } catch (boost::exception &e) {
+      LOG(ERROR) << boost::diagnostic_information(e);
+      sr.ok = false;
+      return sr;
+    }
+
+
 
     sigprocmask(SIG_BLOCK, &de.prev_signal_set, 0);
     //while (io_service.run_one()) {

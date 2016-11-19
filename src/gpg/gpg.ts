@@ -35,7 +35,7 @@ class Result {
     }
 
     run(cmd: string, attributes: string[], cb: (res: Result) => void) {
-      console.log("run=["+cmd+"]", attributes);
+      // console.log("run=["+cmd+"]", attributes);
         const c = spawn(cmd, attributes, { env: this.env });
         if (this.stdIn && this.stdIn.length > 0) {
             let Readable = stream.Readable;

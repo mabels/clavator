@@ -254,49 +254,6 @@ bool RetryActor::_action(RetryActor *ra, const SystemResult &sr,
   return false;
 }
 
-// gpg2 --card-status --with-colon
-// check does we have one card!
-// extract fpr' use third fpr
-// gpg2 --list-secret-keys --with-colon
-// find keys from extracted fpr's
-boost::optional<std::string> check_does_we_have_a_card(RetryActor &ra) {
-  PamClavator::SystemCmd gpg2cardStatusCmd(ra.pwd, ra.cfg.gpg.value,
-    ra.cfg.launchctl.value);
-  gpg2cardStatusCmd.arg("--card-status");
-  gpg2cardStatusCmd.arg("--with-colon");
-  gpg2cardStatusCmd.checkRetry(ra.get());
-  auto sr = gpg2cardStatusCmd.run(ra.pamh, ra.op);
-  if (sr.exitCode) {
-    LOG(ERROR) << sr.asString();
-    return boost::none;
-  }
-  auto gpg2cardStatus = Gpg2CardStatus::read(sr.getSout());
-
-  PamClavator::SystemCmd gpgConnectAgent(ra.pwd,
-                                         ra.cfg.gpg_connect_agent.value,
-                                         ra.cfg.launchctl.value);
-  gpgConnectAgent.arg("keyinfo --list");
-  gpgConnectAgent.arg("/bye");
-  gpgConnectAgent.checkRetry(ra.get());
-  sr = gpgConnectAgent.run(ra.pamh, ra.op);
-  if (sr.exitCode) {
-    LOG(ERROR) << sr.asString();
-    return boost::none;
-  }
-  auto gpgKeyInfoList = GpgKeyInfo::read(sr.getSout());
-  for (auto ki : gpgKeyInfoList) {
-    if (ki.keyId != "OPENPGP.3") {
-      continue;
-    }
-    for (auto cs : gpg2cardStatus) {
-      if (cs.reader.cardid == ki.cardid) {
-        return ki.group;
-      }
-    }
-    LOG(ERROR) << "no card found for Group[" << ki.group << "]";
-  }
-  return boost::none;
-}
 
 std::string
 date_yyyy_mm_dd(std::chrono::time_point<std::chrono::system_clock> now) {
@@ -334,65 +291,10 @@ date_yyyy_mm_dd(std::chrono::time_point<std::chrono::system_clock> now) {
   gpgsm --verify unknown how this works
   gpgsm --import --dry-run
 */
-boost::optional<Pem> create_cert_from_card(RetryActor &ra,
+boost::optional<Pem> verify_pem(RetryActor &ra,
                                            const std::string &grp,
                                            const std::string &uuid) {
-  PamClavator::SystemCmd gpgsmGenkey(ra.pwd, ra.cfg.gpgsm.value,
-    ra.cfg.launchctl.value);
-  auto now = std::chrono::system_clock::now();
-  if (ra.op.some()) {
-    LOG(DEBUG) << "create_cert_from_card: use predefined password";
-    auto opwdPipe = Pipe::create();
-    if (opwdPipe == boost::none) {
-      LOG(ERROR) << "can't create password passing pipe";
-      return boost::none;
-    }
-    auto &pwdPipe = *opwdPipe;
-    gpgsmGenkey.toChildPipe(pwdPipe, pwdPipe->getWriteFd(),
-                            [&ra](size_t ofs, const void **buf) -> size_t {
-                              if (ofs >= ra.op.getLen()) {
-                                return 0ul;
-                              }
-                              *buf = static_cast<const void *>(
-                                  ra.op.getValue() + ofs);
-                              return ra.op.getLen() - ofs;
-                            });
-    gpgsmGenkey.arg("--no-tty").arg("--batch");
-    gpgsmGenkey.arg("--pinentry-mode").arg("loopback");
-    gpgsmGenkey.arg("--passphrase-fd").arg(pwdPipe->getReadFd()->asString());
-  }
-  gpgsmGenkey.arg("-a").arg("--batch").arg("--gen-key");
-  gpgsmGenkey.pushSin("Key-Type: RSA\n")
-      .pushSin("Key-Length: 1024\n")
-      .pushSin("Key-Grip: ")
-      .pushSin(grp)
-      .pushSin("\n")
-      .pushSin("Key-Usage: sign\n")
-      .pushSin("Serial: ")
-      .pushSin(uuid)
-      .pushSin("\n")
-      .pushSin("Name-DN: CN=")
-      .pushSin(uuid)
-      .pushSin("\n")
-      .pushSin("Not-Before: ")
-      .pushSin(date_yyyy_mm_dd(now))
-      .pushSin("\n")
-      .pushSin("Not-After: ")
-      .pushSin(date_yyyy_mm_dd(now + std::chrono::hours(24)))
-      .pushSin("\n")
-      //  .pushSin("Subject-Key-Id: ").pushSin(grp).pushSin("\n")
-      //  .pushSin("Extension: 2.5.29.19 c 30060101ff020101\n")
-      //  .pushSin("Extension: 1.3.6.1.4.1.11591.2.2.2 n 0101ff\n")
-      //  .pushSin("Signing-Key: ").pushSin(grp).pushSin("\n")
-      .pushSin("%commit\n");
-  gpgsmGenkey.checkRetry(ra.get());
-  auto sr = gpgsmGenkey.run(ra.pamh, ra.op);
-  if (sr.exitCode) {
-    LOG(ERROR) << "GENKEY[" << sr.asString() << "][" << sr.getSout().str()
-               << "][" << sr.getSerr().str() << "]";
-    return boost::none;
-  }
-  // LOG(DEBUG) << "GENKEY[" << sr.getSout().str() << "][" << sr.getSerr().str()
+    // LOG(DEBUG) << "GENKEY[" << sr.getSout().str() << "][" << sr.getSerr().str()
   // << "]";
   PamClavator::SystemCmd gpgsmImport(ra.pwd, ra.cfg.gpgsm.value,
     ra.cfg.launchctl.value);
@@ -478,7 +380,7 @@ boost::optional<int> get_authtok(pam_handle_t *pamh, const Config &,
   return retval;
 }
 
-INITIALIZE_EASYLOGGINGPP
+INITIALIZE_NULL_EASYLOGGINGPP
 
 extern "C" {
 
@@ -506,6 +408,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
     LOG(ERROR) << "pam_sm_authenticate:getpwname:" << strerror(errno);
     return (PAM_USER_UNKNOWN);
   }
+
   el::Configurations defaultConf;
   defaultConf.setToDefault();
   defaultConf.setGlobally(el::ConfigurationType::ToStandardOutput, "false");
@@ -513,6 +416,7 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
   auto logFname = substPattern("HOMEDIR", pwd->pw_dir, cfg.logfile.value);
   defaultConf.setGlobally(el::ConfigurationType::Filename, logFname);
   el::Loggers::reconfigureLogger("default", defaultConf);
+  el::base::elStorage = new el::base::Storage(el::LogBuilderPtr(new el::base::DefaultLogBuilder()));
 
   // use_first_pass
   if (cfg.ask_for_password.value) {
@@ -545,61 +449,63 @@ PAM_EXTERN int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
     }
   }
 
-  std::string challenge;
+  std::string challenge = create_challenge();
   boost::optional<Pem> pem;
-  try {
 
-    RetryActor ra(pamh, pwd, cfg, password);
-    {
-      auto ret = gpgagent_start(ra);
-      if (ret != boost::none && *ret != PAM_SUCCESS) {
-        return pam_err;
-      }
-    }
-
-    auto grp = check_does_we_have_a_card(ra);
-    if (grp == boost::none) {
-      LOG(ERROR)
-          << "pam_sm_authenticate:pam_get_item check_does_we_have_a_card";
-      return (PAM_AUTH_ERR);
-    }
-
-    challenge = create_challenge();
-    pem = create_cert_from_card(ra, *grp, challenge);
-    if (pem == boost::none) {
-      LOG(ERROR) << "pam_sm_authenticate:pam_get_item create_cert_from_card";
-      return (PAM_AUTH_ERR);
-    }
-
-  } catch (boost::exception &e) {
-    LOG(ERROR) << boost::diagnostic_information(e);
-    return (PAM_AUTH_ERR);
+  // kill all of all users gpg-agent's
+  if (cfg.reset_gpg_agent.value) {
+    force_kill();
   }
 
+  auto agent = Agent.load();
+
+  auto sock = agent.bind(pwd, challenge);
+
+  auto msg = sock.getMsg("CHALLENGE");
+  if (msg.content.str() != challenge) {
+
+  }
+  if (sock.sendMsg("PASS", password) == boost::none) {
+
+  }
+  auto sshauth = sock.getMsg("SSHAUTHORIZEDKEYS");
+  if (sshauth == boost::none) {
+  }
+
+  auto pemcert = sock.getMsg("PEMCERT");
+  if (pemcert == boost::none) {
+  }
+  auto close = sock.getMsg("CLOSE");
+  if (close == boost::none) {
+  }
+  sock.close();
+  // create and opensocket
+  // What for
+  /*
+    <- CHALLENGE:LEN\nbyteslen
+    <- GETPASS\n
+    -> PASS:LEN\nbyteslen
+    <- SSHAUTHORIZEDKEYS:LEN\nbyteslen
+    <- PEMCERT:LEN\nbyteslen
+    <- CLOSE
+  */
+
+
+
+
+  auto pem = verify_pem(pemcert.content);
+  // verify pem is valid gpgsm --import --dry-run
   auto pemPubKey = pem->pubKey();
   if (pemPubKey == boost::none) {
     LOG(ERROR) << "pam_sm_authenticate:pemPubKey faild";
     return (PAM_AUTH_ERR);
   }
-
-  auto fname =
-      substPattern("HOMEDIR", pwd->pw_dir, cfg.ssh_authorized_keys_fname.value);
-  std::ifstream fstream(fname.c_str(),
-                        std::ios_base::in | std::ios_base::binary);
-  auto sshKeys = PamClavator::SshAuthorizedKeys::read(fstream);
-  fstream.close();
+  auto sshKeys = PamClavator::SshAuthorizedKeys::read(sshauth.content);
   for (auto &v : sshKeys.get()) {
     if (pemPubKey->modulus == v.from_data_modulo &&
         pemPubKey->key == v.from_data_pubkey &&
         pemPubKey->serial == challenge) {
       LOG(INFO) << "found key in SshAuthorizedKeys";
-      //        auto retval = pam_set_item(pamh, PAM_AUTHTOK,
-      //        challenge.c_str());
-      //        if (retval != PAM_SUCCESS) {
-      //          LOG(ERROR) << "set_item returned error:" << pam_strerror(pamh,
-      //          retval);
-      //          return retval;
-      //        }
       return (PAM_SUCCESS);
     }
   }

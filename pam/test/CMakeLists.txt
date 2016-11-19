@@ -54,3 +54,8 @@ target_link_libraries(test_keyinfo_list ${Boost_LIBRARIES})
 add_executable(test_system_cmd test_system_cmd.cpp ../src/pipe_writer.cpp)
 add_test(test_system_cmd test_system_cmd)
 target_link_libraries(test_system_cmd ${Boost_LIBRARIES})
+
+add_executable(test_socket test_socket.cpp)
+add_test(test_socket test_socket)
+target_link_libraries(test_socket ${Boost_LIBRARIES})
+
