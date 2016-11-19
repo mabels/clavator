@@ -13,7 +13,7 @@ import * as Uuid from 'node-uuid';
 import * as KeyGen from './key-gen';
 
 
-class Result {
+export class Result {
     stdOut: string = "";
     stdErr: string = "";
     stdIn: string = "";
@@ -61,6 +61,7 @@ export class Gpg {
     homeDir: string = path.join(process.env.HOME, ".gnupg");
     pinEntryServer: pse.PinEntryServer;
     gpgCmd: string = "gpg2";
+    gpgAgentCmd: string = "gpg-connect-agent";
 
     public setPinentryUrl(url: string) : Gpg {
         return this;
@@ -91,6 +92,38 @@ export class Gpg {
             result.addEnv('S_PINENTRY_SOCKET', this.pinEntryServer.socketFile);
         }
         result.run(this.gpgCmd, attributes, cb);
+    }
+
+    runAgent(attributes: string[], stdIn: string, cb: (res: Result) => void) {
+        console.log(stdIn);
+        if (this.homeDir) {
+            attributes.splice(0, 0, this.homeDir);
+            attributes.splice(0, 0, '--homedir')
+        }
+        //console.log(attributes);
+        let result = (new Result()).setStdIn(stdIn);
+
+        result.run(this.gpgAgentCmd, attributes, cb);
+    }
+
+    public resetYubikey(cb: (res: Result) => void) {
+      this.runAgent([], this.resetCommand(), cb)
+    }
+
+    private resetCommand(){
+      return [
+        "/hex",
+        "scd serialno",
+        "scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40",
+        "scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40",
+        "scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40",
+        "scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40",
+        "scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40",
+        "scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40",
+        "scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40",
+        "scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40",
+        "scd apdu 00 e6 00 00",
+        "scd apdu 00 44 00 00"].join("\n")
     }
 
     public list_secret_keys(cb: (err: string, keys: ListSecretKeys.SecretKey[]) => void) {

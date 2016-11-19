@@ -25,3 +25,12 @@ export function fail(msg: string) : Progress {
   p.msgs = [msg];
   return p
 }
+
+export function ok(msg: string, ieom = false) : Progress {
+  let p = new Progress();
+  p.id = id++;
+  p.isOk = true;
+  p.isEndOfMessages = ieom;
+  p.msgs = [msg];
+  return p
+}

@@ -37,10 +37,10 @@ export function fromData(data: string) : Message {
   }
 }
 
-export function prepare<T>(action: string, data: T) : string {
+export function prepare<T>(action: string, data: T = null) : string {
   let header = JSON.stringify({
     action: action
   });
-  let payload = JSON.stringify(data);
+  let payload = JSON.stringify(data || {});
   return fixlength(header.length, 8)+header+payload;
 }

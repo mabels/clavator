@@ -5,6 +5,7 @@ import './app.less';
 import { KeyChainList } from './key-chain-list';
 import { CardStatusList } from './card-status-list';
 import { CreateKey } from './create-key';
+import { ResetYubikey } from './reset-yubikey';
 import { Progressor } from './progressor';
 
 import * as WsChannel from './ws-channel';
@@ -64,7 +65,9 @@ export class App extends React.Component<{}, AppState> {
           <KeyChainList channel={this.state.channel} />
           <CardStatusList channel={this.state.channel} />
           <CreateKey channel={this.state.channel} />
+          <ResetYubikey channel={this.state.channel} />
           <Progressor channel={this.state.channel} msg="CreateKeySet"/>
+          <Progressor channel={this.state.channel} msg="ResetYubikey"/>
       </div>
 
     );

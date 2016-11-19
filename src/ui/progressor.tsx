@@ -78,7 +78,7 @@ export class Progressor
         // SecretKeys {this.state.cardStatusList.length || ""}
     return (
       <div className="Progressor">
-        Progressor.CreateKeySet {this.state.progressList.length || ""}
+        Progressor.{this.props.msg} {this.state.progressList.length || ""}
         {this.state.progressList.map((ps: Progress.Progress, idx : number) => {
           console.log("pl", ps)
           return (ps.msgs.map((msg: string, idx: number) => {
