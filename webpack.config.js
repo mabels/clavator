@@ -24,6 +24,10 @@ module.exports = [{
         loader: 'awesome-typescript?useBabel=true'
       },
       {
+        test: /\.css$/,
+        loader: ExtractTextPlugin.extract('css?sourceMap!less?sourceMap')
+      },
+      {
         test: /\.less$/,
         loader: ExtractTextPlugin.extract('css?sourceMap!less?sourceMap')
       }
@@ -73,6 +77,10 @@ module.exports = [{
       {
         test: /\.tsx?$/,
         loader: 'awesome-typescript?useBabel=true'
+      },
+      {
+        test: /\.css$/,
+        loader: 'style!css!less'
       },
       {
         test: /\.less$/,

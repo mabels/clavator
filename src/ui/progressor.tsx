@@ -78,13 +78,16 @@ export class Progressor
         // SecretKeys {this.state.cardStatusList.length || ""}
     return (
       <div className="Progressor">
-        Progressor.{this.props.msg} {this.state.progressList.length || ""}
+        <h3>Progressor.{this.props.msg} {this.state.progressList.length || ""}</h3>
+        <pre><code>
         {this.state.progressList.map((ps: Progress.Progress, idx : number) => {
-          console.log("pl", ps)
+          // console.log("pl", ps)
           return (ps.msgs.map((msg: string, idx: number) => {
             return (<div key={ps.id} className={ps.isOk?"ok":"fail"}>{msg}{ps.isEndOfMessages?"<EOM>":""}</div>);
           }));
         })}
+        </code>
+        </pre>
       </div>
     );
   }

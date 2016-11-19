@@ -207,7 +207,7 @@ export class Gpg {
             cb("need a to run connect_pinentry");
             return;
         }
-        this.run(['--full-gen-key', '--batch'], keyGen.command(), (result: Result) => {
+        this.run(['--full-gen-key', '--batch'], keyGen.masterCommand(), (result: Result) => {
             if (result.exitCode != 0) {
                 cb("gpg exit with a error code:" + result.exitCode +
                     "\n" + result.stdErr +

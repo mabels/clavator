@@ -69,8 +69,15 @@ export class PwPair {
     dv.password = js['password'] || dv.password
     dv.verify = js['verify'] || dv.verify
   }
+  public valid_password() {
+    return this.match.test(this.password)
+  }
+  public valid_verify() {
+    return this.match.test(this.verify)
+  }
+
   public valid() : boolean {
-    return this.match.test(this.password) && this.password == this.verify
+    return this.password == this.verify && this.match.test(this.password)
   }
 }
 
@@ -116,7 +123,8 @@ export class KeyGen {
   adminPin: PwPair = new PwPair(/^[0-9]{8}$/, "adminPin Error");
   userPin: PwPair = new PwPair(/^[0-9]{6,8}$/, "userPin Error");
   keyType: Option<string> = new Option("RSA", ["RSA", "DSA"], "keyType Error");
-  keyLength: Option<number> = new Option(8192, [2048, 4096, 8192, 16384], "keyLength Error");
+  masterKeyLength: Option<number> = new Option(8192, [2048, 4096, 8192, 16384], "master keyLength Error");
+  subKeyLength: Option<number> = new Option(4096, [2048, 4096, 8192, 16384], "sub keyLength Error");
   keyUsage: MultiOption<string> = new MultiOption(['cert'], ['cert', 'unk1', 'unk3'], "keyUsage Error");
   nameReal: StringValue = new StringValue(/^([A-Z][a-z]*\s*)+$/, "nameReal error");
   nameEmail: StringValue = new StringValue(EmailRegExp, "nameEmail error");
@@ -128,7 +136,8 @@ export class KeyGen {
     PwPair.fill(js['adminPin']||{}, kg.adminPin);
     PwPair.fill(js['userPin']||{}, kg.userPin);
     Option.fill(js['keyType']||{}, kg.keyType);
-    Option.fill(js['keyLength']||{}, kg.keyLength);
+    Option.fill(js['masterKeyLength']||{}, kg.masterKeyLength);
+    Option.fill(js['subKeyLength']||{}, kg.subKeyLength);
     MultiOption.fill(js['keyUsage']||{}, kg.keyUsage);
     StringValue.fill(js['nameReal']||{}, kg.nameReal);
     StringValue.fill(js['nameEmail']||{}, kg.nameEmail);
@@ -142,7 +151,8 @@ export class KeyGen {
     !this.adminPin.valid() && ret.push(this.adminPin.errText);
     !this.userPin.valid() && ret.push(this.userPin.errText);
     !this.keyType.valid() && ret.push(this.keyType.errText);
-    !this.keyLength.valid() && ret.push(this.keyLength.errText);
+    !this.subKeyLength.valid() && ret.push(this.subKeyLength.errText);
+    !this.masterKeyLength.valid() && ret.push(this.masterKeyLength.errText);
     !this.keyUsage.valid() && ret.push(this.keyUsage.errText);
     !this.nameReal.valid() && ret.push(this.nameReal.errText);
     !this.nameEmail.valid() && ret.push(this.nameEmail.errText);
@@ -155,16 +165,17 @@ export class KeyGen {
     console.log(this.errText());
     return this.password.valid() &&
        this.adminPin.valid() && this.userPin.valid() &&
-       this.keyType.valid() && this.keyLength.valid() &&
+       this.keyType.valid() && this.subKeyLength.valid() &&
+       this.masterKeyLength.valid() &&
        this.keyUsage.valid() && this.nameReal.valid() &&
        this.nameEmail.valid() && this.nameComment.valid() &&
        this.expireDate.valid();
   }
 
-  command() {
+  masterCommand() {
     return [
       "Key-Type: " + this.keyType.value,
-      "Key-Length: " + this.keyLength.value,
+      "Key-Length: " + this.masterKeyLength.value,
       "Key-Usage: " + this.keyUsage.values.join(","),
       "Name-Real: " + this.nameReal,
       "Name-Email: " + this.nameEmail,
