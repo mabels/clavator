@@ -3,6 +3,8 @@ import './normalize.css';
 import './skeleton.css';
 import './app.less';
 
+// import "../img/clavator.png";
+
 import { KeyChainList } from './key-chain-list';
 import { CardStatusList } from './card-status-list';
 import { CreateKey } from './create-key';
@@ -65,7 +67,7 @@ export class App extends React.Component<{}, AppState> {
       <div className="app container">
           <div className="row">
             <div className="one column">
-              <image src="clavator.png" />
+              <img src="clavator.png" />
               Clavator
             </div>
             <div className="eleven columns"></div>

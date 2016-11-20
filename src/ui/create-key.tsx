@@ -1,5 +1,8 @@
 
 import * as React from 'react';
+
+import * as classnames from 'classnames';
+
 import './app.less';
 
 import * as Message from '../message';
@@ -25,29 +28,29 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     super();
     this.state = {
       create: false,
-      keyGen: null,
+      keyGen: new KeyGen.KeyGen(),
       create_status: "create-key"
     };
-    this.handleCreateClick = this.handleCreateClick.bind(this);
+    // this.handleCreateClick = this.handleCreateClick.bind(this);
   }
   // public static contextTypes = {
   //  socket: React.PropTypes.object
   // };
 
-  private handleCreateClick() {
-    let keyGen = this.state.keyGen || (new KeyGen.KeyGen());
-    let create = this.state.create || true;
-    // console.log("keyGen=>", keyGen);
-    // this.props.channel.send(Message.prepare("CreateKeySet", keyGen), (error: any) => {
-    //   this.state.create_status = "err("+error+")";
-    //   this.setState(this.state);
-    // });
-
-    this.setState(Object.assign({}, this.state, {
-      keyGen: keyGen,
-      create: create
-    }));
-  }
+  // private handleCreateClick() {
+  //   let keyGen = this.state.keyGen || ();
+  //   let create = this.state.create || true;
+  //   // console.log("keyGen=>", keyGen);
+  //   // this.props.channel.send(Message.prepare("CreateKeySet", keyGen), (error: any) => {
+  //   //   this.state.create_status = "err("+error+")";
+  //   //   this.setState(this.state);
+  //   // });
+  //
+  //   this.setState(Object.assign({}, this.state, {
+  //     keyGen: keyGen,
+  //     create: create
+  //   }));
+  // }
 
   protected componentDidMount(): void {
 
@@ -114,8 +117,8 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
       <div>
       {op.map((s:boolean, v:T) => {
           return (
-            <span>
-            <label key={v.toString()}>{v}</label>
+            <span key={v.toString()} style={{marginRight: "0.2em", float:"left"}}>
+            <label>{v}</label>
             <input className="u-full-width" type="checkbox" checked={s} name={name}
                   value={v.toString()}
                   onChange={(e:any) => {
@@ -151,15 +154,15 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     });
   }
 
-  public isGood(valid: boolean) : string {
-    return (valid) ? "good" : "unknown"
-  }
+  // public isGood(valid: boolean) : string {
+  //   return (valid) ? "good" : "unknown"
+  // }
   public render_password(label :string , key :string , pp :KeyGen.PwPair) : JSX.Element {
     return (
-    <div className="six columns {this.isGood(pp.valid())}" >
+    <div className={classnames({six:true, columns: true})} >
       <label>{label}:</label><input type="password"
         name={key} required={true}
-        className="u-full-width {this.isGood(pp.valid_password())}"
+        className={classnames({"u-full-width": true, good: pp.valid_password()})}
         onChange={(e:any) => {
           pp.password = e.target.value;
           this.setState(this.state);
@@ -173,7 +176,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     <div className="six columns">
       <label>{label}(verify):</label><input type="password"
         name={key+"-verify"} required={true}
-        className="u-full-width {this.isGood(pp.valid_verify())}"
+        className={classnames({"u-full-width": true, good: pp.valid_verify()})}
         onChange={(e:any) => {
           pp.verify = e.target.value;
           this.setState(this.state);
@@ -183,9 +186,9 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
   }
 
   public render_form() : JSX.Element {
-    if (!this.state.create) {
-        return (<span></span>)
-    }
+    // if (!this.state.create) {
+    //     return (<span></span>)
+    // }
     return (
     <form>
     <div className="row">
@@ -206,7 +209,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     <div className="row">
     <div className="six columns">
     <label>Name-Real:</label><input type="text"
-      className="u-full-width {this.isGood(this.state.keyGen.nameReal.valid())}"
+      className={classnames({"u-full-width": true, "good": this.state.keyGen.nameReal.valid()})}
       required={true}
       name="nameReal"
       onChange={(e:any) => {
@@ -217,7 +220,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     </div>
     <div className="six columns">
     <label>Name-Email:</label><input type="email"
-      className="u-full-width {this.isGood(this.state.keyGen.nameEmail.valid())}"
+      className={classnames({"u-full-width":true, good: this.state.keyGen.nameEmail.valid()})}
       autoComplete="on"
       required={true}
       name="nameEmail"
@@ -231,7 +234,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     <div className="row">
     <div className="nine columns">
       <label>Name-Comment:</label><input type="text"
-        className="u-full-width {this.isGood(this.state.keyGen.nameComment.valid())}"
+        className={classnames({"u-full-width":true, good: this.state.keyGen.nameComment.valid()})}
         autoComplete="on"
         required={true}
         name="nameComment"
@@ -243,7 +246,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     </div>
     <div className="three columns">
     <label>Expire-Date:</label><input type="date" name="expireDate"
-      className={this.isGood(this.state.keyGen.expireDate.valid())}
+      className={classnames({good: this.state.keyGen.expireDate.valid()})}
       autoComplete="on"
       required={true}
       min={Date.now()}
@@ -256,27 +259,27 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     </div>
     </div>
 
-    <div className="row">
+    <div className={classnames({row: true, good: this.state.keyGen.password.valid()})}>
    {this.render_password("Password", "cq-password", this.state.keyGen.password)}
    {this.render_verify_password("Password", "cq-password", this.state.keyGen.password)}
    </div>
-    <div className="row">
+    <div className={classnames({row: true, good: this.state.keyGen.adminPin.valid()})}>
    {this.render_password("AdminPin", "cq-adminpin", this.state.keyGen.adminPin)}
    {this.render_verify_password("AdminPin", "cq-adminpin", this.state.keyGen.adminPin)}
    </div>
-    <div className="row">
+    <div className={classnames({row: true, good: this.state.keyGen.userPin.valid()})}>
    {this.render_password("UserPin", "cq-userpin", this.state.keyGen.userPin)}
    {this.render_verify_password("UserPin", "cq-userpin", this.state.keyGen.userPin)}
    </div>
 
     <div className="row">
-    <div className="four columns">
-    </div>
-    <div className="four columns">
+    <div className="four columns"> </div>
+    <div className={classnames({four:true, columns:true, good: this.state.keyGen.valid()})} >
     <button type="button"
       onClick={this.create_key.bind(this)}
-      disabled={this.state.create_status != "create-key" || !this.state.keyGen.valid()}>{this.state.create_status}</button>
+      disabled={!this.state.keyGen.valid()}>{this.state.create_status}</button>
    </div>
+    <div className="four columns"> </div>
    </div>
     </form>
     );
@@ -288,7 +291,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
   public render(): JSX.Element {
     return (
       <div className="row CreateKey" >
-        <h3 onClick={this.handleCreateClick}>CreateKey</h3>
+        <h3>CreateKey</h3>
         {this.render_form()}
       </div>
     );

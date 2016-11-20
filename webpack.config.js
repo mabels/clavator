@@ -30,6 +30,10 @@ module.exports = [{
       {
         test: /\.less$/,
         loader: ExtractTextPlugin.extract('css?sourceMap!less?sourceMap')
+      },
+      {
+        test: /\.(jpe?g|png|gif|svg)$/i,
+        loaders: [ 'url?limit=10000', 'img?minimize' ]
       }
     ]
   },
@@ -85,6 +89,11 @@ module.exports = [{
       {
         test: /\.less$/,
         loader: 'style!css!less'
+      },
+      {
+          test: /\.png$/,
+          loader: "url-loader",
+          query: { mimetype: "image/png" }
       }
     ]
   },

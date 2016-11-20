@@ -125,7 +125,7 @@ export class KeyGen {
   keyType: Option<string> = new Option("RSA", ["RSA", "DSA"], "keyType Error");
   masterKeyLength: Option<number> = new Option(8192, [2048, 4096, 8192, 16384], "master keyLength Error");
   subKeyLength: Option<number> = new Option(4096, [2048, 4096, 8192, 16384], "sub keyLength Error");
-  keyUsage: MultiOption<string> = new MultiOption(['cert'], ['cert', 'unk1', 'unk3'], "keyUsage Error");
+  keyUsage: MultiOption<string> = new MultiOption(['cert'], ['cert', 'enc', 'unk3'], "keyUsage Error");
   nameReal: StringValue = new StringValue(/^([A-Z][a-z]*\s*)+$/, "nameReal error");
   nameEmail: StringValue = new StringValue(EmailRegExp, "nameEmail error");
   nameComment: StringValue = new StringValue(/.*/, "nameComment error");

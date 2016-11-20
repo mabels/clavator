@@ -1,5 +1,8 @@
 
 import * as React from 'react';
+
+import * as classnames from 'classnames';
+
 import './app.less';
 
 import * as Message from '../message';
@@ -10,7 +13,6 @@ import * as KeyGen from '../gpg/key-gen';
 
 
 interface ResetYubikeyState {
-  reset: boolean,
 }
 
 interface ResetYubikeyProps extends React.Props<ResetYubikey> {
@@ -22,25 +24,11 @@ export class ResetYubikey extends React.Component<ResetYubikeyProps, ResetYubike
   constructor() {
     super();
     this.state = {
-      reset: false,
     };
-    this.handleResetClick = this.handleResetClick.bind(this);
   }
   // public static contextTypes = {
   //  socket: React.PropTypes.object
   // };
-
-  private handleResetClick() {
-    console.log("handleResetClick");
-    // this.props.channel.send(Message.prepare("CreateKeySet", keyGen), (error: any) => {
-    //   this.state.create_status = "err("+error+")";
-    //   this.setState(this.state);
-    // });
-
-    this.setState(Object.assign({}, this.state, {
-      reset: true,
-    }));
-  }
 
   protected componentDidMount(): void {
 
@@ -82,12 +70,8 @@ export class ResetYubikey extends React.Component<ResetYubikeyProps, ResetYubike
 
 
   public render_form() : JSX.Element {
-    if (!this.state.reset) {
-        return (<span></span>)
-    }
     return (
-    <form>
-
+    <form className="slider">
     <button type="button"
       onClick={this.reset_yubikey.bind(this)}>ResetYubikey</button>
     </form>
@@ -100,7 +84,7 @@ export class ResetYubikey extends React.Component<ResetYubikeyProps, ResetYubike
   public render(): JSX.Element {
     return (
       <div className="ResetYubikey" >
-        <h3 onClick={this.handleResetClick}>ResetYubikey</h3>
+        <h3>ResetYubikey</h3>
         {this.render_form()}
       </div>
     );
