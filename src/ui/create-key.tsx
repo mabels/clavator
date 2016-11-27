@@ -60,7 +60,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
   }
 
   onMessage(action: Message.Header, data: string) {
-    if (action.action == "Progressor.CreateKeySet" && JSON.parse(data).isEndOfMessages) {
+    if (action.action == "Progressor.Clavator" && JSON.parse(data).isEndOfMessages) {
       this.setState(Object.assign({}, this.state, {
         create_status: "create-key"
       }));
@@ -298,15 +298,3 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
   }
 
 }
-
-// {this.render_key(sk)}
-// <li>
-// <ul>
-// </ul>
-// </li>
-// <li>
-// <ul>
-// {sk.subKeys.map((ssb) => <li key={ssb.key}>{this.render_key(ssb)}</li> )}
-// </ul>
-// </li>
-// </li>)}

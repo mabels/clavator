@@ -18,6 +18,10 @@ app.use(express.static(join(process.cwd(), 'dist')));
 
 let gpg = new Gpg.Gpg();
 
+gpg.createSubkey("DDC4941118503075", (res:Gpg.Result) => {
+
+});
+
 let observer = Observer.start(gpg);
 let dispatch = Dispatch.start(gpg);
 
@@ -32,7 +36,7 @@ app.ws('/', (ws, req) => {
   // ws.on('data', msg:any => console.log(msg));
   ws.on('message', payload => {
     let msg = Message.fromData(payload);
-     console.log("onMessage")  
+     console.log("onMessage")
     dispatch.run(ws, msg)
   });
 });

@@ -123,9 +123,9 @@ export class KeyGen {
   adminPin: PwPair = new PwPair(/^[0-9]{8}$/, "adminPin Error");
   userPin: PwPair = new PwPair(/^[0-9]{6,8}$/, "userPin Error");
   keyType: Option<string> = new Option("RSA", ["RSA", "DSA"], "keyType Error");
-  masterKeyLength: Option<number> = new Option(8192, [2048, 4096, 8192, 16384], "master keyLength Error");
-  subKeyLength: Option<number> = new Option(4096, [2048, 4096, 8192, 16384], "sub keyLength Error");
-  keyUsage: MultiOption<string> = new MultiOption(['cert'], ['cert', 'enc', 'unk3'], "keyUsage Error");
+  masterKeyLength: Option<number> = new Option(4096, [1024, 2048, 4096], "master keyLength Error");
+  subKeyLength: Option<number> = new Option(4096, [1024, 2048, 4096], "sub keyLength Error");
+  keyUsage: MultiOption<string> = new MultiOption(['cert','enc','auth'], ['sign', 'cert', 'enc', 'auth'], "keyUsage Error");
   nameReal: StringValue = new StringValue(/^([A-Z][a-z]*\s*)+$/, "nameReal error");
   nameEmail: StringValue = new StringValue(EmailRegExp, "nameEmail error");
   nameComment: StringValue = new StringValue(/.*/, "nameComment error");
@@ -173,16 +173,20 @@ export class KeyGen {
   }
 
   masterCommand() {
-    return [
+    let ret = [
       "Key-Type: " + this.keyType.value,
       "Key-Length: " + this.masterKeyLength.value,
-      "Key-Usage: " + this.keyUsage.values.join(","),
-      "Name-Real: " + this.nameReal,
-      "Name-Email: " + this.nameEmail,
-      "Expire-Date: " + format_date(this.expireDate.value),
-      "%commit",
-      "%echo done"
-    ].join("\n");
+      "Key-Usage: sign,cert",
+      "Name-Real: " + this.nameReal.value,
+      "Name-Email: " + this.nameEmail.value,
+    ]
+    if (this.nameComment.value.length > 0) {
+      ret.push("Name-Comment: " + this.nameEmail.value)
+    }
+    ret.push("Expire-Date: " + format_date(this.expireDate.value))
+    ret.push("%commit")
+    ret.push("%echo done")
+    return ret.join("\n");
   }
 
 

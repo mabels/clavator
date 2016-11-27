@@ -42,6 +42,8 @@ export class CardStatusList
     this.setState(Object.assign({}, this.state, { secretKeys: [] }));
   }
 
+  onOpen(e: Event) {}
+
   onMessage(action: Message.Header, data: string) {
     if (action.action == "CardStatusList") {
       this.setState(Object.assign({}, this.state, {

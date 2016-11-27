@@ -2,14 +2,15 @@ import * as React from 'react';
 import './normalize.css';
 import './skeleton.css';
 import './app.less';
-
-// import "../img/clavator.png";
+// import "./clavator.png";
+const Clavator = require('./clavator.png');
 
 import { KeyChainList } from './key-chain-list';
 import { CardStatusList } from './card-status-list';
 import { CreateKey } from './create-key';
 import { ResetYubikey } from './reset-yubikey';
 import { Progressor } from './progressor';
+import { ChannelStatus } from './channel-status';
 
 import * as WsChannel from './ws-channel';
 
@@ -35,6 +36,7 @@ export class App extends React.Component<{}, AppState> {
       channel: null
     };
   }
+
 
   protected componentDidMount(): void {
     this.setState(Object.assign({}, this.state, { channel: WsChannel.create() }));
@@ -66,21 +68,22 @@ export class App extends React.Component<{}, AppState> {
     return (
       <div className="app container">
           <div className="row">
-            <div className="one column">
-              <img src="clavator.png" />
-              Clavator
+            <div className="two columns">
+              <img src={Clavator} width="128px" title="Clavator"/>
             </div>
-            <div className="eleven columns"></div>
+            <div className="eight columns"> </div>
+            <div className="two columns">
+              <ChannelStatus channel={this.state.channel} />
+            </div>
           </div>
           <div className="row">
             <ResetYubikey channel={this.state.channel} />
           </div>
           <div className="row">
-            <Progressor channel={this.state.channel} msg="ResetYubikey"/>
-          </div>
               <CreateKey channel={this.state.channel} />
+          </div>
           <div className="row">
-              <Progressor channel={this.state.channel} msg="CreateKeySet"/>
+              <Progressor channel={this.state.channel} msg="Clavator"/>
           </div>
           <div className="row">
             <div className="three column"></div>

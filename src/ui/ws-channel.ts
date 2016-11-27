@@ -2,15 +2,20 @@ import * as Message from '../message';
 
 export interface WsChannel {
   onClose(e:CloseEvent) : void;
+  onOpen(e:Event): void;
   onMessage(h: Message.Header, data: string) : void;
 }
 
 export class Dispatch {
+  private isActive: boolean = false;
   private ws: WebSocket;
   private wscs: WsChannel[] = [];
 
   public register(wsc: WsChannel) {
     this.wscs.push(wsc);
+    if (this.isActive) {
+      wsc.onOpen(null);
+    }
   }
   public unregister(wsc: WsChannel) {
       this.wscs = this.wscs.filter(item => item !== wsc);
@@ -23,25 +28,35 @@ export class Dispatch {
     this.ws.close();
   }
 
-  public static create() : Dispatch {
-    let wscd = new Dispatch();
-    wscd.ws = new WebSocket(`ws://${window.location.host}/`);
-    // wscd.ws.onopen = (e: Event) => {
-    //   console.log(e);
-    //   wscd.ws.send("Hello Clavator")
-    // };
-    wscd.ws.onclose = (e: CloseEvent) => {
-      wscd.wscs.forEach((wsc: WsChannel) => {
+  connector() {
+    this.ws = new WebSocket(`ws://${window.location.host}/`);
+    this.ws.onopen = (e: Event) => {
+      // debugger
+      this.isActive = true;
+      this.wscs.forEach((wsc: WsChannel) => {
+        wsc.onOpen && wsc.onOpen(e)
+      });
+    };
+    this.ws.onclose = (e: CloseEvent) => {
+      // debugger
+      this.isActive = false;
+      this.wscs.forEach((wsc: WsChannel) => {
         wsc.onClose && wsc.onClose(e)
       });
+      setTimeout(this.connector.bind(this), 1000);
     }
-    wscd.ws.onmessage = (e: MessageEvent) => {
+    this.ws.onmessage = (e: MessageEvent) => {
       let msg = Message.fromData(e.data);
       console.log("onmessage", msg);
-      wscd.wscs.forEach((wsc: WsChannel) => {
+      this.wscs.forEach((wsc: WsChannel) => {
         wsc.onMessage && wsc.onMessage(msg.header, msg.data);
       });
     };
+  }
+
+  public static create() : Dispatch {
+    let wscd = new Dispatch();
+    wscd.connector();
     return wscd;
   }
 

@@ -28,7 +28,7 @@ export class Progressor
     this.state = {
       progressList: []
     };
-
+    this.handleClearClick = this.handleClearClick.bind(this)
   }
   // public static contextTypes = {
   //  socket: React.PropTypes.object
@@ -38,6 +38,9 @@ export class Progressor
 
   protected componentWillUnmount(): void {
     this.setState(Object.assign({}, this.state, { progressList: [] }));
+  }
+
+  onOpen() {
   }
 
   onMessage(action: Message.Header, data: string) {
@@ -74,16 +77,26 @@ export class Progressor
     // debugger
   }
 
+  private handleClearClick() {
+    this.setState(Object.assign({}, this.state, {
+      progressList: []
+    }));
+  }
+
+
   public render(): JSX.Element {
         // SecretKeys {this.state.cardStatusList.length || ""}
     return (
       <div className="Progressor">
-        <h3>Progressor.{this.props.msg} {this.state.progressList.length || ""}</h3>
+        <h3>Progressor.{this.props.msg}
+        <button onClick={this.handleClearClick}>Clear({this.state.progressList.length})</button>
+        </h3>
         <pre><code>
         {this.state.progressList.map((ps: Progress.Progress, idx : number) => {
           // console.log("pl", ps)
+          // debugger
           return (ps.msgs.map((msg: string, idx: number) => {
-            return (<div key={ps.id} className={ps.isOk?"ok":"fail"}>{msg}{ps.isEndOfMessages?"<EOM>":""}</div>);
+            return (<div key={ps.id+":"+idx} className={ps.isOk?"ok":"fail"}>{msg}{ps.isEndOfMessages?"<EOM>":""}</div>);
           }));
         })}
         </code>

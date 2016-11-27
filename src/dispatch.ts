@@ -8,7 +8,8 @@ import * as Gpg from './gpg/gpg';
 import Dispatcher from './dispatcher'
 import GpgCreateKeySet from './gpg_create_key_set'
 import GpgResetYubikey from './gpg_reset_yubikey';
-
+import DeleteSecretKey from './delete_secret_key';
+import RequestAscii from './request_ascii';
 
 export class Dispatch {
     public dispatcher : Dispatcher[] = [];
@@ -25,5 +26,7 @@ export function start(gpg: Gpg.Gpg) : Dispatch {
     let dispatch = new Dispatch();
     dispatch.dispatcher.push(GpgCreateKeySet.create(gpg))
     dispatch.dispatcher.push(GpgResetYubikey.create(gpg))
+    dispatch.dispatcher.push(DeleteSecretKey.create(gpg))
+    dispatch.dispatcher.push(RequestAscii.create(gpg))
     return dispatch;
 }

@@ -34,3 +34,22 @@ export function ok(msg: string, ieom = false) : Progress {
   p.msgs = [msg];
   return p
 }
+
+export function info(msg: string, ieom = false) : Progress {
+  let p = new Progress();
+  p.id = id++;
+  p.isOk = true;
+  p.isEndOfMessages = ieom;
+  p.msgs = msg.split(/[\n\r]+/);
+  console.log("info=", p.msgs)
+  return p
+}
+
+export function error(msg: string, ieom = false) : Progress {
+  let p = new Progress();
+  p.id = id++;
+  p.isOk = false;
+  p.isEndOfMessages = ieom;
+  p.msgs = msg.split(/[\n\r]+/);
+  return p
+}

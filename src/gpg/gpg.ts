@@ -12,6 +12,11 @@ import * as Uuid from 'node-uuid';
 
 import * as KeyGen from './key-gen';
 
+interface StringFunc {
+  (): string;
+}
+
+type Mixed = string | StringFunc;
 
 export class Result {
     stdOut: string = "";
@@ -34,20 +39,62 @@ export class Result {
         return this;
     }
 
-    run(cmd: string, attributes: string[], cb: (res: Result) => void) {
+    run(cmd: string, attributes: Mixed[], cb: (res: Result) => void) {
       // console.log("run=["+cmd+"]", attributes);
-        const c = spawn(cmd, attributes, { env: this.env });
+        let fds : (()=>string)[] = [];
+        let freeFd = 3;
+        let attrs = attributes.map((i) => { if (typeof(i) == "function") {
+           fds.push(i);
+           return ""+freeFd++;
+         }
+         return i;
+       })
+       let writables : string[] = fds.map((func) => {
+          // let w = new stream.Writable();
+          // let r = new stream.Readable();
+          // r.push(func());
+          // r.push(null);
+          // r.pipe(w);
+          // return w;
+          return 'pipe'
+       });
+
+       let stdio : any[] = ['pipe', 'pipe', 'pipe']
+       stdio = stdio.concat(writables);
+        // console.log("run=",cmd, attrs);
+        const c = spawn(cmd, attrs, {
+          env: this.env,
+          stdio: stdio
+        });
+        c.on("error", (e:Event) => {
+          console.log(e);
+          cb(this);
+        });
         if (this.stdIn && this.stdIn.length > 0) {
-            let Readable = stream.Readable;
-            var s = new Readable();
+            var s = new stream.Readable();
             s.push(this.stdIn);
             s.push(null);
             s.pipe(c.stdin);
-            // , (ret) => {
-            //     console.log(">>>>"+ret+":"+stdIn);
-            //     //c.stdin.close();
-            //   });
         }
+
+        // console.log(">>>>>>", stdio.length);
+        for (let i = 3; i < stdio.length; ++i) {
+          c.stdio[i].on('error', () => { console.log("stdio->"+i+"->error") })
+          c.stdio[i].on('end', () => { console.log("stdio->"+i+"->end") })
+          var s = new stream.Readable();
+            console.log(">>>>>>", stdio.length, 1, fds[i-3]());
+            s.push(fds[i-3]());
+            console.log(">>>>>>", stdio.length, 2);
+            s.push(null);
+            console.log(">>>>>>", stdio.length, 3);
+            s.pipe(c.stdio[i] as stream.Writable);
+            console.log(">>>>>>", stdio.length, 4);
+            s.on('end', () => {
+              console.log(">>>>>>", stdio.length, "closed");
+            });
+            // s.end();
+        }
+
         c.stdout.on('data', (data: string) => { this.stdOut += data });
         c.stderr.on('data', (data: string) => { this.stdErr += data });
         c.on('close', (code: number) => {
@@ -80,17 +127,17 @@ export class Gpg {
 
     }
 
-    run(attributes: string[], stdIn: string, cb: (res: Result) => void) {
+    run(attributes: Mixed[], stdIn: string, cb: (res: Result) => void) {
         if (this.homeDir) {
             attributes.splice(0, 0, this.homeDir);
             attributes.splice(0, 0, '--homedir')
         }
         //console.log(attributes);
         let result = (new Result()).setStdIn(stdIn);
-        if (this.pinEntryServer) {
-            result.addEnv('F_MOD_HOME', "xxx");
-            result.addEnv('S_PINENTRY_SOCKET', this.pinEntryServer.socketFile);
-        }
+        // if (this.pinEntryServer) {
+        //     result.addEnv('F_MOD_HOME', "xxx");
+        //     result.addEnv('S_PINENTRY_SOCKET', this.pinEntryServer.socketFile);
+        // }
         result.run(this.gpgCmd, attributes, cb);
     }
 
@@ -161,6 +208,10 @@ export class Gpg {
         });
     }
 
+    deleteSecretKey(fingerPrint: string, cb: (res: Result) => void) {
+      this.run(['--batch', '--yes', '--delete-secret-key', fingerPrint], null, cb);
+    }
+
     write_agent_conf(pinentryPath: string, cb: (err: any) => void) {
         let gpgAgentFname = path.join(this.homeDir, 'gpg-agent.conf');
         Ac.AgentConf.read_file(gpgAgentFname, (err: any, ag: Ac.AgentConf) => {
@@ -207,15 +258,76 @@ export class Gpg {
             cb("need a to run connect_pinentry");
             return;
         }
-        this.run(['--full-gen-key', '--batch'], keyGen.masterCommand(), (result: Result) => {
-            if (result.exitCode != 0) {
-                cb("gpg exit with a error code:" + result.exitCode +
-                    "\n" + result.stdErr +
-                    "\n" + result.stdOut);
-                return;
-            }
-            cb(null);
-        });
+    }
+
+    public createMasterKey(keyGen: KeyGen.KeyGen, cb: (res: Result) => void) {
+      let args : Mixed[] = [
+        '--no-tty', '--pinentry-mode', 'loopback',
+        '--passphrase-fd',
+        () => {
+          return keyGen.password.password
+        },
+        '--full-gen-key',
+        '--batch'
+      ];
+      this.run(args, keyGen.masterCommand(), cb);
+    }
+
+    public pemPrivateKey(fpr: string, cb: (res: Result) => void) {
+      this.run(['-a', '--export-secret-key', fpr], null, cb);
+    }
+    public pemPublicKey(fpr: string, cb: (res: Result) => void) {
+      this.run(['-a', '--export', fpr], null, cb);
+    }
+    public pemRevocation(fpr: string, cb: (res: Result) => void) {
+      this.run(['-a', '--gen-revoke', fpr], null, cb);
+    }
+    public sshPublic(fpr: string, cb: (res: Result) => void) {
+      this.run(['--export-ssh-key', fpr], null, cb);
+    }
+
+    public createSubkey(fpr: string, cb: (res: Result) => void) {
+      // gpg2  --quick-addkey  FDCF2566BA8134E3BAD15B7DDDC4941118503075 rsa2048 sign,auth,encr
+
+
+      
+      // let args : Mixed[] = ['--no-tty', '--pinentry-mode', 'loopback',
+      // '--passphrase-fd',
+      // () => {
+      //   return keyGen.password.password
+      // },
+      // '--expert', '--edit-key',  fpr]
+      // addkey\n
+      // 8\n
+      // A\n
+      //  Possible actions for a RSA key: Sign Encrypt Authenticate
+      //  Current allowed actions: Sign Encrypt Authenticate
+      // Q\n
+      // 2048\n
+      // <days until expires>\n
+      // y\n
+      // y\n
+      // save
+      const c = spawn(this.gpgCmd, ['--expert', '--edit-key', fpr, 'addkey']);
+      let buf : string = "";
+      let your_selection = new RegExp("Your selection\?\s*$", "s")
+      c.stdout.on('data', (data: string) => {
+        buf += data.toString();
+        if (your_selection.test(buf)) {
+          console.log("FOUND: Your selection?");
+          buf = "";
+          c.stdin.write("8\n")
+        }
+      });
+      c.stderr.on('data', (data: string) => {
+        console.error(data.toString())
+      });
+      c.on('close', (code: number) => {
+          // this.exitCode = code;
+          console.log("CLOSED");
+          cb(new Result());
+      });
+
     }
 
 }

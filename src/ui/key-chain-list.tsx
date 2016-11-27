@@ -42,6 +42,8 @@ export class KeyChainList
     this.setState(Object.assign({}, this.state, { secretKeys: [] }));
   }
 
+  onOpen(e: Event) {}
+
   onMessage(action: Message.Header, data: string) {
     if (action.action == "KeyChainList") {
       this.setState(Object.assign({}, this.state, {
@@ -82,12 +84,44 @@ export class KeyChainList
     )
   }
 
+requestAscii(key: ListSecretKeys.Key, action: string)  {
+  return (() => {
+    this.props.channel.send(Message.prepare("RequestAscii", {
+      action: action,
+      fingerPrint: key.fingerPrint
+    }),
+      (error: any) => {
+
+    });
+
+  }).bind(this);
+}
+
+public deleteSecretKey(key: ListSecretKeys.Key) {
+  return (() => {
+    this.props.channel.send(Message.prepare("DeleteSecretKey", key.fingerPrint),
+      (error: any) => {
+
+    });
+  }).bind(this);
+}
+
+public render_buttons(key: ListSecretKeys.Key) : JSX.Element {
+  return (<td>
+    <button onClick={this.requestAscii(key, "pem-private")}>pem-private</button>
+    <button onClick={this.requestAscii(key, "pem-public")}>pem-public</button>
+    <button onClick={this.requestAscii(key, "ssh-public")}>ssh-public</button>
+    <button onClick={this.requestAscii(key, "prem-revoke")}>revoke</button>
+    <button onClick={this.deleteSecretKey(key)}>delete</button>
+  </td>);
+}
 
   public render_key(clazz: string, key: ListSecretKeys.Key) : JSX.Element {
     //<td>{key.funky}</td>
     return (
       <tr className={clazz} key={key.key}>
-    <td>{key.type}</td>
+      {this.render_buttons(key)}
+      <td>{key.type}</td>
     <td>{key.trust}</td>
     <td>{key.cipher}</td>
     <td>{key.bits}</td>
@@ -99,6 +133,8 @@ export class KeyChainList
   );
   }
 
+
+
   public render_uid(uid: ListSecretKeys.Uid) : JSX.Element {
     //<td>{this.format_date(uid.created)}</td>
     //<td>{uid.id}</td>
@@ -108,8 +144,7 @@ export class KeyChainList
     <td>{uid.name}</td>
     <td>{uid.email}</td>
     <td>{uid.comment}</td>
-      </tr>
-  );
+    </tr>);
   }
 
 
@@ -131,15 +166,3 @@ export class KeyChainList
   }
 
 }
-
-// {this.render_key(sk)}
-// <li>
-// <ul>
-// </ul>
-// </li>
-// <li>
-// <ul>
-// {sk.subKeys.map((ssb) => <li key={ssb.key}>{this.render_key(ssb)}</li> )}
-// </ul>
-// </li>
-// </li>)}

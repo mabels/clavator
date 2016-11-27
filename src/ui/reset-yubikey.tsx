@@ -23,8 +23,7 @@ export class ResetYubikey extends React.Component<ResetYubikeyProps, ResetYubike
 
   constructor() {
     super();
-    this.state = {
-    };
+    this.state = { };
   }
   // public static contextTypes = {
   //  socket: React.PropTypes.object
