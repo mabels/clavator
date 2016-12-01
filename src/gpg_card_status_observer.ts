@@ -34,7 +34,9 @@ class GpgCardStatusObserver {
     }
     this.gpg.card_status((err: string, keys: CardStatus.Gpg2CardStatus[]) => {
       if (err) {
-        console.error(err);
+        if (!err.includes("OpenPGP card not available")) {
+          console.error(err);
+        }
         keys = [];
       }
       let cnt = 0;

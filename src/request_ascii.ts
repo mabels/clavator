@@ -15,7 +15,11 @@ export class RequestAscii implements Dispatcher {
     this.gpg = g
   }
 
-  public
+  public processResult(ws: expressWsTs.ExpressWebSocket) {
+    return (res: Gpg.Result) => {
+
+    }
+  }
 
   public run(ws: expressWsTs.ExpressWebSocket, m: Message.Message) : boolean {
     console.log("RequestAscii.run", m.header)
@@ -28,16 +32,16 @@ export class RequestAscii implements Dispatcher {
       Progress.ok("RequestAscii="+m.data)))
     switch (payload.action) {
       case 'pem-private':
-        this.gpg.pemPrivateKey(payload.fingerPrint.fpr, processResult(ws));
+        this.gpg.pemPrivateKey(payload.fingerPrint.fpr, this.processResult(ws));
         break;
       case 'pem-public':
-        this.gpg.pemPublicKey(payload.fingerPrint.fpr, processResult(ws));
+        this.gpg.pemPublicKey(payload.fingerPrint.fpr, this.processResult(ws));
         break;
       case 'pem-revoke':
-        this.gpg.pemRevocation(payload.fingerPrint.fpr, processResult(ws));
+        this.gpg.pemRevocation(payload.fingerPrint.fpr, this.processResult(ws));
         break;
       case 'ssh-public':
-        this.gpg.sshPublic(payload.fingerPrint.fpr, processResult(ws));
+        this.gpg.sshPublic(payload.fingerPrint.fpr, this.processResult(ws));
         break;
       default:
           ws.send(Message.prepare("Progressor.Clavator",

@@ -44,7 +44,7 @@ export class Progressor
   }
 
   onMessage(action: Message.Header, data: string) {
-    console.log("Progressor."+this.props.msg, action.action)
+    // console.log("Progressor."+this.props.msg, action.action)
     if (action.action == "Progressor."+this.props.msg) {
       let js = JSON.parse(data);
       this.state.progressList.push(Progress.fill(js));

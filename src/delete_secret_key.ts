@@ -25,15 +25,18 @@ export class DeleteSecretKey implements Dispatcher {
     ws.send(Message.prepare("Progressor.Clavator",
       Progress.ok("DeleteSecretKey="+m.data)))
     this.gpg.deleteSecretKey(payload.fpr, (res: Gpg.Result) => {
+      ws.send(Message.prepare("Progressor.Clavator", Progress.info(res.stdOut)));
+      ws.send(Message.prepare("Progressor.Clavator", Progress.error(res.stdErr)));
       if (res.stdOut.split("\n").find((i:string) => {return i.startsWith("ERR ")})) {
         res.stdOut.split("\n").forEach((s: string) => {
-          ws.send(Message.prepare("Progressor.Clavator", Progress.fail(s)))
+          ws.send(Message.prepare("Progressor.Clavator", Progress.fail(s)));
         })
       } else {
-          ws.send(Message.prepare("Progressor.Clavator", Progress.ok("Almost done. Remove your Yubikey now and plug it in again.", true)))
-        // res.stdOut.split("\n").forEach((s: string) => {
-        //   ws.send(Message.prepare("Progressor.Clavator", Progress.ok(s)))
-        // })
+        this.gpg.deletePublicKey(payload.fpr, (res: Gpg.Result) => {
+          ws.send(Message.prepare("Progressor.Clavator", Progress.info(res.stdOut)));
+          ws.send(Message.prepare("Progressor.Clavator", Progress.error(res.stdErr)));
+          ws.send(Message.prepare("Progressor.Clavator", Progress.ok("DeleteKey Successfull", true)))
+        })
       }
     })
     return true;

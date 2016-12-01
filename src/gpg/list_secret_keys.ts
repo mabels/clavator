@@ -7,6 +7,7 @@ function debugArray(match: string[]) {
   // console.log(ret);
 }
 const reNameAndEmail = /^\s*(.*)\s+\<(\S+)\>\s*$/;
+const reNameAndCommentAndEmail = /^\s*(.*)\s+\((.*)\)\s+\<(\S+)\>\s*$/;
 export class Uid {
   trust: string;
   name: string;
@@ -22,9 +23,16 @@ export class Uid {
     this.trust = match[1];
     this.created = parseInt(match[5], 10);
     this.key = this.id = match[7];
-    let nae = reNameAndEmail.exec(match[9]);
-    this.name = nae[1];
-    this.email = nae[2];
+    let nacae = reNameAndCommentAndEmail.exec(match[9]);
+    if (nacae) {
+      this.name = nacae[1];
+      this.comment = nacae[2];
+      this.email = nacae[3];
+    } else {
+      let nae = reNameAndEmail.exec(match[9]);
+      this.name = nae[1];
+      this.email = nae[2];
+    }
     //this.comment = match[5];
     return this;
   }

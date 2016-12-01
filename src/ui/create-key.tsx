@@ -28,7 +28,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     super();
     this.state = {
       create: false,
-      keyGen: new KeyGen.KeyGen(),
+      keyGen: KeyGen.KeyGen.withSubKeys(3),
       create_status: "create-key"
     };
     // this.handleCreateClick = this.handleCreateClick.bind(this);
@@ -148,6 +148,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     console.log("create_key", this);
     this.state.create_status = "requested";
     this.setState(this.state);
+    debugger
     this.props.channel.send(Message.prepare("CreateKeySet", this.state.keyGen), (error: any) => {
       this.state.create_status = "err("+error+")";
       this.setState(this.state);
@@ -189,23 +190,39 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     // if (!this.state.create) {
     //     return (<span></span>)
     // }
+    // <div className="three columns">
+    // <label>Sub-Key-Length:</label>{this.render_option("subKeyLength", this.state.keyGen.subKeyLength)}
+    // </div>
+
     return (
     <form>
     <div className="row">
+    <div className="two columns">MasterKey</div>
     <div className="three columns">
-    <label>Key-Type:</label>{this.render_option("keyType", this.state.keyGen.keyType)}
+    <label>Key-Type:</label>{this.render_option("keyType", this.state.keyGen.keyInfo.type)}
     </div>
     <div className="three columns">
-    <label>Master-Key-Length:</label>{this.render_option("masterKeyLength", this.state.keyGen.masterKeyLength)}
+    <label>Master-Key-Length:</label>{this.render_option("masterKeyLength", this.state.keyGen.keyInfo.length)}
     </div>
     <div className="three columns">
-    <label>Sub-Key-Length:</label>{this.render_option("subKeyLength", this.state.keyGen.subKeyLength)}
-    </div>
-    <div className="three columns">
-    <label>Key-Usage:</label>{this.render_multioption("keyUsage", this.state.keyGen.keyUsage)}
+    <label>Key-Usage:</label>{this.render_multioption("keyUsage", this.state.keyGen.keyInfo.usage)}
     </div>
     </div>
 
+    {this.state.keyGen.subKeys.subKeys.map((sb:KeyGen.KeyInfo, i) => {
+      return (<div className="row">
+              <div className="two columns">SubKey {i}</div>
+              <div className="three columns">
+              <label>Key-Type:</label>{this.render_option("subkeys."+i+".keyType", sb.type)}
+              </div>
+              <div className="three columns">
+              <label>Key-Length:</label>{this.render_option("subkeys."+i+".length", sb.length)}
+              </div>
+              <div className="three columns">
+              <label>Key-Usage:</label>{this.render_multioption("subkeys."+i+".usage", sb.usage)}
+              </div>
+              </div>)
+    })}
     <div className="row">
     <div className="six columns">
     <label>Name-Real:</label><input type="text"

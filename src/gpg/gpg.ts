@@ -79,18 +79,18 @@ export class Result {
 
         // console.log(">>>>>>", stdio.length);
         for (let i = 3; i < stdio.length; ++i) {
-          c.stdio[i].on('error', () => { console.log("stdio->"+i+"->error") })
-          c.stdio[i].on('end', () => { console.log("stdio->"+i+"->end") })
+          c.stdio[i].on('error', (e:any) => { console.log("stdio->"+i+"->error", e) })
+          c.stdio[i].on('end', (e:any) => { console.log("stdio->"+i+"->end", e) })
           var s = new stream.Readable();
-            console.log(">>>>>>", stdio.length, 1, fds[i-3]());
+            // console.log(">>>>>>", stdio.length, 1, fds[i-3]());
             s.push(fds[i-3]());
-            console.log(">>>>>>", stdio.length, 2);
+            // console.log(">>>>>>", stdio.length, 2);
             s.push(null);
-            console.log(">>>>>>", stdio.length, 3);
+            // console.log(">>>>>>", stdio.length, 3);
             s.pipe(c.stdio[i] as stream.Writable);
-            console.log(">>>>>>", stdio.length, 4);
+            // console.log(">>>>>>", stdio.length, 4);
             s.on('end', () => {
-              console.log(">>>>>>", stdio.length, "closed");
+              // console.log(">>>>>>", stdio.length, "closed");
             });
             // s.end();
         }
@@ -212,6 +212,10 @@ export class Gpg {
       this.run(['--batch', '--yes', '--delete-secret-key', fingerPrint], null, cb);
     }
 
+    deletePublicKey(fingerPrint: string, cb: (res: Result) => void) {
+      this.run(['--batch', '--yes', '--delete-key', fingerPrint], null, cb);
+    }
+
     write_agent_conf(pinentryPath: string, cb: (err: any) => void) {
         let gpgAgentFname = path.join(this.homeDir, 'gpg-agent.conf');
         Ac.AgentConf.read_file(gpgAgentFname, (err: any, ag: Ac.AgentConf) => {
@@ -261,6 +265,7 @@ export class Gpg {
     }
 
     public createMasterKey(keyGen: KeyGen.KeyGen, cb: (res: Result) => void) {
+      //  '--enable-large-rsa',
       let args : Mixed[] = [
         '--no-tty', '--pinentry-mode', 'loopback',
         '--passphrase-fd',
@@ -286,48 +291,19 @@ export class Gpg {
       this.run(['--export-ssh-key', fpr], null, cb);
     }
 
-    public createSubkey(fpr: string, cb: (res: Result) => void) {
+    public createSubkey(fpr: string, kg: KeyGen.KeyGen, ki: KeyGen.KeyInfo, cb: (res: Result) => void) {
       // gpg2  --quick-addkey  FDCF2566BA8134E3BAD15B7DDDC4941118503075 rsa2048 sign,auth,encr
-
-
-      
-      // let args : Mixed[] = ['--no-tty', '--pinentry-mode', 'loopback',
-      // '--passphrase-fd',
-      // () => {
-      //   return keyGen.password.password
-      // },
-      // '--expert', '--edit-key',  fpr]
-      // addkey\n
-      // 8\n
-      // A\n
-      //  Possible actions for a RSA key: Sign Encrypt Authenticate
-      //  Current allowed actions: Sign Encrypt Authenticate
-      // Q\n
-      // 2048\n
-      // <days until expires>\n
-      // y\n
-      // y\n
-      // save
-      const c = spawn(this.gpgCmd, ['--expert', '--edit-key', fpr, 'addkey']);
-      let buf : string = "";
-      let your_selection = new RegExp("Your selection\?\s*$", "s")
-      c.stdout.on('data', (data: string) => {
-        buf += data.toString();
-        if (your_selection.test(buf)) {
-          console.log("FOUND: Your selection?");
-          buf = "";
-          c.stdin.write("8\n")
-        }
-      });
-      c.stderr.on('data', (data: string) => {
-        console.error(data.toString())
-      });
-      c.on('close', (code: number) => {
-          // this.exitCode = code;
-          console.log("CLOSED");
-          cb(new Result());
-      });
-
+      // '--enable-large-rsa'
+      let args = [
+        '--no-tty', '--pinentry-mode', 'loopback',
+        '--passphrase-fd',
+        () => {
+          return kg.password.password
+        },
+        '--quick-addkey', fpr,
+        ki.type.value.toLowerCase()+ki.length.value, ki.usage.values.join(",")
+      ];
+      console.log("createSubkey", args);
+      this.run(args, null, cb);
     }
-
 }

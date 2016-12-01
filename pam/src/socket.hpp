@@ -13,6 +13,10 @@
 class Message {
 public:
   std::string data;
+
+  Message(const boost::asio::streambuf& streambuf) :
+    data(buffers_begin(streambuf.data()), buffers_end(streambuf.data())) {
+  }
   // boost::optional<Message> getMsg(const char *msg) const {
   //   std::string line;
   //   auto msgLen = strlen(msg);
@@ -57,7 +61,7 @@ public:
 
 class Socket {
 public:
-  static const BUFSIZE = 4096;
+  static const int BUFSIZE = 4096;
   boost::asio::io_service &io;
   boost::asio::deadline_timer createTimer;
   std::string sockFname;
@@ -70,8 +74,10 @@ public:
   int listenSocket;
   std::unique_ptr<boost::asio::posix::stream_descriptor> asDesc;
   boost::asio::streambuf readBuf;
+  boost::asio::streambuf writeBuf;
 
-  typedef std::function<void(const boost::system::error_code&, const Message &msg)> MsgFunc;
+  typedef std::function<bool(const boost::system::error_code&, const Message &msg)> MsgFunc;
+  typedef std::function<bool(const boost::system::error_code&, const size_t bt)> SendFunc;
   typedef std::function<void(const boost::system::error_code&)> ReadyFunc;
 
 
@@ -100,9 +106,10 @@ public:
   }
 
 public:
-  Socket(boost::asio::io_service &io) : io(io), soDesc(-1),
-    listenSocket(-1), createTimer(io, boost::posix_time::milliseconds(100)),
-    readBuf(4096) {
+  Socket(boost::asio::io_service &io) : io(io),
+    createTimer(io, boost::posix_time::milliseconds(100)),
+    soDesc(-1), listenSocket(-1),
+    readBuf(4096), writeBuf(4096) {
    }
   ~Socket() {
     if (soDesc >= 0) {
@@ -119,7 +126,15 @@ public:
   }
 
   bool msgReceiver(MsgFunc func) {
-    boost::asio::async_read_until(*asDesc, readBuf, "\r\n", func);
+    boost::asio::async_read_until(*asDesc, readBuf, "\n",
+      [this, func](const boost::system::error_code &ec, std::size_t bytes_transferred) {
+        Message msg(readBuf);
+        // LOG(INFO) << "msgReceiver:" << ec << ":" << bytes_transferred << "[" << msg.data << "]";
+        readBuf.consume(bytes_transferred);
+        func(ec, msg);
+        msgReceiver(func);
+    });
+    return true;
   }
   //   boost::asio::async_read_until(s, b, "\r\n", handler);
   //   asDesc.async_read_some(boost::asio::buffer(readBuf),
@@ -141,16 +156,26 @@ public:
   //   return true;
   // }
 
-  bool sendMsg(const std::string &msg) {
-    boost::asio::async_write(*asDesc, boost::asio::buffer(buf, len),
-      [this, buf, len](const boost::system::error_code &ec,
-        std::size_t bytes_transferred) -> bool {
-    })
+  bool sendMsg(const std::string &msg, SendFunc sfunc) {
+    std::ostream stream(&writeBuf);
+    stream << msg;
+    // LOG(INFO) << "["<< msg << "]";
+    boost::asio::async_write(*asDesc, writeBuf,
+      [this, sfunc](const boost::system::error_code &ec, std::size_t bytes_transferred) -> bool {
+        // std::string tmp;
+        // std::istream istr(&this->writeBuf);
+        // istr >> tmp;
+        // LOG(INFO) << "complete:sendMsg:" << ec << ":" << bytes_transferred << "[" <<  "]";
+        writeBuf.consume(bytes_transferred);
+        sfunc(ec, bytes_transferred);
+        return true;
+    });
+    return true;
   }
 
   bool waitConnectSocketFile(const std::string &fname, ReadyFunc func, int fileMode = 0600);
 
-  bool connectSocketFile(const std::string &fname, int fileMode = 0600) {
+  bool connectSocketFile(const std::string &, int fileMode = 0600) {
     // Socket socket(sockFname);
     if (!create_socket(soDesc)) {
       LOG(ERROR) << "create_socket:" << socket;
@@ -181,7 +206,7 @@ public:
   }
 
   bool createSocketFile(const std::string &fname, int fileMode = 0600) {
-    LOG(INFO) << "createSocketFile:" << fname;
+    // LOG(INFO) << "createSocketFile:" << fname;
     sockFname = fname;
     if (!create_socket(listenSocket)) {
       LOG(INFO) << "create_socket:" << fname;
@@ -246,7 +271,7 @@ public:
 bool Socket::waitConnectSocketFile(const std::string &fname, ReadyFunc func, int fileMode) {
   sockFname = fname;
   createTimer.async_wait([this, &fname, func, fileMode](const boost::system::error_code& err){
-    std::cout << "waitConnectSocketFile:loop:" << err << ":" << *this << std::endl;
+    // std::cout << "waitConnectSocketFile:loop:" << err << ":" << *this << std::endl;
     if (err != 0 || this->connectSocketFile(fname, fileMode)) {
       func(err);
     } else {

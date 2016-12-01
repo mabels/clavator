@@ -4,6 +4,7 @@ import * as Message from './message';
 import Dispatcher from './dispatcher'
 
 import * as KeyGen from './gpg/key-gen';
+import * as ListSecretKeys from './gpg/list_secret_keys';
 import * as Gpg from './gpg/gpg';
 
 import * as Progress from './progress'
@@ -12,6 +13,26 @@ export class GpgCreateKeySet implements Dispatcher {
   gpg: Gpg.Gpg;
   constructor(gpg :Gpg.Gpg) {
       this.gpg = gpg
+  }
+
+  public createSubKeys(ws: expressWsTs.ExpressWebSocket, cnt: number, fpr:
+    string, ki: KeyGen.KeyGen, cb: () => void) {
+    // console.log("createSubKeys:1", cnt, ki.subKeys.subKeys.length);
+    if (cnt >= ki.subKeys.subKeys.length) {
+      // console.log("createSubKeys:2");
+      cb();
+      return;
+    }
+    ws.send(Message.prepare("Progressor.Clavator", Progress.info("create subKey:"+cnt)));
+    // console.log("createSubKeys:3");
+    this.gpg.createSubkey(fpr, ki, ki.subKeys.subKeys[cnt], (res: Gpg.Result) => {
+      // console.log("createSubKeys:4");
+      ws.send(Message.prepare("Progressor.Clavator", Progress.info(res.stdOut)));
+      ws.send(Message.prepare("Progressor.Clavator", Progress.error(res.stdErr)));
+      // console.log("createSubKeys:5");
+      this.createSubKeys(ws, cnt+1, fpr, ki, cb);
+    });
+
   }
   public run(ws: expressWsTs.ExpressWebSocket, m: Message.Message) : boolean {
     console.log("GpgCreateKeySet.run", m.header)
@@ -31,9 +52,24 @@ export class GpgCreateKeySet implements Dispatcher {
     // console.log(">>>", kg.masterCommand())
     ws.send(Message.prepare("Progressor.Clavator", Progress.info(kg.masterCommand())));
     this.gpg.createMasterKey(kg, (res: Gpg.Result) => {
-      // console.log("res=", res)
-      ws.send(Message.prepare("Progressor.Clavator", Progress.info(res.stdOut)))
-      ws.send(Message.prepare("Progressor.Clavator", Progress.error(res.stdErr)))
+      ws.send(Message.prepare("Progressor.Clavator", Progress.info(res.stdOut)));
+      ws.send(Message.prepare("Progressor.Clavator", Progress.error(res.stdErr)));
+      this.gpg.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        for(let key of keys) {
+          for (let uid of key.uids) {
+            if (uid.name == kg.nameReal.value && uid.email == kg.nameEmail.value) {
+              this.createSubKeys(ws, 0, key.fingerPrint.fpr, kg, () => {
+                ws.send(Message.prepare("Progressor.Clavator", Progress.ok("KeysetCreated", true)));
+              });
+            }
+          }
+        }
+      });
+      // this.gpg
     });
     // create master gpg --expert --gen-key
     // not here gpg --gen-revoke B8EFD59D

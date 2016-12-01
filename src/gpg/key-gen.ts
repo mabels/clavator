@@ -21,7 +21,9 @@ export class Option<T> {
     this.errText = e;
   }
   public static fill<U>(js: any, dv: Option<  U>) {
+    console.log(">>>>Option>>>", js)
     dv.value = js['value'] || dv.value
+    console.log("<<<<<<Option<<<<", dv)
   }
 
   public map(cb: (selected: boolean, o: T) => any): any {
@@ -118,31 +120,96 @@ export class DateValue {
   }
 }
 
+
+export class KeyInfo {
+  type: Option<string>
+  length: Option<number>
+  usage: MultiOption<string>
+  public constructor(type = "RSA", length = 4096, usage = ['sign','encr','auth']) {
+    this.type = new Option(type, ["RSA", "DSA"], "keyType Error");
+    this.length = new Option(length, [1024, 2048, 4096, 8192], "sub keyLength Error");
+    this.usage = new MultiOption(usage, ['cert', 'sign', 'encr', 'auth'], "keyUsage Error");
+  }
+  public static fill(js: any, ki: KeyInfo) : KeyInfo {
+    console.log(">>>>>>>", js)
+    Option.fill(js['type']||{}, ki.type);
+    Option.fill(js['length']||{}, ki.length);
+    MultiOption.fill(js['usage']||{}, ki.usage);
+    console.log("<<<<", ki)
+    return ki;
+  }
+
+  public valid() : boolean {
+    return this.type.valid() && this.length.valid() &&
+    this.usage.valid()
+  }
+
+  public errText() : string[] {
+    let ret : string[] = [];
+    !this.type.valid() && ret.push(this.type.errText);
+    !this.length.valid() && ret.push(this.length.errText);
+    !this.usage.valid() && ret.push(this.usage.errText);
+    return ret;
+  }
+
+
+}
+
+export class SubKeys {
+  subKeys: KeyInfo[] = [];
+  public errText() : string[] {
+    let ret : string[] = [];
+    for (let sk of this.subKeys) {
+      !sk.valid() && Array.prototype.push.apply(ret, sk.errText());
+    }
+    return ret;
+  }
+  public add(ki: KeyInfo) {
+    this.subKeys.push(ki);
+  }
+  public valid() {
+    let ret = true;
+    for (let sk of this.subKeys) {
+      ret = ret && sk.valid();
+    }
+    return ret;
+  }
+  public static fill(js: any, sb: SubKeys) : SubKeys {
+    sb.subKeys = [];
+    for(let ki of js['subKeys']) {
+        sb.add(KeyInfo.fill(ki, new KeyInfo()));
+    }
+    return sb;
+  }
+}
 export class KeyGen {
   password: PwPair = new PwPair(/^.{14,1024}$/, "Password Error");
   adminPin: PwPair = new PwPair(/^[0-9]{8}$/, "adminPin Error");
   userPin: PwPair = new PwPair(/^[0-9]{6,8}$/, "userPin Error");
-  keyType: Option<string> = new Option("RSA", ["RSA", "DSA"], "keyType Error");
-  masterKeyLength: Option<number> = new Option(4096, [1024, 2048, 4096], "master keyLength Error");
-  subKeyLength: Option<number> = new Option(4096, [1024, 2048, 4096], "sub keyLength Error");
-  keyUsage: MultiOption<string> = new MultiOption(['cert','enc','auth'], ['sign', 'cert', 'enc', 'auth'], "keyUsage Error");
+  keyInfo: KeyInfo = new KeyInfo("RSA", 4096, ['cert']);
   nameReal: StringValue = new StringValue(/^([A-Z][a-z]*\s*)+$/, "nameReal error");
   nameEmail: StringValue = new StringValue(EmailRegExp, "nameEmail error");
   nameComment: StringValue = new StringValue(/.*/, "nameComment error");
   expireDate: DateValue = new DateValue(expireDate(), "expireDate error");
+  subKeys: SubKeys = new SubKeys();
 
+  public static withSubKeys(cnt: number) : KeyGen {
+    let ret = new KeyGen();
+    for (let i = 0; i < cnt; ++i) {
+      ret.subKeys.add(new KeyInfo());
+    }
+    return ret;
+  }
   public static fill(js: any, kg: KeyGen) {
     PwPair.fill(js['password']||{}, kg.password);
     PwPair.fill(js['adminPin']||{}, kg.adminPin);
     PwPair.fill(js['userPin']||{}, kg.userPin);
-    Option.fill(js['keyType']||{}, kg.keyType);
-    Option.fill(js['masterKeyLength']||{}, kg.masterKeyLength);
-    Option.fill(js['subKeyLength']||{}, kg.subKeyLength);
-    MultiOption.fill(js['keyUsage']||{}, kg.keyUsage);
+    KeyInfo.fill(js['keyInfo'], kg.keyInfo);
     StringValue.fill(js['nameReal']||{}, kg.nameReal);
     StringValue.fill(js['nameEmail']||{}, kg.nameEmail);
     StringValue.fill(js['nameComment']||{}, kg.nameComment);
     DateValue.fill(js['expireDate']||{}, kg.expireDate);
+    SubKeys.fill(js['subKeys']||[], kg.subKeys);
   }
 
   errText() : string[] {
@@ -150,10 +217,8 @@ export class KeyGen {
     !this.password.valid() && ret.push(this.password.errText);
     !this.adminPin.valid() && ret.push(this.adminPin.errText);
     !this.userPin.valid() && ret.push(this.userPin.errText);
-    !this.keyType.valid() && ret.push(this.keyType.errText);
-    !this.subKeyLength.valid() && ret.push(this.subKeyLength.errText);
-    !this.masterKeyLength.valid() && ret.push(this.masterKeyLength.errText);
-    !this.keyUsage.valid() && ret.push(this.keyUsage.errText);
+    !this.keyInfo.valid() && Array.prototype.push.apply(ret, this.keyInfo.errText());
+    !this.subKeys.valid() && Array.prototype.push.apply(ret, this.subKeys.errText());
     !this.nameReal.valid() && ret.push(this.nameReal.errText);
     !this.nameEmail.valid() && ret.push(this.nameEmail.errText);
     !this.nameComment.valid() && ret.push(this.nameComment.errText);
@@ -165,23 +230,22 @@ export class KeyGen {
     console.log(this.errText());
     return this.password.valid() &&
        this.adminPin.valid() && this.userPin.valid() &&
-       this.keyType.valid() && this.subKeyLength.valid() &&
-       this.masterKeyLength.valid() &&
-       this.keyUsage.valid() && this.nameReal.valid() &&
+       this.keyInfo.valid() &&
+       this.nameReal.valid() &&
        this.nameEmail.valid() && this.nameComment.valid() &&
        this.expireDate.valid();
   }
 
   masterCommand() {
     let ret = [
-      "Key-Type: " + this.keyType.value,
-      "Key-Length: " + this.masterKeyLength.value,
-      "Key-Usage: sign,cert",
+      "Key-Type: " + this.keyInfo.type.value,
+      "Key-Length: " + this.keyInfo.length.value,
+      "Key-Usage: " + this.keyInfo.usage.values,
       "Name-Real: " + this.nameReal.value,
       "Name-Email: " + this.nameEmail.value,
     ]
     if (this.nameComment.value.length > 0) {
-      ret.push("Name-Comment: " + this.nameEmail.value)
+      ret.push("Name-Comment: " + this.nameComment.value)
     }
     ret.push("Expire-Date: " + format_date(this.expireDate.value))
     ret.push("%commit")
