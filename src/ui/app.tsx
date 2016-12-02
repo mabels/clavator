@@ -67,23 +67,19 @@ export class App extends React.Component<{}, AppState> {
   public render(): JSX.Element {
     return (
       <div className="app container">
-          <div className="row">
-            <div className="two columns">
-              <img src={Clavator} width="128px" title="Clavator"/>
-            </div>
-            <div className="eight columns"> </div>
-            <div className="two columns">
-              <ChannelStatus channel={this.state.channel} />
-            </div>
+          <div className="left-top">
+            <img src={Clavator} width="128px" title="Clavator"/>
           </div>
-          <div className="row">
+          <div className="left-bottom">
             <ResetYubikey channel={this.state.channel} />
+            <ChannelStatus channel={this.state.channel} />
           </div>
+          <div className="middle-bottom">
+              <Progressor channel={this.state.channel} msg="Clavator"/>
+          </div>
+
           <div className="row">
               <CreateKey channel={this.state.channel} />
-          </div>
-          <div className="row">
-              <Progressor channel={this.state.channel} msg="Clavator"/>
           </div>
           <div className="row">
             <div className="three column"></div>

@@ -83,7 +83,6 @@ export class ResetYubikey extends React.Component<ResetYubikeyProps, ResetYubike
   public render(): JSX.Element {
     return (
       <div className="ResetYubikey" >
-        <h3>ResetYubikey</h3>
         {this.render_form()}
       </div>
     );

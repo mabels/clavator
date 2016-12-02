@@ -86,11 +86,10 @@ export class Progressor
 
   public render(): JSX.Element {
         // SecretKeys {this.state.cardStatusList.length || ""}
+        //<h3>Progressor.{this.props.msg}
+        // <button onClick={this.handleClearClick}>Clear({this.state.progressList.length})</button>
     return (
       <div className="Progressor">
-        <h3>Progressor.{this.props.msg}
-        <button onClick={this.handleClearClick}>Clear({this.state.progressList.length})</button>
-        </h3>
         <pre><code>
         {this.state.progressList.map((ps: Progress.Progress, idx : number) => {
           // console.log("pl", ps)
