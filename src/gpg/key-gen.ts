@@ -120,8 +120,12 @@ export class DateValue {
   }
 }
 
-
-export class KeyInfo {
+interface Validatable {
+  valid() : boolean;
+  errText() : string[];
+  fill(js: any) : void;
+}
+export class KeyInfo implements Validatable {
   type: Option<string>
   length: Option<number>
   usage: MultiOption<string>
@@ -130,13 +134,12 @@ export class KeyInfo {
     this.length = new Option(length, [1024, 2048, 4096, 8192], "sub keyLength Error");
     this.usage = new MultiOption(usage, ['cert', 'sign', 'encr', 'auth'], "keyUsage Error");
   }
-  public static fill(js: any, ki: KeyInfo) : KeyInfo {
-    console.log(">>>>>>>", js)
-    Option.fill(js['type']||{}, ki.type);
-    Option.fill(js['length']||{}, ki.length);
-    MultiOption.fill(js['usage']||{}, ki.usage);
-    console.log("<<<<", ki)
-    return ki;
+  public fill(js: any) {
+    Option.fill(js['type']||{}, this.type);
+    Option.fill(js['length']||{}, this.length);
+    MultiOption.fill(js['usage']||{}, this.usage);
+    // console.log("<<<<", ki)
+    // return ki;
   }
 
   public valid() : boolean {
@@ -151,35 +154,109 @@ export class KeyInfo {
     !this.usage.valid() && ret.push(this.usage.errText);
     return ret;
   }
-
-
 }
 
-export class SubKeys {
-  subKeys: KeyInfo[] = [];
+// export class SubKeys {
+//   subKeys: KeyInfo[] = [];
+//   public errText() : string[] {
+//     let ret : string[] = [];
+//     for (let sk of this.subKeys) {
+//       !sk.valid() && Array.prototype.push.apply(ret, sk.errText());
+//     }
+//     return ret;
+//   }
+//   public add(ki: KeyInfo) {
+//     this.subKeys.push(ki);
+//   }
+//   public valid() {
+//     let ret = true;
+//     for (let sk of this.subKeys) {
+//       ret = ret && sk.valid();
+//     }
+//     return ret;
+//   }
+//   public static fill(js: any, sb: SubKeys) : SubKeys {
+//     sb.subKeys = [];
+//     for(let ki of js['subKeys']) {
+//         sb.add(KeyInfo.fill(ki, new KeyInfo()));
+//     }
+//     return sb;
+//   }
+// }
+
+
+export class Uid implements Validatable {
+  name: StringValue = new StringValue(/^([A-Z][a-z]*\s*)+$/, "name error");
+  email: StringValue = new StringValue(EmailRegExp, "email error");
+  comment: StringValue = new StringValue(/.*/, "comment error");
+
+  public fill(js: any) {
+    StringValue.fill(js['name']||{}, this.name);
+    StringValue.fill(js['email']||{}, this.email);
+    StringValue.fill(js['comment']||{}, this.comment);
+  }
+
+  public valid() : boolean {
+    return this.name.valid() && this.email.valid() &&
+           this.comment.valid()
+  }
+
   public errText() : string[] {
     let ret : string[] = [];
-    for (let sk of this.subKeys) {
-      !sk.valid() && Array.prototype.push.apply(ret, sk.errText());
+    !this.name.valid() && ret.push(this.name.errText);
+    !this.email.valid() && ret.push(this.email.errText);
+    !this.comment.valid() && ret.push(this.comment.errText);
+    return ret;
+  }
+
+  public toString() : string {
+    let name = this.name.value.trim();
+    let email = this.email.value.trim();
+    let comment = this.comment.value.trim();
+    let tmp = name+" ("+comment+") <"+email+">";
+    if (comment == "") {
+      tmp = name+" <"+email+">";
+    }
+    return tmp;
+  }
+}
+
+export class Container<T extends Validatable> {
+  pallets: T[] = [];
+  factory: () => T;
+  constructor(factory: () => T) {
+    this.factory = factory;
+  }
+  public errText() : string[] {
+    let ret : string[] = [];
+    for (let i of this.pallets) {
+      if (i) {
+        !i.valid() && Array.prototype.push.apply(ret, i.errText());
+      }
     }
     return ret;
   }
-  public add(ki: KeyInfo) {
-    this.subKeys.push(ki);
+  public add(i: T) {
+    this.pallets.push(i);
   }
   public valid() {
     let ret = true;
-    for (let sk of this.subKeys) {
-      ret = ret && sk.valid();
+    for (let sk of this.pallets) {
+      if (sk) {
+        ret = ret && sk.valid();
+      }
     }
     return ret;
   }
-  public static fill(js: any, sb: SubKeys) : SubKeys {
-    sb.subKeys = [];
-    for(let ki of js['subKeys']) {
-        sb.add(KeyInfo.fill(ki, new KeyInfo()));
+  public fill(js: any) {
+    this.pallets = [];
+    for(let i of js['pallets']) {
+      if (i) {
+        let t : T = this.factory();
+        t.fill(i);
+        this.add(t);
+      }
     }
-    return sb;
   }
 }
 export class KeyGen {
@@ -187,11 +264,9 @@ export class KeyGen {
   adminPin: PwPair = new PwPair(/^[0-9]{8}$/, "adminPin Error");
   userPin: PwPair = new PwPair(/^[0-9]{6,8}$/, "userPin Error");
   keyInfo: KeyInfo = new KeyInfo("RSA", 4096, ['cert']);
-  nameReal: StringValue = new StringValue(/^([A-Z][a-z]*\s*)+$/, "nameReal error");
-  nameEmail: StringValue = new StringValue(EmailRegExp, "nameEmail error");
-  nameComment: StringValue = new StringValue(/.*/, "nameComment error");
   expireDate: DateValue = new DateValue(expireDate(), "expireDate error");
-  subKeys: SubKeys = new SubKeys();
+  uids : Container<Uid> = new Container<Uid>(()=>{return new Uid()});
+  subKeys: Container<KeyInfo> = new Container<KeyInfo>(()=>{return new KeyInfo()});
 
   public static withSubKeys(cnt: number) : KeyGen {
     let ret = new KeyGen();
@@ -204,12 +279,14 @@ export class KeyGen {
     PwPair.fill(js['password']||{}, kg.password);
     PwPair.fill(js['adminPin']||{}, kg.adminPin);
     PwPair.fill(js['userPin']||{}, kg.userPin);
-    KeyInfo.fill(js['keyInfo'], kg.keyInfo);
-    StringValue.fill(js['nameReal']||{}, kg.nameReal);
-    StringValue.fill(js['nameEmail']||{}, kg.nameEmail);
-    StringValue.fill(js['nameComment']||{}, kg.nameComment);
+    kg.keyInfo.fill(js['keyInfo']);
+    kg.uids.fill(js['uids'])
+    // StringValue.fill(js['nameReal']||{}, kg.nameReal);
+    // StringValue.fill(js['nameEmail']||{}, kg.nameEmail);
+    // StringValue.fill(js['nameComment']||{}, kg.nameComment);
     DateValue.fill(js['expireDate']||{}, kg.expireDate);
-    SubKeys.fill(js['subKeys']||[], kg.subKeys);
+    kg.subKeys.fill(js['subKeys'])
+    // SubKeys.fill(js['subKeys']||[], kg.subKeys);
   }
 
   errText() : string[] {
@@ -219,20 +296,18 @@ export class KeyGen {
     !this.userPin.valid() && ret.push(this.userPin.errText);
     !this.keyInfo.valid() && Array.prototype.push.apply(ret, this.keyInfo.errText());
     !this.subKeys.valid() && Array.prototype.push.apply(ret, this.subKeys.errText());
-    !this.nameReal.valid() && ret.push(this.nameReal.errText);
-    !this.nameEmail.valid() && ret.push(this.nameEmail.errText);
-    !this.nameComment.valid() && ret.push(this.nameComment.errText);
+    !this.uids.valid() && Array.prototype.push.apply(ret, this.uids.errText());
     !this.expireDate.valid() && ret.push(this.expireDate.errText);
     return ret;
   }
 
   valid() {
-    console.log(this.errText());
+    // console.log(this.errText());
     return this.password.valid() &&
        this.adminPin.valid() && this.userPin.valid() &&
        this.keyInfo.valid() &&
-       this.nameReal.valid() &&
-       this.nameEmail.valid() && this.nameComment.valid() &&
+       this.uids.valid() &&
+       this.subKeys.valid() &&
        this.expireDate.valid();
   }
 
@@ -241,11 +316,11 @@ export class KeyGen {
       "Key-Type: " + this.keyInfo.type.value,
       "Key-Length: " + this.keyInfo.length.value,
       "Key-Usage: " + this.keyInfo.usage.values,
-      "Name-Real: " + this.nameReal.value,
-      "Name-Email: " + this.nameEmail.value,
+      "Name-Real: " + this.uids.pallets[0].name.value,
+      "Name-Email: " + this.uids.pallets[0].email.value,
     ]
-    if (this.nameComment.value.length > 0) {
-      ret.push("Name-Comment: " + this.nameComment.value)
+    if (this.uids.pallets[0].comment.value.length > 0) {
+      ret.push("Name-Comment: " + this.uids.pallets[0].comment.value)
     }
     ret.push("Expire-Date: " + format_date(this.expireDate.value))
     ret.push("%commit")

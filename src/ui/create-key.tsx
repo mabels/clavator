@@ -26,9 +26,11 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
 
   constructor() {
     super();
+    let kg = KeyGen.KeyGen.withSubKeys(3);
+    kg.uids.add(new KeyGen.Uid());
     this.state = {
       create: false,
-      keyGen: KeyGen.KeyGen.withSubKeys(3),
+      keyGen: kg,
       create_status: "create-key"
     };
     // this.handleCreateClick = this.handleCreateClick.bind(this);
@@ -37,14 +39,29 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
   //  socket: React.PropTypes.object
   // };
 
-  // private handleCreateClick() {
-  //   let keyGen = this.state.keyGen || ();
-  //   let create = this.state.create || true;
-  //   // console.log("keyGen=>", keyGen);
-  //   // this.props.channel.send(Message.prepare("CreateKeySet", keyGen), (error: any) => {
-  //   //   this.state.create_status = "err("+error+")";
-  //   //   this.setState(this.state);
-  //   // });
+  private handleDelUid(idx: number) {
+    if (this.state.keyGen.uids.pallets.length > 1) {
+      delete this.state.keyGen.uids.pallets[idx];
+      this.setState(Object.assign({}, this.state, {
+        keyGen: this.state.keyGen
+      }));
+    }
+  }
+
+  private handleAddUid() {
+    let uid = new KeyGen.Uid();
+    let compacted = this.state.keyGen.uids.pallets.filter((i)=>i);
+    uid.name.value = compacted[compacted.length-1].name.value;
+    this.state.keyGen.uids.add(uid);
+    this.setState(Object.assign({}, this.state, {
+      keyGen: this.state.keyGen
+    }));
+  }
+    // console.log("keyGen=>", keyGen);
+    // this.props.channel.send(Message.prepare("CreateKeySet", keyGen), (error: any) => {
+    //   this.state.create_status = "err("+error+")";
+    //   this.setState(this.state);
+    // });
   //
   //   this.setState(Object.assign({}, this.state, {
   //     keyGen: keyGen,
@@ -148,7 +165,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     console.log("create_key", this);
     this.state.create_status = "requested";
     this.setState(this.state);
-    debugger
+    // debugger
     this.props.channel.send(Message.prepare("CreateKeySet", this.state.keyGen), (error: any) => {
       this.state.create_status = "err("+error+")";
       this.setState(this.state);
@@ -185,6 +202,62 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
       />
     </div>)
   }
+  public render_delete_button(idx: number) : JSX.Element {
+
+    if (this.state.keyGen.uids.pallets.filter((i) => i).length > 1) {
+      return(
+      <button type="button" onClick={this.handleDelUid.bind(this, idx)}>Delete Uid</button>
+      );
+    }
+    return null;
+  }
+  public render_uid(idx: number, uid: KeyGen.Uid) : JSX.Element {
+    return (
+    <div className={classnames({"u-full-width": true, "good": uid.valid()})} key={idx}>
+    <div className="row">
+    <div className="five columns">
+    <label>Name-Real:</label><input type="text"
+      className={classnames({"u-full-width": true, "good": uid.name.valid()})}
+      required={true}
+      name="uid.name.{idx}"
+      onChange={(e:any) => {
+        uid.name.value = e.target.value;
+        this.setState(this.state);
+      }}
+      value={uid.name.value} />
+    </div>
+    <div className="five columns">
+    <label>Name-Email:</label><input type="email"
+      className={classnames({"u-full-width":true, good: uid.email.valid()})}
+      autoComplete="on"
+      required={true}
+      name="email"
+      onChange={(e:any) => {
+        uid.email.value = e.target.value;
+        this.setState(this.state);
+      }}
+      value={uid.email.value} />
+    </div>
+    <div className="two columns">
+    {this.render_delete_button(idx)}
+    </div>
+    </div>
+    <div className="row">
+    <div className="twelve columns">
+      <label>Name-Comment:</label><input type="text"
+        className={classnames({"u-full-width":true, good: uid.comment.valid()})}
+        autoComplete="on"
+        required={true}
+        name="nameComment"
+        onChange={(e:any) => {
+          uid.comment.value = e.target.value;
+          this.setState(this.state);
+        }}
+        value={uid.comment.value} />
+    </div>
+    </div>
+    </div>);
+  }
 
   public render_form() : JSX.Element {
     // if (!this.state.create) {
@@ -197,70 +270,6 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     return (
     <form>
     <div className="row">
-    <div className="two columns">MasterKey</div>
-    <div className="three columns">
-    <label>Key-Type:</label>{this.render_option("keyType", this.state.keyGen.keyInfo.type)}
-    </div>
-    <div className="three columns">
-    <label>Master-Key-Length:</label>{this.render_option("masterKeyLength", this.state.keyGen.keyInfo.length)}
-    </div>
-    <div className="three columns">
-    <label>Key-Usage:</label>{this.render_multioption("keyUsage", this.state.keyGen.keyInfo.usage)}
-    </div>
-    </div>
-
-    {this.state.keyGen.subKeys.subKeys.map((sb:KeyGen.KeyInfo, i) => {
-      return (<div className="row">
-              <div className="two columns">SubKey {i}</div>
-              <div className="three columns">
-              <label>Key-Type:</label>{this.render_option("subkeys."+i+".keyType", sb.type)}
-              </div>
-              <div className="three columns">
-              <label>Key-Length:</label>{this.render_option("subkeys."+i+".length", sb.length)}
-              </div>
-              <div className="three columns">
-              <label>Key-Usage:</label>{this.render_multioption("subkeys."+i+".usage", sb.usage)}
-              </div>
-              </div>)
-    })}
-    <div className="row">
-    <div className="six columns">
-    <label>Name-Real:</label><input type="text"
-      className={classnames({"u-full-width": true, "good": this.state.keyGen.nameReal.valid()})}
-      required={true}
-      name="nameReal"
-      onChange={(e:any) => {
-        this.state.keyGen.nameReal.value = e.target.value;
-        this.setState(this.state);
-      }}
-      value={this.state.keyGen.nameReal.value} />
-    </div>
-    <div className="six columns">
-    <label>Name-Email:</label><input type="email"
-      className={classnames({"u-full-width":true, good: this.state.keyGen.nameEmail.valid()})}
-      autoComplete="on"
-      required={true}
-      name="nameEmail"
-      onChange={(e:any) => {
-        this.state.keyGen.nameEmail.value = e.target.value;
-        this.setState(this.state);
-      }}
-      value={this.state.keyGen.nameEmail.value} />
-    </div>
-    </div>
-    <div className="row">
-    <div className="nine columns">
-      <label>Name-Comment:</label><input type="text"
-        className={classnames({"u-full-width":true, good: this.state.keyGen.nameComment.valid()})}
-        autoComplete="on"
-        required={true}
-        name="nameComment"
-        onChange={(e:any) => {
-          this.state.keyGen.nameComment.value = e.target.value;
-          this.setState(this.state);
-        }}
-        value={this.state.keyGen.nameComment.value} />
-    </div>
     <div className="three columns">
     <label>Expire-Date:</label><input type="date" name="expireDate"
       className={classnames({good: this.state.keyGen.expireDate.valid()})}
@@ -276,28 +285,69 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     </div>
     </div>
 
-    <div className={classnames({row: true, good: this.state.keyGen.password.valid()})}>
-   {this.render_password("Password", "cq-password", this.state.keyGen.password)}
-   {this.render_verify_password("Password", "cq-password", this.state.keyGen.password)}
-   </div>
-    <div className={classnames({row: true, good: this.state.keyGen.adminPin.valid()})}>
-   {this.render_password("AdminPin", "cq-adminpin", this.state.keyGen.adminPin)}
-   {this.render_verify_password("AdminPin", "cq-adminpin", this.state.keyGen.adminPin)}
-   </div>
-    <div className={classnames({row: true, good: this.state.keyGen.userPin.valid()})}>
-   {this.render_password("UserPin", "cq-userpin", this.state.keyGen.userPin)}
-   {this.render_verify_password("UserPin", "cq-userpin", this.state.keyGen.userPin)}
-   </div>
+    {this.state.keyGen.uids.pallets.map((sb:KeyGen.Uid, i) => {
+      if (sb) {
+        return this.render_uid(i, sb)
+      }
+    })}
+    <div className="row">
+      <div className="four columns"> </div>
+      <div className="two columns">
+      <button type="button" onClick={this.handleAddUid.bind(this)}>Add Uid</button>
+      </div>
+    </div>
+
+        <div className={classnames({row: true, good: this.state.keyGen.password.valid()})}>
+       {this.render_password("Password", "cq-password", this.state.keyGen.password)}
+       {this.render_verify_password("Password", "cq-password", this.state.keyGen.password)}
+       </div>
+        <div className={classnames({row: true, good: this.state.keyGen.adminPin.valid()})}>
+       {this.render_password("AdminPin", "cq-adminpin", this.state.keyGen.adminPin)}
+       {this.render_verify_password("AdminPin", "cq-adminpin", this.state.keyGen.adminPin)}
+       </div>
+        <div className={classnames({row: true, good: this.state.keyGen.userPin.valid()})}>
+       {this.render_password("UserPin", "cq-userpin", this.state.keyGen.userPin)}
+       {this.render_verify_password("UserPin", "cq-userpin", this.state.keyGen.userPin)}
+       </div>
+
 
     <div className="row">
-    <div className="four columns"> </div>
-    <div className={classnames({four:true, columns:true, good: this.state.keyGen.valid()})} >
-    <button type="button"
-      onClick={this.create_key.bind(this)}
-      disabled={!this.state.keyGen.valid()}>{this.state.create_status}</button>
-   </div>
-    <div className="four columns"> </div>
-   </div>
+    <div className="two columns">MasterKey</div>
+    <div className="three columns">
+    <label>Key-Type:</label>{this.render_option("keyType", this.state.keyGen.keyInfo.type)}
+    </div>
+    <div className="three columns">
+    <label>Master-Key-Length:</label>{this.render_option("masterKeyLength", this.state.keyGen.keyInfo.length)}
+    </div>
+    <div className="three columns">
+    <label>Key-Usage:</label>{this.render_multioption("keyUsage", this.state.keyGen.keyInfo.usage)}
+    </div>
+    </div>
+
+    {this.state.keyGen.subKeys.pallets.map((sb:KeyGen.KeyInfo, i) => {
+      return (<div className="row">
+              <div className="two columns">SubKey {i}</div>
+              <div className="three columns">
+              <label>Key-Type:</label>{this.render_option("subkeys."+i+".keyType", sb.type)}
+              </div>
+              <div className="three columns">
+              <label>Key-Length:</label>{this.render_option("subkeys."+i+".length", sb.length)}
+              </div>
+              <div className="three columns">
+              <label>Key-Usage:</label>{this.render_multioption("subkeys."+i+".usage", sb.usage)}
+              </div>
+              </div>)
+    })}
+
+
+    <div className="row">
+      <div className="four columns"> </div>
+      <div className={classnames({four:true, columns:true, good: this.state.keyGen.valid()})} >
+      <button type="button"
+        onClick={this.create_key.bind(this)}
+        disabled={!this.state.keyGen.valid()}>{this.state.create_status}</button>
+        </div>
+    </div>
     </form>
     );
       // min={KeyGen.format_date(Date.now())}

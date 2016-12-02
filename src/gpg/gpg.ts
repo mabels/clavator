@@ -291,6 +291,20 @@ export class Gpg {
       this.run(['--export-ssh-key', fpr], null, cb);
     }
 
+    public addUid(fpr: string, kg: KeyGen.KeyGen, uid: KeyGen.Uid, cb: (res: Result) => void) {
+      let args = [
+        '--no-tty', '--pinentry-mode', 'loopback',
+        '--passphrase-fd',
+        () => {
+          return kg.password.password
+        },
+        '--quick-adduid', fpr,
+        uid.toString()
+      ];
+      console.log("addUid", args);
+      this.run(args, null, cb);
+    }
+
     public createSubkey(fpr: string, kg: KeyGen.KeyGen, ki: KeyGen.KeyInfo, cb: (res: Result) => void) {
       // gpg2  --quick-addkey  FDCF2566BA8134E3BAD15B7DDDC4941118503075 rsa2048 sign,auth,encr
       // '--enable-large-rsa'

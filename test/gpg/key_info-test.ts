@@ -15,9 +15,11 @@ function makeKeyGen() {
   kg.keyInfo.type.value = "RS";
   kg.keyInfo.length.value = 4777;
   kg.keyInfo.usage.values = ["murks", "lurks"];
-  kg.nameReal.value = "nameReal"
-  kg.nameEmail.value = "name@Real"
-  kg.nameComment.value = "name@Real"
+  let uid = new Kg.Uid();
+  uid.name.value = "nameReal"
+  uid.email.value = "name@Real"
+  uid.comment.value = "name@Real"
+  kg.uids.add(uid);
   let ki1 = new Kg.KeyInfo();
   ki1.type.value = "ki1";
   ki1.length.value = 4531;
@@ -42,9 +44,11 @@ function makeValidKeyGen() {
   kg.keyInfo.type.value = "RSA";
   kg.keyInfo.length.value = 4096;
   kg.keyInfo.usage.values = ["sign", "cert"];
-  kg.nameReal.value = "Name Real"
-  kg.nameEmail.value = "name@real.name"
-  kg.nameComment.value = "jo man"
+  let uid = new Kg.Uid();
+  uid.name.value = "Name Real"
+  uid.email.value = "name@real.name"
+  uid.comment.value = "jo man"
+  kg.uids.add(uid);
   let ki1 = new Kg.KeyInfo();
   ki1.type.value = "RSA";
   ki1.length.value = 2048;
@@ -74,15 +78,15 @@ describe("keygen", () => {
       assert.equal(rkg.keyInfo.type.value, "RS");
       assert.equal(rkg.keyInfo.length.value, 4777);
       assert.deepEqual(rkg.keyInfo.usage.values, ["murks", "lurks"]);
-      assert.equal(rkg.nameReal.value, "nameReal");
-      assert.equal(rkg.nameEmail.value, "name@Real");
-      assert.equal(rkg.nameComment.value, "name@Real");
-      assert.equal(rkg.subKeys.subKeys[0].type.value, "ki1");
-      assert.equal(rkg.subKeys.subKeys[0].length.value, 4531);
-      assert.deepEqual(rkg.subKeys.subKeys[0].usage.values, ["ki1.1", "ki1.2"]);
-      assert.equal(rkg.subKeys.subKeys[1].type.value, "ki2");
-      assert.equal(rkg.subKeys.subKeys[1].length.value, 5413);
-      assert.deepEqual(rkg.subKeys.subKeys[1].usage.values, ["ki2.1", "ki2.2"]);
+      assert.equal(rkg.uids.pallets[0].name.value, "nameReal");
+      assert.equal(rkg.uids.pallets[0].email.value, "name@Real");
+      assert.equal(rkg.uids.pallets[0].comment.value, "name@Real");
+      assert.equal(rkg.subKeys.pallets[0].type.value, "ki1");
+      assert.equal(rkg.subKeys.pallets[0].length.value, 4531);
+      assert.deepEqual(rkg.subKeys.pallets[0].usage.values, ["ki1.1", "ki1.2"]);
+      assert.equal(rkg.subKeys.pallets[1].type.value, "ki2");
+      assert.equal(rkg.subKeys.pallets[1].length.value, 5413);
+      assert.deepEqual(rkg.subKeys.pallets[1].usage.values, ["ki2.1", "ki2.2"]);
     });
 
     it("is invalid", () => {

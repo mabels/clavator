@@ -18,14 +18,14 @@ export class GpgCreateKeySet implements Dispatcher {
   public createSubKeys(ws: expressWsTs.ExpressWebSocket, cnt: number, fpr:
     string, ki: KeyGen.KeyGen, cb: () => void) {
     // console.log("createSubKeys:1", cnt, ki.subKeys.subKeys.length);
-    if (cnt >= ki.subKeys.subKeys.length) {
+    if (cnt >= ki.subKeys.pallets.length) {
       // console.log("createSubKeys:2");
       cb();
       return;
     }
     ws.send(Message.prepare("Progressor.Clavator", Progress.info("create subKey:"+cnt)));
     // console.log("createSubKeys:3");
-    this.gpg.createSubkey(fpr, ki, ki.subKeys.subKeys[cnt], (res: Gpg.Result) => {
+    this.gpg.createSubkey(fpr, ki, ki.subKeys.pallets[cnt], (res: Gpg.Result) => {
       // console.log("createSubKeys:4");
       ws.send(Message.prepare("Progressor.Clavator", Progress.info(res.stdOut)));
       ws.send(Message.prepare("Progressor.Clavator", Progress.error(res.stdErr)));
@@ -34,6 +34,25 @@ export class GpgCreateKeySet implements Dispatcher {
     });
 
   }
+
+  public addUids(ws: expressWsTs.ExpressWebSocket, cnt: number, fpr:
+    string, ki: KeyGen.KeyGen, cb: () => void) {
+    // console.log("createSubKeys:1", cnt, ki.subKeys.subKeys.length);
+    if (cnt >= ki.uids.pallets.length) {
+      cb();
+      return;
+    }
+    ws.send(Message.prepare("Progressor.Clavator", Progress.info("create Uids:"+cnt)));
+    this.gpg.addUid(fpr, ki, ki.uids.pallets[cnt], (res: Gpg.Result) => {
+      ws.send(Message.prepare("Progressor.Clavator", Progress.info(res.stdOut)));
+      ws.send(Message.prepare("Progressor.Clavator", Progress.error(res.stdErr)));
+      // console.log("createSubKeys:5");
+      this.addUids(ws, cnt+1, fpr, ki, cb);
+    });
+  }
+
+
+
   public run(ws: expressWsTs.ExpressWebSocket, m: Message.Message) : boolean {
     console.log("GpgCreateKeySet.run", m.header)
     if (m.header.action != "CreateKeySet") {
@@ -61,9 +80,11 @@ export class GpgCreateKeySet implements Dispatcher {
         }
         for(let key of keys) {
           for (let uid of key.uids) {
-            if (uid.name == kg.nameReal.value && uid.email == kg.nameEmail.value) {
-              this.createSubKeys(ws, 0, key.fingerPrint.fpr, kg, () => {
-                ws.send(Message.prepare("Progressor.Clavator", Progress.ok("KeysetCreated", true)));
+            if (uid.name == kg.uids.pallets[0].name.value && uid.email == kg.uids.pallets[0].email.value) {
+              this.addUids(ws, 1, key.fingerPrint.fpr, kg, () => {
+                this.createSubKeys(ws, 0, key.fingerPrint.fpr, kg, () => {
+                  ws.send(Message.prepare("Progressor.Clavator", Progress.ok("KeysetCreated", true)));
+                });
               });
             }
           }
