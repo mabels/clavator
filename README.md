@@ -6,6 +6,7 @@
 
 * build-essential
 * nodejs 6.x
+* libpng-dev
 
 ## Getting started
 
