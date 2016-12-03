@@ -2,6 +2,12 @@
 
 [![Build Status](https://travis-ci.org/mabels/clavator.svg?branch=master)](https://travis-ci.org/mabels/clavator)
 
+## Dependencies
+
+* gcc
+* autoconf
+* nodejs 6.x
+
 ## Getting started
 
 In a first terminal:
