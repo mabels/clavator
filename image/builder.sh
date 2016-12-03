@@ -15,7 +15,7 @@ echo USER="clavator"  >> /root/odroid-c2-minimal-debian-ubuntu/params.sh
 echo ROOTPASS="clavator"  >> /root/odroid-c2-minimal-debian-ubuntu/params.sh
 echo USERPASS="clavator"  >> /root/odroid-c2-minimal-debian-ubuntu/params.sh
 echo image_name="clavator" >> /root/odroid-c2-minimal-debian-ubuntu/params.sh
-echo linuxsize="2000" >> /root/odroid-c2-minimal-debian-ubuntu/params.sh
+echo linuxsize="600" >> /root/odroid-c2-minimal-debian-ubuntu/params.sh
 echo _compress="" >> /root/odroid-c2-minimal-debian-ubuntu/params.sh
 cd /root/odroid-c2-minimal-debian-ubuntu && ./create_odroid_image
 #cd /root/odroid-c2-minimal-debian-ubuntu && touch xenial-clavator.imgu xenial-clavator.img1 xenial-clavator.img2
