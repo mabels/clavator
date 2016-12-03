@@ -4,8 +4,7 @@
 
 ## Dependencies
 
-* gcc
-* autoconf
+* build-essential
 * nodejs 6.x
 
 ## Getting started
