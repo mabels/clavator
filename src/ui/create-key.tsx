@@ -285,7 +285,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     </div>
     </div>
 
-    {this.state.keyGen.uids.pallets.map((sb:KeyGen.Uid, i) => {
+    {this.state.keyGen.uids.pallets.map((sb:KeyGen.Uid, i:number) => {
       if (sb) {
         return this.render_uid(i, sb)
       }
@@ -324,7 +324,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     </div>
     </div>
 
-    {this.state.keyGen.subKeys.pallets.map((sb:KeyGen.KeyInfo, i) => {
+    {this.state.keyGen.subKeys.pallets.map((sb:KeyGen.KeyInfo, i:number) => {
       return (<div className="row">
               <div className="two columns">SubKey {i}</div>
               <div className="three columns">
