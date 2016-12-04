@@ -1,4 +1,4 @@
-for distro in rpi23 odroid-c2
+for distro in odroid-xu3 rpi23 odroid-c2 odroid-c1
 do
 . $distro.sh
 
@@ -53,16 +53,18 @@ cat > $HOME/.docker/config.json <<RUNNER
 }
 RUNNER
 
-cat > Dockerfile <<RUNNER
+mkdir -p image-builder
+ln image image-builder/image
+cat > image-builder/Dockerfile <<RUNNER
 FROM busybox
 
-COPY /image /$distro.img
+COPY image /$distro.img
 
 CMD ["/bin/bash"]
 RUNNER
 
 echo "build"
-docker build -t img-$distro-$VERSION .
+docker build -t img-$distro-$arch-$VERSION image-builder
 echo "tag"
 docker tag img-$distro-$arch-$VERSION fastandfearless/clavator:img-$distro-$arch-$VERSION
 echo "push"
