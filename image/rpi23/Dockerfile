@@ -1,9 +1,9 @@
-FROM ubuntu:xenial
+FROM debian:stretch
 
 RUN apt update -y
 RUN apt install -y -q vim xz-utils dosfstools debootstrap git qemu-user-static qemu-utils qemu docker.io
-RUN git https://github.com/drtyhlpr/rpi23-gen-image.git /root/rpi23-gen-image
 
+COPY rpi23-gen-image /root/rpi23-gen-image
 COPY builder.sh /root
 
 CMD ["/bin/bash", "/root/builder.sh"]
