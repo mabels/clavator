@@ -2,6 +2,12 @@
 
 [![Build Status](https://travis-ci.org/mabels/clavator.svg?branch=master)](https://travis-ci.org/mabels/clavator)
 
+## Dependencies
+
+* build-essential
+* nodejs 6.x
+* libpng-dev
+
 ## Getting started
 
 In a first terminal:
