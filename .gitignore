@@ -8,3 +8,5 @@ coverage/
 npm-debug.log
 dist
 test/all.ts
+*.log
+image/rpi/.vagrant
