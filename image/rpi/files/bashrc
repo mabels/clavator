@@ -1,0 +1,6 @@
+gpg-connect-agent /bye
+if [ $? = 1 ]
+then
+ /usr/bin/gpg-agent --daemon --options ${HOME}/.gnupg/gpg-agent.conf
+fi
+export SSH_AUTH_SOCK=$HOME/.gnupg/S.gpg-agent.ssh
