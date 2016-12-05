@@ -1,5 +1,3 @@
-for distro in odroid-xu3 rpi23 odroid-c2 odroid-c1
-do
 . $distro.sh
 
 
@@ -38,9 +36,10 @@ arch-chroot /arch /usr/bin/qemu-$qarch-static \
 umount arch/boot
 umount arch
 
-losetup -d /dev/loop0
-losetup -d /dev/loop1
-losetup -d /dev/loop2
+for i in $(seq $lo_cnt)
+do
+  losetup -d $(expr $i + $lo_ofs)
+done
 
 mkdir -p $HOME/.docker
 cat > $HOME/.docker/config.json <<RUNNER
@@ -70,5 +69,3 @@ docker tag img-$distro-$arch-$VERSION fastandfearless/clavator:img-$distro-$arch
 echo "push"
 docker push fastandfearless/clavator:img-$distro-$arch-$VERSION
 
-
-done

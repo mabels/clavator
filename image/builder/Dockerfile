@@ -8,10 +8,6 @@ RUN pacman-db-upgrade
 RUN pacman --noconfirm -Sy openssl
 RUN pacman --noconfirm -Sy git npm gcc autoconf make wget 
 RUN pacman --noconfirm -Syu
-RUN wget http://archlinuxarm.org/os/ArchLinuxARM-odroid-c1-latest.tar.gz
-RUN wget http://archlinuxarm.org/os/ArchLinuxARM-odroid-c2-latest.tar.gz
-RUN wget http://archlinuxarm.org/os/ArchLinuxARM-rpi-2-latest.tar.gz
-RUN wget http://archlinuxarm.org/os/ArchLinuxARM-odroid-xu3-latest.tar.gz
 RUN pacman-db-upgrade
 RUN pacman --noconfirm -Syu
 RUN pacman --noconfirm -S --needed base-devel
@@ -22,6 +18,7 @@ RUN cd qemu-user-static && sudo -u nobody makepkg -s
 RUN pacman --noconfirm -U qemu-user-static/qemu-user-static-2.7-3-x86_64.pkg.tar.xz 
 
 COPY builder.sh /
+COPY odroid-c1.sh /
 COPY odroid-c2.sh /
 COPY odroid-xu3.sh /
 COPY rpi23.sh /
