@@ -6,12 +6,12 @@ auth=$(ruby -e 'require "json"; puts JSON.parse(IO.read("#{ENV["HOME"]}/.docker/
 docker build -t build-clavator .
 docker run -ti --rm --privileged multiarch/qemu-user-static:register --reset
 # loopback devices are not part of the cgroup
-docker run -ti --privileged ubuntu /usr/sbin/losetup -D
+docker run -ti --privileged ubuntu /sbin/losetup -D
 lo_ofs=2
-for distro in odroid-xu3 rpi23 odroid-c2 odroid-c1
+for distro in odroid-xu3 #rpi23 odroid-c2 odroid-c1
 do
   echo "Run Builder for:"$distro":"$lo_ofs
-  docker run -d --privileged \
+  docker run -ti --privileged \
     -v /var/run/docker.sock:/var/run/docker.sock \
     --env "DOCKER_AUTH=$auth" \
     --env "VERSION=$VERSION" \

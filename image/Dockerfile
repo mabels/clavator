@@ -16,6 +16,10 @@ RUN git clone https://aur.archlinux.org/qemu-user-static.git
 RUN chown -R nobody:nobody qemu-user-static
 RUN cd qemu-user-static && sudo -u nobody makepkg -s
 RUN pacman --noconfirm -U qemu-user-static/qemu-user-static-2.7-3-x86_64.pkg.tar.xz 
+RUN git clone https://github.com/mabels/clavator.git clavator
+RUN cd clavator && npm install 
+RUN cd clavator && npm run build 
+
 
 COPY builder.sh /
 COPY odroid-c1.sh /

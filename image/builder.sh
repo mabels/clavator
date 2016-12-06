@@ -18,7 +18,7 @@ arch-chroot /arch /usr/bin/qemu-$qarch-static \
 arch-chroot /arch /usr/bin/qemu-$qarch-static \
 	/usr/bin/pacman --noconfirm -Sy openssl
 arch-chroot /arch /usr/bin/qemu-$qarch-static \
-	/usr/bin/pacman --noconfirm -Sy nodejs git npm gcc autoconf make libpng automake python2 pcsclite
+	/usr/bin/pacman --noconfirm -Sy nodejs git npm gcc autoconf make libpng automake python2 pcsclite imagemagick mesa-libgl librsvg fig2dev ghostscript texinfo
 arch-chroot /arch /usr/bin/qemu-$qarch-static \
 	/usr/bin/pacman --noconfirm -Syu
 arch-chroot /arch /usr/bin/qemu-$qarch-static \
@@ -26,12 +26,23 @@ arch-chroot /arch /usr/bin/qemu-$qarch-static \
 arch-chroot /arch /usr/bin/qemu-$qarch-static \
 	/usr/bin/pacman --noconfirm -Syu
 
+git clone https://github.com/mabels/gnupg.git -b quick-keytocard /gnupg
+git clone https://github.com/mabels/clavator.git /clavator
+for i in gnupg clavator
+do
+  mv /$i /arch
+done
 arch-chroot /arch /usr/bin/qemu-$qarch-static \
-	/usr/bin/git clone https://github.com/mabels/clavator.git /root/clavator
+	/bin/sh -c "cd /gnupg && sh ./autogen.sh"
 arch-chroot /arch /usr/bin/qemu-$qarch-static \
-	/bin/sh -c "cd /root/clavator && npm install"
+	/bin/sh -c "cd /gnupg && ./configure --sysconfdir=/etc --enable-maintainer-mode && make && make install"
+
 arch-chroot /arch /usr/bin/qemu-$qarch-static \
-	/bin/sh -c "cd /root/clavator && npm run build" 
+	/bin/sh -c "npm install -g yarn"
+arch-chroot /arch /usr/bin/qemu-$qarch-static \
+	/bin/sh -c "cd /clavator && yarn install"
+arch-chroot /arch /usr/bin/qemu-$qarch-static \
+	/bin/sh -c "cd /clavator && npm run build" 
 
 umount arch/boot
 umount arch
