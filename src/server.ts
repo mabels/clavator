@@ -56,14 +56,20 @@ app.ws('/', (ws, req) => {
   });
 });
 
+let http_port = 8080;
+let https_port = 8443;
+if (process.getuid() == 0) {
+  http_port = 80;
+  https_port = 443;
+}
 
 if (privateKey) {
   var httpsServer = https.createServer(credentials, app);
-  httpsServer.listen(8443);
-  console.log("Listen on: 8443")
+  httpsServer.listen(https_port);
+  console.log(`Listen on: SSL ${https_port}`)
 } else {
   var httpServer = http.createServer(app);
-  httpServer.listen(8080);
-  console.log("Listen on: 8080")
+  httpServer.listen(http_port);
+  console.log(`Listen on: ${http_port}`)
 }
 
