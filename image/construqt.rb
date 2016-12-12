@@ -30,6 +30,8 @@ require 'construqt'
 require 'construqt/flavour/nixian'
 require 'construqt/flavour/nixian/dialect/arch'
 
+server_device=ARGV[0]||"enp0s8"
+
 [
  'clavator.rb'
 ].each do |f|
@@ -72,15 +74,18 @@ region = setup_region('clavator', network)
 #region.services.add(Dns::Service.new('DNS', nss))
 
 #firewall(region)
-region.hosts.add("clavator", "flavour" => "nixian", "dialect" => "arch") do |host|
+region.hosts.add("clavator", "flavour" => "nixian", "dialect" => "arch",
+                 "services" => [Construqt::Flavour::Nixian::Services::Vagrant::Service.new.box("bugyt/archlinux")
+                                    .add_cfg('config.vm.network "public_network", bridge: "bridge0"')]) do |host|
   region.interfaces.add_device(host, "lo", "mtu" => "9000", :description=>"#{host.name} lo",
     "address" => region.network.addresses.add_ip(Construqt::Addresses::LOOOPBACK))
   host.configip = host.id ||= Construqt::HostId.create do |my|
-    my.interfaces << region.interfaces.add_device(host, "eth0", "mtu" => 1500,
-      'address' => region.network.addresses.add_ip("192.168.16.1/24",
-      "dhcp" => Construqt::Dhcp.new.start("192.168.16.100")
-                                 .end("192.168.16.200")
-                                 .domain("clavator.net")))
+    my.interfaces << region.interfaces.add_device(host, server_device, "mtu" => 1500,
+      'address' => region.network.addresses.add_ip("192.168.16.1/24", "dhcp" =>
+              Construqt::Dhcp.new
+                .start("192.168.16.100")
+                .end("192.168.16.200")
+                .domain("clavator.com")))
   end
 end
 

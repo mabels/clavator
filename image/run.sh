@@ -7,9 +7,38 @@ docker build -t build-clavator .
 docker run -ti --rm --privileged multiarch/qemu-user-static:register --reset
 # loopback devices are not part of the cgroup
 docker run -ti --privileged ubuntu /sbin/losetup -D
+
+docker run -ti --privileged \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /var/cache/docker/clavator:/clavator \
+  -t build-clavator
+
+exit
+
+
+
 lo_ofs=2
-for distro in odroid-xu3 #rpi23 odroid-c2 odroid-c1
+for arch in arm aarch64 x86_64
 do
+  mkdir -p $arch
+  cat <<DOCKER > $arch/Dockerfile
+FROM build-gnupg-$arch
+
+RUN wget http://archlinuxarm.org/os/ArchLinuxARM-odroid-c1-latest.tar.gz
+RUN mkdir -p /arch && bsdtar -xpf /ArchLinuxARM-odroid-c1-latest.tar.gz -C /arch
+RUN git clone https://github.com/mabels/gnupg.git -b quick-keytocard /arch/gnupg
+RUN cd /arch/gnupg && sh ./autogen.sh
+RUN arch-chroot /arch /usr/bin/qemu-$arch-static /bin/sh -c "cd /gnupg && ./configure --sysconfdir=/etc --enable-maintainer-mode && make"
+
+cp -rp /clavator /arch
+DOCKER  
+
+end
+
+  docker bui
+done
+  for distro in odroid-xu3 rpi23 odroid-c1
+  do
   echo "Run Builder for:"$distro":"$lo_ofs
   docker run -ti --privileged \
     -v /var/run/docker.sock:/var/run/docker.sock \

@@ -1,0 +1,36 @@
+
+
+PARALLEL create os images for clavator + construqt:
+  x86_64-pc-$(TODAY)
+  arm-odroid-c1-$(TODAY)
+  arm-odroid-xu3-$(TODAY)
+  arm-rpi23-$(TODAY)
+  aarch64-odroid-c2-$(TODAY)
+
+PARALLEL create docker image for:
+  x86_64-$(TODAY)
+  arm-$(TODAY)
+  aarch64-$(TODAY)
+
+
+WAIT for
+  docker-image-x86
+    build clavator on x86_64 $(SHA1)
+    build gnupg aarch64 on x86_64 $(SHA1)
+    build gnupg x86_64 on x86_64 $(SHA1)
+    build gnupg arm on x86_64 $(SHA1)
+
+WAIT for 
+  docker-image-x86
+  build gnupg x86_64 on x86_64
+  build clavator on x86_64
+    create docker image with clavator + gnupg x86_64
+  docker-image-arm
+  build gnupg arm on x86_64
+  build clavator on x86_64
+    create docker image with clavator + gnupg arm
+  docker-image-aarch64
+  build gnupg aarch64 on x86_64
+  build clavator on x86_64
+    create docker image with clavator + gnupg aarch64
+
