@@ -25,7 +25,7 @@ docker run -d --privileged \
 
 
 DOCKERVERSION=20161212
-for i in aarch64 x86_64 arm 
+for i in x86_64 arm aarch64 
 do
   echo Creating GnuPg Executables for $i 
   echo "Run: /builder/create-gnupg-$i"

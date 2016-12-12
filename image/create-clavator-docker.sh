@@ -11,7 +11,7 @@ docker run -ti --rm --privileged multiarch/qemu-user-static:register --reset
 
 docker build -f Dockerfile-create-os-images -t clavator-create-os-images .
 
-for i in x86_64 #arm aarch64 
+for i in x86_64 arm aarch64 
 do
   echo "Run: /builder/create-clavator-docker-container $i -NODE $NODEVERSION -GNUPG $GNUPGVERSION"
   docker ps -qa -f "name=$i-create-clavator-docker-container" | xargs docker rm -f

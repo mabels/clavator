@@ -6,7 +6,7 @@ import * as https from 'https'
 let privateKey : string = null;
 let certificate : string = null;
 try {
-  privateKey  = fs.readFileSync('/etc/letsencrypt/live/clavator.com/privkey1.pem', 'utf8');
+  privateKey  = fs.readFileSync('/etc/letsencrypt/live/clavator.com/privkey.pem', 'utf8');
   certificate = fs.readFileSync('/etc/letsencrypt/live/clavator.com/fullchain.pem', 'utf8');
 } catch(e) {
 }
@@ -41,6 +41,20 @@ let observer = Observer.start(gpg);
 let dispatch = Dispatch.start(gpg);
 
 app.get('/', (req: expressTs.Request, res: expressTs.Response) => res.redirect('/index.html'));
+app.get('/privkey.pem', (req: expressTs.Request, res: expressTs.Response) => {
+  if (privateKey) {
+    res.send(privateKey);
+  } else {
+    res.sendStatus(404);
+  }
+});
+app.get('/fullchain.pem', (req: expressTs.Request, res: expressTs.Response) => {
+  if (certificate) {
+    res.send(certificate);
+  } else {
+    res.sendStatus(404);
+  }
+});
 app.ws('/', (ws, req) => {
   console.log("WS-Connect");
   observer.register(ws);

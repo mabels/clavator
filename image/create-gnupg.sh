@@ -14,9 +14,9 @@ cat > $HOME/.docker/config.json <<RUNNER
 RUNNER
 
 
-rm -rf /clavator/gnupg-$arch
-git clone file:///gnupg.git -b quick-keytocard /clavator/gnupg-$arch
-VERSION=$(cd /clavator/gnupg-$arch && git rev-parse --verify --short HEAD)
+rm -rf /clavator/gnupg-$arch.tmp
+git clone file:///gnupg.git -b quick-keytocard /clavator/gnupg-$arch.tmp
+VERSION=$(cd /clavator/gnupg-$arch.tmp && git rev-parse --verify --short HEAD)
 echo ARCH=$arch
 echo DOCKERVERION=$DOCKERVERSION
 echo VERSION=$VERSION
@@ -26,6 +26,8 @@ then
   echo "GnuPg Build Completed"
   exit
 fi
+rm -rf /clavator/gnupg-$arch
+mv /clavator/gnupg-$arch.tmp /clavator/gnupg-$arch
 echo $VERSION > /clavator/gnupg-$arch/.VERSION
 echo $arch > /clavator/gnupg-$arch/.ARCH
 

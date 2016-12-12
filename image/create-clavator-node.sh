@@ -11,14 +11,16 @@ cat > $HOME/.docker/config.json <<RUNNER
 RUNNER
 
 rm -rf /clavator/build
-git clone file:///clavator.git /clavator/build
-VERSION=$(cd /clavator/build && git rev-parse --verify --short HEAD)
+git clone file:///clavator.git /clavator/build.tmp
+VERSION=$(cd /clavator/build.tmp && git rev-parse --verify --short HEAD)
 
 if [ -f /clavator/build.$VERSION ]
 then
   echo "Clavator Build Completed"
   exit
 fi
+rm -rf /clavator/build
+mv /clavator/build.tmp /clavator/build
 echo $VERSION > /clavator/build/.VERSION
 
 cd /clavator/build && \
