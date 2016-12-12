@@ -1,0 +1,7 @@
+FROM clavator-create-os-images
+
+RUN git clone --bare https://github.com/mabels/clavator.git /clavator.git
+RUN git clone --bare https://github.com/mabels/gnupg.git -b quick-keytocard /gnupg.git
+
+CMD ["/bin/bash"]
+
