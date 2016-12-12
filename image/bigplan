@@ -1,11 +1,11 @@
 
 
 PARALLEL create os images for clavator + construqt:
-  x86_64-pc-$(TODAY)
-  arm-odroid-c1-$(TODAY)
-  arm-odroid-xu3-$(TODAY)
-  arm-rpi23-$(TODAY)
-  aarch64-odroid-c2-$(TODAY)
+*  x86_64-pc-$(TODAY)
+*  arm-odroid-c1-$(TODAY)
+*  arm-odroid-xu3-$(TODAY)
+*  arm-rpi23-$(TODAY)
+*  aarch64-odroid-c2-$(TODAY)
 
 PARALLEL create docker image for:
   x86_64-$(TODAY)
