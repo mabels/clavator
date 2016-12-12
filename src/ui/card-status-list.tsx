@@ -118,9 +118,10 @@ export class CardStatusList
 
   public render(): JSX.Element {
         // SecretKeys {this.state.cardStatusList.length || ""}
+        // CardStatusList {this.state.cardStatusList.length || ""}
     return (
       <div className="CardStatusList">
-        CardStatusList {this.state.cardStatusList.length || ""}
+
         {this.state.cardStatusList.map((cs: CardStatus.Gpg2CardStatus, idx : number) => {
           return (<table key={cs.serial}>
             <tbody>

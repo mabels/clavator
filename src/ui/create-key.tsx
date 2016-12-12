@@ -243,7 +243,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     </div>
     </div>
     <div className="row">
-    <div className="twelve columns">
+    <div className="ten columns">
       <label>Name-Comment:</label><input type="text"
         className={classnames({"u-full-width":true, good: uid.comment.valid()})}
         autoComplete="on"
@@ -255,6 +255,10 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
         }}
         value={uid.comment.value} />
     </div>
+    <div className="two columns">
+      <button type="button" onClick={this.handleAddUid.bind(this)}>Add Uid</button>
+    </div>
+
     </div>
     </div>);
   }
@@ -290,12 +294,6 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
         return this.render_uid(i, sb)
       }
     })}
-    <div className="row">
-      <div className="four columns"> </div>
-      <div className="two columns">
-      <button type="button" onClick={this.handleAddUid.bind(this)}>Add Uid</button>
-      </div>
-    </div>
 
         <div className={classnames({row: true, good: this.state.keyGen.password.valid()})}>
        {this.render_password("Password", "cq-password", this.state.keyGen.password)}
@@ -356,9 +354,9 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
 
 
   public render(): JSX.Element {
+        // <h3>CreateKey</h3>
     return (
       <div className="row CreateKey" >
-        <h3>CreateKey</h3>
         {this.render_form()}
       </div>
     );

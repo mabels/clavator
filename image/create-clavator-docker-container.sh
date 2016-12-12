@@ -26,10 +26,10 @@ node /builder/docker-extract.js clavator-gnupg-$ARCH-$GNUPGVERSION /arch/gnupg
 mkdir /arch/clavator
 node /builder/docker-extract.js clavator-node-$NODEVERSION /arch/clavator
 
-rm -rf /etc/letsencrypt/live/clavator.com
-mkdir -p /etc/letsencrypt/live/clavator.com
-wget --directory-prefix=/etc/letsencrypt/live/clavator.com https://clavator.com/privkey.pem
-wget --directory-prefix=/etc/letsencrypt/live/clavator.com https://clavator.com/fullchain.pem
+rm -rf /arch/etc/letsencrypt/live/clavator.com
+mkdir -p /arch/etc/letsencrypt/live/clavator.com
+wget --directory-prefix=/arch/etc/letsencrypt/live/clavator.com https://clavator.com/privkey.pem
+wget --directory-prefix=/arch/etc/letsencrypt/live/clavator.com https://clavator.com/fullchain.pem
 
 
 cat > /arch/Dockerfile <<RUNNER
@@ -37,6 +37,7 @@ FROM clavator-docker-archlinux-$ARCH-$DOCKERVERSION
 
 COPY clavator/ /clavator
 COPY gnupg/ /gnupg
+COPY etc/ /etc
 #RUN /usr/bin/make -C /gnupg install
 #RUN /bin/rm -rf /gnupg
 

@@ -15,7 +15,7 @@ for i in x86_64 arm aarch64
 do
   echo "Run: /builder/create-clavator-docker-container $i -NODE $NODEVERSION -GNUPG $GNUPGVERSION"
   docker ps -qa -f "name=$i-create-clavator-docker-container" | xargs docker rm -f
-  docker run -ti --privileged \
+  docker run -d --privileged \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /var/cache/docker/clavator:/clavator \
     --env "DOCKER_AUTH=$DOCKER_AUTH" \

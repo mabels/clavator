@@ -149,9 +149,9 @@ public render_buttons(key: ListSecretKeys.Key) : JSX.Element {
 
 
   public render(): JSX.Element {
+    // SecretKeys {this.state.secretKeys.length || ""}
     return (
       <div className="KeyChainList">
-        SecretKeys {this.state.secretKeys.length || ""}
         {this.state.secretKeys.map((sk: ListSecretKeys.SecretKey, idx : number) => {
           return (<table key={sk.key}>
             <tbody>

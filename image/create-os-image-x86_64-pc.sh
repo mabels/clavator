@@ -16,7 +16,7 @@ echo VERSION=$VERSION
 arch=x86_64
 image_name=$(basename $0 .sh)-$VERSION.img
 
-dd if=/dev/zero of=$image_name bs=1 count=1 seek=3221225471
+dd if=/dev/zero of=$image_name bs=1 count=1 seek=7516192768
 
 losetup -f $image_name
 
@@ -73,14 +73,16 @@ echo "$ROOTID / ext4 rw,relatime,data=ordered     0 0" >> /arch/etc/fstab
 umount /arch
 losetup -d $hole_disk
 losetup -d $part1
+rm -f $image_name.p1
+
 mkdir -p /result/img
 VBoxManage convertdd $image_name /result/img/virtual.vmdk
-
+xz -z -T 4 -9 /result/img/virtual.vmdk
 
 cat > /result/Dockerfile <<RUNNER
 FROM busybox
 
-COPY /img/virtual.vmdk /
+COPY /img/virtual.vmdk.xz /
 
 CMD ["/bin/sh"]
 RUNNER

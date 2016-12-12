@@ -15,7 +15,7 @@ echo VERSION=$VERSION
 arch=armhf
 image_name=$(basename $0 .sh)-$VERSION.img
 
-dd if=/dev/zero of=$image_name bs=1 count=1 seek=3221225471
+dd if=/dev/zero of=$image_name bs=1 count=1 seek=7516192768
 
 losetup -f $image_name
 hole_disk=$(losetup -l | grep $image_name | awk '{print $1}')
@@ -61,14 +61,17 @@ arch-chroot /arch /usr/bin/qemu-$qarch-static /bin/sh /updater.sh
 umount /arch
 losetup -d $hole_disk
 losetup -d $part1
+rm -f $image_name.p1
 
 mkdir -p /result/img
-ln $image_name /result/img
+xz -z -T 4 -9 $image_name
+ln $image_name.xz /result/img
 
 cat > /result/Dockerfile <<RUNNER
 FROM busybox
 
-COPY /img/$image_name /odroid_xu3.img
+COPY /img/$image_name.xz /odroid_xu3.img.xz
+RUN ln /odroid_xu3.img.xz /sdcard.img.xz
 
 CMD ["/bin/sh"]
 RUNNER
