@@ -130,25 +130,25 @@ export class App extends React.Component<{}, AppState> {
       </ul>
 
       <input type="checkbox" id="nav-trigger" className="nav-trigger" />
-      <label htmlFor="nav-trigger"></label>
+      <label htmlFor="nav-trigger"><ChannelStatus channel={this.state.channel} /></label>
 
       <div className="site-wrap">
 
         <a name="CreateKey"></a>
         <h3>CreateKey</h3>
-        <p> <CreateKey channel={this.state.channel} /> </p>
+        <CreateKey channel={this.state.channel} />
         <a name="KeyChainList"></a>
         <h3>KeyChainList</h3>
-        <p><KeyChainList channel={this.state.channel} /></p>
+        <KeyChainList channel={this.state.channel} />
         <a name="CardStatusList"></a>
         <h3>CardStatusList</h3>
-        <p><CardStatusList channel={this.state.channel} /></p>
+        <CardStatusList channel={this.state.channel} />
         <a name="Progressor"></a>
-        <h3>Progressor</h3>
-        <p><Progressor channel={this.state.channel} msg="Clavator"/></p>
+        <h3>Logs</h3>
+        <Progressor channel={this.state.channel} msg="Clavator"/>
         <a name="ResetYubikey"></a>
         <h3>ResetYubikey</h3>
-        <p><ResetYubikey channel={this.state.channel} /></p>
+        <ResetYubikey channel={this.state.channel} />
       </div>
     </div>
     );

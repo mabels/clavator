@@ -323,7 +323,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     </div>
 
     {this.state.keyGen.subKeys.pallets.map((sb:KeyGen.KeyInfo, i:number) => {
-      return (<div className="row">
+      return (<div className="row" key={i}>
               <div className="two columns">SubKey {i}</div>
               <div className="three columns">
               <label>Key-Type:</label>{this.render_option("subkeys."+i+".keyType", sb.type)}
