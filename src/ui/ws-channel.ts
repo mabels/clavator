@@ -29,7 +29,11 @@ export class Dispatch {
   }
 
   connector() {
-    this.ws = new WebSocket(`ws://${window.location.host}/`);
+    let wsproto = "ws:"
+    if (window.location.protocol == "https:") {
+      wsproto = "wss:"
+    }
+    this.ws = new WebSocket(`${wsproto}://${window.location.host}/`);
     this.ws.onopen = (e: Event) => {
       // debugger
       this.isActive = true;

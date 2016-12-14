@@ -158,6 +158,11 @@ public deleteSecretKey(key: ListSecretKeys.Key) {
   }).bind(this);
 }
 
+public sendToCard(key: ListSecretKeys.Key) {
+  return (() => {
+  }).bind(this);
+}
+
 public render_buttons(key: ListSecretKeys.Key) : JSX.Element {
   return (<td className="action">
     <a onClick={this.requestAsciiWithPassphrase(key, "pem-private")} name="pem-private">
@@ -172,9 +177,13 @@ public render_buttons(key: ListSecretKeys.Key) : JSX.Element {
     <a  onClick={this.requestAscii(key, "pem-revoke")} name="pem-revoke">
       <i className="fa fa-bug"></i>
     </a>
+    <a  onClick={this.sendToCard(key)} name="Send Key to Smartcard">
+      <i className="fa fa-credit-card"></i>
+    </a>
     <a  onClick={this.deleteSecretKey(key)} name="delete">
       <i className="fa fa-trash"></i>
     </a>
+
   </td>);
 }
 
