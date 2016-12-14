@@ -119,6 +119,17 @@ export class CardStatusList
   public render(): JSX.Element {
         // SecretKeys {this.state.cardStatusList.length || ""}
         // CardStatusList {this.state.cardStatusList.length || ""}
+      //   <tr>
+      //   <div className={classnames({row: true, good: this.state.keyGen.adminPin.valid()})}>
+      //  {this.render_password("AdminPin", "cq-adminpin", this.state.keyGen.adminPin)}
+      //  {this.render_verify_password("AdminPin", "cq-adminpin", this.state.keyGen.adminPin)}
+      //  </div>
+      //   <div className={classnames({row: true, good: this.state.keyGen.userPin.valid()})}>
+      //  {this.render_password("UserPin", "cq-userpin", this.state.keyGen.userPin)}
+      //  {this.render_verify_password("UserPin", "cq-userpin", this.state.keyGen.userPin)}
+      //  </div>
+      //   </tr>
+
     return (
       <div className="CardStatusList">
 
@@ -139,29 +150,31 @@ export class CardStatusList
               {cs.reader.model}<br/>
               {cs.reader.type}<br/>
             </td>
-            <td>
-            <table>
-            <tbody>
-            {cs.keyStates.map((ks: CardStatus.KeyState, idx : number) => {
-              return (
-            <tr key={ks.id}>
-            <td>{ks.id}</td>
-            <td>{ks.mode}</td>
-            <td>{ks.bits}</td>
-            <td>{ks.maxpinlen}</td>
-            <td>{ks.pinretry}</td>
-            <td>{ks.sigcount}</td>
-            <td>{ks.cafpr}</td>
-            <td>{ks.fpr}</td>
-            <td>{this.format_date(ks.fprtime)}</td>
-            </tr>
-              );
-            })}
-            </tbody>
-            </table>
-            </td>
             <td>{cs.forcepin}</td>
             <td>{cs.sigcount}</td>
+            </tr>
+            <tr>
+              <td colSpan={11}>
+                <table>
+                  <tbody>
+                  {cs.keyStates.map((ks: CardStatus.KeyState, idx : number) => {
+                    return (
+                        <tr key={ks.id}>
+                          <td>{ks.id}</td>
+                          <td>{ks.mode}</td>
+                          <td>{ks.bits}</td>
+                          <td>{ks.maxpinlen}</td>
+                          <td>{ks.pinretry}</td>
+                          <td>{ks.sigcount}</td>
+                          <td>{ks.cafpr}</td>
+                          <td>{ks.fpr}</td>
+                          <td>{this.format_date(ks.fprtime)}</td>
+                        </tr>
+                    );
+                  })}
+                  </tbody>
+                </table>
+              </td>
             </tr>
             </tbody>
           </table>);

@@ -299,14 +299,6 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
        {this.render_password("Password", "cq-password", this.state.keyGen.password)}
        {this.render_verify_password("Password", "cq-password", this.state.keyGen.password)}
        </div>
-        <div className={classnames({row: true, good: this.state.keyGen.adminPin.valid()})}>
-       {this.render_password("AdminPin", "cq-adminpin", this.state.keyGen.adminPin)}
-       {this.render_verify_password("AdminPin", "cq-adminpin", this.state.keyGen.adminPin)}
-       </div>
-        <div className={classnames({row: true, good: this.state.keyGen.userPin.valid()})}>
-       {this.render_password("UserPin", "cq-userpin", this.state.keyGen.userPin)}
-       {this.render_verify_password("UserPin", "cq-userpin", this.state.keyGen.userPin)}
-       </div>
 
 
     <div className="row">

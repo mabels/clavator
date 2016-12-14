@@ -2,6 +2,11 @@ import * as React from 'react';
 import './normalize.css';
 import './skeleton.css';
 import './app.less';
+import 'font-awesome/less/font-awesome.less';
+
+import * as classnames from 'classnames';
+// import "react-font-awesome";
+
 // import "./clavator.png";
 const Clavator = require('./clavator.png');
 

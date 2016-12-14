@@ -4,8 +4,8 @@ import { assert } from 'chai';
 import * as gpg from "../../src/gpg/gpg";
 import * as lsk from "../../src/gpg/list_secret_keys";
 
-import * as pins from "../../src/pinentry/server";
-import * as pinc from "../../src/pinentry/client";
+//import * as pins from "../../src/pinentry/server";
+//import * as pinc from "../../src/pinentry/client";
 
 
 describe('ListSecretKeys', () => {

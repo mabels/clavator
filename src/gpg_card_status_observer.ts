@@ -1,4 +1,4 @@
-import * as expressWsTs from 'express-ws';
+import * as WebSocket from 'ws';
 
 import * as Message from './message';
 import * as Observer from './observer';
@@ -21,7 +21,8 @@ class GpgCardStatusObserver {
       return glsko;
   }
 
-  public register(ws: expressWsTs.ExpressWebSocket) {
+  public register(ws: WebSocket) {
+    console.log("GpgCardStatusObserver: register");
     clearTimeout(this.timeoutId);
     this.action([ws]);
   }

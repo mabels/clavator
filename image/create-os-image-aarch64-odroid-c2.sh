@@ -54,6 +54,7 @@ echo ':aarch64:M::\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x0
 /bin/sh /builder/create-os-image-updater.sh
 
 cat <<MMC > /arch/create-mmcblk0.sh
+rm -f /dev/mmcblk0
 ln $hole_disk /dev/mmcblk0
 ls -la $hole_disk /dev/mmcblk0
 MMC

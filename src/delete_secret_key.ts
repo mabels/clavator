@@ -1,5 +1,5 @@
 
-import * as expressWsTs from 'express-ws';
+import * as ws from 'ws';
 import * as Message from './message';
 import Dispatcher from './dispatcher'
 
@@ -15,7 +15,7 @@ export class DeleteSecretKey implements Dispatcher {
     this.gpg = g
   }
 
-  public run(ws: expressWsTs.ExpressWebSocket, m: Message.Message) : boolean {
+  public run(ws: ws, m: Message.Message) : boolean {
     console.log("DeleteSecretKey.run", m.header)
     if (m.header.action != "DeleteSecretKey") {
       // ws.send(Message.prepare("Progressor.Clavator", Progress.fail("Ohh")))

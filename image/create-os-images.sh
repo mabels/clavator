@@ -15,7 +15,7 @@ docker run -ti --privileged ubuntu /sbin/losetup -D
 
 docker build -f Dockerfile-create-os-images -t clavator-create-os-images .
 
-for i in aarch64-odroid-c2 x86_64-pc arm-rpi23 arm-odroid-c1 arm-odroid-xu3 
+for i in aarch64-odroid-c2 arm-odroid-c1 # x86_64-pc arm-rpi23 arm-odroid-xu3 
 do
   echo "Run: /builder/create-os-image-$i $VERSION"
   docker ps -qa -f "name=$i-create-os-image" | xargs docker rm -f

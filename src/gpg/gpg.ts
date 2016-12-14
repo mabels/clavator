@@ -5,12 +5,13 @@ import * as ListSecretKeys from "./list_secret_keys";
 import * as CardStatus from "./card_status";
 import * as path from "path";
 import * as fs from "fs";
-import * as pse from "../pinentry/server";
+//import * as pse from "../pinentry/server";
 import * as Ac from "./agent_conf";
 import * as stream from 'stream';
 import * as Uuid from 'node-uuid';
 
 import * as KeyGen from './key-gen';
+import RequestAscii from './request_ascii';
 
 interface StringFunc {
   (): string;
@@ -106,7 +107,7 @@ export class Result {
 
 export class Gpg {
     homeDir: string = path.join(process.env.HOME, ".gnupg");
-    pinEntryServer: pse.PinEntryServer;
+    //pinEntryServer: pse.PinEntryServer;
     gpgCmd: string = "gpg2";
     gpgAgentCmd: string = "gpg-connect-agent";
 
@@ -240,6 +241,7 @@ export class Gpg {
         })
     }
 
+    /*
     public connect_pinentry(cb: (err: string) => void) {
         let pinentryPath = path.join(this.homeDir, 'pinentry.node');
         this.write_pinentry_sh(pinentryPath, (err) => {
@@ -263,6 +265,7 @@ export class Gpg {
             return;
         }
     }
+    */
 
     public createMasterKey(keyGen: KeyGen.KeyGen, cb: (res: Result) => void) {
       //  '--enable-large-rsa',
@@ -278,17 +281,25 @@ export class Gpg {
       this.run(args, keyGen.masterCommand(), cb);
     }
 
-    public pemPrivateKey(fpr: string, cb: (res: Result) => void) {
-      this.run(['-a', '--export-secret-key', fpr], null, cb);
+    public pemPrivateKey(rqa: RequestAscii, cb: (res: Result) => void) {
+      let args = [
+        '--no-tty', '--pinentry-mode', 'loopback',
+        '--passphrase-fd',
+        () => {
+          return rqa.passphrase.value
+        },
+        '-a', '--export-secret-key', rqa.fingerprint
+      ];
+      this.run(args, null, cb);
     }
-    public pemPublicKey(fpr: string, cb: (res: Result) => void) {
-      this.run(['-a', '--export', fpr], null, cb);
+    public pemPublicKey(rqa: RequestAscii, cb: (res: Result) => void) {
+      this.run(['-a', '--export', rqa.fingerprint], null, cb);
     }
-    public pemRevocation(fpr: string, cb: (res: Result) => void) {
-      this.run(['-a', '--gen-revoke', fpr], null, cb);
+    public pemRevocation(rqa: RequestAscii, cb: (res: Result) => void) {
+      this.run(['-a', '--gen-revoke', rqa.fingerprint], null, cb);
     }
-    public sshPublic(fpr: string, cb: (res: Result) => void) {
-      this.run(['--export-ssh-key', fpr], null, cb);
+    public sshPublic(rqa: RequestAscii, cb: (res: Result) => void) {
+      this.run(['--export-ssh-key', rqa.fingerprint], null, cb);
     }
 
     public addUid(fpr: string, kg: KeyGen.KeyGen, uid: KeyGen.Uid, cb: (res: Result) => void) {

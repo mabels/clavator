@@ -3,6 +3,7 @@ import * as fs from 'fs'
 import * as http from 'http'
 import * as https from 'https'
 
+
 let privateKey : string = null;
 let certificate : string = null;
 try {
@@ -13,10 +14,11 @@ try {
 const credentials = {key: privateKey, cert: certificate};
 
 import { join } from 'path';
-import * as expressTs from 'express';
-const express: typeof expressTs = expressTs;
-import * as expressWsTs from 'express-ws';
-const expressWs: typeof expressWsTs = expressWsTs;
+import * as express from 'express';
+import * as ws from 'ws';
+// const express: typeof expressTs = expressTs;
+// import * as WebSocket from 'ws';
+// const expressWs: typeof expressWsTs = expressWsTs;
 
 
 
@@ -26,36 +28,76 @@ import * as Gpg from './gpg/gpg';
 
 import * as Message from './message';
 
+let redirectPort = 8080;
+let applicationPort = 8443;
+if (process.getuid() == 0) {
+  redirectPort = 80;
+  applicationPort = 443;
+}
+
+const redirectHttp = express();
+redirectHttp.get("/*", (req, res, next) => {
+  res.location('https://clavator.com');
+  res.sendStatus(302);
+  res.end('<a href="https://clavator.com">https://clavator.com</a>');
+});
+redirectHttp.listen(redirectPort);
+console.log(`Started redirectPort on ${redirectPort}`)
+
+
+let httpServer : https.Server | http.Server;
+if (privateKey) {
+  httpServer = https.createServer(credentials);
+  console.log(`Listen on: https ${applicationPort}`)
+} else {
+  httpServer = http.createServer();
+  console.log(`Listen on: http ${applicationPort}`)
+}
+
 const app = express();
-expressWs(app);
 
 app.use(express.static(join(process.cwd(), 'dist')));
 
 let gpg = new Gpg.Gpg();
-
-// gpg.createSubkey("DDC4941118503075", (res:Gpg.Result) => {
-//
-// });
+let cmd = "gpg2";
+if (fs.existsSync("/usr/local/bin/gpg2")) {
+  cmd = "/usr/local/bin/gpg2";
+}
+if (fs.existsSync("../gpg/gnupg/g10/gpg")) {
+  cmd = "../gpg/gnupg/g10/gpg";
+}
+if (fs.existsSync("/gnupg/g10/gpg")) {
+  cmd = "/gnupg/g10/gpg";
+}
+console.log(`Use GPG ${cmd}`)
+gpg.setGpgCmd(cmd);
 
 let observer = Observer.start(gpg);
 let dispatch = Dispatch.start(gpg);
 
-app.get('/', (req: expressTs.Request, res: expressTs.Response) => res.redirect('/index.html'));
-app.get('/privkey.pem', (req: expressTs.Request, res: expressTs.Response) => {
+app.get('/', (req: express.Request, res: express.Response) => res.redirect('/index.html'));
+
+app.get('/privkey.pem', (req: express.Request, res: express.Response) => {
   if (privateKey) {
     res.send(privateKey);
   } else {
     res.sendStatus(404);
   }
 });
-app.get('/fullchain.pem', (req: expressTs.Request, res: expressTs.Response) => {
+app.get('/fullchain.pem', (req: express.Request, res: express.Response) => {
   if (certificate) {
     res.send(certificate);
   } else {
     res.sendStatus(404);
   }
 });
-app.ws('/', (ws, req) => {
+
+let wss = new ws.Server({ server: httpServer })
+wss.on('connection', (ws) => {
+  //var location = url.parse(ws.upgradeReq.url, true);
+  // you might use location.query.access_token to authenticate or share sessions
+  // or ws.upgradeReq.headers.cookie (see http://stackoverflow.com/a/16395220/151312)
+  // ws.send('something');
   console.log("WS-Connect");
   observer.register(ws);
   ws.on('close', () => {
@@ -63,27 +105,12 @@ app.ws('/', (ws, req) => {
     observer.unregister(ws);
   });
   // ws.on('data', msg:any => console.log(msg));
-  ws.on('message', payload => {
+  ws.on('message', (payload) => {
     let msg = Message.fromData(payload);
-     console.log("onMessage")
+    console.log("onMessage")
     dispatch.run(ws, msg)
   });
 });
 
-let http_port = 8080;
-let https_port = 8443;
-if (process.getuid() == 0) {
-  http_port = 80;
-  https_port = 443;
-}
-
-if (privateKey) {
-  var httpsServer = https.createServer(credentials, app);
-  httpsServer.listen(https_port);
-  console.log(`Listen on: SSL ${https_port}`)
-} else {
-  var httpServer = http.createServer(app);
-  httpServer.listen(http_port);
-  console.log(`Listen on: ${http_port}`)
-}
-
+httpServer.on('request', app);
+httpServer.listen(applicationPort);

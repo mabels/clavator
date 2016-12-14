@@ -261,8 +261,8 @@ export class Container<T extends Validatable> {
 }
 export class KeyGen {
   password: PwPair = new PwPair(/^.{14,1024}$/, "Password Error");
-  adminPin: PwPair = new PwPair(/^[0-9]{8}$/, "adminPin Error");
-  userPin: PwPair = new PwPair(/^[0-9]{6,8}$/, "userPin Error");
+  // adminPin: PwPair = new PwPair(/^[0-9]{8}$/, "adminPin Error");
+  // userPin: PwPair = new PwPair(/^[0-9]{6,8}$/, "userPin Error");
   keyInfo: KeyInfo = new KeyInfo("RSA", 4096, ['cert']);
   expireDate: DateValue = new DateValue(expireDate(), "expireDate error");
   uids : Container<Uid> = new Container<Uid>(()=>{return new Uid()});
@@ -277,8 +277,8 @@ export class KeyGen {
   }
   public static fill(js: any, kg: KeyGen) {
     PwPair.fill(js['password']||{}, kg.password);
-    PwPair.fill(js['adminPin']||{}, kg.adminPin);
-    PwPair.fill(js['userPin']||{}, kg.userPin);
+    // PwPair.fill(js['adminPin']||{}, kg.adminPin);
+    // PwPair.fill(js['userPin']||{}, kg.userPin);
     kg.keyInfo.fill(js['keyInfo']);
     kg.uids.fill(js['uids'])
     // StringValue.fill(js['nameReal']||{}, kg.nameReal);
@@ -292,8 +292,8 @@ export class KeyGen {
   errText() : string[] {
     let ret: string[] = [];
     !this.password.valid() && ret.push(this.password.errText);
-    !this.adminPin.valid() && ret.push(this.adminPin.errText);
-    !this.userPin.valid() && ret.push(this.userPin.errText);
+    // !this.adminPin.valid() && ret.push(this.adminPin.errText);
+    // !this.userPin.valid() && ret.push(this.userPin.errText);
     !this.keyInfo.valid() && Array.prototype.push.apply(ret, this.keyInfo.errText());
     !this.subKeys.valid() && Array.prototype.push.apply(ret, this.subKeys.errText());
     !this.uids.valid() && Array.prototype.push.apply(ret, this.uids.errText());
@@ -303,12 +303,16 @@ export class KeyGen {
 
   valid() {
     // console.log(this.errText());
-    return this.password.valid() &&
-       this.adminPin.valid() && this.userPin.valid() &&
+    let ret = this.password.valid() &&
+      //  this.adminPin.valid() && this.userPin.valid() &&
        this.keyInfo.valid() &&
        this.uids.valid() &&
        this.subKeys.valid() &&
        this.expireDate.valid();
+    if (!ret) {
+      console.log("keygen:", this.errText());
+    }
+    return ret;
   }
 
   masterCommand() {

@@ -1,5 +1,5 @@
 
-import * as expressWsTs from 'express-ws';
+import * as WebSocket from 'ws';
 import * as Message from './message';
 import Dispatcher from './dispatcher'
 
@@ -15,7 +15,7 @@ export class GpgCreateKeySet implements Dispatcher {
       this.gpg = gpg
   }
 
-  public createSubKeys(ws: expressWsTs.ExpressWebSocket, cnt: number, fpr:
+  public createSubKeys(ws: WebSocket, cnt: number, fpr:
     string, ki: KeyGen.KeyGen, cb: () => void) {
     // console.log("createSubKeys:1", cnt, ki.subKeys.subKeys.length);
     if (cnt >= ki.subKeys.pallets.length) {
@@ -35,7 +35,7 @@ export class GpgCreateKeySet implements Dispatcher {
 
   }
 
-  public addUids(ws: expressWsTs.ExpressWebSocket, cnt: number, fpr:
+  public addUids(ws: WebSocket, cnt: number, fpr:
     string, ki: KeyGen.KeyGen, cb: () => void) {
     // console.log("createSubKeys:1", cnt, ki.subKeys.subKeys.length);
     if (cnt >= ki.uids.pallets.length) {
@@ -53,7 +53,7 @@ export class GpgCreateKeySet implements Dispatcher {
 
 
 
-  public run(ws: expressWsTs.ExpressWebSocket, m: Message.Message) : boolean {
+  public run(ws: WebSocket, m: Message.Message) : boolean {
     console.log("GpgCreateKeySet.run", m.header)
     if (m.header.action != "CreateKeySet") {
       // ws.send(Message.prepare("Progressor.Clavator", Progress.fail("Ohh")))

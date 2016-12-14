@@ -1,5 +1,5 @@
 
-import * as expressWsTs from 'express-ws';
+import * as WebSocket from 'ws';
 
 
 
@@ -12,16 +12,17 @@ import GpgCardStatusObserver from './gpg_card_status_observer'
 
 
 export class Observer {
-    public wss : expressWsTs.ExpressWebSocket[] = [];
+    public wss : WebSocket[] = [];
     public gpgListSecretKeysObserver : GpgListSecretKeysObserver;
     public gpgCardStatusObserver : GpgCardStatusObserver;
-    public register(ws: expressWsTs.ExpressWebSocket) {
+
+    public register(ws: WebSocket) {
       this.wss.push(ws);
       this.gpgListSecretKeysObserver.register(ws);
       this.gpgCardStatusObserver.register(ws);
     }
 
-    public unregister(ws: expressWsTs.ExpressWebSocket) {
+    public unregister(ws: WebSocket) {
       this.wss = this.wss.filter(item => item !== ws);
     }
 

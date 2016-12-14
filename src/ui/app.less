@@ -1,3 +1,7 @@
+
+
+// @import "../../node_modules/font-awesome/less/font-awesome.less";
+
 .app {
   font-weight: bold;
 }
@@ -12,6 +16,26 @@
   background: #ccc
 }
 
+.action {
+  display: block;
+  width: 120px;
+}
+.action a {
+  color: black;
+  padding-right: 6px;
+}
+
+.RespondAsciiBox {
+  overflow-x: scroll;
+  overflow-y: hidden;
+  max-height: 200px;
+  max-width: 800px;
+}
+.RespondAsciiBox.ssh-public {
+  white-space:nowrap;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
 
 .CreateKey .good {
   background: #c0f980;

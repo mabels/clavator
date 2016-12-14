@@ -37,6 +37,9 @@ mount $part1 /arch
   wget http://archlinuxarm.org/os/ArchLinuxARM-odroid-xu3-latest.tar.gz
 bsdtar -xpf /clavator/ArchLinuxARM-odroid-xu3-latest.tar.gz -C /arch
 
+(cd /arch/boot/ && ./sd_fusing.sh $hole_disk)
+
+
 qarch=arm
 cp /usr/bin/qemu-$qarch-static /arch/usr/bin
 
@@ -52,6 +55,7 @@ echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x2
 /bin/sh /builder/create-os-image-updater.sh
 
 cat <<MMC > /arch/create-mmcblk0.sh
+rm -f /dev/mmcblk0
 ln $hole_disk /dev/mmcblk0
 ls -la $hole_disk /dev/mmcblk0
 MMC
