@@ -4,7 +4,7 @@ mkdir -p $HOME/.docker
 cat > $HOME/.docker/config.json <<RUNNER
 {
   "auths": {
-    "https://index.docker.io/v1/": {
+    "registry.clavator.com:5000": {
       "auth": "$DOCKER_AUTH"
     }
   }
@@ -13,9 +13,9 @@ RUNNER
 echo VERSION=$VERSION 
 #echo DOCKER_AUTH=$DOCKER_AUTH
 arch=armhf
-image_name=$(basename $0 .sh)-$VERSION.img
+image_name=/$(basename $0 .sh)-$VERSION.img
 
-dd if=/dev/zero of=$image_name bs=1 count=1 seek=7516192768
+dd if=/dev/zero of=$image_name bs=1 count=1 seek=7516192767
 
 losetup -f $image_name
 hole_disk=$(losetup -l | grep $image_name | awk '{print $1}')
@@ -34,7 +34,7 @@ eext4=""
 echo -e "n\np\n1\n$sfat\n$efat\nn\np\n2\n$sext4\n$eext4\nt\n1\n6\nt\n2\n83\nw" | fdisk $hole_disk
 
 mkfs.vfat $part1
-mkfs.ext4 $part2
+mkfs.ext4 -O '^metadata_csum,^64bit' $part2 || mkfs.ext4 $part2
 mkdir arch
 mount $part2 arch
 mkdir arch/boot
@@ -44,6 +44,14 @@ mount $part1 arch/boot
   wget --directory-prefix=/clavator \
   wget http://archlinuxarm.org/os/ArchLinuxARM-rpi-2-latest.tar.gz
 bsdtar -xpf /clavator/ArchLinuxARM-rpi-2-latest.tar.gz -C /arch
+
+mkdir -p /arch/etc/pacman.d/
+mv /arch/etc/pacman.d/mirrorlist /arch/etc/pacman.d/mirrorlist.orig
+echo 'Server = https://archlinux.clavator.com/archlinuxarm/$arch/$repo' > /arch/etc/pacman.d/mirrorlist
+mv /arch/etc/hosts /arch/etc/hosts.orig
+cp /etc/hosts /arch/etc/hosts
+cat /arch/etc/hosts /arch/etc/pacman.d/mirrorlist
+
 
 qarch=arm
 cp /usr/bin/qemu-$qarch-static /arch/usr/bin
@@ -66,6 +74,8 @@ MMC
 
 arch-chroot /arch /usr/bin/qemu-$qarch-static /bin/sh /updater.sh
 
+mv /arch/etc/pacman.d/mirrorlist.orig /arch/etc/pacman.d/mirrorlist
+mv /arch/etc/hosts.orig /arch/etc/hosts
 umount /arch/boot
 umount /arch
 losetup -d $hole_disk
@@ -75,14 +85,15 @@ losetup -d $part2
 rm -f $image_name.p2
 
 mkdir -p /result/img
-xz -z -T 4 -9 $image_name
+xz -z -T 2 -9 $image_name
 ln $image_name.xz /result/img
 
 cat > /result/Dockerfile <<RUNNER
 FROM busybox
 
-COPY /img/$image_name.xz /rpi23.img.xz
-RUN ln /rpi23.img.xz /sdcard.img.xz
+COPY /img/$image_name.xz /
+RUN ln -s /$image_name.xz /sdcard.img.xz
+RUN ln -s /$image_name.xz /rpi23.img.xz
 
 CMD ["/bin/sh"]
 RUNNER
@@ -90,9 +101,8 @@ RUNNER
 echo "build"
 docker build -t clavator-os-image-rpi23-arm-$VERSION /result
 echo "tag"
-docker tag clavator-os-image-rpi23-arm-$VERSION fastandfearless/clavator:clavator-os-image-rpi23-arm-$VERSION
+docker tag clavator-os-image-rpi23-arm-$VERSION registry.clavator.com:5000/clavator-os-image-rpi23-arm-$VERSION
 echo "push"
-[  -n "$DOCKER_AUTH" ] && \
-  docker push fastandfearless/clavator:clavator-os-image-rpi23-arm-$VERSION
+docker push registry.clavator.com:5000/clavator-os-image-rpi23-arm-$VERSION
 
 

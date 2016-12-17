@@ -5,7 +5,7 @@ mkdir -p $HOME/.docker
 cat > $HOME/.docker/config.json <<RUNNER
 {
   "auths": {
-    "https://index.docker.io/v1/": {
+    "registry.clavator.com:5000": {
       "auth": "$DOCKER_AUTH"
     }
   }
@@ -19,6 +19,7 @@ GNUPGVERSION=$(cat /clavator/gnupg-$ARCH/.VERSION)
 echo NODEVERSION=$NODEVERSION
 echo GNUPGVERSION=$GNUPGVERSION
 echo DOCKERVERSION=$DOCKERVERSION
+
 
 mkdir /arch
 mkdir /arch/gnupg
@@ -36,8 +37,10 @@ cat > /arch/Dockerfile <<RUNNER
 FROM clavator-docker-archlinux-$ARCH-$DOCKERVERSION
 
 COPY clavator/ /clavator
-COPY gnupg/ /gnupg
 COPY etc/ /etc
+COPY gnupg/gnupg-clavator.tar.xz /
+RUN  pacman -U --noconfirm --force /gnupg-clavator.tar.xz
+#COPY gnupg/ /
 #RUN /usr/bin/make -C /gnupg install
 #RUN /bin/rm -rf /gnupg
 
@@ -49,7 +52,6 @@ RUNNER
 echo "build"
 docker build -t clavator-docker-$ARCH-$NODEVERSION-$GNUPGVERSION /arch
 echo "tag"
-docker tag clavator-docker-$ARCH-$NODEVERSION-$GNUPGVERSION fastandfearless/clavator:clavator-docker-$ARCH-$NODEVERSION-$GNUPGVERSION
+docker tag clavator-docker-$ARCH-$NODEVERSION-$GNUPGVERSION registry.clavator.com:5000/clavator-docker-$ARCH-$NODEVERSION-$GNUPGVERSION
 echo "push"
-[  -n "$DOCKER_AUTH" ] && \
-  docker push fastandfearless/clavator:clavator-docker-$ARCH-$NODEVERSION-$GNUPGVERSION
+docker push registry.clavator.com:5000/clavator-docker-$ARCH-$NODEVERSION-$GNUPGVERSION

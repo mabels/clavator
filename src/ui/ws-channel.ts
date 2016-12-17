@@ -29,9 +29,9 @@ export class Dispatch {
   }
 
   connector() {
-    let wsproto = "ws:"
+    let wsproto = "ws"
     if (window.location.protocol == "https:") {
-      wsproto = "wss:"
+      wsproto = "wss"
     }
     this.ws = new WebSocket(`${wsproto}://${window.location.host}/`);
     this.ws.onopen = (e: Event) => {

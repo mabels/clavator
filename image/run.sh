@@ -2,7 +2,7 @@
 
 echo $DOCKER_HOST
 VERSION=$(git rev-parse --verify --short HEAD)
-auth=$(ruby -e 'require "json"; puts JSON.parse(IO.read("#{ENV["HOME"]}/.docker/config.json"))["auths"]["https://index.docker.io/v1/"]["auth"]')
+auth=$(ruby -e 'require "json"; puts JSON.parse(IO.read("#{ENV["HOME"]}/.docker/config.json"))["auths"]["registry.clavator.com:5000"]["auth"]')
 docker build -t build-clavator .
 docker run -ti --rm --privileged multiarch/qemu-user-static:register --reset
 # loopback devices are not part of the cgroup

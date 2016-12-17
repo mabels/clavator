@@ -2,7 +2,7 @@ cat <<UPDATER > /arch/updater.sh
 /bin/sh /create-mmcblk0.sh
 pacman-key --init
 pacman-key --populate archlinux
-echo "y" | \
+echo "n" | \
   pacman -Syyu --noconfirm base openssh openssl git docker pcsclite
 systemctl enable sshd.service
 systemctl start sshd.service

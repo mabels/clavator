@@ -58,7 +58,7 @@ mkdir -p $HOME/.docker
 cat > $HOME/.docker/config.json <<RUNNER
 {
   "auths": {
-    "https://index.docker.io/v1/": {
+    "registry.clavator.com:5000": {
       "auth": "$DOCKER_AUTH"
     }
   }

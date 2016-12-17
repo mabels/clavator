@@ -2,7 +2,7 @@
 
 if [ -z "$1" ]
 then
-  DOCKER_AUTH=$(ruby -e 'require "json"; puts JSON.parse(IO.read("#{ENV["HOME"]}/.docker/config.json"))["auths"]["https://index.docker.io/v1/"]["auth"]')
+  DOCKER_AUTH=$(ruby -e 'require "json"; puts JSON.parse(IO.read("#{ENV["HOME"]}/.docker/config.json"))["auths"]["registry.clavator.com:5000"]["auth"]')
 fi
 
 
@@ -11,7 +11,7 @@ docker run -ti --rm --privileged multiarch/qemu-user-static:register --reset
 
 docker build -f Dockerfile-create-os-images -t clavator-create-os-images .
 
-docker build -f Dockerfile-create-clavator -t clavator-create-clavator .
+docker build -f Dockerfile-create-clavator --no-cache -t clavator-create-clavator .
 
 
 docker ps -qa -f "name=create-clavator-node" | xargs docker rm -f
@@ -24,7 +24,7 @@ docker run -d --privileged \
      /bin/sh /builder/create-clavator-node.sh
 
 
-DOCKERVERSION=20161212
+DOCKERVERSION=20161215
 for i in x86_64 arm aarch64 
 do
   echo Creating GnuPg Executables for $i 

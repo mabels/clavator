@@ -4,7 +4,7 @@ mkdir -p $HOME/.docker
 cat > $HOME/.docker/config.json <<RUNNER
 {
   "auths": {
-    "https://index.docker.io/v1/": {
+    "registry.clavator.com:5000": {
       "auth": "$DOCKER_AUTH"
     }
   }
@@ -44,10 +44,10 @@ RUNNER
 echo "build"
 docker build -t clavator-docker-archlinux-aarch64-$VERSION /arch
 echo "tag"
-docker tag clavator-docker-archlinux-aarch64-$VERSION fastandfearless/clavator:clavator-docker-archlinux-aarch64-$VERSION
+docker tag clavator-docker-archlinux-aarch64-$VERSION registry.clavator.com:5000/clavator-docker-archlinux-aarch64-$VERSION
 echo "push"
 [  -n "$DOCKER_AUTH" ] && \
-  docker push fastandfearless/clavator:clavator-docker-archlinux-aarch64-$VERSION
+  docker push registry.clavator.com:5000/clavator-docker-archlinux-aarch64-$VERSION
 
 
 

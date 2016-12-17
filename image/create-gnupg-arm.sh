@@ -47,9 +47,9 @@ RUNNER
 echo "build"
 docker build -t clavator-docker-archlinux-arm-$VERSION /arch
 echo "tag"
-docker tag clavator-docker-archlinux-arm-$VERSION fastandfearless/clavator:clavator-docker-archlinux-arm-$VERSION
+docker tag clavator-docker-archlinux-arm-$VERSION registry.clavator.com:5000/clavator-docker-archlinux-arm-$VERSION
 echo "push"
 [  -n "$DOCKER_AUTH" ] && \
-  docker push fastandfearless/clavator:clavator-docker-archlinux-arm-$VERSION
+  docker push registry.clavator.com:5000/clavator-docker-archlinux-arm-$VERSION
 
 

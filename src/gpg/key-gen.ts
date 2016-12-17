@@ -58,6 +58,16 @@ export class MultiOption<T> {
 
 }
 
+export class ValidatableString {
+  match : RegExp;
+  value: string = "";
+  errText: string;
+  public constructor(match: RegExp, e: string) {
+    this.match = match;
+    this.errText = e;
+  }
+}
+
 export class PwPair {
   match : RegExp;
   password: string = "";
@@ -309,9 +319,9 @@ export class KeyGen {
        this.uids.valid() &&
        this.subKeys.valid() &&
        this.expireDate.valid();
-    if (!ret) {
-      console.log("keygen:", this.errText());
-    }
+    // if (!ret) {
+    //   console.log("keygen:", this.errText());
+    // }
     return ret;
   }
 

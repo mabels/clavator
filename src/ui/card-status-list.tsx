@@ -8,6 +8,9 @@ import * as Message from '../message';
 
 import * as WsChannel from './ws-channel';
 
+import { ResetYubikey } from './reset-yubikey';
+import { ChangePin } from './change_pin';
+
 interface CardStatusState {
   cardStatusList: CardStatus.Gpg2CardStatus[];
 }
@@ -115,6 +118,46 @@ export class CardStatusList
     )
   }
 
+  public changePin(cs: CardStatus.Gpg2CardStatus, admin_or_user : string) {
+      return ((e: any) => {
+
+      }).bind(this)
+  }
+
+  public resetYubikey(cs: CardStatus.Gpg2CardStatus) {
+      return ((e: any) => {
+
+      }).bind(this)
+  }
+
+
+  public render_actions(cs: CardStatus.Gpg2CardStatus) : JSX.Element {
+    return (<td className="action">
+      <a onClick={this.changePin(cs, "user")} name="change-user-pin">
+        <i className="fa fa-user"></i>
+      </a>
+      <a onClick={this.changePin(cs, "admin")} name="change-admin-pin">
+       <i className="fa fa-superpowers"></i>
+      </a>
+      <a onClick={this.resetYubikey(cs)} name="reset-yubikey">
+        <i className="fa fa-trash"></i>
+      </a>
+    </td>);
+  }
+
+  public render_action() : JSX.Element {
+      if (this.state.changeAdminPin) {
+          return (<ChangePin pin={this.state.changeAdminPin}/>)
+      }
+      if (this.state.changeUserPin) {
+          return (<ChangePin pin={this.state.changeUserPin}/>)
+      }
+      if (this.state.resetYubikey) {
+          return (<ResetYubikey />)
+      }
+  }
+
+
 
   public render(): JSX.Element {
         // SecretKeys {this.state.cardStatusList.length || ""}
@@ -129,7 +172,6 @@ export class CardStatusList
       //  {this.render_verify_password("UserPin", "cq-userpin", this.state.keyGen.userPin)}
       //  </div>
       //   </tr>
-
     return (
       <div className="CardStatusList">
 
@@ -137,11 +179,15 @@ export class CardStatusList
           return (<table key={cs.serial}>
             <tbody>
             <tr key={cs.serial}>
+            {this.render_actions(cs)}
             <td>{cs.serial}</td>
             <td>{cs.name}</td>
             <td>{cs.login}</td>
             <td>{cs.lang}</td>
             <td>{cs.sex}</td>
+            </tr>
+            {this.render_action()}
+            <tr>
             <td>{cs.url}</td>
             <td>{cs.version}</td>
             <td>{cs.vendor}</td>

@@ -3,14 +3,14 @@ mkdir -p $HOME/.docker
 cat > $HOME/.docker/config.json <<RUNNER
 {
   "auths": {
-    "https://index.docker.io/v1/": {
+    "registry.clavator.com:5000": {
       "auth": "$DOCKER_AUTH"
     }
   }
 }
 RUNNER
 
-rm -rf /clavator/build
+rm -rf /clavator/build.tmp
 git clone file:///clavator.git /clavator/build.tmp
 VERSION=$(cd /clavator/build.tmp && git rev-parse --verify --short HEAD)
 
@@ -22,6 +22,11 @@ fi
 rm -rf /clavator/build
 mv /clavator/build.tmp /clavator/build
 echo $VERSION > /clavator/build/.VERSION
+
+mv /etc/pacman.d/mirrorlist.clavator /etc/pacman.d/mirrorlist
+mv /etc/hosts.clavator /etc/hosts
+cat /etc/hosts /etc/pacman.d/mirrorlist
+pacman -Syyu --noconfirm npm nodejs python2
 
 cd /clavator/build && \
   npm install &&
@@ -36,10 +41,9 @@ RUNNER
 echo "build"
 docker build -t clavator-node-$VERSION /clavator/build
 echo "tag"
-docker tag clavator-node-$VERSION fastandfearless/clavator:clavator-node-$VERSION
+docker tag clavator-node-$VERSION registry.clavator.com:5000/clavator-node-$VERSION
 echo "push"
-[  -n "$DOCKER_AUTH" ] && \
-  docker push fastandfearless/clavator:clavator-node-$VERSION
+docker push registry.clavator.com:5000/clavator-node-$VERSION
 
 echo Complete Clavator Node $VERSION
 touch /clavator/build.$VERSION

@@ -4,7 +4,7 @@ mkdir -p $HOME/.docker
 cat > $HOME/.docker/config.json <<RUNNER
 {
   "auths": {
-    "https://index.docker.io/v1/": {
+    "registry.clavator.com:5000": {
       "auth": "$DOCKER_AUTH"
     }
   }
@@ -18,8 +18,15 @@ arch=armhf
 mkdir /arch
 [ -f /clavator/ArchLinuxARM-armv7-latest.tar.gz ] ||
   wget --directory-prefix=/clavator \
-  wget http://os.archlinuxarm.org/os/ArchLinuxARM-armv7-latest.tar.gz
+   http://os.archlinuxarm.org/os/ArchLinuxARM-armv7-latest.tar.gz
 bsdtar -xpf /clavator/ArchLinuxARM-armv7-latest.tar.gz -C /arch
+
+mkdir -p /arch/etc/pacman.d/
+mv /arch/etc/pacman.d/mirrorlist /arch/etc/pacman.d/mirrorlist.orig
+echo 'Server = https://archlinux.clavator.com/archlinuxarm/$arch/$repo' > /arch/etc/pacman.d/mirrorlist
+cp /arch/etc/hosts /arch/etc/hosts.orig
+#echo "172.17.0.1 archlinux.clavator.com" >> /arch/etc/hosts
+cat /arch/etc/resolv.conf /arch/etc/hosts /arch/etc/pacman.d/mirrorlist
 
 qarch=arm
 cp /usr/bin/qemu-$qarch-static /arch/usr/bin
@@ -36,6 +43,12 @@ echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x2
 
 arch-chroot /arch /usr/bin/qemu-$qarch-static /bin/sh /updater.sh
 
+mv /arch/etc/pacman.d/mirrorlist /arch/etc/pacman.d/mirrorlist.clavator
+mv /arch/etc/pacman.d/mirrorlist.orig /arch/etc/pacman.d/mirrorlist
+mv /arch/etc/hosts /arch/etc/hosts.clavator
+mv /arch/etc/hosts.orig /arch/etc/hosts
+
+
 cat > /arch/Dockerfile <<RUNNER
 FROM scratch
 
@@ -47,9 +60,8 @@ RUNNER
 echo "build"
 docker build -t clavator-docker-archlinux-arm-$VERSION /arch
 echo "tag"
-docker tag clavator-docker-archlinux-arm-$VERSION fastandfearless/clavator:clavator-docker-archlinux-arm-$VERSION
+docker tag clavator-docker-archlinux-arm-$VERSION registry.clavator.com:5000/clavator-docker-archlinux-arm-$VERSION
 echo "push"
-[  -n "$DOCKER_AUTH" ] && \
-  docker push fastandfearless/clavator:clavator-docker-archlinux-arm-$VERSION
+docker push registry.clavator.com:5000/clavator-docker-archlinux-arm-$VERSION
 
 

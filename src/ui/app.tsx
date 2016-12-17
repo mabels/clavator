@@ -3,8 +3,6 @@ import './normalize.css';
 import './skeleton.css';
 import './app.less';
 import 'font-awesome/less/font-awesome.less';
-
-import * as classnames from 'classnames';
 // import "react-font-awesome";
 
 // import "./clavator.png";
@@ -13,7 +11,7 @@ const Clavator = require('./clavator.png');
 import { KeyChainList } from './key-chain-list';
 import { CardStatusList } from './card-status-list';
 import { CreateKey } from './create-key';
-import { ResetYubikey } from './reset-yubikey';
+// import { ResetYubikey } from './reset-yubikey';
 import { Progressor } from './progressor';
 import { ChannelStatus } from './channel-status';
 
@@ -70,13 +68,13 @@ export class App extends React.Component<{}, AppState> {
   // }
 
   public render_xxx() : JSX.Element {
+    // <ResetYubikey channel={this.state.channel} />
     return (
       <div className="app container">
           <div className="left-top">
             <img src={Clavator} width="128px" title="Clavator"/>
           </div>
           <div className="left-bottom">
-            <ResetYubikey channel={this.state.channel} />
             <ChannelStatus channel={this.state.channel} />
           </div>
           <div className="middle-bottom">
@@ -131,7 +129,6 @@ export class App extends React.Component<{}, AppState> {
       	<li className="nav-item"><a href="#KeyChainList">KeyChainList</a></li>
       	<li className="nav-item"><a href="#CardStatusList">CardStatusList</a></li>
       	<li className="nav-item"><a href="#Progressor">Logs</a></li>
-      	<li className="nav-item"><a href="#ResetYubikey">ResetYubikey</a></li>
       </ul>
 
       <input type="checkbox" id="nav-trigger" className="nav-trigger" />
@@ -151,9 +148,6 @@ export class App extends React.Component<{}, AppState> {
         <a name="Progressor"></a>
         <h3>Logs</h3>
         <Progressor channel={this.state.channel} msg="Clavator"/>
-        <a name="ResetYubikey"></a>
-        <h3>ResetYubikey</h3>
-        <ResetYubikey channel={this.state.channel} />
       </div>
     </div>
     );

@@ -3,7 +3,7 @@
 VERSION=$(date "+%Y%m%d")
 if [ -z "$1" ]
 then
-  DOCKER_AUTH=$(ruby -e 'require "json"; puts JSON.parse(IO.read("#{ENV["HOME"]}/.docker/config.json"))["auths"]["https://index.docker.io/v1/"]["auth"]')
+  DOCKER_AUTH=$(ruby -e 'require "json"; puts JSON.parse(IO.read("#{ENV["HOME"]}/.docker/config.json"))["auths"]["registry.clavator.com:5000"]["auth"]')
 fi
 
 echo Creating OS Images for $VERSION 
