@@ -23,9 +23,9 @@ echo DOCKERVERSION=$DOCKERVERSION
 
 mkdir /arch
 mkdir /arch/gnupg
-node /builder/docker-extract.js clavator-gnupg-$ARCH-$GNUPGVERSION /arch/gnupg
+node /builder/docker-extract.js registry.clavator.com:5000/clavator-gnupg-$ARCH-$GNUPGVERSION /arch/gnupg
 mkdir /arch/clavator
-node /builder/docker-extract.js clavator-node-$NODEVERSION /arch/clavator
+node /builder/docker-extract.js registry.clavator.com:5000/clavator-node-$NODEVERSION /arch/clavator
 
 rm -rf /arch/etc/letsencrypt/live/clavator.com
 mkdir -p /arch/etc/letsencrypt/live/clavator.com
@@ -33,21 +33,22 @@ wget --directory-prefix=/arch/etc/letsencrypt/live/clavator.com https://clavator
 wget --directory-prefix=/arch/etc/letsencrypt/live/clavator.com https://clavator.com/fullchain.pem
 
 
+cp /builder/mirrorlist.$ARCH /arch/mirrorlist
+
 cat > /arch/Dockerfile <<RUNNER
-FROM clavator-docker-archlinux-$ARCH-$DOCKERVERSION
+FROM registry.clavator.com:5000/clavator-docker-archlinux-$ARCH-$DOCKERVERSION
 
 COPY clavator/ /clavator
 COPY etc/ /etc
 COPY gnupg/gnupg-clavator.tar.xz /
+COPY mirrorlist /etc/pacman.d/
+RUN  pacman -Syu --noconfirm
 RUN  pacman -U --noconfirm --force /gnupg-clavator.tar.xz
-#COPY gnupg/ /
-#RUN /usr/bin/make -C /gnupg install
-#RUN /bin/rm -rf /gnupg
 
 CMD ["/bin/sh", "-c", "cd /clavator && npm start"]
 RUNNER
 
-#ls -la /arch/gnupg /arch/clavator
+ls -la /arch/gnupg /arch/clavator
 
 echo "build"
 docker build -t clavator-docker-$ARCH-$NODEVERSION-$GNUPGVERSION /arch

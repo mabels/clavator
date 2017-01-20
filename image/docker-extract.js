@@ -6,6 +6,7 @@ const extdir = fs.mkdtempSync('./');
 const docker = process.argv[process.argv.length-2]
 const dest = process.argv[process.argv.length-1]
 
+child_process.execSync(`docker pull ${docker}`);
 child_process.execSync(`docker save -o ${extdir}/docker.tar ${docker}`);
 child_process.execSync(`tar xfC ${extdir}/docker.tar ${extdir}`);
 const manifest = JSON.parse(fs.readFileSync(`${extdir}/manifest.json`));

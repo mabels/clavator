@@ -43,26 +43,56 @@ tar xzf /clavator/archlinux-bootstrap-2016.12.01-x86_64.tar.gz -C /arch
 mv /arch/root.x86_64/* /arch/
 
 mkdir -p /arch/etc/pacman.d/
-cp /etc/pacman.d/mirrorlist /arch/etc/pacman.d/
+cp /builder/mirrorlist.x86_64 /arch/etc/pacman.d/mirrorlist
 mv /arch/etc/hosts /arch/etc/hosts.orig
 cp /etc/hosts /arch/etc/hosts
 
-
-
-/bin/sh /builder/run-construqt.sh "enp0s8"
+/bin/sh /builder/run-construqt.sh "enp0s3"
 
 #echo 'MODULES="piix ide_disk ahci libahci"' >> /arch/etc/mkinitcpio.conf
 #echo MODULES="ac acpi_cpufreq aesni_intel ahci ata_generic ata_piix atkbd battery button crc32_pclmul crc32c_intel crct10dif_pclmul e1000 evdev ext4 fjes floppy ghash_clmulni_intel i2c_piix4 i8042 input_leds intel_agp intel_cstate intel_powerclamp intel_rapl intel_rapl_perf mac_hid mousedev ohci_pci parport_pc pata_acpi pcc_cpufreq pcspkr psmouse sd_mod serio_raw sr_mod tpm_tis usbcore video"  >> /arch/etc/mkinitcpio.conf
+
+
 
 /bin/sh /builder/create-os-image-updater.sh
 cat <<MMC > /arch/create-mmcblk0.sh
 MMC
 
 cat <<GRUB > /arch/grub.sh
-pacman -Sy --noconfirm grub
+cat >> /etc/mkinitcpio.conf <<EOF
+MODULES+="ahci "
+MODULES+="ehci_pci "
+MODULES+="usb_storage "
+MODULES+="virtio_blk "
+MODULES+="virtio_pci "
+MODULES+="atkbd "
+MODULES+="hid_generic "
+MODULES+="ohci_pci "
+MODULES+="usbhid "
+MODULES+="hid_logitech_dj uhci_hcd usbhid "
+
+MODULES+="sata_dwc_460ex sata_inic162x sata_mv sata_nv "
+MODULES+="sata_promise sata_qstor sata_sil sata_sil24 "
+MODULES+="sata_sis sata_svw sata_sx4 sata_uli sata_via "
+MODULES+="sata_vsc "
+MODULES+="pata_acpi pata_ali pata_amd pata_artop pata_atiixp "
+MODULES+="pata_atp867x pata_cmd640 pata_cmd64x pata_cypress "
+MODULES+="pata_efar pata_hpt366 pata_hpt37x pata_hpt3x2n "
+MODULES+="pata_hpt3x3 pata_it8213 pata_it821x pata_jmicron "
+MODULES+="pata_legacy pata_marvell pata_mpiix pata_netcell "
+MODULES+="pata_ninja32 pata_ns87410 pata_ns87415 pata_oldpiix "
+MODULES+="pata_opti pata_optidma pata_pcmcia pata_pdc2027x "
+MODULES+="pata_pdc202xx_old pata_piccolo pata_radisys pata_rdc "
+MODULES+="pata_rz1000 pata_sch pata_serverworks pata_sil680 "
+MODULES+="pata_sis pata_sl82c105 pata_triflex pata_via "
+
+BINARIES="fsck fsck.ext2 fsck.ext3 fsck.ext4  e2fsck"
+EOF
+pacman -Sy --noconfirm grub linux
 grub-mkconfig -o /tmp/doof.cfg
 sed "s/'.*UUID=.*img.p1'/clavator/g" /tmp/doof.cfg | \
 sed "s/.var.lib.docker.aufs.*$VERSION.img.p1/$ROOTID/" > /boot/grub/grub.cfg
+lsinitcpio /boot/initramfs-linux.img
 GRUB
 
 
@@ -88,13 +118,13 @@ losetup -d $part1
 rm -f $image_name.p1
 
 mkdir -p /result/img
-VBoxManage convertdd $image_name /result/img/virtual.vmdk
-xz -z -9 -T 2 /result/img/virtual.vmdk
+VBoxManage convertdd $image_name /result/img/virtual.vdi
+xz -z -9 -T 2 /result/img/virtual.vdi
 
 cat > /result/Dockerfile <<RUNNER
 FROM busybox
 
-COPY /img/virtual.vmdk.xz /
+COPY /img/virtual.vdi.xz /
 
 CMD ["/bin/sh"]
 RUNNER

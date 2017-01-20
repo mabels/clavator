@@ -71,7 +71,7 @@ cat > /clavator/gnupg-$arch/Dockerfile <<RUNNER
 FROM scratch
 
 COPY gnupg-clavator-*.pkg.tar.xz /
-COPY gnupg-clavator-*.pkg.tar.xz /gnupg-clavator.tar.xz
+COPY gnupg-clavator-*.pkg.tar.xz /gnupg-clavator.pkg.tar.xz
 
 CMD ["/bin/sh"]
 RUNNER

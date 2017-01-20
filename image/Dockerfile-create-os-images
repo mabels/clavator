@@ -2,7 +2,7 @@ FROM base/archlinux
 
 #RUN echo "172.17.0.1 archlinux.clavator.com" >> /etc/hosts
 RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf
-COPY mirrorlist /etc/pacman.d/
+COPY mirrorlist.x86_64 /etc/pacman.d/mirrorlist
 RUN pacman-key --init
 RUN pacman-key --populate archlinux
 RUN pacman --noconfirm -Sy archlinux-keyring 
@@ -15,7 +15,7 @@ RUN pacman-db-upgrade
 #RUN pacman --noconfirm -Syyu openssh openssl git npm gcc autoconf make wget base-devel docker arch-install-scripts dosfstools nodejs git npm gcc autoconf make libpng automake python2 pcsclite imagemagick mesa-libgl librsvg fig2dev ghostscript texinfo ruby 
 
 
-RUN pacman --noconfirm -Syyu openssh openssl git make wget base-devel docker arch-install-scripts dosfstools ruby nodejs bash bzip2 coreutils diffutils e2fsprogs file filesystem findutils gawk gcc-libs gettext glibc grep gzip inetutils iproute2 iputils less libutil-linux licenses logrotate lvm2 netctl pacman perl procps-ng psmisc sed shadow sysfsutils tar texinfo util-linux vi which
+RUN pacman --noconfirm -Syyu openssh openssl git make wget base-devel docker arch-install-scripts dosfstools ruby nodejs bash bzip2 coreutils diffutils e2fsprogs file filesystem findutils gawk gcc-libs gettext glibc grep gzip inetutils iproute2 iputils less libutil-linux licenses logrotate lvm2 netctl pacman perl procps-ng psmisc sed shadow sysfsutils tar texinfo util-linux vi which qemu rsync
 RUN pacman-db-upgrade
 #RUN pacman --noconfirm -Sy git npm gcc autoconf make wget 
 #RUN pacman --noconfirm -Syu
@@ -27,7 +27,7 @@ RUN cat /etc/resolv.conf
 RUN git clone https://aur.archlinux.org/qemu-user-static.git 
 RUN chown -R nobody:nobody qemu-user-static
 RUN cd qemu-user-static && sudo -u nobody makepkg -s
-RUN pacman --noconfirm -U qemu-user-static/qemu-user-static-2.7-3-x86_64.pkg.tar.xz 
+RUN pacman --noconfirm -U qemu-user-static/qemu-user-static-2.8-1-x86_64.pkg.tar.xz 
 RUN pacman -Syu --noconfirm grub virtualbox 
 
 
@@ -35,6 +35,7 @@ RUN mkdir -p /builder
 COPY *.sh /builder/
 COPY *.rb /builder/
 COPY *.js /builder/
+COPY mirrorlist.* /builder/
 
 CMD ["/bin/bash"]
 
