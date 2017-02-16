@@ -2,16 +2,8 @@
 
 VERSION=$1
 mkdir -p $HOME/.docker
-cat > $HOME/.docker/config.json <<RUNNER
-{
-  "auths": {
-    "registry.clavator.com:5000": {
-      "auth": "$DOCKER_AUTH"
-    }
-  }
-}
-RUNNER
 
+echo $DOCKER_CONFIG_JSON | base64 -d > $HOME/.docker/config.json
 echo VERSION=$VERSION
 #echo DOCKER_AUTH=$DOCKER_AUTH
 arch=x86_64
@@ -21,7 +13,7 @@ ln -s /run/docker.sock.outer /run/docker.sock
 rm -rf /images
 mkdir -p /images
 node /builder/docker-extract.js \
-  registry.clavator.com:5000/clavator-os-image-x86_64-pc-$VERSION \
+  ${DOCKER_REGISTRY}clavator-os-image-x86_64-pc-$VERSION \
   /images
 
 xz -d /images/virtual.vdi.xz
@@ -37,9 +29,9 @@ part1=$(losetup -l | grep $image_name.p1 | awk '{print $1}')
 
 rm -rf /docker
 mkdir -p /docker
-docker pull registry.clavator.com:5000/clavator-docker-x86_64-8955526-8a88284
+docker pull ${DOCKER_REGISTRY}clavator-docker-x86_64-8955526-8a88284
 docker save -o /docker/clavator-docker-x86_64-8955526-8a88284.docker \
-  registry.clavator.com:5000/clavator-docker-x86_64-8955526-8a88284
+  ${DOCKER_REGISTRY}clavator-docker-x86_64-8955526-8a88284
 ls -la /docker
 
 mkdir -p /mnt
@@ -88,10 +80,5 @@ COPY /virtual.vdi.xz /
 CMD ["/bin/sh"]
 RUNNER
 
-echo "build"
-docker build -t clavator-image-x86_64-pc-$VERSION /result
-echo "tag"
-docker tag clavator-image-x86_64-pc-$VERSION registry.clavator.com:5000/clavator-image-x86_64-pc-$VERSION
-echo "push"
-docker push registry.clavator.com:5000/clavator-image-x86_64-pc-$VERSION
+. /builder/docker-push.sh clavator-image-x86_64-pc-$VERSION /result
 

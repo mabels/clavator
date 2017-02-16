@@ -2,19 +2,13 @@
 
 VERSION=$1
 mkdir -p $HOME/.docker
-cat > $HOME/.docker/config.json <<RUNNER
-{
-  "auths": {
-    "registry.clavator.com:5000": {
-      "auth": "$DOCKER_AUTH"
-    }
-  }
-}
-RUNNER
+echo $DOCKER_CONFIG_JSON | base64 -d > $HOME/.docker/config.json
 echo VERSION=$VERSION
 #echo DOCKER_AUTH=$DOCKER_AUTH
 arch=x86_64
 image_name=/$(basename $0 .sh)-$VERSION.img
+
+#/usr/sbin/haveged --run 0
 
 dd if=/dev/zero of=$image_name bs=1 count=1 seek=7516192767
 
@@ -35,11 +29,11 @@ mkdir /arch
 mount $part1 /arch
 
 
-[ -f /clavator/archlinux-bootstrap-2016.12.01-x86_64.tar.gz ] ||
+[ -f /clavator/archlinux-bootstrap-2017.02.01-x86_64.tar.gz ] ||
   wget --directory-prefix=/clavator \
-  https://mirrors.kernel.org/archlinux/iso/2016.12.01/archlinux-bootstrap-2016.12.01-x86_64.tar.gz
+    $ARCHLINUX/iso/2017.02.01/archlinux-bootstrap-2017.02.01-x86_64.tar.gz
 
-tar xzf /clavator/archlinux-bootstrap-2016.12.01-x86_64.tar.gz -C /arch
+tar xzf /clavator/archlinux-bootstrap-2017.02.01-x86_64.tar.gz -C /arch
 mv /arch/root.x86_64/* /arch/
 
 mkdir -p /arch/etc/pacman.d/
@@ -91,7 +85,7 @@ EOF
 pacman -Sy --noconfirm grub linux
 grub-mkconfig -o /tmp/doof.cfg
 sed "s/'.*UUID=.*img.p1'/clavator/g" /tmp/doof.cfg | \
-sed "s/.var.lib.docker.aufs.*$VERSION.img.p1/$ROOTID/" > /boot/grub/grub.cfg
+sed "s/root=.*$VERSION.img.p1/root=$ROOTID/" > /boot/grub/grub.cfg
 lsinitcpio /boot/initramfs-linux.img
 GRUB
 
@@ -129,10 +123,5 @@ COPY /img/virtual.vdi.xz /
 CMD ["/bin/sh"]
 RUNNER
 
-echo "build"
-docker build -t clavator-os-image-x86_64-pc-$VERSION /result
-echo "tag"
-docker tag clavator-os-image-x86_64-pc-$VERSION registry.clavator.com:5000/clavator-os-image-x86_64-pc-$VERSION
-echo "push"
-docker push registry.clavator.com:5000/clavator-os-image-x86_64-pc-$VERSION
+. /builder/docker-push.sh clavator-os-image-x86_64-pc-$VERSION /result
 

@@ -1,23 +1,15 @@
 
 VERSION=$1
 mkdir -p $HOME/.docker
-cat > $HOME/.docker/config.json <<RUNNER
-{
-  "auths": {
-    "registry.clavator.com:5000": {
-      "auth": "$DOCKER_AUTH"
-    }
-  }
-}
-RUNNER
+echo $DOCKER_CONFIG_JSON | base64 -d > $HOME/.docker/config.json
 echo VERSION=$VERSION 
-#echo DOCKER_AUTH=$DOCKER_AUTH
+
 arch=aarch64
 
 mkdir /arch
 [ -f /clavator/ArchLinuxARM-aarch64-latest.tar.gz ] ||
   wget --directory-prefix=/clavator \
-    http://os.archlinuxarm.org/os/ArchLinuxARM-aarch64-latest.tar.gz
+    $ARCHLINUXARM/os/ArchLinuxARM-aarch64-latest.tar.gz
 bsdtar -xpf /clavator/ArchLinuxARM-aarch64-latest.tar.gz -C /arch
 
 
@@ -55,12 +47,5 @@ COPY . /
 CMD ["/bin/sh"]
 RUNNER
 
-echo "build"
-docker build -t clavator-docker-archlinux-aarch64-$VERSION /arch
-echo "tag"
-docker tag clavator-docker-archlinux-aarch64-$VERSION registry.clavator.com:5000/clavator-docker-archlinux-aarch64-$VERSION
-echo "push"
-docker push registry.clavator.com:5000/clavator-docker-archlinux-aarch64-$VERSION
-
-
+. /builder/docker-push.sh clavator-docker-archlinux-aarch64-$VERSION /arch
 

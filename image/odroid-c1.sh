@@ -16,7 +16,7 @@ losetup -o 1048576 $part1 image
 mkfs.ext4 $part1
 mkdir arch
 mount $part1 arch
-wget http://archlinuxarm.org/os/ArchLinuxARM-odroid-c1-latest.tar.gz
+wget $ARCHLINUXARM/os/ArchLinuxARM-odroid-c1-latest.tar.gz
 bsdtar -xpf /ArchLinuxARM-odroid-c1-latest.tar.gz -C arch
 (cd arch/boot/ && ./sd_fusing.sh $hole_disk)
 

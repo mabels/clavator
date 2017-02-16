@@ -1,17 +1,8 @@
 
 VERSION=$1
 mkdir -p $HOME/.docker
-cat > $HOME/.docker/config.json <<RUNNER
-{
-  "auths": {
-    "registry.clavator.com:5000": {
-      "auth": "$DOCKER_AUTH"
-    }
-  }
-}
-RUNNER
+echo $DOCKER_CONFIG_JSON | base64 -d > $HOME/.docker/config.json
 echo VERSION=$VERSION 
-#echo DOCKER_AUTH=$DOCKER_AUTH
 arch=armhf
 image_name=/$(basename $0 .sh)-$VERSION.img
 
@@ -32,7 +23,7 @@ mount $part1 arch
 
 [ -f /clavator/ArchLinuxARM-odroid-c1-latest.tar.gz ] ||
   wget --directory-prefix=/clavator \
-  wget http://archlinuxarm.org/os/ArchLinuxARM-odroid-c1-latest.tar.gz
+    $ARCHLINUXARM/os/ArchLinuxARM-odroid-c1-latest.tar.gz
 bsdtar -xpf /clavator/ArchLinuxARM-odroid-c1-latest.tar.gz -C /arch
 
 mkdir -p /arch/etc/pacman.d/
@@ -88,11 +79,6 @@ RUN ln -s /$image_name.xz /odroid_c1.img.xz
 CMD ["/bin/sh"]
 RUNNER
 
-echo "build"
-docker build -t clavator-os-image-odroid_c1-arm-$VERSION /result
-echo "tag"
-docker tag clavator-os-image-odroid_c1-arm-$VERSION registry.clavator.com:5000/clavator-os-image-odroid_c1-arm-$VERSION
-echo "push"
-docker push registry.clavator.com:5000/clavator-os-image-odroid_c1-arm-$VERSION
+. /builder/docker-push.sh clavator-os-image-odroid_c1-arm-$VERSION /result
 
 

@@ -9,7 +9,7 @@ import * as Message from '../message';
 import * as WsChannel from './ws-channel';
 
 import { ResetYubikey } from './reset-yubikey';
-import { ChangePin } from './change_pin';
+import { ChangePin } from './change-pin';
 
 interface CardStatusState {
   cardStatusList: CardStatus.Gpg2CardStatus[];
@@ -42,7 +42,7 @@ export class CardStatusList
   }
 
   protected componentWillUnmount(): void {
-    this.setState(Object.assign({}, this.state, { secretKeys: [] }));
+    this.setState(Object.assign({}, this.state, { cardStatusList: [] }));
   }
 
   onOpen(e: Event) {}
@@ -146,15 +146,16 @@ export class CardStatusList
   }
 
   public render_action() : JSX.Element {
-      if (this.state.changeAdminPin) {
-          return (<ChangePin pin={this.state.changeAdminPin}/>)
-      }
-      if (this.state.changeUserPin) {
-          return (<ChangePin pin={this.state.changeUserPin}/>)
-      }
-      if (this.state.resetYubikey) {
-          return (<ResetYubikey />)
-      }
+      // if (this.state.changeAdminPin) {
+      //     return (<ChangePin pin={this.state.changeAdminPin}/>)
+      // }
+      // if (this.state.changeUserPin) {
+      //     return (<ChangePin pin={this.state.changeUserPin}/>)
+      // }
+      // if (this.state.resetYubikey) {
+      //     return (<ResetYubikey />)
+      // }
+      return null
   }
 
 

@@ -14,7 +14,7 @@ mkfs.ext4 $part1
 #wget http://archlinuxarm.org/os/ArchLinuxARM-odroid-c2-latest.tar.gz
 mkdir arch
 mount $part1 arch
-wget http://archlinuxarm.org/os/ArchLinuxARM-odroid-c2-latest.tar.gz
+wget $ARCHLINUXARM/os/ArchLinuxARM-odroid-c2-latest.tar.gz
 bsdtar -xpf /ArchLinuxARM-odroid-c2-latest.tar.gz -C arch
 (cd arch/boot/ && ./sd_fusing.sh $hole_disk)
 

@@ -2,25 +2,17 @@
 
 VERSION=$1
 mkdir -p $HOME/.docker
-cat > $HOME/.docker/config.json <<RUNNER
-{
-  "auths": {
-    "registry.clavator.com:5000": {
-      "auth": "$DOCKER_AUTH"
-    }
-  }
-}
-RUNNER
+echo $DOCKER_CONFIG_JSON | base64 -d > $HOME/.docker/config.json
 echo VERSION=$VERSION
 #echo DOCKER_AUTH=$DOCKER_AUTH
 arch=x86_64
 
 mkdir /arch
-[ -f /clavator/archlinux-bootstrap-2016.12.01-x86_64.tar.gz ] ||
+[ -f /clavator/archlinux-bootstrap-2017.02.01-x86_64.tar.gz ] ||
   wget --directory-prefix=/clavator \
-    https://mirrors.kernel.org/archlinux/iso/2016.12.01/archlinux-bootstrap-2016.12.01-x86_64.tar.gz
+    $ARCHLINUX/iso/2017.02.01/archlinux-bootstrap-2017.02.01-x86_64.tar.gz
 
-tar xzf /clavator/archlinux-bootstrap-2016.12.01-x86_64.tar.gz -C /arch
+tar xzf /clavator/archlinux-bootstrap-2017.02.01-x86_64.tar.gz -C /arch
 mv /arch/root.x86_64/* /arch/
 
 mkdir -p /arch/etc/pacman.d/
@@ -47,12 +39,5 @@ COPY . /
 CMD ["/bin/sh"]
 RUNNER
 
-echo "build"
-docker build -t clavator-docker-archlinux-x86_64-$VERSION /arch
-echo "tag"
-docker tag clavator-docker-archlinux-x86_64-$VERSION registry.clavator.com:5000/clavator-docker-archlinux-x86_64-$VERSION
-echo "push"
-docker push registry.clavator.com:5000/clavator-docker-archlinux-x86_64-$VERSION
-
-
+. /builder/docker-push.sh clavator-docker-archlinux-x86_64-$VERSION /arch
 

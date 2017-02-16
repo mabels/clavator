@@ -11,6 +11,7 @@ interface ChangePinState {
 
 interface ChangePinProps extends React.Props<ChangePin> {
   pin: RequestChangePin,
+  label: string,
   completed: () => {}
 }
 
@@ -18,7 +19,9 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
 
   constructor() {
     super();
-    this.state = { };
+    this.state = { 
+      pin: null,
+    };
   }
   // public static contextTypes = {
   //  socket: React.PropTypes.object
@@ -58,15 +61,15 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
   public render(): JSX.Element {
     return (
         <div className="InputPassword">
-          <label>{label}:</label><input type="password"
-            name={key} required={true}
-            className={classnames({"u-full-width": true, good: pp.valid_password()})}
+          <label>{this.props.label}:</label><input type="password"
+            name={this.props.key.toString()} required={true}
+            className={classnames({"u-full-width": true, good: true})}
             onChange={(e:any) => {
-              pp.password = e.target.value;
+              this.props.pin.new_pin = e.target.value;
               this.setState(this.state);
             }}
           />
-        </div>)    );
+        </div>);
   }
 
 }

@@ -3,16 +3,7 @@
 DOCKERVERSION=$1
 arch=$2
 mkdir -p $HOME/.docker
-cat > $HOME/.docker/config.json <<RUNNER
-{
-  "auths": {
-    "registry.clavator.com:5000": {
-      "auth": "$DOCKER_AUTH"
-    }
-  }
-}
-RUNNER
-
+echo $DOCKER_CONFIG_JSON | base64 -d > $HOME/.docker/config.json
 
 rm -rf /clavator/gnupg-$arch.tmp
 git clone file:///gnupg-clavator.git /clavator/gnupg-$arch.tmp
@@ -76,13 +67,8 @@ COPY gnupg-clavator-*.pkg.tar.xz /gnupg-clavator.pkg.tar.xz
 CMD ["/bin/sh"]
 RUNNER
 
-echo "build"
-docker build -t clavator-gnupg-$arch-$VERSION /clavator/gnupg-$arch
-echo "tag"
-docker tag clavator-gnupg-$arch-$VERSION \
-  registry.clavator.com:5000/clavator-gnupg-$arch-$VERSION
-echo "push"
-docker push registry.clavator.com:5000/clavator-gnupg-$arch-$VERSION
+
+. /builder/docker-push.sh clavator-gnupg-$arch-$VERSION /clavator/gnupg-$arch
 
 touch /clavator/gnupg-$arch.$VERSION
 

@@ -68,9 +68,9 @@ export class KeyChainList
       let ra = RespondAscii.fill(JSON.parse(data));
       this.state.respondAscii.set(ra.fingerprint, ra);
       // debugger
-      this.setState(Object.assign({}, this.state, {
-        result: this.state.respondAscii
-      }));
+      // this.setState(Object.assign({}, this.state, {
+      //   result: this.state.respondAscii
+      // }));
     }
   }
   onClose(e:CloseEvent) {

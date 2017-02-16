@@ -2,15 +2,8 @@
 ARCH=$1
 DOCKERVERSION=$2
 mkdir -p $HOME/.docker
-cat > $HOME/.docker/config.json <<RUNNER
-{
-  "auths": {
-    "registry.clavator.com:5000": {
-      "auth": "$DOCKER_AUTH"
-    }
-  }
-}
-RUNNER
+
+echo $DOCKER_CONFIG_JSON | base64 -d > $HOME/.docker/config.json
 echo ARCH=$ARCH 
 
 
@@ -23,9 +16,9 @@ echo DOCKERVERSION=$DOCKERVERSION
 
 mkdir /arch
 mkdir /arch/gnupg
-node /builder/docker-extract.js registry.clavator.com:5000/clavator-gnupg-$ARCH-$GNUPGVERSION /arch/gnupg
+node /builder/docker-extract.js ${DOCKER_REGISTRY}clavator-gnupg-$ARCH-$GNUPGVERSION /arch/gnupg
 mkdir /arch/clavator
-node /builder/docker-extract.js registry.clavator.com:5000/clavator-node-$NODEVERSION /arch/clavator
+node /builder/docker-extract.js ${DOCKER_REGISTRY}clavator-node-$NODEVERSION /arch/clavator
 
 rm -rf /arch/etc/letsencrypt/live/clavator.com
 mkdir -p /arch/etc/letsencrypt/live/clavator.com
@@ -36,7 +29,7 @@ wget --directory-prefix=/arch/etc/letsencrypt/live/clavator.com https://clavator
 cp /builder/mirrorlist.$ARCH /arch/mirrorlist
 
 cat > /arch/Dockerfile <<RUNNER
-FROM registry.clavator.com:5000/clavator-docker-archlinux-$ARCH-$DOCKERVERSION
+FROM ${DOCKER_REGISTRY}clavator-docker-archlinux-$ARCH-$DOCKERVERSION
 
 COPY clavator/ /clavator
 COPY etc/ /etc
@@ -50,9 +43,5 @@ RUNNER
 
 ls -la /arch/gnupg /arch/clavator
 
-echo "build"
-docker build -t clavator-docker-$ARCH-$NODEVERSION-$GNUPGVERSION /arch
-echo "tag"
-docker tag clavator-docker-$ARCH-$NODEVERSION-$GNUPGVERSION registry.clavator.com:5000/clavator-docker-$ARCH-$NODEVERSION-$GNUPGVERSION
-echo "push"
-docker push registry.clavator.com:5000/clavator-docker-$ARCH-$NODEVERSION-$GNUPGVERSION
+. /builder/docker-push.sh clavator-docker-$ARCH-$NODEVERSION-$GNUPGVERSION /arch
+

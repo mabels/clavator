@@ -1,14 +1,6 @@
 
 mkdir -p $HOME/.docker
-cat > $HOME/.docker/config.json <<RUNNER
-{
-  "auths": {
-    "registry.clavator.com:5000": {
-      "auth": "$DOCKER_AUTH"
-    }
-  }
-}
-RUNNER
+echo $DOCKER_CONFIG_JSON | base64 -d > $HOME/.docker/config.json
 
 rm -rf /clavator/build.tmp
 git clone file:///clavator.git /clavator/build.tmp
@@ -38,12 +30,8 @@ FROM scratch
 COPY . /
 RUNNER
 
-echo "build"
-docker build -t clavator-node-$VERSION /clavator/build
-echo "tag"
-docker tag clavator-node-$VERSION registry.clavator.com:5000/clavator-node-$VERSION
-echo "push"
-docker push registry.clavator.com:5000/clavator-node-$VERSION
+
+. /builder/docker-push.sh clavator-node-$VERSION /clavator/build
 
 echo Complete Clavator Node $VERSION
 touch /clavator/build.$VERSION

@@ -1,8 +1,12 @@
 #/bin/bash
 
-if [ -z "$1" ]
+DOCKER_CONFIG_JSON=$(ruby docker_config_json.rb $1)
+if [ -z $DOCKER_CONFIG_JSON ]
 then
-  DOCKER_AUTH=$(ruby -e 'require "json"; puts JSON.parse(IO.read("#{ENV["HOME"]}/.docker/config.json"))["auths"]["registry.clavator.com:5000"]["auth"]')
+  echo "Need a registry name"
+  echo "- index.docker.io/v1/fastandfearless/clavator:<imgname>"
+  echo "- registry.clavator.com:5000/<imgname>"
+  exit 1
 fi
 
 
@@ -18,7 +22,7 @@ docker ps -qa -f "name=create-clavator-node" | xargs docker rm -f
 docker run -d --privileged \
      -v /var/run/docker.sock:/var/run/docker.sock \
      -v /var/cache/docker/clavator:/clavator \
-     --env "DOCKER_AUTH=$DOCKER_AUTH" \
+     --env "DOCKER_CONFIG_JSON=$DOCKER_CONFIG_JSON" \
      --name create-clavator-node \
      -t clavator-create-clavator \
      /bin/sh /builder/create-clavator-node.sh
@@ -33,7 +37,7 @@ do
   docker run -d --privileged \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /var/cache/docker/clavator:/clavator \
-    --env "DOCKER_AUTH=$DOCKER_AUTH" \
+    --env "DOCKER_CONFIG_JSON=$DOCKER_CONFIG_JSON" \
     --name $i-create-gnupg \
     -t clavator-create-clavator \
     /bin/sh /builder/create-gnupg.sh $DOCKERVERSION $i

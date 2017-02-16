@@ -55,9 +55,7 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
 
 
   public render_form() : JSX.Element {
-    return (
-    <form className="ChangePin">
-      <div className={classnames({row: true, good: this.state.keyGen.adminPin.valid()})}>
+         /*<div className={classnames({row: true, good: this.state.keyGen.adminPin.valid()})}>
      {this.render_password("AdminPin", "cq-adminpin", this.state.keyGen.adminPin)}
      {this.render_verify_password("AdminPin", "cq-adminpin", this.state.keyGen.adminPin)}
      </div>
@@ -66,8 +64,11 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
      {this.render_verify_password("UserPin", "cq-userpin", this.state.keyGen.userPin)}
      </div>
     <button type="button"
-      onClick={this.state.completed()}>ResetYubikey</button>
-    </form>
+      onClick={this.state.completed()}>ResetYubikey</button>*/
+
+    return (
+    <form className="ChangePin">
+     </form>
     );
       // min={KeyGen.format_date(Date.now())}
       // value={KeyGen.format_date(this.state.keyGen.expireDate)} />

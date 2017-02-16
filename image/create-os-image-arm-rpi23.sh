@@ -1,19 +1,13 @@
 
 VERSION=$1
 mkdir -p $HOME/.docker
-cat > $HOME/.docker/config.json <<RUNNER
-{
-  "auths": {
-    "registry.clavator.com:5000": {
-      "auth": "$DOCKER_AUTH"
-    }
-  }
-}
-RUNNER
+echo $DOCKER_CONFIG_JSON | base64 -d > $HOME/.docker/config.json
 echo VERSION=$VERSION 
 #echo DOCKER_AUTH=$DOCKER_AUTH
 arch=armhf
 image_name=/$(basename $0 .sh)-$VERSION.img
+
+#/usr/sbin/haveged --run 0
 
 dd if=/dev/zero of=$image_name bs=1 count=1 seek=7516192767
 
@@ -42,7 +36,7 @@ mount $part1 arch/boot
 
 [ -f /clavator/ArchLinuxARM-rpi-2-latest.tar.gz ] ||
   wget --directory-prefix=/clavator \
-  wget http://archlinuxarm.org/os/ArchLinuxARM-rpi-2-latest.tar.gz
+    $ARCHLINUXARM/os/ArchLinuxARM-rpi-2-latest.tar.gz
 bsdtar -xpf /clavator/ArchLinuxARM-rpi-2-latest.tar.gz -C /arch
 
 mkdir -p /arch/etc/pacman.d/
@@ -98,11 +92,6 @@ RUN ln -s /$image_name.xz /rpi23.img.xz
 CMD ["/bin/sh"]
 RUNNER
 
-echo "build"
-docker build -t clavator-os-image-rpi23-arm-$VERSION /result
-echo "tag"
-docker tag clavator-os-image-rpi23-arm-$VERSION registry.clavator.com:5000/clavator-os-image-rpi23-arm-$VERSION
-echo "push"
-docker push registry.clavator.com:5000/clavator-os-image-rpi23-arm-$VERSION
+. /builder/docker-push.sh clavator-os-image-rpi23-arm-$VERSION /result
 
 

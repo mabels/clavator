@@ -1,29 +1,41 @@
 #/bin/bash
 
 VERSION=$(date "+%Y%m%d")
-if [ -z $1 ]
+DOCKER_REGISTRY=$1
+DOCKER_CONFIG_JSON=$(ruby docker_config_json.rb $DOCKER_REGISTRY)
+if [ -z $DOCKER_CONFIG_JSON ]
 then
-  DOCKER_AUTH=$(ruby -e 'require "json"; puts JSON.parse(IO.read("#{ENV["HOME"]}/.docker/config.json"))["auths"]["registry.clavator.com:5000"]["auth"]')
+  echo "Need a registry name"
+  echo "- index.docker.io/v1/fastandfearless/clavator:<imgname>"
+  echo "- registry.clavator.com:5000/<imgname>"
+  exit 1
 fi
+
+ARCHLINUXARM=https://archlinux.clavator.com/archlinuxarm/
+ARCHLINUX=https://archlinux.clavator.com/archlinux/
 
 echo Creating OS Images for $VERSION 
 
 docker run -ti --rm --privileged multiarch/qemu-user-static:register --reset
 docker run -ti --privileged ubuntu /sbin/losetup -D
+docker run -d --name haveged --privileged storytel/haveged
 
 #ruby construqt.rb
 
 docker build -f Dockerfile-create-os-images -t clavator-create-os-images .
 
-for i in x86_64-pc # aarch64-odroid-c2
-#for i in aarch64-odroid-c2 arm-odroid-c1 x86_64-pc arm-rpi23 arm-odroid-xu3 
+#for i in x86_64-pc # aarch64-odroid-c2
+for i in aarch64-odroid-c2 arm-odroid-c1 x86_64-pc arm-rpi23 arm-odroid-xu3 
 do
   echo "Run: /builder/create-os-image-$i $VERSION"
   docker ps -qa -f "name=$i-create-os-image" | xargs docker rm -f
   docker run -d --privileged \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /var/cache/docker/clavator:/clavator \
-    --env "DOCKER_AUTH=$DOCKER_AUTH" \
+    --env "DOCKER_CONFIG_JSON=$DOCKER_CONFIG_JSON" \
+    --env "DOCKER_REGISTRY=$DOCKER_REGISTRY" \
+    --env "ARCHLINUXARM=$ARCHLINUXARM" \
+    --env "ARCHLINUX=$ARCHLINUX" \
     --name $i-create-os-image \
     -t clavator-create-os-images \
     /bin/sh /builder/create-os-image-$i.sh $VERSION

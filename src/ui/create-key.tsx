@@ -84,7 +84,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     }
   }
   onClose(e:CloseEvent) {
-    this.setState(Object.assign({}, this.state, { cardStatusList: [] }));
+    // this.setState(Object.assign({}, this.state, { cardStatusList: [] }));
   }
 
 
@@ -163,11 +163,11 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
 
   public create_key() {
     console.log("create_key", this);
-    this.state.create_status = "requested";
+    // this.state.create_status = "requested";
     this.setState(this.state);
     // debugger
     this.props.channel.send(Message.prepare("CreateKeySet", this.state.keyGen), (error: any) => {
-      this.state.create_status = "err("+error+")";
+      // this.state.create_status = "err("+error+")";
       this.setState(this.state);
     });
   }
