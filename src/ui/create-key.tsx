@@ -295,10 +295,10 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
       }
     })}
 
-        <div className={classnames({row: true, good: this.state.keyGen.password.valid()})}>
+    <div className={classnames({row: true, good: this.state.keyGen.password.valid()})}>
        {this.render_password("Password", "cq-password", this.state.keyGen.password)}
        {this.render_verify_password("Password", "cq-password", this.state.keyGen.password)}
-       </div>
+    </div>
 
 
     <div className="row">

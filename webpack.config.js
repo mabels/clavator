@@ -68,7 +68,7 @@ module.exports = [{
     loaders: [
       {
         test: /\.tsx?$/,
-        loader: 'awesome-typescript-loader?useBabel=true'
+        loader: 'awesome-typescript-loader?useBabel=false'
       }
     ]
   },
@@ -89,7 +89,7 @@ module.exports = [{
     loaders: [
       {
         test: /\.tsx?$/,
-        loader: 'awesome-typescript-loader?useBabel=true'
+        loader: 'awesome-typescript-loader?useBabel=false'
       },
       {
         test: /\.css$/,

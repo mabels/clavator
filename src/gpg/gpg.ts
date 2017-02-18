@@ -61,22 +61,22 @@ export class Result {
        });
 
        let stdio : any[] = ['pipe', 'pipe', 'pipe']
-       stdio = stdio.concat(writables);
+       //stdio = stdio.concat(writables);
         // console.log("run=",cmd, attrs);
-        const c = spawn(cmd, attrs, {
+       const c = spawn(cmd, attrs, {
           env: this.env,
           stdio: stdio
-        });
-        c.on("error", (e:Event) => {
-          console.log(e);
-          cb(this);
-        });
-        if (this.stdIn && this.stdIn.length > 0) {
+       });
+       c.on("error", (e:Event) => {
+         console.log(e);
+         cb(this);
+       });
+       if (this.stdIn && this.stdIn.length > 0) {
             var s = new stream.Readable();
             s.push(this.stdIn);
             s.push(null);
             s.pipe(c.stdin);
-        }
+       }
 
         // console.log(">>>>>>", stdio.length);
         for (let i = 3; i < stdio.length; ++i) {
@@ -326,7 +326,8 @@ export class Gpg {
           return kg.password.password
         },
         '--quick-addkey', fpr,
-        ki.type.value.toLowerCase()+ki.length.value, ki.usage.values.join(",")
+        ki.type.value.toLowerCase()+ki.length.value, ki.usage.values.join(","),
+        KeyGen.format_date(kg.expireDate.value)
       ];
       console.log("createSubkey", args);
       this.run(args, null, cb);

@@ -5,6 +5,8 @@ pacman -R --noconfirm linux-armv7
 pacman -R --noconfirm linux-aarch64
 pacman -Syyu --noconfirm openssh openssl git make nodejs npm 
 
+pacman -Scc --noconfirm ; rm -f /var/cache/pacman/pkg/*
+
 ln -s /usr/share/zoneinfo/Europe/Berlin /etc/localtime
 locale-gen
 echo "LANG=en_US.UTF-8" > /etc/locale.conf

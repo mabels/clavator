@@ -12,7 +12,8 @@ echo ARCH=$arch
 echo DOCKERVERION=$DOCKERVERSION
 echo VERSION=$VERSION
 
-if [ -f /clavator/gnupg-$arch.$VERSION ]
+docker pull $DOCKER_REGISTRY:clavator-gnupg-$arch-$VERSION
+if [ $? = 0 ]
 then
   echo "GnuPg Build Completed"
   exit
@@ -32,6 +33,7 @@ mv /etc/pacman.d/mirrorlist.clavator /etc/pacman.d/mirrorlist
 cat /etc/hosts /etc/pacman.d/mirrorlist
 pacman -Syyu --noconfirm base-devel openssh openssl git gcc autoconf make wget base-devel \
   libpng python2 pcsclite imagemagick mesa-libgl librsvg fig2dev ghostscript texinfo 
+pacman -Scc --noconfirm ; rm -f /var/cache/pacman/pkg/*
 #  rsync sudo
 
 #echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers

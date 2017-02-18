@@ -1,6 +1,11 @@
 #/bin/bash
 
-DOCKER_CONFIG_JSON=$(ruby docker_config_json.rb $1)
+DOCKER_REGISTRY=$1
+DOCKER_CONFIG_JSON=$(ruby docker_config_json.rb $DOCKER_REGISTRY)
+IMAGEVERSION=$2
+NODEVERSION=$3
+GNUPGVERSION=$4
+
 if [ -z $DOCKER_CONFIG_JSON ]
 then
   echo "Need a registry name"
@@ -23,8 +28,12 @@ do
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /var/cache/docker/clavator:/clavator \
     --env "DOCKER_CONFIG_JSON=$DOCKER_CONFIG_JSON" \
+    --env "DOCKER_REGISTRY=$DOCKER_REGISTRY" \
+    --env "IMAGEVERSION=$IMAGEVERSION" \
+    --env "NODEVERSION=$NODEVERSION" \
+    --env "GNUPGVERSION=$GNUPGVERSION" \
     --name $i-create-clavator-docker-container \
     -t clavator-create-os-images \
-    /bin/sh /builder/create-clavator-docker-container.sh $i 20161215
+    /bin/sh /builder/create-clavator-docker-container.sh $i $IMAGEVERSION
 done
 

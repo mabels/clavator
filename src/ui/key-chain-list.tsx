@@ -4,6 +4,8 @@ import './app.less';
 
 import * as ListSecretKeys from '../gpg/list_secret_keys';
 
+import FormatDate from './format-date'
+
 import * as Message from '../message';
 import RequestAscii from '../gpg/request_ascii';
 import RespondAscii from '../respond_ascii';
@@ -97,15 +99,6 @@ export class KeyChainList
     // debugger
   }
 
-  format_date(ticks: number) : JSX.Element {
-    let d = new Date(1000*ticks);
-    return (
-      <span key={ticks}>
-      {d.getFullYear()}-{d.getMonth() + 1}-{d.getDate()}
-      </span>
-    )
-  }
-
 requestAsciiWithPassphrase(key: ListSecretKeys.Key, action: string) {
   return (() => {
     this.state.respondAscii.delete(key.fingerPrint.fpr);
@@ -149,12 +142,13 @@ requestAscii(key: ListSecretKeys.Key, action: string)  {
   }).bind(this);
 }
 
-public deleteSecretKey(key: ListSecretKeys.Key) {
+public deleteSecretKey(key: ListSecretKeys.SecretKey) {
   return (() => {
-    this.props.channel.send(Message.prepare("DeleteSecretKey", key.fingerPrint),
-      (error: any) => {
-
-    });
+    if (confirm(`Really delete ${key.keyId} <${key.uids[0].email}>?`)) {
+      this.props.channel.send(Message.prepare("DeleteSecretKey", key.fingerPrint),
+        (error: any) => {
+      });
+    }
   }).bind(this);
 }
 
@@ -163,43 +157,55 @@ public sendToCard(key: ListSecretKeys.Key) {
   }).bind(this);
 }
 
-public render_buttons(key: ListSecretKeys.Key) : JSX.Element {
+public render_buttons(sk: ListSecretKeys.SecretKey, key: ListSecretKeys.Key) : JSX.Element {
   return (<td className="action">
-    <a onClick={this.requestAsciiWithPassphrase(key, "pem-private")} name="pem-private">
+    <a title="pem-private"
+      onClick={this.requestAsciiWithPassphrase(key, "pem-private")} 
+      name="pem-private">
      <i className="fa fa-key"></i>
     </a>
-    <a onClick={this.requestAscii(key, "pem-public")} name="pem-public">
+    <a title="pem-public"
+      onClick={this.requestAscii(key, "pem-public")} 
+      name="pem-public">
       <i className="fa fa-bullhorn"></i>
     </a>
-    <a onClick={this.requestAscii(key, "ssh-public")} name="ssh-public">
+    <a title="ssh-public"
+      onClick={this.requestAscii(key, "ssh-public")} 
+      name="ssh-public">
       <i className="fa fa-terminal"></i>
     </a>
-    <a  onClick={this.requestAscii(key, "pem-revoke")} name="pem-revoke">
+    <a  title="pem-revoke"
+      onClick={this.requestAscii(key, "pem-revoke")} 
+      name="pem-revoke">
       <i className="fa fa-bug"></i>
     </a>
-    <a  onClick={this.sendToCard(key)} name="Send Key to Smartcard">
+    <a title="Send Key to Smartcard"
+      onClick={this.sendToCard(key)} 
+      name="Send Key to Smartcard">
       <i className="fa fa-credit-card"></i>
     </a>
-    <a  onClick={this.deleteSecretKey(key)} name="delete">
+    <a title="delete" 
+      onClick={this.deleteSecretKey(sk)} 
+      name="delete">
       <i className="fa fa-trash"></i>
     </a>
 
   </td>);
 }
 
-  public render_key(clazz: string, key: ListSecretKeys.Key) : JSX.Element {
+  public render_key(clazz: string, sk: ListSecretKeys.SecretKey, key: ListSecretKeys.Key) : JSX.Element {
     //<td>{key.funky}</td>
       // {this.render_buttons(key)}
     return (
       <tr className={clazz} key={key.key}>
-        {this.render_buttons(key)}
+        {this.render_buttons(sk, key)}
         <td>{key.type}</td>
         <td>{key.trust}</td>
         <td>{key.cipher}</td>
         <td>{key.bits}</td>
         <td>{key.keyId}</td>
-        <td>{this.format_date(key.created)}</td>
-        <td>{this.format_date(key.expires)}</td>
+        <td><FormatDate ticks={key.created} /></td>
+        <td><FormatDate ticks={key.expires} /></td>
         <td>{key.uses}</td>
       </tr>);
   }
@@ -265,10 +271,10 @@ public render_buttons(key: ListSecretKeys.Key) : JSX.Element {
               </table>
               <table >
               <tbody>
-              {this.render_key("sec", sk)}
+              {this.render_key("sec", sk, sk)}
               {this.render_result(sk)}
               {sk.subKeys.map((ssb) => {
-                  return [this.render_key("ssb", ssb), this.render_result(ssb)]
+                  return [this.render_key("ssb", sk, ssb), this.render_result(ssb)]
                 })}
               </tbody>
             </table>

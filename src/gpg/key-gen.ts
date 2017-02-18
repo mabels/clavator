@@ -1,7 +1,7 @@
 
 export function format_date(date: Date): string {
   return ""+date.getFullYear()+"-"
-         +(100+date.getMonth()).toString().slice(1)+"-"
+         +(100+date.getMonth()+1).toString().slice(1)+"-"
          +(100+date.getDate()).toString().slice(1);
 }
 

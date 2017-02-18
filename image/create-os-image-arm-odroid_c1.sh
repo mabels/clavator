@@ -3,16 +3,15 @@ VERSION=$1
 mkdir -p $HOME/.docker
 echo $DOCKER_CONFIG_JSON | base64 -d > $HOME/.docker/config.json
 echo VERSION=$VERSION 
+#echo DOCKER_AUTH=$DOCKER_AUTH
 arch=armhf
 image_name=/$(basename $0 .sh)-$VERSION.img
 
+#/usr/sbin/haveged --run 0
+
 dd if=/dev/zero of=$image_name bs=1 count=1 seek=7516192767
 
-losetup -f $image_name
-hole_disk=$(losetup -l | grep $image_name | awk '{print $1}')
-ln $image_name $image_name.p1
-losetup -o 1048576 -f $image_name.p1
-part1=$(losetup -l | grep $image_name.p1 | awk '{print $1}')
+. /builder/map-os-image-arm-odroid_c1.sh
 
 sext4=2048
 echo -e "n\np\n1\n$sext4\n$eext4\nt\n83\nw" | fdisk $hole_disk
@@ -65,20 +64,7 @@ losetup -d $hole_disk
 losetup -d $part1
 rm -f $image_name.p1
 
-mkdir -p /result/img
-xz -z -T 2 -9 $image_name
-ln $image_name.xz /result/img
+. /builder/create-os-image-docker-arm-odroid_c1.sh
 
-cat > /result/Dockerfile <<RUNNER
-FROM busybox
-
-COPY /img/$image_name.xz /
-RUN ln -s /$image_name.xz /sdcard.img.xz
-RUN ln -s /$image_name.xz /odroid_c1.img.xz
-
-CMD ["/bin/sh"]
-RUNNER
-
-. /builder/docker-push.sh clavator-os-image-odroid_c1-arm-$VERSION /result
-
+. /builder/docker-push.sh clavator-os-image-arm-odroid_c1-$VERSION /result
 

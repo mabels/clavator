@@ -1,8 +1,13 @@
 #/bin/bash
 
-VERSION=$(date "+%Y%m%d")
+
 DOCKER_REGISTRY=$1
 DOCKER_CONFIG_JSON=$(ruby docker_config_json.rb $DOCKER_REGISTRY)
+VERSION=$2
+if [ -z $VERSION ]
+then
+  VERSION=$(date "+%Y%m%d")
+fi
 if [ -z $DOCKER_CONFIG_JSON ]
 then
   echo "Need a registry name"
@@ -25,7 +30,7 @@ docker run -d --name haveged --privileged storytel/haveged
 docker build -f Dockerfile-create-os-images -t clavator-create-os-images .
 
 #for i in x86_64-pc # aarch64-odroid-c2
-for i in aarch64-odroid-c2 arm-odroid-c1 x86_64-pc arm-rpi23 arm-odroid-xu3 
+for i in aarch64-odroid_c2 arm-odroid_c1 x86_64-pc arm-rpi23 arm-odroid_xu3 
 do
   echo "Run: /builder/create-os-image-$i $VERSION"
   docker ps -qa -f "name=$i-create-os-image" | xargs docker rm -f

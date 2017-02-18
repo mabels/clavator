@@ -11,14 +11,7 @@ image_name=/$(basename $0 .sh)-$VERSION.img
 
 dd if=/dev/zero of=$image_name bs=1 count=1 seek=7516192767
 
-losetup -f $image_name
-hole_disk=$(losetup -l | grep $image_name | awk '{print $1}')
-ln $image_name $image_name.p1
-losetup -o 1048576 -f $image_name.p1
-part1=$(losetup -l | grep $image_name.p1 | awk '{print $1}')
-ln $image_name $image_name.p2
-losetup -o 135266304 -f $image_name.p2
-part2=$(losetup -l | grep $image_name.p2 | awk '{print $1}')
+. /builder/map-os-image-arm-rpi23.sh
 
 sfat=2048
 fatsize=128
@@ -78,20 +71,8 @@ rm -f $image_name.p1
 losetup -d $part2
 rm -f $image_name.p2
 
-mkdir -p /result/img
-xz -z -T 2 -9 $image_name
-ln $image_name.xz /result/img
+. /builder/create-os-image-docker-arm-rpi23.sh
 
-cat > /result/Dockerfile <<RUNNER
-FROM busybox
-
-COPY /img/$image_name.xz /
-RUN ln -s /$image_name.xz /sdcard.img.xz
-RUN ln -s /$image_name.xz /rpi23.img.xz
-
-CMD ["/bin/sh"]
-RUNNER
-
-. /builder/docker-push.sh clavator-os-image-rpi23-arm-$VERSION /result
+. /builder/docker-push.sh clavator-os-image-arm-rpi23-$VERSION /result
 
 

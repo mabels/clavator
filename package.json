@@ -28,8 +28,6 @@
   "homepage": "https://github.com/mabels/clavator#readme",
   "devDependencies": {
     "awesome-typescript-loader": ">=3.0.0",
-    "babel-core": ">=6.9.1",
-    "babel-plugin-transform-es2015-modules-commonjs": ">=6.10.3",
     "@types/chai": ">=3.4.33",
     "chai": ">=3.5.0",
     "css-loader": ">=0.23.1",

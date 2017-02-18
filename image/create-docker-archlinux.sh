@@ -1,7 +1,12 @@
 #/bin/bash
 
-VERSION=$(date "+%Y%m%d")
-DOCKER_CONFIG_JSON=$(ruby docker_config_json.rb $1)
+VERSION=$2
+if [ -z $VERSION ]
+then
+  VERSION=$(date "+%Y%m%d")
+fi
+DOCKER_REGISTRY=$1
+DOCKER_CONFIG_JSON=$(ruby docker_config_json.rb $DOCKER_REGISTRY)
 if [ -z $DOCKER_CONFIG_JSON ]
 then
   echo "Need a registry name"
@@ -9,6 +14,9 @@ then
   echo "- registry.clavator.com:5000/<imgname>"
   exit 1
 fi
+
+ARCHLINUXARM=https://archlinux.clavator.com/archlinuxarm/
+ARCHLINUX=https://archlinux.clavator.com/archlinux/
 
 echo Creating OS Images for $VERSION 
 
@@ -24,6 +32,9 @@ do
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /var/cache/docker/clavator:/clavator \
     --env "DOCKER_CONFIG_JSON=$DOCKER_CONFIG_JSON" \
+    --env "DOCKER_REGISTRY=$DOCKER_REGISTRY" \
+    --env "ARCHLINUXARM=$ARCHLINUXARM" \
+    --env "ARCHLINUX=$ARCHLINUX" \
     --name $i-create-docker-archlinux \
     -t clavator-create-os-images \
     /bin/sh /builder/create-docker-archlinux-$i.sh $VERSION

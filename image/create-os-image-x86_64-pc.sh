@@ -12,12 +12,7 @@ image_name=/$(basename $0 .sh)-$VERSION.img
 
 dd if=/dev/zero of=$image_name bs=1 count=1 seek=7516192767
 
-losetup -f $image_name
-
-hole_disk=$(losetup -l | grep $image_name | awk '{print $1}')
-ln $image_name $image_name.p1
-losetup -o 1048576 -f $image_name.p1
-part1=$(losetup -l | grep $image_name.p1 | awk '{print $1}')
+. /builder/map-os-image-x86_64-pc.sh
 
 sext4=2048
 echo -e "n\np\n1\n$sext4\n$eext4\nt\n83\nw" | fdisk $hole_disk
@@ -83,6 +78,7 @@ MODULES+="pata_sis pata_sl82c105 pata_triflex pata_via "
 BINARIES="fsck fsck.ext2 fsck.ext3 fsck.ext4  e2fsck"
 EOF
 pacman -Sy --noconfirm grub linux
+pacman -Scc --noconfirm ; rm -f /var/cache/pacman/pkg/*
 grub-mkconfig -o /tmp/doof.cfg
 sed "s/'.*UUID=.*img.p1'/clavator/g" /tmp/doof.cfg | \
 sed "s/root=.*$VERSION.img.p1/root=$ROOTID/" > /boot/grub/grub.cfg
@@ -111,17 +107,7 @@ losetup -d $hole_disk
 losetup -d $part1
 rm -f $image_name.p1
 
-mkdir -p /result/img
-VBoxManage convertdd $image_name /result/img/virtual.vdi
-xz -z -9 -T 2 /result/img/virtual.vdi
-
-cat > /result/Dockerfile <<RUNNER
-FROM busybox
-
-COPY /img/virtual.vdi.xz /
-
-CMD ["/bin/sh"]
-RUNNER
+. /builder/create-os-image-docker-x86_64-pc.sh
 
 . /builder/docker-push.sh clavator-os-image-x86_64-pc-$VERSION /result
 

@@ -33,10 +33,11 @@ FROM ${DOCKER_REGISTRY}clavator-docker-archlinux-$ARCH-$DOCKERVERSION
 
 COPY clavator/ /clavator
 COPY etc/ /etc
-COPY gnupg/gnupg-clavator.tar.xz /
+COPY gnupg/gnupg-clavator.pkg.tar.xz /
 COPY mirrorlist /etc/pacman.d/
-RUN  pacman -Syu --noconfirm
-RUN  pacman -U --noconfirm --force /gnupg-clavator.tar.xz
+RUN pacman -Syu --noconfirm
+RUN pacman -U --noconfirm --force /gnupg-clavator.pkg.tar.xz
+RUN pacman -Scc --noconfirm ; rm -f /var/cache/pacman/pkg/* 
 
 CMD ["/bin/sh", "-c", "cd /clavator && npm start"]
 RUNNER

@@ -4,12 +4,15 @@ import './app.less';
 
 import * as CardStatus from '../gpg/card_status';
 
+import FormatDate from './format-date'
+
 import * as Message from '../message';
 
 import * as WsChannel from './ws-channel';
 
 import { ResetYubikey } from './reset-yubikey';
 import { ChangePin } from './change-pin';
+
 
 interface CardStatusState {
   cardStatusList: CardStatus.Gpg2CardStatus[];
@@ -78,46 +81,6 @@ export class CardStatusList
     // debugger
   }
 
-
-  // public render_key(clazz: string, key: CardStatus.Gpg2CardStatus) : JSX.Element {
-  //   //<td>{key.funky}</td>
-  //   return (
-  //     <tr className={clazz} key={key.key}>
-  //   <td>{key.type}</td>
-  //   <td>{key.trust}</td>
-  //   <td>{key.cipher}</td>
-  //   <td>{key.bits}</td>
-  //   <td>{key.keyId}</td>
-  //   <td>{this.format_date(key.created)}</td>
-  //   <td>{this.format_date(key.expires)}</td>
-  //   <td>{key.uses}</td>
-  //     </tr>
-  // );
-  // }
-  //
-  // public render_uid(uid: ListSecretKeys.Uid) : JSX.Element {
-  //   //<td>{this.format_date(uid.created)}</td>
-  //   //<td>{uid.id}</td>
-  //   return (
-  //     <tr className="uid" key={uid.key}>
-  //   <td>{uid.trust}</td>
-  //   <td>{uid.name}</td>
-  //   <td>{uid.email}</td>
-  //   <td>{uid.comment}</td>
-  //     </tr>
-  // );
-  // }
-  //
-
-  format_date(ticks: number) : JSX.Element {
-    let d = new Date(1000*ticks);
-    return (
-      <span key={ticks}>
-      {d.getFullYear()}-{d.getMonth() + 1}-{d.getDate()}
-      </span>
-    )
-  }
-
   public changePin(cs: CardStatus.Gpg2CardStatus, admin_or_user : string) {
       return ((e: any) => {
 
@@ -130,16 +93,21 @@ export class CardStatusList
       }).bind(this)
   }
 
-
   public render_actions(cs: CardStatus.Gpg2CardStatus) : JSX.Element {
     return (<td className="action">
-      <a onClick={this.changePin(cs, "user")} name="change-user-pin">
+      <a title="change-user-pin"
+         onClick={this.changePin(cs, "user")} 
+         name="change-user-pin">
         <i className="fa fa-user"></i>
       </a>
-      <a onClick={this.changePin(cs, "admin")} name="change-admin-pin">
+      <a title="change-admin-pin"
+        onClick={this.changePin(cs, "admin")} 
+        name="change-admin-pin">
        <i className="fa fa-superpowers"></i>
       </a>
-      <a onClick={this.resetYubikey(cs)} name="reset-yubikey">
+      <a title="reset-yubikey"
+        onClick={this.resetYubikey(cs)} 
+        name="reset-yubikey">
         <i className="fa fa-trash"></i>
       </a>
     </td>);
@@ -215,7 +183,7 @@ export class CardStatusList
                           <td>{ks.sigcount}</td>
                           <td>{ks.cafpr}</td>
                           <td>{ks.fpr}</td>
-                          <td>{this.format_date(ks.fprtime)}</td>
+                          <td><FormatDate ticks={ks.fprtime}/></td>
                         </tr>
                     );
                   })}
