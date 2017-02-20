@@ -18,19 +18,14 @@ export class ChannelStatus extends
 
   constructor() {
     super();
-    this.state = { status: "not started"};
-  }
-  protected componentDidMount(): void {
+    this.state = { status: "not started" };
   }
 
-  protected componentWillUnmount(): void {
-  }
-
-  onOpen(e:Event) {
+  onOpen(e: Event) {
     this.setState(Object.assign({}, this.state, { status: "connected" }));
   }
 
-  onClose(e:CloseEvent) {
+  onClose(e: CloseEvent) {
     this.setState(Object.assign({}, this.state, { status: "not connected" }));
   }
 
@@ -42,16 +37,6 @@ export class ChannelStatus extends
     if (nextProps.channel) {
       nextProps.channel.register(this);
     }
-  }
-
-  shouldComponentUpdate(nextProps: any,  nextState: any,  nextContext: any) : boolean {
-    return true;
-  }
-
-  componentWillUpdate(nextProps: any, nextState: any, nextContext: any) {
-  }
-
-  componentDidUpdate(prevProps: any, prevState: any, prevContext: any) {
   }
 
   public render(): JSX.Element {

@@ -16,12 +16,12 @@ interface ProgressorState {
 interface ProgressorProps extends React.Props<Progressor> {
   channel: WsChannel.Dispatch;
   msg: string;
+  controls?: boolean;
 }
 
 export class Progressor
   extends React.Component<ProgressorProps, ProgressorState>
-  implements WsChannel.WsChannel
-{
+  implements WsChannel.WsChannel {
 
   constructor() {
     super();
@@ -29,11 +29,6 @@ export class Progressor
       progressList: []
     };
     this.handleClearClick = this.handleClearClick.bind(this)
-  }
-  // public static contextTypes = {
-  //  socket: React.PropTypes.object
-  // };
-  protected componentDidMount(): void {
   }
 
   protected componentWillUnmount(): void {
@@ -45,7 +40,7 @@ export class Progressor
 
   onMessage(action: Message.Header, data: string) {
     // console.log("Progressor."+this.props.msg, action.action)
-    if (action.action == "Progressor."+this.props.msg) {
+    if (action.action == "Progressor." + this.props.msg) {
       let js = JSON.parse(data);
       this.state.progressList.push(Progress.fill(js));
       this.setState(Object.assign({}, this.state, {
@@ -53,7 +48,7 @@ export class Progressor
       }));
     }
   }
-  onClose(e:CloseEvent) {
+  onClose(e: CloseEvent) {
     //this.setState(Object.assign({}, this.state, { cardStatusList: [] }));
   }
 
@@ -64,19 +59,6 @@ export class Progressor
     }
   }
 
-  shouldComponentUpdate(nextProps: any,  nextState: any,  nextContext: any) : boolean {
-    // debugger
-    return true;
-  }
-
-  componentWillUpdate(nextProps: any, nextState: any, nextContext: any) {
-    // debugger
-  }
-
-  componentDidUpdate(prevProps: any, prevState: any, prevContext: any) {
-    // debugger
-  }
-
   private handleClearClick() {
     this.setState(Object.assign({}, this.state, {
       progressList: []
@@ -84,20 +66,35 @@ export class Progressor
   }
 
 
+  private controls(): JSX.Element {
+    if (!this.props.controls) {
+      return null;
+    }
+    return (<div className="action">
+      <a title="reset-log"
+        onClick={() => {
+          this.setState(Object.assign({}, this.state, {
+            progressList: []
+          }));
+        }}
+        name="reset-log">
+        <i className="fa fa-trash"></i>
+      </a>
+    </div>)
+  }
+
   public render(): JSX.Element {
-        // SecretKeys {this.state.cardStatusList.length || ""}
-        //<h3>Progressor.{this.props.msg}
-        // <button onClick={this.handleClearClick}>Clear({this.state.progressList.length})</button>
     return (
       <div className="Progressor">
+        {this.controls()}
         <pre><code>
-        {this.state.progressList.map((ps: Progress.Progress, idx : number) => {
-          // console.log("pl", ps)
-          // debugger
-          return (ps.msgs.map((msg: string, idx: number) => {
-            return (<div key={ps.id+":"+idx} className={ps.isOk?"ok":"fail"}>{msg}{ps.isEndOfMessages?"<EOM>":""}</div>);
-          }));
-        })}
+          {this.state.progressList.map((ps: Progress.Progress, idx: number) => {
+            // console.log("pl", ps)
+            // debugger
+            return (ps.msgs.map((msg: string, idx: number) => {
+              return (<div key={ps.id + ":" + idx} className={ps.isOk ? "ok" : "fail"}>{msg}{ps.isEndOfMessages ? "<EOM>" : ""}</div>);
+            }));
+          })}
         </code>
         </pre>
       </div>

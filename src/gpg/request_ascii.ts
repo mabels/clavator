@@ -2,7 +2,7 @@
 import MutableString from './mutable_string';
 
 export class RequestAscii {
-  public passphrase: MutableString = new MutableString();;
+  public passphrase: MutableString = new MutableString();
   public action: string;
   public fingerprint: string;
 

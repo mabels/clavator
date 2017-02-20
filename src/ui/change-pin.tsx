@@ -5,81 +5,92 @@ import * as classnames from 'classnames';
 
 import RequestChangePin from '../gpg/request_change_pin';
 
+import * as WsChannel from './ws-channel';
+
+import * as Message from '../message';
+
 interface ChangePinState {
+  pin: RequestChangePin;
 }
 
 interface ChangePinProps extends React.Props<ChangePin> {
-  pin: RequestChangePin,
-  completed: () => {}
+  completed?: () => {};
+  type: string;
+  app_id: string;
+  channel: WsChannel.Dispatch;
 }
 
 export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
 
   constructor() {
     super();
-    this.state = { };
-  }
-  // public static contextTypes = {
-  //  socket: React.PropTypes.object
-  // };
-
-  protected componentDidMount(): void {
-
-  }
-
-  protected componentWillUnmount(): void {
+    this.state = {
+      pin: new RequestChangePin()
+    };
   }
 
   componentWillReceiveProps(nextProps: any, nextContext: any) {
-    if (nextProps.channel) {
-      nextProps.channel.register(this);
+    console.log("componentWillReceiveProps:", nextProps)
+    if (nextProps.type) {
+      // console.log("prop set", nextProps.type)
+      this.setState(Object.assign({}, this.state, {
+        pin: this.state.pin.changeAction(nextProps.type)
+      }))
     }
   }
 
-  shouldComponentUpdate(nextProps: any,  nextState: any,  nextContext: any) : boolean {
+  public doPinChange(pin: RequestChangePin) {
     // debugger
-    return true;
+    this.props.channel.send(Message.prepare("GpgChangePinYubikey.run", pin), (error: any) => {
+    });
   }
-
-  componentWillUpdate(nextProps: any, nextState: any, nextContext: any) {
-    // debugger
-  }
-
-  componentDidUpdate(prevProps: any, prevState: any, prevContext: any) {
-    // debugger
-  }
-
-  public reset_yubikey() {
-
-  }
-
-
-  public render_form() : JSX.Element {
-         /*<div className={classnames({row: true, good: this.state.keyGen.adminPin.valid()})}>
-     {this.render_password("AdminPin", "cq-adminpin", this.state.keyGen.adminPin)}
-     {this.render_verify_password("AdminPin", "cq-adminpin", this.state.keyGen.adminPin)}
-     </div>
-      <div className={classnames({row: true, good: this.state.keyGen.userPin.valid()})}>
-     {this.render_password("UserPin", "cq-userpin", this.state.keyGen.userPin)}
-     {this.render_verify_password("UserPin", "cq-userpin", this.state.keyGen.userPin)}
-     </div>
-    <button type="button"
-      onClick={this.state.completed()}>ResetYubikey</button>*/
-
-    return (
-    <form className="ChangePin">
-     </form>
-    );
-      // min={KeyGen.format_date(Date.now())}
-      // value={KeyGen.format_date(this.state.keyGen.expireDate)} />
-  }
-
 
   public render(): JSX.Element {
+    // console.log("Render:", 
+    //   this.state.pin.admin_pin,
+    //   this.state.pin.new_pin,
+    //   this.state.pin.new_pin_verify,
+    //   this.state.pin.verifyText())
     return (
-      <div className="ResetYubikey" >
-        {this.render_form()}
-      </div>
+      <form className={classnames({ "ChangePin": true, good: this.state.pin.verify() })}>
+        <label>AdminPin:</label><input type="password"
+          name="admin-pin" required={true}
+          className={classnames({ good: this.state.pin.admin_pin.verify() })}
+          onChange={(e: any) => {
+            this.state.pin.admin_pin.pin = e.target.value;
+            this.setState(Object.assign({}, this.state, {
+              pin: this.state.pin
+            }))
+          }} />
+
+        <label>NewPin{this.props.type}:</label><input type="password"
+          name="new-pin" required={true}
+          className={classnames({ good: this.state.pin.new_pin.verify() })}
+          onChange={(e: any) => {
+            this.state.pin.new_pin.pin = e.target.value
+            this.setState(Object.assign({}, this.state, {
+              pin: this.state.pin
+            }))
+          }} />
+        <input type="password"
+          name="verify-new-pin" required={true}
+          className={classnames({ good: this.state.pin.new_pin_verify.verify() })}
+          onChange={(e: any) => {
+            this.state.pin.new_pin_verify.pin = e.target.value
+            this.setState(Object.assign({}, this.state, {
+              pin: this.state.pin
+            }))
+          }} />
+        <button type="button"
+          className={classnames({ good: this.state.pin.verify() })}
+          disabled={!this.state.pin.verify()}
+          onClick={(e: any) => {
+            this.state.pin.app_id = this.props.app_id;
+            this.setState(Object.assign({}, this.state, {
+              pin: this.state.pin
+            }))
+            this.doPinChange(this.state.pin)
+          }}>Change</button>    </form>
     );
   }
 

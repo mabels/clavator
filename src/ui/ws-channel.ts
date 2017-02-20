@@ -1,9 +1,9 @@
 import * as Message from '../message';
 
 export interface WsChannel {
-  onClose(e:CloseEvent) : void;
-  onOpen(e:Event): void;
-  onMessage(h: Message.Header, data: string) : void;
+  onClose(e: CloseEvent): void;
+  onOpen(e: Event): void;
+  onMessage(h: Message.Header, data: string): void;
 }
 
 export class Dispatch {
@@ -18,9 +18,9 @@ export class Dispatch {
     }
   }
   public unregister(wsc: WsChannel) {
-      this.wscs = this.wscs.filter(item => item !== wsc);
+    this.wscs = this.wscs.filter(item => item !== wsc);
   }
-  public send(m: string, cb: (error: any) => void) : void {
+  public send(m: string, cb: (error: any) => void): void {
     this.ws.send(m);
   }
 
@@ -58,7 +58,7 @@ export class Dispatch {
     };
   }
 
-  public static create() : Dispatch {
+  public static create(): Dispatch {
     let wscd = new Dispatch();
     wscd.connector();
     return wscd;
@@ -66,6 +66,6 @@ export class Dispatch {
 
 }
 
-export function create() : Dispatch {
+export function create(): Dispatch {
   return Dispatch.create();
 }

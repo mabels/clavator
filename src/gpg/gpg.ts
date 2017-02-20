@@ -12,6 +12,7 @@ import * as Uuid from 'node-uuid';
 
 import * as KeyGen from './key-gen';
 import RequestAscii from './request_ascii';
+import RequestChangePin from './request_change_pin';
 
 interface StringFunc {
   (): string;
@@ -51,6 +52,7 @@ export class Result {
          return i;
        })
        let writables : string[] = fds.map((func) => {
+          // console.log(">>>>", func)
           // let w = new stream.Writable();
           // let r = new stream.Readable();
           // r.push(func());
@@ -61,7 +63,7 @@ export class Result {
        });
 
        let stdio : any[] = ['pipe', 'pipe', 'pipe']
-       //stdio = stdio.concat(writables);
+       stdio = stdio.concat(writables);
         // console.log("run=",cmd, attrs);
        const c = spawn(cmd, attrs, {
           env: this.env,
@@ -88,10 +90,10 @@ export class Result {
             // console.log(">>>>>>", stdio.length, 2);
             s.push(null);
             // console.log(">>>>>>", stdio.length, 3);
-            s.pipe(c.stdio[i] as stream.Writable);
+            s.pipe(c.stdio[i] as stream.Writable, {end:false});
             // console.log(">>>>>>", stdio.length, 4);
             s.on('end', () => {
-              // console.log(">>>>>>", stdio.length, "closed");
+              console.log(">>>>>>", i, "closed");
             });
             // s.end();
         }
@@ -241,32 +243,6 @@ export class Gpg {
         })
     }
 
-    /*
-    public connect_pinentry(cb: (err: string) => void) {
-        let pinentryPath = path.join(this.homeDir, 'pinentry.node');
-        this.write_pinentry_sh(pinentryPath, (err) => {
-            if (err) {
-                cb(err);
-            }
-            this.write_agent_conf(pinentryPath, (err) => {
-                let uuid = Uuid.v4();
-                let pinentrySocket = path.join(this.homeDir, 'S.pinentry.' + uuid);
-                pse.start(pinentrySocket, (err: string, ps: any) => {
-                    this.pinEntryServer = ps;
-                    cb(err);
-                });
-            });
-        });
-    }
-
-    public gen_key(keyGen: KeyGen.KeyGen, cb: (err: string) => void) {
-        if (!this.pinEntryServer) {
-            cb("need a to run connect_pinentry");
-            return;
-        }
-    }
-    */
-
     public createMasterKey(keyGen: KeyGen.KeyGen, cb: (res: Result) => void) {
       //  '--enable-large-rsa',
       let args : Mixed[] = [
@@ -332,4 +308,30 @@ export class Gpg {
       console.log("createSubkey", args);
       this.run(args, null, cb);
     }
+
+    public changePin(type: string, rcp: RequestChangePin, cb: (res: Result) => void) {
+      let args = [
+        '--no-tty', '--pinentry-mode', 'loopback',
+        '--passphrase-fd', () => {
+          return rcp.admin_pin.pin+"\n"
+        },
+        '--passphrase-fd', () => {
+          return rcp.new_pin.pin+"\n"
+        },
+       '--passphrase-fd', () => {
+          return rcp.new_pin_verify.pin+"\n"
+        },
+        '--change-pin', type, rcp.app_id
+      ];
+      console.log("changePin", args)
+      this.run(args, null, cb);
+    }
+
+    // public changeAdminPin(rcp: RequestChangePin, cb: (res: Result) => void) {
+    //     this.changePin('admin', rcp, cb)
+    // }
+
+    // public changeUserPin(rcp: RequestChangePin, cb: (res: Result) => void) {
+    //     this.changePin('user', rcp, cb)
+    // }
 }

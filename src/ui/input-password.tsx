@@ -19,19 +19,9 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
 
   constructor() {
     super();
-    this.state = { 
+    this.state = {
       pin: null,
     };
-  }
-  // public static contextTypes = {
-  //  socket: React.PropTypes.object
-  // };
-
-  protected componentDidMount(): void {
-
-  }
-
-  protected componentWillUnmount(): void {
   }
 
   componentWillReceiveProps(nextProps: any, nextContext: any) {
@@ -40,36 +30,18 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
     }
   }
 
-  shouldComponentUpdate(nextProps: any,  nextState: any,  nextContext: any) : boolean {
-    // debugger
-    return true;
-  }
-
-  componentWillUpdate(nextProps: any, nextState: any, nextContext: any) {
-    // debugger
-  }
-
-  componentDidUpdate(prevProps: any, prevState: any, prevContext: any) {
-    // debugger
-  }
-
-  public reset_yubikey() {
-
-  }
-
-
   public render(): JSX.Element {
     return (
-        <div className="InputPassword">
-          <label>{this.props.label}:</label><input type="password"
-            name={this.props.key.toString()} required={true}
-            className={classnames({"u-full-width": true, good: true})}
-            onChange={(e:any) => {
-              this.props.pin.new_pin = e.target.value;
-              this.setState(this.state);
-            }}
-          />
-        </div>);
+      <div className="InputPassword">
+        <label>{this.props.label}:</label><input type="password"
+          name={this.props.key.toString()} required={true}
+          className={classnames({ "u-full-width": true, good: true })}
+          onChange={(e: any) => {
+            this.props.pin.new_pin = e.target.value;
+            this.setState(this.state);
+          }}
+        />
+      </div>);
   }
 
 }
