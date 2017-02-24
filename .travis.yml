@@ -10,7 +10,7 @@ before_install:
 
 script:
   - git clone https://github.com/mabels/gnupg.git -b quick-keytocard 
-  - cd quick-keytocard && ./configure && make
+  - cd gnupg && ./configure && make
   #  - (cd pam && cmake -DCMAKE_BUILD_TYPE=Release . && make)
   #- (cd pam && ctest)
   - npm install && npm test
