@@ -19,7 +19,7 @@ import { CreateKey } from './create-key';
 import { Progressor } from './progressor';
 import { ChannelStatus } from './channel-status';
 
-import { Provider } from 'react-redux';
+// import { Provider } from 'react-redux';
 
 import * as WsChannel from './ws-channel';
 
