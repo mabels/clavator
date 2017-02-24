@@ -18,6 +18,8 @@ import FormatDate from './format-date';
 
 import * as classnames from 'classnames';
 
+import {CardStatusListState} from './card-status-list-state';
+
 // import * as CopyToClipboard from 'react-copy-to-clipboard';
 
 // interface ResponseMap {
@@ -33,6 +35,7 @@ interface KeyChainListState {
 
 interface KeyChainListProps extends React.Props<KeyChainList> {
   channel: WsChannel.Dispatch;
+  cardStatusListState: CardStatusListState;
 }
 
 export class KeyChainList
@@ -47,11 +50,14 @@ export class KeyChainList
       requestAscii: new Map<string, RequestAscii>(),
       keyToYubiKeys: new Map<string, KeyToYubiKey>()
     };
-
   }
   public static contextTypes = {
     socket: React.PropTypes.object
   };
+
+  protected componentWillMount() {
+    this.props.channel.register(this)
+  }
 
   protected componentWillUnmount(): void {
     this.setState(Object.assign({}, this.state, { secretKeys: [] }));
@@ -67,10 +73,9 @@ export class KeyChainList
     } else if (action.action == "RespondAscii") {
       let ra = RespondAscii.fill(JSON.parse(data));
       this.state.respondAscii.set(ra.fingerprint, ra);
-      // debugger
-      // this.setState(Object.assign({}, this.state, {
-      //   result: this.state.respondAscii
-      // }));
+      this.setState(Object.assign({}, this.state, {
+        respondAscii: this.state.respondAscii
+      }));
     }
   }
   onClose(e: CloseEvent) {
@@ -155,7 +160,7 @@ export class KeyChainList
     }).bind(this)
   }
 
-  public render_buttons(sk: ListSecretKeys.SecretKey, key: ListSecretKeys.Key): JSX.Element {
+  public render_sec_buttons(sk: ListSecretKeys.SecretKey, key: ListSecretKeys.Key): JSX.Element {
     return (<td className="action">
       <a title="pem-private"
         onClick={this.requestAsciiWithPassphrase(key, "pem-private")}
@@ -187,8 +192,26 @@ export class KeyChainList
         name="delete">
         <i className="fa fa-trash"></i>
       </a>
-
     </td>);
+  }
+
+  public render_sub_buttons(sk: ListSecretKeys.SecretKey, key: ListSecretKeys.Key): JSX.Element {
+    return (
+    <td className="action">
+      <a title="Send Key to Smartcard"
+        onClick={this.sendToCard(key)}
+        name="Send Key to Smartcard">
+        <i className="fa fa-credit-card"></i>
+      </a>
+    </td>);
+  }
+
+  public render_buttons(clazz: string, sk: ListSecretKeys.SecretKey, key: ListSecretKeys.Key): JSX.Element {
+    if (clazz == "ssb") {
+      return this.render_sub_buttons(sk, key);
+    } else {
+      return this.render_sec_buttons(sk, key);
+    }
   }
 
   public render_key(clazz: string, sk: ListSecretKeys.SecretKey, key: ListSecretKeys.Key): JSX.Element {
@@ -196,7 +219,7 @@ export class KeyChainList
     // {this.render_buttons(key)}
     return (
       <tr className={clazz} key={key.key}>
-        {this.render_buttons(sk, key)}
+        {this.render_buttons(clazz, sk, key)}
         <td>{key.type}</td>
         <td>{key.trust}</td>
         <td>{key.cipher}</td>
@@ -253,27 +276,28 @@ export class KeyChainList
     );
   }
 
-  public render_keyToYubiKey(sk: ListSecretKeys.Key): JSX.Element {
+  public render_keyToYubiKey(sk: ListSecretKeys.Key, idx : number): JSX.Element {
     return (
       <tr>
         <td colSpan={20}>
           <AskKeyToYubiKey
+            slot_id={idx+1}
             fingerprint={sk.fingerPrint.fpr}
-            completed={() => {
-              this.requestAscii(sk, this.state.requestAscii.get(sk.fingerPrint.fpr).action)();
-            }} />
+            channel={this.props.channel}
+            cardStatusListState={this.props.cardStatusListState}
+          />
         </td>
       </tr>
     );
   }
 
-  public render_result(sk: ListSecretKeys.Key): JSX.Element {
+  public render_result(sk: ListSecretKeys.Key, idx: number): JSX.Element {
     if (this.state.respondAscii.has(sk.fingerPrint.fpr)) {
       return this.render_respondAscii(sk)
     } else if (this.state.requestAscii.has(sk.fingerPrint.fpr)) {
       return this.render_requestAscii(sk)
     } else if (this.state.keyToYubiKeys.has(sk.fingerPrint.fpr)) {
-      return this.render_keyToYubiKey(sk)
+      return this.render_keyToYubiKey(sk, idx)
     } else {
       return null;
     }
@@ -293,9 +317,9 @@ export class KeyChainList
               <table >
                 <tbody>
                   {this.render_key("sec", sk, sk)}
-                  {this.render_result(sk)}
-                  {sk.subKeys.map((ssb) => {
-                    return [this.render_key("ssb", sk, ssb), this.render_result(ssb)]
+                  {this.render_result(sk, 0)}
+                  {sk.subKeys.map((ssb, idx) => {
+                    return [this.render_key("ssb", sk, ssb), this.render_result(ssb, idx)]
                   })}
                 </tbody>
               </table>

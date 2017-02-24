@@ -14,6 +14,7 @@ import * as KeyGen from '../../src/gpg/key-gen';
 import * as Rimraf from 'rimraf';
 
 import { RequestAscii } from '../../src/gpg/request_ascii';
+import KeyToYubiKey from '../../src/gpg/key-to-yubikey';
 
 function expireDate(): Date {
   let now = new Date();
@@ -82,8 +83,6 @@ describe('Gpg', () => {
           })
       })
     })
-
- 
   })
 
   after((done) => {
@@ -91,13 +90,15 @@ describe('Gpg', () => {
       assert.equal(res.exitCode, 0, "delete secret key")
       gpg.deletePublicKey(key.fingerPrint.fpr, (res: Gpg.Result) => {
         assert.equal(res.exitCode, 0, "delete pub key")
-        gpg.runAgent([], "killagent /bye", (res: Gpg.Result) => {
-          // Rimraf.sync(gpg.homeDir)
+        gpg.runAgent(["killagent", "/bye"], null, (res: Gpg.Result) => {
+          Rimraf.sync(gpg.homeDir)
           done()
         })
       })
     })
   })
+
+
 
   //    public createSubkey(fpr: string, kg: KeyGen.KeyGen, ki: KeyGen.KeyInfo, cb: (res: Result) => void) {
   //     // gpg2  --quick-addkey  FDCF2566BA8134E3BAD15B7DDDC4941118503075 rsa2048 sign,auth,encr
@@ -129,6 +130,34 @@ describe('Gpg', () => {
   //   })
   // })
 
+  it("prepareToYubiKey", function(done) {
+    this.timeout(100000);
+    let kytk = new KeyToYubiKey()
+    kytk.fingerprint = key.keyId;
+    kytk.passphrase.value = "Gpg Test Jojo Akzu Luso";
+    gpg.prepareKeyToYubiKey(kytk, (mygpg: Gpg.Gpg, res: Gpg.Result) => {
+      assert.equal(0, res.exitCode, "unknown exit code");
+      assert.isNotNull(mygpg, "Gpg should be set");
+      mygpg.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
+        assert.equal(1, keys.length, "len should be one")
+        assert.equal("gpg.sock@lodke.gpg", keys[0].uids[0].email);
+        mygpg.runAgent(["killagent", "/bye"], null, (res: Gpg.Result) => {
+          Rimraf.sync(mygpg.homeDir)
+          done()
+        })
+
+      })
+    })
+  })
+
+  it("getSocketName", (done) => {
+    gpg.getSocketName((s) => {
+      assert.isNotNull(s);
+      assert.ok(s.length>0);
+      // console.log("getSocketName:", s);
+      done();
+    })
+  })
  
   it("pemPrivateKey", (done) => {
     let rqa : RequestAscii = new RequestAscii();

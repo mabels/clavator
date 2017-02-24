@@ -5,8 +5,14 @@ import './app.less';
 
 import MutableString from '../gpg/mutable_string';
 import KeyToYubiKey from '../gpg/key-to-yubikey';
+import * as CardStatus from '../gpg/card_status';
+
+import { CardStatusListState } from './card-status-list-state';
 
 import * as classnames from 'classnames';
+
+import * as WsChannel from './ws-channel';
+import * as Message from '../message';
 
 interface AskKeyToYubiKeyState {
   keyToYubiKey: KeyToYubiKey
@@ -14,7 +20,9 @@ interface AskKeyToYubiKeyState {
 
 interface AskKeyToYubiKeyProps extends React.Props<AskKeyToYubiKey> {
   fingerprint: string,
-  completed: () => void;
+  channel: WsChannel.Dispatch;
+  slot_id: number,
+  cardStatusListState: CardStatusListState;
 }
 
 export class AskKeyToYubiKey
@@ -27,8 +35,10 @@ export class AskKeyToYubiKey
     };
   }
 
-  componentWillReceiveProps(nextProps: any, nextContext: any) {
-    this.state.keyToYubiKey.fingerprint = nextProps.fingerprint
+  componentWillMount() {
+    this.state.keyToYubiKey.fingerprint = this.props.fingerprint
+    this.state.keyToYubiKey.slot_id = this.props.slot_id
+    this.state.keyToYubiKey.card_id = this.props.cardStatusListState.cardStatusList[0].reader.cardid;
   }
 
   // public fingerprint: string;
@@ -36,7 +46,28 @@ export class AskKeyToYubiKey
   // public admin_pin: Pin;
   // public passphrase: MutableString = new MutableString();
   public sendKeyToYubiKey() {
-    console.log("sendKeyToYubiKey", this.props.fingerprint)
+    console.log("sendKeyToYubiKey", this.state.keyToYubiKey)
+    this.props.channel.send(Message.prepare("SendKeyToYubiKey.run", this.state.keyToYubiKey), null);
+  }
+
+  public render_card_slot() {
+    let selected = `${this.state.keyToYubiKey.card_id}:Slot${this.state.keyToYubiKey.slot_id}`
+    return (
+        <select value={this.state.keyToYubiKey.slot_id}
+          onChange={(e: any) => {
+            this.state.keyToYubiKey.slot_id = ~~e.target.value;
+            console.log("this.state.keyToYubiKey:", this.state.keyToYubiKey);
+            this.setState(Object.assign({}, this.state, {
+              keyToYubiKey: this.state.keyToYubiKey
+            }))}} >
+           {this.props.cardStatusListState.cardStatusList.map((cardstatus) => {
+             return cardstatus.keyStates.map((ks: CardStatus.KeyState, idx: number) => {
+               let key = `${cardstatus.reader.cardid}:Slot${idx}`
+               return (<option value={idx} key={key}>{key}</option>) 
+            })
+           })}
+        </select>
+    );
   }
 
   public render(): JSX.Element {
@@ -48,7 +79,8 @@ export class AskKeyToYubiKey
       <form
         className={classnames({ "AskKeyToYubiKey": true, good: this.state.keyToYubiKey.verify() })}
         key={this.props.fingerprint}>
-        <label>Passphrase:</label><input type="password"
+        {this.render_card_slot()}
+         <label>Passphrase:</label><input type="password"
           className={classnames({ good: this.state.keyToYubiKey.verify() })}
           name={`aktyk-${this.props.fingerprint}`} required={true}
           onChange={(e: any) => {

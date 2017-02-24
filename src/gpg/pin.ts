@@ -1,6 +1,6 @@
 export class Pin {
   public pin: string = "";
-  public match: RegExp = /.*/;
+  public match: RegExp = /.+/;
   
   public verify() : boolean {
     return this.verifyText().length == 0;

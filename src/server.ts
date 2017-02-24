@@ -107,7 +107,7 @@ wss.on('connection', (ws) => {
   // ws.on('data', msg:any => console.log(msg));
   ws.on('message', (payload) => {
     let msg = Message.fromData(payload);
-    console.log("onMessage")
+    // console.log("onMessage")
     dispatch.run(ws, msg)
   });
 });

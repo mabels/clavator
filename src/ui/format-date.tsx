@@ -19,12 +19,12 @@ export class FormatDate
 
   constructor() {
     super();
-    this.state = { };
+    this.state = {};
   }
 
   public render(): JSX.Element {
     // {d.getFullYear()}-{d.getMonth() + 1}-{d.getDate()}
-    let d = new Date(1000*this.props.ticks);
+    let d = new Date(1000 * this.props.ticks);
     return (
       <span key={this.props.ticks}>
         {KeyGen.format_date(d)}

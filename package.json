@@ -47,6 +47,7 @@
     "mocha": ">=2.5.3",
     "nodemon": ">=1.9.2",
     "react-addons-test-utils": ">=15.1.0",
+    "@types/rimraf": ">=0.0.28",
     "rimraf": ">=2.5.2",
     "source-map-support": ">=0.4.1",
     "style-loader": ">=0.13.1",
@@ -73,7 +74,10 @@
     "react-dom": ">=15.4.1",
     "@types/winston": ">=0.0.32",
     "winston": ">=2.2.0",
-    "rxjs": ">=5.1.1"
+    "mobx": ">=3.1.0",
+    "mobx-react": ">=4.1.0",
+    "fs-promise": ">=1.0.0",
+    "@types/fs-promise": ">=1.0.1"
   },
   "publishConfig": {
     "tag": "next"

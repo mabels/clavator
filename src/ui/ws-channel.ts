@@ -29,10 +29,11 @@ export class Dispatch {
   }
 
   connector() {
-    let wsproto = "ws"
+    let wsproto = "ws";
     if (window.location.protocol == "https:") {
-      wsproto = "wss"
+      wsproto = "wss";
     }
+    console.log("connector", `${wsproto}://${window.location.host}/`);
     this.ws = new WebSocket(`${wsproto}://${window.location.host}/`);
     this.ws.onopen = (e: Event) => {
       // debugger
@@ -51,7 +52,7 @@ export class Dispatch {
     }
     this.ws.onmessage = (e: MessageEvent) => {
       let msg = Message.fromData(e.data);
-      console.log("onmessage", msg);
+      // console.log("onmessage", msg);
       this.wscs.forEach((wsc: WsChannel) => {
         wsc.onMessage && wsc.onMessage(msg.header, msg.data);
       });

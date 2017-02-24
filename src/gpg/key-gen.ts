@@ -21,9 +21,9 @@ export class Option<T> {
     this.errText = e;
   }
   public static fill<U>(js: any, dv: Option<  U>) {
-    console.log(">>>>Option>>>", js)
+    // console.log(">>>>Option>>>", js)
     dv.value = js['value'] || dv.value
-    console.log("<<<<<<Option<<<<", dv)
+    // console.log("<<<<<<Option<<<<", dv)
   }
 
   public map(cb: (selected: boolean, o: T) => any): any {

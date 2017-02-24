@@ -32,11 +32,8 @@ export class ChannelStatus extends
   onMessage(action: Message.Header, data: string) {
   }
 
-
-  componentWillReceiveProps(nextProps: any, nextContext: any) {
-    if (nextProps.channel) {
-      nextProps.channel.register(this);
-    }
+  componentWillMount() {
+    this.props.channel.register(this);
   }
 
   public render(): JSX.Element {

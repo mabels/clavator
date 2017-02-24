@@ -11,6 +11,7 @@ import GpgResetYubikey from './gpg_reset_yubikey';
 import GpgChangePinYubikey from './gpg_change_pin_yubikey';
 import DeleteSecretKey from './delete_secret_key';
 import RequestAsciiDispatcher from './request_ascii_dispatcher';
+import SendKeyToYubiKey from './send_key_to_yubikey';
 
 export class Dispatch {
     public dispatcher : Dispatcher[] = [];
@@ -30,5 +31,6 @@ export function start(gpg: Gpg.Gpg) : Dispatch {
     dispatch.dispatcher.push(GpgChangePinYubikey.create(gpg))
     dispatch.dispatcher.push(DeleteSecretKey.create(gpg))
     dispatch.dispatcher.push(RequestAsciiDispatcher.create(gpg))
+    dispatch.dispatcher.push(SendKeyToYubiKey.create(gpg))
     return dispatch;
 }

@@ -19,7 +19,7 @@ describe('ListSecretKeys', () => {
       assert.equal(s[2].fingerPrint.fpr, "F36846C4A7DEFD55F492069C19B013CF06A4BEEF");
       assert.equal(s[2].group.grp, "75E60BCBF5E25BBBF0E701CD55BC79F4C03BC320");
       assert.equal(s[2].subKeys.length, 3);
-console.log(s[2].subKeys)
+// console.log(s[2].subKeys)
       assert.equal(s[2].subKeys[0].type, 'ssb');
       assert.equal(s[2].subKeys[0].cipher, 'rsa');
       assert.equal(s[2].subKeys[0].bits, 4096);

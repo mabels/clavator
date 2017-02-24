@@ -21,6 +21,7 @@ export class RequestAsciiDispatcher implements Dispatcher {
   public processResult(ws: WebSocket, req: RequestAscii) {
     return (res: Gpg.Result) => {
       // ws.send(Message.prepare("Progressor.Clavator", Progress.ok(res.stdOut)));
+      console.log("send:RespondAscii");
       ws.send(Message.prepare("RespondAscii", new RespondAscii(req.action, req.fingerprint, res.stdOut)));
     }
   }

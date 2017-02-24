@@ -11,7 +11,6 @@ import * as WsChannel from './ws-channel';
 interface ProgressorState {
   progressList: Progress.Progress[];
 }
-//export default KeyChainListState;
 
 interface ProgressorProps extends React.Props<Progressor> {
   channel: WsChannel.Dispatch;
@@ -28,7 +27,10 @@ export class Progressor
     this.state = {
       progressList: []
     };
-    this.handleClearClick = this.handleClearClick.bind(this)
+  }
+
+  protected componentWillMount() {
+      this.props.channel.register(this);
   }
 
   protected componentWillUnmount(): void {
@@ -53,17 +55,6 @@ export class Progressor
   }
 
 
-  componentWillReceiveProps(nextProps: any, nextContext: any) {
-    if (nextProps.channel) {
-      nextProps.channel.register(this);
-    }
-  }
-
-  private handleClearClick() {
-    this.setState(Object.assign({}, this.state, {
-      progressList: []
-    }));
-  }
 
 
   private controls(): JSX.Element {

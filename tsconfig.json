@@ -5,7 +5,8 @@
     "outDir": "dist",
     "noImplicitAny": true,
     "pretty": true,
-    "jsx": "react"
+    "jsx": "react",
+    "experimentalDecorators": true
   },
   "exclude": [
     "node_modules"

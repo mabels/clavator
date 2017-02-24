@@ -14,29 +14,31 @@ import { ChangePin } from './change-pin';
 
 import * as Gpg from '../gpg/gpg';
 
+import {observer} from 'mobx-react';
+
+import { CardStatusListState } from './card-status-list-state';
 
 interface CardStatusState {
-  cardStatusList: CardStatus.Gpg2CardStatus[];
-  currentAdminPin: string;
-  newPin: string;
+  // currentAdminPin: string;
+  // newPin: string;
   requestPin: string;
 }
 //export default KeyChainListState;
 
 interface CardStatusListProps extends React.Props<CardStatusList> {
   channel: WsChannel.Dispatch;
+  cardStatusListState: CardStatusListState;
 }
 
+@observer
 export class CardStatusList
-  extends React.Component<CardStatusListProps, CardStatusState>
-  implements WsChannel.WsChannel {
+  extends React.Component<CardStatusListProps, CardStatusState> {
 
   constructor() {
     super();
     this.state = {
-      cardStatusList: [],
-      currentAdminPin: "12345678",
-      newPin: null,
+      // currentAdminPin: "12345678",
+      // newPin: null,
       requestPin: null
     };
 
@@ -51,22 +53,8 @@ export class CardStatusList
   }
 
   protected componentWillUnmount(): void {
-    this.setState(Object.assign({}, this.state, { cardStatusList: [] }));
+    // this.setState(Object.assign({}, this.state, { cardStatusList: [] }));
   }
-
-  onOpen(e: Event) { }
-
-  onMessage(action: Message.Header, data: string) {
-    if (action.action == "CardStatusList") {
-      this.setState(Object.assign({}, this.state, {
-        cardStatusList: JSON.parse(data)
-      }));
-    }
-  }
-  onClose(e: CloseEvent) {
-    this.setState(Object.assign({}, this.state, { cardStatusList: [] }));
-  }
-
 
   componentWillReceiveProps(nextProps: any, nextContext: any) {
     if (nextProps.channel) {
@@ -143,7 +131,7 @@ export class CardStatusList
     return (
       <div className="CardStatusList">
 
-        {this.state.cardStatusList.map((cs: CardStatus.Gpg2CardStatus, idx: number) => {
+        {this.props.cardStatusListState.cardStatusList.map((cs: CardStatus.Gpg2CardStatus, idx: number) => {
           return (<table key={cs.serial}>
             <tbody>
               <tr key={cs.serial}>
