@@ -2,13 +2,13 @@ language: node_js
 dist: trusty
 
 node_js:
-  - "6.8.1"
+  - "6.9.1"
 
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install -y libboost-all-dev cmake libpam0g-dev
 
 script:
-  - (cd pam && cmake -DCMAKE_BUILD_TYPE=Release . && make)
-  - (cd pam && ctest)
+  #  - (cd pam && cmake -DCMAKE_BUILD_TYPE=Release . && make)
+  #- (cd pam && ctest)
   - npm install && npm test

@@ -7,7 +7,7 @@ import 'font-awesome/less/font-awesome.less';
 
 import { render } from 'react-dom';
 
-import { Subject, Observable } from 'rxjs';
+// import { Subject, Observable } from 'rxjs';
 
 // import "./clavator.png";
 const Clavator = require('./clavator.png');
@@ -23,9 +23,9 @@ import { Provider } from 'react-redux';
 
 import * as WsChannel from './ws-channel';
 
-import * as Rx from 'rxjs';
+// import * as Rx from 'rxjs';
 
-import {CardStatusListState} from './card-status-list-state'
+import { CardStatusListState } from './card-status-list-state'
 
 const channel = WsChannel.Dispatch.create();
 const cardStatusListState = new CardStatusListState(channel);
@@ -44,11 +44,11 @@ export class App extends React.Component<{}, AppState> {
   protected componentWillUnmount(): void {
     channel.close();
   }
-  
+
   public render(): JSX.Element {
     return (
-        <div>
-          {/*
+      <div>
+        {/*
         <ul className="navigation">
           <li className="nav-item"><a href="#"><img src={Clavator} width="150px" title="Clavator"/></a></li>
           <li className="nav-item"><a href="#CreateKey">CreateKey</a></li>
@@ -59,22 +59,22 @@ export class App extends React.Component<{}, AppState> {
         </ul>
         <input type="checkbox" id="nav-trigger" className="nav-trigger" />
       */}
-          <label htmlFor="nav-trigger"><ChannelStatus channel={channel} /></label>
-          <div className="site-wrap">
-            <a name="CreateKey"></a>
-            <h3>CreateKey</h3>
-            <CreateKey channel={channel} />
-            <a name="KeyChainList"></a>
-            <h3>KeyChainList</h3>
-            <KeyChainList cardStatusListState={cardStatusListState} channel={channel} />
-            <a name="CardStatusList"></a>
-            <h3>CardStatusList</h3>
-            <CardStatusList channel={channel} cardStatusListState={cardStatusListState} />
-            <a name="Progressor"></a>
-            <h3>Logs</h3>
-            <Progressor channel={channel} msg="Clavator" controls={true} />
-          </div>
+        <label htmlFor="nav-trigger"><ChannelStatus channel={channel} /></label>
+        <div className="site-wrap">
+          <a name="CreateKey"></a>
+          <h3>CreateKey</h3>
+          <CreateKey channel={channel} />
+          <a name="KeyChainList"></a>
+          <h3>KeyChainList</h3>
+          <KeyChainList cardStatusListState={cardStatusListState} channel={channel} />
+          <a name="CardStatusList"></a>
+          <h3>CardStatusList</h3>
+          <CardStatusList channel={channel} cardStatusListState={cardStatusListState} />
+          <a name="Progressor"></a>
+          <h3>Logs</h3>
+          <Progressor channel={channel} msg="Clavator" controls={true} />
         </div>
+      </div>
     );
   }
 }
