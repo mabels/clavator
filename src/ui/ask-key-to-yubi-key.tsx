@@ -62,8 +62,8 @@ export class AskKeyToYubiKey
             }))}} >
            {this.props.cardStatusListState.cardStatusList.map((cardstatus) => {
              return cardstatus.keyStates.map((ks: CardStatus.KeyState, idx: number) => {
-               let key = `${cardstatus.reader.cardid}:Slot${idx}`
-               return (<option value={idx} key={key}>{key}</option>) 
+               let key = `${cardstatus.reader.cardid}:Slot${idx+1}`
+               return (<option value={idx+1} key={key}>{key}</option>) 
             })
            })}
         </select>

@@ -91,7 +91,7 @@ describe('Gpg', () => {
       gpg.deletePublicKey(key.fingerPrint.fpr, (res: Gpg.Result) => {
         assert.equal(res.exitCode, 0, "delete pub key")
         gpg.runAgent(["killagent", "/bye"], null, (res: Gpg.Result) => {
-          Rimraf.sync(gpg.homeDir)
+          // Rimraf.sync(gpg.homeDir)
           done()
         })
       })
@@ -141,11 +141,11 @@ describe('Gpg', () => {
       mygpg.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
         assert.equal(1, keys.length, "len should be one")
         assert.equal("gpg.sock@lodke.gpg", keys[0].uids[0].email);
-        mygpg.runAgent(["killagent", "/bye"], null, (res: Gpg.Result) => {
-          Rimraf.sync(mygpg.homeDir)
-          done()
-        })
-
+        // mygpg.runAgent(["killagent", "/bye"], null, (res: Gpg.Result) => {
+        //   done()
+        // })
+        Rimraf.sync(mygpg.homeDir)
+        done();
       })
     })
   })
@@ -159,7 +159,8 @@ describe('Gpg', () => {
     })
   })
  
-  it("pemPrivateKey", (done) => {
+  it("pemPrivateKey", function(done) {
+    // this.timeout(10000);
     let rqa : RequestAscii = new RequestAscii();
     rqa.fingerprint = key.keyId;
     rqa.passphrase.value = "Gpg Test Jojo Akzu Luso";

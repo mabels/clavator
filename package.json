@@ -47,8 +47,6 @@
     "mocha": ">=2.5.3",
     "nodemon": ">=1.9.2",
     "react-addons-test-utils": ">=15.1.0",
-    "@types/rimraf": ">=0.0.28",
-    "rimraf": ">=2.5.2",
     "source-map-support": ">=0.4.1",
     "style-loader": ">=0.13.1",
     "tslint": ">=3.11.0",
@@ -57,6 +55,8 @@
     "webpack": ">=2.2.0"
   },
   "dependencies": {
+    "@types/rimraf": ">=0.0.28",
+    "rimraf": ">=2.5.2",
     "react-copy-to-clipboard": "4.2.3",
     "font-awesome": "^4.4.0",
     "@types/classnames": ">=0.0.32",
