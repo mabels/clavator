@@ -77,7 +77,11 @@
     "mobx": ">=3.1.0",
     "mobx-react": ">=4.1.0",
     "fs-promise": ">=1.0.0",
-    "@types/fs-promise": ">=1.0.1"
+    "@types/fs-promise": ">=1.0.1",
+    "react-modal": ">=1.6.5",
+    "@types/react-modal": ">=1.6.2",
+    "react-tabs": ">=0.8.2",
+    "@types/react-tabs": ">=0.5.22"
   },
   "publishConfig": {
     "tag": "next"

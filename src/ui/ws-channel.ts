@@ -1,5 +1,8 @@
 import * as Message from '../message';
 
+export interface WsMessage {
+  (h: Message.Header, data: string): void;
+}
 export interface WsChannel {
   onClose(e: CloseEvent): void;
   onOpen(e: Event): void;
@@ -10,6 +13,7 @@ export class Dispatch {
   private isActive: boolean = false;
   private ws: WebSocket;
   private wscs: WsChannel[] = [];
+  private onMessages = new Set<WsMessage>();
 
   public register(wsc: WsChannel) {
     this.wscs.push(wsc);
@@ -26,6 +30,15 @@ export class Dispatch {
 
   public close() {
     this.ws.close();
+  }
+
+  public onMessage(cb: (h: Message.Header, data: string) => void) {
+    this.onMessages.add(cb);
+    return cb;
+  }
+
+  public unMessage(cb: (h: Message.Header, data: string) => void) {
+    this.onMessages.delete(cb);
   }
 
   connector() {
@@ -56,6 +69,7 @@ export class Dispatch {
       this.wscs.forEach((wsc: WsChannel) => {
         wsc.onMessage && wsc.onMessage(msg.header, msg.data);
       });
+      this.onMessages.forEach((cb) => { cb(msg.header, msg.data)});
     };
   }
 

@@ -18,6 +18,10 @@ import {observer} from 'mobx-react';
 
 import { CardStatusListState } from './card-status-list-state';
 
+import EditableCard from './editable-card';
+
+import { AskPassphrase } from './ask-passphrase';
+
 interface CardStatusState {
   // currentAdminPin: string;
   // newPin: string;
@@ -130,17 +134,49 @@ export class CardStatusList
   public render(): JSX.Element {
     return (
       <div className="CardStatusList">
-
         {this.props.cardStatusListState.cardStatusList.map((cs: CardStatus.Gpg2CardStatus, idx: number) => {
+          console.log("Render", cs.serial);
+          let login = ""+cs.login;
           return (<table key={cs.serial}>
             <tbody>
               <tr key={cs.serial}>
                 {this.render_actions(cs)}
                 <td>{cs.serial}</td>
-                <td>{cs.name}</td>
-                <td>{cs.login}</td>
-                <td>{cs.lang}</td>
-                <td>{cs.sex}</td>
+                <td><EditableCard 
+                    cardStatusListState={this.props.cardStatusListState}
+                    serialNo={cs.reader.cardid}
+                    channel={this.props.channel} action={"name"} value={cs.name} >
+                      <input defaultValue={cs.name.split(/\s+/)[0]} />
+                      <input defaultValue={cs.name.split(/\s+/).slice(1).join(" ")} />
+                    </EditableCard>
+                </td>
+                <td><EditableCard 
+                    cardStatusListState={this.props.cardStatusListState}
+                    serialNo={cs.reader.cardid}
+                    channel={this.props.channel} action={"login"} value={cs.login} >
+                      <input defaultValue={login} />
+                    </EditableCard>
+                </td>
+                <td><EditableCard 
+                    cardStatusListState={this.props.cardStatusListState}
+                    serialNo={cs.reader.cardid}
+                    channel={this.props.channel} action={"lang"} value={cs.lang}>
+                      <input defaultValue={cs.lang} />
+                    </EditableCard>
+                </td>
+                <td><EditableCard 
+                    cardStatusListState={this.props.cardStatusListState}
+                    serialNo={cs.reader.cardid}
+                    channel={this.props.channel} action={"sex"} value={cs.sex} >
+                      <select value={cs.sex[0] == "m" ? 1 : 2}
+                        onChange={function(e) { 
+                          this.setState({value: e.target.value});
+                        }}> 
+                        <option value={2}>Female</option>
+                        <option value={1}>Male</option>
+                      </select>
+                    </EditableCard>
+                </td>
               </tr>
               {this.render_action(cs)}
               <tr>

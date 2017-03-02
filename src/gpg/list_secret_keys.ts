@@ -17,6 +17,16 @@ export class Uid {
   id: string;
   key: string;
 
+  public eq(o: Uid) {
+    return this.trust == o.trust &&
+      this.name == o.name &&
+      this.email == o.email &&
+      this.comment == o.comment &&
+      this.created == o.created &&
+      this.id == o.id &&
+      this.key == o.key;
+  }
+
   //uid:u::::1464699940::A319A573075CF1606705BDA9FD5F07E5AD24F257::Meno Abels <meno.abels@adviser.com>:::::::::
   fill(match: string[]) {
     debugArray(match);
@@ -40,6 +50,11 @@ export class Uid {
 
 class FingerPrint {
   fpr: string;
+ 
+  public eq(o: FingerPrint) {
+    return this.fpr == o.fpr;
+  }
+
   fill(match: string[]) {
     debugArray(match);
     this.fpr = match[9];
@@ -49,6 +64,11 @@ class FingerPrint {
 
 class Group {
   grp: string;
+
+  public eq(o: Group) {
+    return this.grp == o.grp;
+  }
+
   fill(match: string[]) {
     debugArray(match);
     this.grp = match[9];
@@ -75,6 +95,33 @@ export class Key {
   group: Group = new Group();
   fingerPrint: FingerPrint = new FingerPrint();
 
+  public usesEq(o: string[]) {
+    if (this.uses.length != o.length) {
+      return false;
+    }
+    for (let i = 0; i < this.uses.length; ++i) {
+      if (this.uses[i] != o[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public eq(o: Key) {
+    return this.type == o.type &&
+     this.trust == o.trust &&
+     this.cipher == o.cipher &&
+     this.funky == o.funky &&
+     this.bits == o.bits &&
+     this.keyId == o.keyId &&
+     this.key == o.key &&
+     this.created == o.created &&
+     this.expires == o.expires &&
+     this.usesEq(o.uses) &&
+     this.group.eq(o.group) &&
+     this.fingerPrint.eq(o.fingerPrint);
+  }
+
 // sec:u:256:22:19B013CF06A4BEEF:1464699940:1622379940::u:::cESCA:::#::ed25519::
 // ssb:u:256:22:258DE0ECF59BF6FC:1464700731:1622380731:::::a:::+::ed25519:
 // ssb:u:4096:1:28E66F405F1BE34D:1464700773:1622380773:::::esa:::D2760001240102010006041775630000::ed25519:
@@ -99,6 +146,25 @@ export class Key {
 export class SecretKey extends Key {
   uids: Uid[] = [];
   subKeys: Key[] = [];
+
+  public eq(o: SecretKey) {
+    if (this.uids.length != o.uids.length) {
+      return false;
+    } 
+    if (this.subKeys.length != o.subKeys.length) {
+      return false;
+    } 
+    for (let i = 0; i < this.uids.length; ++i) {
+      if (!this.uids[i].eq(o.uids[i])) {
+        return false;
+      }
+    }
+    for (let i = 0; i < this.subKeys.length; ++i) {
+      if (!this.subKeys[i].eq(o.subKeys[i])) {
+        return false;
+      }
+    }
+  }
 }
 
 const reCrNl = /\r?\n/;

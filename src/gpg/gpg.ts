@@ -14,6 +14,7 @@ import * as Uuid from 'node-uuid';
 import KeyToYubiKey from './key-to-yubikey';
 
 import * as KeyGen from './key-gen';
+import ChangeCard from './change_card';
 import RequestAscii from './request_ascii';
 import RequestChangePin from './request_change_pin';
 
@@ -495,6 +496,25 @@ export class Gpg {
                 cb(res);
             })
         })
+    }
+
+     public changeCard(cc: ChangeCard, cb: (res: Result) => void) {
+        // create copy of the selected key to avoid
+        // that this key will removed from the current
+        // key database
+        let args = [
+            '--pinentry-mode', 'loopback',
+            '--passphrase-fd', () => {
+                // console.log(">>keyToYubiKey:passphrase[", ktyk.passphrase.value, "]")
+                return cc.adminPin.pin //+ "\n"
+            },
+            '--quick-change-card',
+            cc.action
+        ];
+        args = args.concat(cc.params);
+        args.push(cc.serialNo);
+        console.log("changeCard", args)
+        this.run(args, null, cb);
     }
 
 }

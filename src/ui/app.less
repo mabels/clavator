@@ -100,7 +100,7 @@
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: 0;
+  // z-index: 0;
 
   /* non-critical appearance styles */
   list-style: none;
@@ -142,7 +142,7 @@
   top: 0;
   bottom: 100%;
   left: 0;
-  z-index: 1;
+  // z-index: 1;
 
   /* non-critical apperance styles */
   padding: 4em;
@@ -161,7 +161,7 @@ label[for="nav-trigger"] {
   /* critical positioning styles */
   position: fixed;
   left: 15px; top: 15px;
-  z-index: 2;
+  // z-index: 2;
 
   /* non-critical apperance styles */
   height: 30px;
@@ -214,4 +214,38 @@ html, body {
   height: 100%;
   width: 100%;
   font-family: Helvetica, Arial, sans-serif;
+}
+
+.ReactModal__Overlay {
+  -webkit-perspective: 600;
+  perspective: 600;
+  opacity: 0.1;
+  background-color: 'red';
+}
+
+.ReactModal__Overlay--after-open {
+  opacity: 1;
+  transition: opacity 150ms ease-out;
+}
+
+.ReactModal__Content {
+  -webkit-transform: scale(0.5) rotateX(-30deg);
+  transform: scale(0.5) rotateX(-30deg);
+  color: 'lightsteelblue';
+}
+
+.ReactModal__Content--after-open {
+  -webkit-transform: scale(1) rotateX(0deg);
+  transform: scale(1) rotateX(0deg);
+  transition: all 150ms ease-in;
+}
+
+.ReactModal__Overlay--before-close {
+  opacity: 0;
+}
+
+.ReactModal__Content--before-close {
+  -webkit-transform: scale(0.5) rotateX(30deg);
+  transform: scale(0.5) rotateX(30deg);
+  transition: all 150ms ease-in;
 }

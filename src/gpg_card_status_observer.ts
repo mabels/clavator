@@ -6,17 +6,20 @@ import * as Observer from './observer';
 
 import * as Gpg from './gpg/gpg';
 import * as CardStatus from "./gpg/card_status";
+import WssUpdate from './wss_update';
 
 class GpgCardStatusObserver {
   public observer: Observer.Observer;
   public timeoutId: any;
   public gpg: Gpg.Gpg;
   public actionCount: number;
+  public prev = new WssUpdate<CardStatus.Gpg2CardStatus>();
   public static create(gpg: Gpg.Gpg, obs: Observer.Observer) : GpgCardStatusObserver {
       let glsko = new GpgCardStatusObserver();
       glsko.gpg = gpg;
       glsko.actionCount = 0;
       glsko.observer = obs;
+      glsko.action = glsko.action.bind(glsko);
       glsko.start();
       return glsko;
   }
@@ -27,7 +30,7 @@ class GpgCardStatusObserver {
     this.action([ws]);
   }
 
-  public action(wss=this.observer.wss) {
+  public action(wss = this.observer.wss) {
     this.actionCount++;
     //console.log("actionCount:", this.actionCount, this.observer.wss.length, this.gpg);
     if (!wss.length) {
@@ -40,17 +43,9 @@ class GpgCardStatusObserver {
         }
         keys = [];
       }
-      let cnt = 0;
-      let found = false;
-      for (let ws of wss) {
-        cnt++;
-        found = true;
-        ws.send(Message.prepare("CardStatusList", keys), (error: any) => {
-          if (--cnt <= 0) {
-            this.timeoutId = setTimeout(this.action.bind(this), 5000);
-          }
-        });
-      }
+      this.prev.run("CardStatusList", wss, keys, () => {
+        this.timeoutId = setTimeout(this.action, 5000);
+      })
     });
   }
 

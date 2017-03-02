@@ -7,13 +7,14 @@ import MutableString from '../gpg/mutable_string';
 
 
 interface AskPassphraseState {
+  value: string
 }
 //export default KeyChainListState;
 
 interface AskPassphraseProps extends React.Props<AskPassphrase> {
-  passphrase: MutableString,
+  passphrase?: MutableString,
   fingerprint: string,
-  completed: () => void;
+  completed: (pp: string) => void;
 }
 
 export class AskPassphrase
@@ -22,6 +23,7 @@ export class AskPassphrase
   constructor() {
     super();
     this.state = {
+      value: null
     };
   }
 
@@ -34,11 +36,15 @@ export class AskPassphrase
         <label>Passphrase:</label><input type="password"
           name={`ap-${this.props.key}`} required={true}
           onChange={(e: any) => {
-            this.props.passphrase.value = e.target.value;
+            if (this.state.value) {
+              this.setState({ value : e.target.value });
+            } else {
+              this.props.passphrase.value = e.target.value;
+            }
             // this.setState(this.state);
           }} />
         <button type="button" onClick={(e: any) => {
-          this.props.completed && this.props.completed()
+          this.props.completed && this.props.completed(this.state.value || this.props.passphrase.value)
         }}>Ready</button>
       </form>
     );

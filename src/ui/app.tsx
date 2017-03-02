@@ -3,6 +3,9 @@ import './normalize.css';
 import './skeleton.css';
 import './app.less';
 import 'font-awesome/less/font-awesome.less';
+
+import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+
 // import "react-font-awesome";
 
 import { render } from 'react-dom';
@@ -26,9 +29,11 @@ import * as WsChannel from './ws-channel';
 // import * as Rx from 'rxjs';
 
 import { CardStatusListState } from './card-status-list-state'
+import { KeyChainListState } from './key-chain-list-state'
 
 const channel = WsChannel.Dispatch.create();
 const cardStatusListState = new CardStatusListState(channel);
+const keyChainListState = new KeyChainListState(channel);
 
 interface AppState {
 }
@@ -60,20 +65,37 @@ export class App extends React.Component<{}, AppState> {
         <input type="checkbox" id="nav-trigger" className="nav-trigger" />
       */}
         <label htmlFor="nav-trigger"><ChannelStatus channel={channel} /></label>
-        <div className="site-wrap">
-          <a name="CreateKey"></a>
-          <h3>CreateKey</h3>
-          <CreateKey channel={channel} />
-          <a name="KeyChainList"></a>
-          <h3>KeyChainList</h3>
-          <KeyChainList cardStatusListState={cardStatusListState} channel={channel} />
-          <a name="CardStatusList"></a>
-          <h3>CardStatusList</h3>
-          <CardStatusList channel={channel} cardStatusListState={cardStatusListState} />
-          <a name="Progressor"></a>
-          <h3>Logs</h3>
-          <Progressor channel={channel} msg="Clavator" controls={true} />
-        </div>
+        <Tabs selectedIndex={0} >
+          <TabList>
+            <Tab>CreateKey</Tab>
+            <Tab>KeyChainList</Tab>
+            <Tab>CardStatusList</Tab>
+            <Tab>Logs</Tab>
+          </TabList>
+          <TabPanel>
+            <a name="CreateKey"></a>
+            <h3>CreateKey</h3>
+            <CreateKey channel={channel} />
+          </TabPanel>
+          <TabPanel>
+            <a name="KeyChainList"></a>
+            <h3>KeyChainList</h3>
+            <KeyChainList 
+              keyChainListState={keyChainListState}
+              cardStatusListState={cardStatusListState} 
+              channel={channel} />
+          </TabPanel>
+          <TabPanel>
+            <a name="CardStatusList"></a>
+            <h3>CardStatusList</h3>
+            <CardStatusList channel={channel} cardStatusListState={cardStatusListState} />
+          </TabPanel>
+          <TabPanel>
+            <a name="Progressor"></a>
+            <h3>Logs</h3>
+            <Progressor channel={channel} msg="Clavator" controls={true} />
+          </TabPanel>
+        </Tabs>
       </div>
     );
   }

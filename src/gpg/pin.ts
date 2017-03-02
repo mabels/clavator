@@ -1,6 +1,12 @@
 export class Pin {
   public pin: string = "";
   public match: RegExp = /.+/;
+
+  public static fill(js: any) : Pin {
+    let pin = new Pin();
+    pin.pin = js['pin']
+    return pin;
+  }
   
   public verify() : boolean {
     return this.verifyText().length == 0;
@@ -12,6 +18,12 @@ export class Pin {
     }
     return ret;
   }
+}
+
+export function AdminPin() {
+  let ret = new Pin();
+  ret.match = /[0-9]{8}/;
+  return ret;
 }
 
 export default Pin;

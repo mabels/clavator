@@ -11,6 +11,18 @@ export class KeyState {
   cafpr : number = 0;
   fpr : string;
   fprtime : number;
+
+  public eq(o: KeyState) {
+    return this.id == o.id &&
+      this.mode == o.mode &&
+      this.bits == o.bits &&
+      this.maxpinlen == o.maxpinlen &&
+      this.pinretry == o.pinretry &&
+      this.sigcount == o.sigcount &&
+      this.cafpr == o.cafpr &&
+      this.fpr == o.fpr &&
+      this.fprtime == o.fprtime;
+  }
 };
 
 export class Reader {
@@ -93,6 +105,28 @@ export class Gpg2CardStatus {
   sigcount: number;
   // cafpr: number = 0;
 
+  public eq(o : Gpg2CardStatus) : boolean {
+    let eq = true;
+    eq = eq && this.reader.eq(o.reader)
+    !eq && console.log("Reader !=")
+    eq = eq && this.keyStates.length == o.keyStates.length;
+    for (let i = 0; eq && i < this.keyStates.length; ++i) {
+      eq = eq && this.keyStates[i].eq(o.keyStates[i]);
+      !eq && console.log("KeyState !=", i, this.keyStates.length, this.keyStates[i], o.keyStates[i])
+    }
+    eq = eq && this.version == o.version;
+    eq = eq && this.vendor == o.vendor;
+    eq = eq && this.serial == o.serial;
+    eq = eq && this.name == o.name;
+    eq = eq && this.lang == o.lang;
+    eq = eq && this.sex == o.sex;
+    eq = eq && this.url == o.url;
+    eq = eq && this.login == o.login;
+    eq = eq && this.forcepin == o.forcepin;
+    eq = eq && this.sigcount == o.sigcount;
+    return eq
+  }
+
   allocKeyState(slot: number) : KeyState {
     let ret = this.keyStates[slot]
     if (!ret) {
@@ -173,11 +207,11 @@ export class Gpg2CardStatus {
         return true;
       },
       "sigcount": (gcs: Gpg2CardStatus, strs: string[]) : boolean =>  {
-        gcs.sigcount = parseInt(strs[1], 10);
+        gcs.sigcount = parseInt(strs[1], 10) || 0;
         let i = 0;
         for (let si = 2; si < strs.length; ++si, ++i) {
           let ki = gcs.allocKeyState(i);
-          ki.sigcount = parseInt(strs[si], 10);
+          ki.sigcount = parseInt(strs[si], 10) || 0;
         }
         return true;
       },

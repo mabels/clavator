@@ -5,18 +5,22 @@ import * as Observer from './observer';
 
 import * as Gpg from './gpg/gpg';
 import * as ListSecretKeys from "./gpg/list_secret_keys";
+import WssUpdate from './wss_update'
 
 class GpgListSecretKeysObserver {
   public observer: Observer.Observer;
   public timeoutId: any;
   public gpg: Gpg.Gpg;
   public actionCount: number;
+  public prev  = new WssUpdate<ListSecretKeys.SecretKey>();
+
   public static create(gpg: Gpg.Gpg, obs: Observer.Observer) : GpgListSecretKeysObserver {
       let glsko = new GpgListSecretKeysObserver();
       glsko.gpg = gpg;
       glsko.actionCount = 0;
       glsko.observer = obs;
       glsko.start();
+      glsko.action = glsko.action.bind(glsko);
       return glsko;
   }
 
@@ -34,19 +38,11 @@ class GpgListSecretKeysObserver {
     this.gpg.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
       if (err) {
         console.error(err);
-        return;
+        keys = [];
       }
-      let cnt = 0;
-      let found = false;
-      for (let ws of wss) {
-        cnt++;
-        found = true;
-        ws.send(Message.prepare("KeyChainList", keys), (error: any) => {
-          if (--cnt <= 0) {
-            this.timeoutId = setTimeout(this.action.bind(this), 5000);
-          }
-        });
-      }
+      this.prev.run("KeyChainList", wss, keys, () => {
+        this.timeoutId = setTimeout(this.action, 5000);
+      });
     });
   }
 
