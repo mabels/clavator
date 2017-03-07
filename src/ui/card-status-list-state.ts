@@ -4,7 +4,7 @@ import * as ReactDOM from 'react-dom';
 import { observable } from 'mobx';
 
 import * as CardStatus from '../gpg/card_status';
-import {AdminPin,Pin} from '../gpg/pin';
+import { AdminPin, Pin } from '../gpg/pin';
 
 import * as WsChannel from './ws-channel';
 import * as Message from '../message';

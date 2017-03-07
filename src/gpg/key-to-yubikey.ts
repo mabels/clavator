@@ -1,5 +1,5 @@
 
-import Pin  from './pin';
+import Pin from './pin';
 import MutableString from './mutable_string';
 
 export class KeyToYubiKey {
@@ -9,7 +9,7 @@ export class KeyToYubiKey {
   public admin_pin: Pin = new Pin();
   public passphrase: MutableString = new MutableString();
 
-  public static fill(js: any) : KeyToYubiKey {
+  public static fill(js: any): KeyToYubiKey {
     let ra = new KeyToYubiKey();
     ra.fingerprint = js['fingerprint']
     ra.card_id = js['card_id']
@@ -19,12 +19,12 @@ export class KeyToYubiKey {
     return ra;
   }
 
-  public verify() : boolean {
+  public verify(): boolean {
     return this.verifyText().length == 0
   }
 
-  public verifyText() : string[] {
-    let ret : string[] = [];
+  public verifyText(): string[] {
+    let ret: string[] = [];
     if (this.fingerprint.length == 0) {
       ret.push("fingerprint had to set.")
     }

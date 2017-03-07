@@ -23,15 +23,16 @@ export class GpgChangePinYubikey implements Dispatcher {
     }
     let a = JSON.parse(m.data) || {};
     let rcp = RequestChangePin.fill(a);
-
-    ws.send(Message.prepare("Progressor.Clavator", Progress.ok(`ChangePin your Yubikey now:${rcp.action} ...`)))
+    let header = Message.toHeader(m, "Progressor.Clavator");
+    ws.send(Message.prepare(header, Progress.ok(`ChangePin your Yubikey now:${rcp.action} ...`)))
 
     this.gpg.changePin(rcp.action, rcp,  (res: Gpg.Result) => {
       if (res.exitCode != 0) {
-        ws.send(Message.prepare("Progressor.Clavator", Progress.fail(res.stdOut +"\n" + res.stdErr)))
+        ws.send(Message.prepare(header, Progress.fail(res.stdOut +"\n" + res.stdErr)))
       } else {
-        ws.send(Message.prepare("Progressor.Clavator", Progress.ok(`pin for ${rcp.action} changed`, true)))
+        ws.send(Message.prepare(header, Progress.ok(`pin for ${rcp.action} changed`, true)))
       }
+      ws.send(Message.prepare(header.setAction("GpgChangePinYubikey.Completed"), null))
     })
     return true;
   }

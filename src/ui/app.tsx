@@ -52,19 +52,7 @@ export class App extends React.Component<{}, AppState> {
 
   public render(): JSX.Element {
     return (
-      <div>
-        {/*
-        <ul className="navigation">
-          <li className="nav-item"><a href="#"><img src={Clavator} width="150px" title="Clavator"/></a></li>
-          <li className="nav-item"><a href="#CreateKey">CreateKey</a></li>
-          <li className="nav-item"><a href="#">Write2YubiKey</a></li>
-          <li className="nav-item"><a href="#KeyChainList">KeyChainList</a></li>
-          <li className="nav-item"><a href="#CardStatusList">CardStatusList</a></li>
-          <li className="nav-item"><a href="#Progressor">Logs</a></li>
-        </ul>
-        <input type="checkbox" id="nav-trigger" className="nav-trigger" />
-      */}
-        <label htmlFor="nav-trigger"><ChannelStatus channel={channel} /></label>
+      <ChannelStatus channel={channel}>
         <Tabs selectedIndex={0} >
           <TabList>
             <Tab>CreateKey</Tab>
@@ -80,9 +68,9 @@ export class App extends React.Component<{}, AppState> {
           <TabPanel>
             <a name="KeyChainList"></a>
             <h3>KeyChainList</h3>
-            <KeyChainList 
+            <KeyChainList
               keyChainListState={keyChainListState}
-              cardStatusListState={cardStatusListState} 
+              cardStatusListState={cardStatusListState}
               channel={channel} />
           </TabPanel>
           <TabPanel>
@@ -96,7 +84,7 @@ export class App extends React.Component<{}, AppState> {
             <Progressor channel={channel} msg="Clavator" controls={true} />
           </TabPanel>
         </Tabs>
-      </div>
+      </ChannelStatus>
     );
   }
 }

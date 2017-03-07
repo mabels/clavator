@@ -1,14 +1,14 @@
 
 export class Progress {
   id: number;
-  isOk : boolean;
-  isEndOfMessages : boolean;
+  isOk: boolean;
+  isEndOfMessages: boolean;
   msgs: string[];
 }
 
-let id : number = 0;
+let id: number = 0;
 
-export function fill(js: any) : Progress {
+export function fill(js: any): Progress {
   let p = new Progress();
   p.id = js['id'];
   p.isOk = js['isOk'];
@@ -17,7 +17,7 @@ export function fill(js: any) : Progress {
   return p;
 }
 
-export function fail(msg: string) : Progress {
+export function fail(msg: string): Progress {
   let p = new Progress();
   p.id = id++;
   p.isOk = false;
@@ -26,7 +26,7 @@ export function fail(msg: string) : Progress {
   return p
 }
 
-export function ok(msg: string, ieom = false) : Progress {
+export function ok(msg: string, ieom = false): Progress {
   let p = new Progress();
   p.id = id++;
   p.isOk = true;
@@ -35,7 +35,7 @@ export function ok(msg: string, ieom = false) : Progress {
   return p
 }
 
-export function info(msg: string, ieom = false) : Progress {
+export function info(msg: string, ieom = false): Progress {
   let p = new Progress();
   p.id = id++;
   p.isOk = true;
@@ -45,7 +45,7 @@ export function info(msg: string, ieom = false) : Progress {
   return p
 }
 
-export function error(msg: string, ieom = false) : Progress {
+export function error(msg: string, ieom = false): Progress {
   let p = new Progress();
   p.id = id++;
   p.isOk = false;

@@ -11,29 +11,32 @@ export class GpgResetYubikey implements Dispatcher {
 
   gpg: Gpg.Gpg
 
-  constructor(g: Gpg.Gpg){
+  constructor(g: Gpg.Gpg) {
     this.gpg = g
   }
 
-  public run(ws: WebSocket, m: Message.Message) : boolean {
+  public run(ws: WebSocket, m: Message.Message): boolean {
     console.log("GpgResetYubikey.run", m.header)
     if (m.header.action != "ResetYubikey") {
       // ws.send(Message.prepare("Progressor.Clavator", Progress.fail("Ohh")))
       return false;
     }
-    ws.send(Message.prepare("Progressor.Clavator", Progress.ok("Resetting your Yubikey now. This will take a couple of seconds. ...")))
+    let header = Message.toHeader(m, "Progressor.Clavator");
+    ws.send(Message.prepare(header, Progress.ok("Resetting your Yubikey now. This will take a couple of seconds. ...")))
 
     this.gpg.resetYubikey((res: Gpg.Result) => {
-      if (res.stdOut.split("\n").find((i:string) => {return i.startsWith("ERR ")})) {
+      ws.send(Message.prepare(header, res));
+      if (res.stdOut.split("\n").find((i: string) => { return i.startsWith("ERR ") })) {
         res.stdOut.split("\n").forEach((s: string) => {
-          ws.send(Message.prepare("Progressor.Clavator", Progress.fail(s)))
+          ws.send(Message.prepare(header, Progress.fail(s)))
         })
       } else {
-          ws.send(Message.prepare("Progressor.Clavator", Progress.ok("Almost done. Remove your Yubikey now and plug it in again.", true)))
+        ws.send(Message.prepare(header, Progress.ok("Almost done. Remove your Yubikey now and plug it in again.", true)))
         // res.stdOut.split("\n").forEach((s: string) => {
         //   ws.send(Message.prepare("Progressor.Clavator", Progress.ok(s)))
         // })
       }
+      ws.send(Message.prepare(header.setAction("GpgResetYubikey.Completed"), null))
     })
 
     // attributes: string[], stdIn: string, cb: (res: Result) => void)

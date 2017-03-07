@@ -23,7 +23,7 @@ function expireDate(): Date {
 }
 
 function keyGen() {
-  let keygen = new KeyGen.KeyGen(); 
+  let keygen = new KeyGen.KeyGen();
   keygen.expireDate.value = expireDate();
   keygen.password.password = "Gpg Test Jojo Akzu Luso";
   let keyInfo = new KeyGen.KeyInfo();
@@ -42,10 +42,10 @@ function createMasterKey(gpg: Gpg.Gpg, cb: (res: Gpg.Result) => void) {
 }
 
 describe('Gpg', () => {
-  let gpg : Gpg.Gpg;
-  let key : ListSecretKeys.SecretKey;
+  let gpg: Gpg.Gpg;
+  let key: ListSecretKeys.SecretKey;
 
-  before(function(done) {
+  before(function (done) {
     gpg = new Gpg.Gpg();
     let cmd = "gpg2";
     if (fs.existsSync("/usr/local/bin/gpg2")) {
@@ -75,7 +75,7 @@ describe('Gpg', () => {
         assert.equal(uid.email, 'gpg.sock@lodke.gpg');
         key = keys[0];
         // console.log("=========", keyGen().subKeys.pallets[0]);
-        gpg.createSubkey(key.fingerPrint.fpr, keyGen(), 
+        gpg.createSubkey(key.fingerPrint.fpr, keyGen(),
           keyGen().subKeys.pallets[0], (res: Gpg.Result) => {
             console.log(`Use GPG ${cmd}:${homedir}:${key.keyId}`)
             assert.equal(0, res.exitCode);
@@ -130,7 +130,7 @@ describe('Gpg', () => {
   //   })
   // })
 
-  it("prepareToYubiKey", function(done) {
+  it("prepareToYubiKey", function (done) {
     this.timeout(100000);
     let kytk = new KeyToYubiKey()
     kytk.fingerprint = key.keyId;
@@ -153,15 +153,15 @@ describe('Gpg', () => {
   it("getSocketName", (done) => {
     gpg.getSocketName((s) => {
       assert.isNotNull(s);
-      assert.ok(s.length>0);
+      assert.ok(s.length > 0);
       // console.log("getSocketName:", s);
       done();
     })
   })
- 
-  it("pemPrivateKey", function(done) {
+
+  it("pemPrivateKey", function (done) {
     // this.timeout(10000);
-    let rqa : RequestAscii = new RequestAscii();
+    let rqa: RequestAscii = new RequestAscii();
     rqa.fingerprint = key.keyId;
     rqa.passphrase.value = "Gpg Test Jojo Akzu Luso";
     gpg.pemPrivateKey(rqa, (res: Gpg.Result) => {
@@ -171,7 +171,7 @@ describe('Gpg', () => {
   })
 
   it("pemPublicKey", (done) => {
-    let rqa : RequestAscii = new RequestAscii();
+    let rqa: RequestAscii = new RequestAscii();
     rqa.fingerprint = key.keyId;
     gpg.pemPublicKey(rqa, (res: Gpg.Result) => {
       assert.equal(true, res.stdOut.startsWith("-----BEGIN PGP PUBLIC KEY BLOCK-----"), res.stdOut)
@@ -189,14 +189,14 @@ describe('Gpg', () => {
   // })
 
   it("sshPublic", (done) => {
-    let rqa : RequestAscii = new RequestAscii();
+    let rqa: RequestAscii = new RequestAscii();
     rqa.fingerprint = key.keyId;
-    gpg.sshPublic(rqa, (res: Gpg.Result) =>  {
+    gpg.sshPublic(rqa, (res: Gpg.Result) => {
       // console.log(res);
       assert.equal(true, res.stdOut.startsWith("ssh-rsa "), res.stdOut)
       done();
     })
   })
 
- 
+
 });

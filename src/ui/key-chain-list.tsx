@@ -21,6 +21,8 @@ import { KeyChainListState } from './key-chain-list-state';
 
 import { CardStatusListState } from './card-status-list-state';
 
+import * as CopyToClipboard from 'react-copy-to-clipboard';
+
 import MutableString from '../gpg/mutable_string';
 
 import * as ReactModal from 'react-modal';
@@ -28,7 +30,7 @@ import * as ReactModal from 'react-modal';
 // import * as CopyToClipboard from 'react-copy-to-clipboard';
 
 enum Dialogs {
-  closed, openAscii, askPassPhraseAscii
+  closed, openAscii, askPassPhraseAscii, sendToCard
 }
 
 // interface ResponseMap {
@@ -41,6 +43,7 @@ interface KeyChainListComponentState {
   receiver: WsChannel.WsMessage;
   respondAscii: RespondAscii;
   passPhrase: MutableString;
+  idx: number;
   // respondAscii: Map<string, RespondAscii>;
   // requestAscii: Map<string, RequestAscii>;
   // keyToYubiKeys: Map<string, KeyToYubiKey>;
@@ -65,7 +68,8 @@ export class KeyChainList
       key: null,
       receiver: null,
       respondAscii: null,
-      passPhrase: null
+      passPhrase: null,
+      idx: null
     };
     this.closeAsciiModal = this.closeAsciiModal.bind(this)
   }
@@ -116,13 +120,13 @@ export class KeyChainList
     ra.fingerprint = key.fingerPrint.fpr;
     ra.passphrase = new MutableString();
     ra.passphrase.value = pp;
-    this.props.channel.send(Message.prepare("RequestAscii", ra), null);
     this.setState(Object.assign({}, this.state, {
       dialog: dialog,
       action: action,
       key: key,
       respondAscii: null,
       receiver: this.props.channel.onMessage((action: Message.Header, data: string) => {
+        console.log("processAscii:", action)
         if (action.action != "RespondAscii") {
           return;
         }
@@ -136,6 +140,7 @@ export class KeyChainList
         }));
       })
     }))
+    this.props.channel.send(Message.newTransaction("RequestAscii", ra).asMsg());
   }
 
   requestAsciiWithPassphrase(key: ListSecretKeys.Key, action: string) {
@@ -159,14 +164,12 @@ export class KeyChainList
   public deleteSecretKey(key: ListSecretKeys.SecretKey) {
     return (() => {
       if (confirm(`Really delete ${key.keyId} <${key.uids[0].email}>?`)) {
-        this.props.channel.send(Message.prepare("DeleteSecretKey", key.fingerPrint),
-          (error: any) => {
-          });
+        this.props.channel.send(Message.newTransaction("DeleteSecretKey", key.fingerPrint).asMsg());
       }
     }).bind(this);
   }
 
-  public sendToCard(key: ListSecretKeys.Key) {
+  public sendToCard(key: ListSecretKeys.Key, idx: number) {
     return (() => {
       // this.state.keyToYubiKeys.delete(key.fingerPrint.fpr);
       // if (this.state.keyToYubiKeys.has(key.fingerPrint.fpr)) {
@@ -178,9 +181,12 @@ export class KeyChainList
       //   this.state.keyToYubiKeys.set(key.fingerPrint.fpr, rqa);
       //   // console.log("sendToCard-add", key.fingerPrint.fpr)
       // }
-      // this.setState(Object.assign({}, this.state, {
-      //   keyToYubiKeys: this.state.keyToYubiKeys
-      // }));
+      console.log("sendToCard:Activate")
+      this.setState(Object.assign({}, this.state, {
+        dialog: Dialogs.sendToCard,
+        key: key,
+        idx: idx
+      }));
     }).bind(this)
   }
 
@@ -206,11 +212,11 @@ export class KeyChainList
         name="pem-revoke">
         <i className="fa fa-bug"></i>
       </a>
-      <a title="Send Key to Smartcard"
+      {/*<a title="Send Key to Smartcard"
         onClick={this.sendToCard(key)}
         name="Send Key to Smartcard">
         <i className="fa fa-credit-card"></i>
-      </a>
+      </a>*/}
       <a title="delete"
         onClick={this.deleteSecretKey(sk)}
         name="delete">
@@ -219,31 +225,31 @@ export class KeyChainList
     </td>);
   }
 
-  public render_sub_buttons(sk: ListSecretKeys.SecretKey, key: ListSecretKeys.Key): JSX.Element {
+  public render_sub_buttons(sk: ListSecretKeys.SecretKey, key: ListSecretKeys.Key, idx: number): JSX.Element {
     return (
       <td className="action">
         <a title="Send Key to Smartcard"
-          onClick={this.sendToCard(key)}
+          onClick={this.sendToCard(key, idx)}
           name="Send Key to Smartcard">
           <i className="fa fa-credit-card"></i>
         </a>
       </td>);
   }
 
-  public render_buttons(clazz: string, sk: ListSecretKeys.SecretKey, key: ListSecretKeys.Key): JSX.Element {
+  public render_buttons(clazz: string, sk: ListSecretKeys.SecretKey, key: ListSecretKeys.Key, idx: number): JSX.Element {
     if (clazz == "ssb") {
-      return this.render_sub_buttons(sk, key);
+      return this.render_sub_buttons(sk, key, idx);
     } else {
       return this.render_sec_buttons(sk, key);
     }
   }
 
-  public render_key(clazz: string, sk: ListSecretKeys.SecretKey, key: ListSecretKeys.Key): JSX.Element {
+  public render_key(clazz: string, sk: ListSecretKeys.SecretKey, key: ListSecretKeys.Key, idx: number): JSX.Element {
     //<td>{key.funky}</td>
     // {this.render_buttons(key)}
     return (
       <tr className={clazz} key={key.key}>
-        {this.render_buttons(clazz, sk, key)}
+        {this.render_buttons(clazz, sk, key, idx)}
         <td>{key.type}</td>
         <td>{key.trust}</td>
         <td>{key.cipher}</td>
@@ -276,12 +282,19 @@ export class KeyChainList
     console.log("render_respondAscii:", this.state.respondAscii);
     return (
       <div>
-        <textarea
-          style={{ width: "100%", height: "100%" }}
-          readOnly={true}
-          defaultValue={this.state.respondAscii.data}>
-        </textarea>
+        <CopyToClipboard text={this.state.respondAscii.data}>
+          <button>Copy to clipboard</button>
+        </CopyToClipboard>
+        <pre style={{ "background-color": "#ccc" }}>
+          {this.state.respondAscii.data}
+        </pre>
       </div>
+      /*<textarea
+        style={{ width: "100%", height: "100%" }}
+        readOnly={true}
+        defaultValue={this.state.respondAscii.data}>
+      </textarea>
+    </div>*/
     );
   }
 
@@ -325,7 +338,7 @@ export class KeyChainList
         <AskPassphrase
           passphrase={this.state.passPhrase}
           fingerprint={this.state.key.fingerPrint.fpr}
-          completed={(pp) => { 
+          completed={(pp) => {
             this.processAscii(this.state.key, "pem-private", Dialogs.askPassPhraseAscii, pp);
           }} />
         {this.render_respondAscii()}
@@ -335,8 +348,8 @@ export class KeyChainList
 
 
 
-  public render_keyToYubiKey(sk: ListSecretKeys.Key, idx: number): JSX.Element {
-    return (
+  public renderSendToCard(): JSX.Element {
+    /*sk: ListSecretKeys.Key, idx: number
       <tr>
         <td colSpan={20}>
           <AskKeyToYubiKey
@@ -346,7 +359,25 @@ export class KeyChainList
             cardStatusListState={this.props.cardStatusListState}
           />
         </td>
-      </tr>
+      </tr>*/
+    return (
+      <ReactModal
+        isOpen={true}
+        closeTimeoutMS={150}
+        onAfterOpen={() => { }}
+        contentLabel="Modal"
+      >
+        <i style={{ float: "right" }} onClick={this.closeAsciiModal} className="fa fa-close"></i>
+        <h4>SendKeyToCard</h4>
+        {this.state.key.fingerPrint.fpr}
+        <AskKeyToYubiKey
+          slot_id={this.state.idx + 1}
+          fingerprint={this.state.key.fingerPrint.fpr}
+          channel={this.props.channel}
+          cardStatusListState={this.props.cardStatusListState}
+        />
+      </ReactModal>
+
     );
   }
 
@@ -357,6 +388,8 @@ export class KeyChainList
         return this.renderAsciiModal();
       case Dialogs.askPassPhraseAscii:
         return this.renderAskPassPhraseAsciiModal();
+      case Dialogs.sendToCard:
+        return this.renderSendToCard();
     }
     return null;
   }
@@ -375,9 +408,9 @@ export class KeyChainList
               </table>
               <table >
                 <tbody>
-                  {this.render_key("sec", sk, sk)}
+                  {this.render_key("sec", sk, sk, -1)}
                   {sk.subKeys.map((ssb, idx) => {
-                    return this.render_key("ssb", sk, ssb)
+                    return this.render_key("ssb", sk, ssb, idx)
                   })}
                 </tbody>
               </table>

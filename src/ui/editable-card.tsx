@@ -1,6 +1,6 @@
 
 
-
+/*
 
 import * as React from 'react';
 import './app.less';
@@ -72,17 +72,17 @@ export class EditableCard
     // })
     // debugger;
     // this.props.completeAction(this.state.inputs)
-   let cc = new ChangeCard();
-   cc.action = this.props.action;
-   cc.params = this.state.inputs.map((i: any) => i.value);
-   cc.serialNo = this.props.serialNo;
-   cc.adminPin = new Pin();
-   cc.adminPin.pin = "hello";//this.props.cardStatusListState.adminPins[this.props.]
+    let cc = new ChangeCard();
+    cc.action = this.props.action;
+    cc.params = this.state.inputs.map((i: any) => i.value);
+    cc.serialNo = this.props.serialNo;
+    cc.adminPin = new Pin();
+    cc.adminPin.pin = "hello";//this.props.cardStatusListState.adminPins[this.props.]
 
-   this.setState(Object.assign({}, this.state, { editable: EditableCardStates.Storing }))
-   this.props.channel.send(Message.prepare("ChangeCard", cc), (error: any) => {
-       if (error) {
-       }
+    this.setState(Object.assign({}, this.state, { editable: EditableCardStates.Storing }))
+    this.props.channel.send(Message.prepare("ChangeCard", cc), (error: any) => {
+      if (error) {
+      }
     });
   }
 
@@ -139,21 +139,21 @@ export class EditableCard
     // </span>
     console.log("render_editable")
     return (
-      <ReactModal 
+      <ReactModal
         isOpen={true}
         closeTimeoutMS={150}
-        onAfterOpen={() => {}}
+        onAfterOpen={() => { }}
         onRequestClose={this.constAction}
         contentLabel="Modal"
       >
-         <h2 ref="subtitle">Hello</h2>
-          <button onClick={this.constAction}>close</button>
+        <h2 ref="subtitle">Hello</h2>
+        <button onClick={this.constAction}>close</button>
 
-          <span key={this.props.value}>
-            <AskAdminPin cardStatusListState={this.props.cardStatusListState} serialNo={this.props.serialNo} />
-            {this.bindRefToChildren(this.props.children)}
-            <i onClick={this.constAction} className="fa fa-save"></i>
-          </span>
+        <span key={this.props.value}>
+          <AskAdminPin cardStatusListState={this.props.cardStatusListState} serialNo={this.props.serialNo} />
+          {this.bindRefToChildren(this.props.children)}
+          <i onClick={this.constAction} className="fa fa-save"></i>
+        </span>
       </ReactModal>
     );
   }
@@ -173,3 +173,4 @@ export class EditableCard
 }
 
 export default EditableCard;
+*/

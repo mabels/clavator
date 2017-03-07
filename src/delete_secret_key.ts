@@ -11,31 +11,32 @@ export class DeleteSecretKey implements Dispatcher {
 
   gpg: Gpg.Gpg
 
-  constructor(g: Gpg.Gpg){
+  constructor(g: Gpg.Gpg) {
     this.gpg = g
   }
 
-  public run(ws: ws, m: Message.Message) : boolean {
+  public run(ws: ws, m: Message.Message): boolean {
     console.log("DeleteSecretKey.run", m.header)
     if (m.header.action != "DeleteSecretKey") {
       // ws.send(Message.prepare("Progressor.Clavator", Progress.fail("Ohh")))
       return false;
     }
     let payload = JSON.parse(m.data);
-    ws.send(Message.prepare("Progressor.Clavator",
-      Progress.ok("DeleteSecretKey="+m.data)))
+    let header = Message.toHeader(m, "Progressor.Clavator");
+    ws.send(Message.prepare(header,
+      Progress.ok("DeleteSecretKey=" + m.data)))
     this.gpg.deleteSecretKey(payload.fpr, (res: Gpg.Result) => {
-      ws.send(Message.prepare("Progressor.Clavator", Progress.info(res.stdOut)));
-      ws.send(Message.prepare("Progressor.Clavator", Progress.error(res.stdErr)));
-      if (res.stdOut.split("\n").find((i:string) => {return i.startsWith("ERR ")})) {
+      ws.send(Message.prepare(header, Progress.info(res.stdOut)));
+      ws.send(Message.prepare(header, Progress.error(res.stdErr)));
+      if (res.stdOut.split("\n").find((i: string) => { return i.startsWith("ERR ") })) {
         res.stdOut.split("\n").forEach((s: string) => {
-          ws.send(Message.prepare("Progressor.Clavator", Progress.fail(s)));
+          ws.send(Message.prepare(header, Progress.fail(s)));
         })
       } else {
         this.gpg.deletePublicKey(payload.fpr, (res: Gpg.Result) => {
-          ws.send(Message.prepare("Progressor.Clavator", Progress.info(res.stdOut)));
-          ws.send(Message.prepare("Progressor.Clavator", Progress.error(res.stdErr)));
-          ws.send(Message.prepare("Progressor.Clavator", Progress.ok("DeleteKey Successfull", true)))
+          ws.send(Message.prepare(header, Progress.info(res.stdOut)));
+          ws.send(Message.prepare(header, Progress.error(res.stdErr)));
+          ws.send(Message.prepare(header, Progress.ok("DeleteKey Successfull", true)))
         })
       }
     })

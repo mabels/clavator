@@ -12,16 +12,16 @@ class GpgListSecretKeysObserver {
   public timeoutId: any;
   public gpg: Gpg.Gpg;
   public actionCount: number;
-  public prev  = new WssUpdate<ListSecretKeys.SecretKey>();
+  public prev = new WssUpdate<ListSecretKeys.SecretKey>();
 
-  public static create(gpg: Gpg.Gpg, obs: Observer.Observer) : GpgListSecretKeysObserver {
-      let glsko = new GpgListSecretKeysObserver();
-      glsko.gpg = gpg;
-      glsko.actionCount = 0;
-      glsko.observer = obs;
-      glsko.start();
-      glsko.action = glsko.action.bind(glsko);
-      return glsko;
+  public static create(gpg: Gpg.Gpg, obs: Observer.Observer): GpgListSecretKeysObserver {
+    let glsko = new GpgListSecretKeysObserver();
+    glsko.gpg = gpg;
+    glsko.actionCount = 0;
+    glsko.observer = obs;
+    glsko.start();
+    glsko.action = glsko.action.bind(glsko);
+    return glsko;
   }
 
   public register(ws: WebSocket) {
@@ -29,7 +29,7 @@ class GpgListSecretKeysObserver {
     this.action([ws]);
   }
 
-  public action(wss=this.observer.wss) {
+  public action(wss = this.observer.wss) {
     this.actionCount++;
     //console.log("actionCount:", this.actionCount, this.observer.wss.length, this.gpg);
     if (!wss.length) {

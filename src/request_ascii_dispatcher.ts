@@ -14,19 +14,19 @@ export class RequestAsciiDispatcher implements Dispatcher {
 
   gpg: Gpg.Gpg
 
-  constructor(g: Gpg.Gpg){
+  constructor(g: Gpg.Gpg) {
     this.gpg = g
   }
 
-  public processResult(ws: WebSocket, req: RequestAscii) {
+  public processResult(header: Message.Header, ws: WebSocket, req: RequestAscii) {
     return (res: Gpg.Result) => {
       // ws.send(Message.prepare("Progressor.Clavator", Progress.ok(res.stdOut)));
       console.log("send:RespondAscii");
-      ws.send(Message.prepare("RespondAscii", new RespondAscii(req.action, req.fingerprint, res.stdOut)));
+      ws.send(Message.prepare(header.setAction("RespondAscii"), new RespondAscii(req.action, req.fingerprint, res.stdOut)));
     }
   }
 
-  public run(ws: WebSocket, m: Message.Message) : boolean {
+  public run(ws: WebSocket, m: Message.Message): boolean {
     console.log("RequestAscii.run", m.header)
     if (m.header.action != "RequestAscii") {
       // ws.send(Message.prepare("Progressor.Clavator", Progress.fail("Ohh")))
@@ -37,20 +37,20 @@ export class RequestAsciiDispatcher implements Dispatcher {
     //   Progress.ok("RequestAscii="+m.data)))
     switch (payload.action) {
       case 'pem-private':
-        this.gpg.pemPrivateKey(payload, this.processResult(ws, payload));
+        this.gpg.pemPrivateKey(payload, this.processResult(m.header, ws, payload));
         break;
       case 'pem-public':
-        this.gpg.pemPublicKey(payload, this.processResult(ws, payload));
+        this.gpg.pemPublicKey(payload, this.processResult(m.header, ws, payload));
         break;
       case 'pem-revoke':
-        this.gpg.pemRevocation(payload, this.processResult(ws, payload));
+        this.gpg.pemRevocation(payload, this.processResult(m.header, ws, payload));
         break;
       case 'ssh-public':
-        this.gpg.sshPublic(payload, this.processResult(ws, payload));
+        this.gpg.sshPublic(payload, this.processResult(m.header, ws, payload));
         break;
       default:
-          ws.send(Message.prepare("Progressor.Clavator",
-            Progress.fail("RequestAscii unhandled:"+payload.action)))
+        ws.send(Message.prepare(m.header.setAction("Progressor.Clavator"),
+          Progress.fail("RequestAscii unhandled:" + payload.action)))
     }
     return true;
   }

@@ -14,7 +14,8 @@ interface ProgressorState {
 
 interface ProgressorProps extends React.Props<Progressor> {
   channel: WsChannel.Dispatch;
-  msg: string;
+  msg?: string;
+  transaction?: string;
   controls?: boolean;
 }
 
@@ -30,19 +31,22 @@ export class Progressor
   }
 
   protected componentWillMount() {
-      this.props.channel.register(this);
+    this.props.channel.register(this);
   }
 
   protected componentWillUnmount(): void {
     this.setState(Object.assign({}, this.state, { progressList: [] }));
+    this.props.channel.unregister(this)
   }
 
   onOpen() {
   }
 
   onMessage(action: Message.Header, data: string) {
-    // console.log("Progressor."+this.props.msg, action.action)
-    if (action.action == "Progressor." + this.props.msg) {
+    if ((action.action == "Progressor." + this.props.msg) || 
+        (action.transaction == this.props.transaction)
+       ) {
+      console.log("Progressor.", this.props, action)
       let js = JSON.parse(data);
       this.state.progressList.push(Progress.fill(js));
       this.setState(Object.assign({}, this.state, {

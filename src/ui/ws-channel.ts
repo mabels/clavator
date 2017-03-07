@@ -24,7 +24,7 @@ export class Dispatch {
   public unregister(wsc: WsChannel) {
     this.wscs = this.wscs.filter(item => item !== wsc);
   }
-  public send(m: string, cb: (error: any) => void): void {
+  public send(m: string): void {
     this.ws.send(m);
   }
 
@@ -69,7 +69,7 @@ export class Dispatch {
       this.wscs.forEach((wsc: WsChannel) => {
         wsc.onMessage && wsc.onMessage(msg.header, msg.data);
       });
-      this.onMessages.forEach((cb) => { cb(msg.header, msg.data)});
+      this.onMessages.forEach((cb) => { cb(msg.header, msg.data) });
     };
   }
 

@@ -2,19 +2,19 @@ export class Pin {
   public pin: string = "";
   public match: RegExp = /.+/;
 
-  public static fill(js: any) : Pin {
+  public static fill(js: any): Pin {
     let pin = new Pin();
     pin.pin = js['pin']
     return pin;
   }
-  
-  public verify() : boolean {
+
+  public verify(): boolean {
     return this.verifyText().length == 0;
   }
-  public verifyText() : string[] {
-    let ret : string[] = [];
+  public verifyText(): string[] {
+    let ret: string[] = [];
     if (!this.match.test(this.pin)) {
-      ret.push(`Pin does not match:${this.match.toString()}`) 
+      ret.push(`Pin does not match:${this.match.toString()}`)
     }
     return ret;
   }

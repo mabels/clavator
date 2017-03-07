@@ -50,7 +50,7 @@ export class Uid {
 
 class FingerPrint {
   fpr: string;
- 
+
   public eq(o: FingerPrint) {
     return this.fpr == o.fpr;
   }
@@ -76,9 +76,9 @@ class Group {
   }
 }
 
-const Ciphers : { [id:string]: string; } = {
-    22: "ed25519",
-    1: "rsa"
+const Ciphers: { [id: string]: string; } = {
+  22: "ed25519",
+  1: "rsa"
 }
 
 export class Key {
@@ -109,31 +109,31 @@ export class Key {
 
   public eq(o: Key) {
     return this.type == o.type &&
-     this.trust == o.trust &&
-     this.cipher == o.cipher &&
-     this.funky == o.funky &&
-     this.bits == o.bits &&
-     this.keyId == o.keyId &&
-     this.key == o.key &&
-     this.created == o.created &&
-     this.expires == o.expires &&
-     this.usesEq(o.uses) &&
-     this.group.eq(o.group) &&
-     this.fingerPrint.eq(o.fingerPrint);
+      this.trust == o.trust &&
+      this.cipher == o.cipher &&
+      this.funky == o.funky &&
+      this.bits == o.bits &&
+      this.keyId == o.keyId &&
+      this.key == o.key &&
+      this.created == o.created &&
+      this.expires == o.expires &&
+      this.usesEq(o.uses) &&
+      this.group.eq(o.group) &&
+      this.fingerPrint.eq(o.fingerPrint);
   }
 
-// sec:u:256:22:19B013CF06A4BEEF:1464699940:1622379940::u:::cESCA:::#::ed25519::
-// ssb:u:256:22:258DE0ECF59BF6FC:1464700731:1622380731:::::a:::+::ed25519:
-// ssb:u:4096:1:28E66F405F1BE34D:1464700773:1622380773:::::esa:::D2760001240102010006041775630000::ed25519:
-// ssb:u:4096:1:060FF53CB3A32992:1465218501:1622898501:::::es:::D2760001240102010006041775630000::ed25519:
-// ssb:u:4096:1:3D851A5DF09DEB9C:1465218921:1622898921:::::es:::D2760001240102010006041775630000::ed25519:
+  // sec:u:256:22:19B013CF06A4BEEF:1464699940:1622379940::u:::cESCA:::#::ed25519::
+  // ssb:u:256:22:258DE0ECF59BF6FC:1464700731:1622380731:::::a:::+::ed25519:
+  // ssb:u:4096:1:28E66F405F1BE34D:1464700773:1622380773:::::esa:::D2760001240102010006041775630000::ed25519:
+  // ssb:u:4096:1:060FF53CB3A32992:1465218501:1622898501:::::es:::D2760001240102010006041775630000::ed25519:
+  // ssb:u:4096:1:3D851A5DF09DEB9C:1465218921:1622898921:::::es:::D2760001240102010006041775630000::ed25519:
 
   fill(match: string[]) {
     debugArray(match);
     this.type = match[0];
     this.trust = match[1];
     this.bits = parseInt(match[2], 10);
-    this.cipher = Ciphers[match[3]] || 'UNK'+match[3];
+    this.cipher = Ciphers[match[3]] || 'UNK' + match[3];
     this.key = this.keyId = match[4];
     this.created = parseInt(match[5], 10);
     this.expires = parseInt(match[6], 10);
@@ -150,10 +150,10 @@ export class SecretKey extends Key {
   public eq(o: SecretKey) {
     if (this.uids.length != o.uids.length) {
       return false;
-    } 
+    }
     if (this.subKeys.length != o.subKeys.length) {
       return false;
-    } 
+    }
     for (let i = 0; i < this.uids.length; ++i) {
       if (!this.uids[i].eq(o.uids[i])) {
         return false;
@@ -173,10 +173,10 @@ const reCrNl = /\r?\n/;
 // const reUid = /^uid\s+\[\s*(\S+)\s*\]\s+(.*)\s+\<(\S+)\>\s*$/;
 // const reKeyId = /^\s+([0-9A-F]+)\s*$/;
 
-export function run(str: string) : SecretKey[] {
-  let ret : SecretKey[] = [];
-  let currentSec : SecretKey = null;
-  let currentKey : Key = null;
+export function run(str: string): SecretKey[] {
+  let ret: SecretKey[] = [];
+  let currentSec: SecretKey = null;
+  let currentKey: Key = null;
   str.split(reCrNl).forEach((line: string) => {
     if (!line.trim().length) { return }
     let match = line.split(':');

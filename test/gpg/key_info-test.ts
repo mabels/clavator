@@ -63,38 +63,38 @@ function makeValidKeyGen() {
 }
 
 describe("keygen", () => {
-    it("serialization", () => {
-      let sjs = JSON.stringify(makeKeyGen());
-      let js = JSON.parse(sjs);
-      let rkg = new Kg.KeyGen();
-      Kg.KeyGen.fill(js, rkg);
+  it("serialization", () => {
+    let sjs = JSON.stringify(makeKeyGen());
+    let js = JSON.parse(sjs);
+    let rkg = new Kg.KeyGen();
+    Kg.KeyGen.fill(js, rkg);
 
-      assert.equal(rkg.password.password, "password");
-      assert.equal(rkg.password.verify, "v-password");
-      // assert.equal(rkg.adminPin.password, "adminPin");
-      // assert.equal(rkg.adminPin.verify, "v-adminPin");
-      // assert.equal(rkg.userPin.verify, "v-userPin");
-      // assert.equal(rkg.userPin.verify, "v-userPin");
-      assert.equal(rkg.keyInfo.type.value, "RS");
-      assert.equal(rkg.keyInfo.length.value, 4777);
-      assert.deepEqual(rkg.keyInfo.usage.values, ["murks", "lurks"]);
-      assert.equal(rkg.uids.pallets[0].name.value, "nameReal");
-      assert.equal(rkg.uids.pallets[0].email.value, "name@Real");
-      assert.equal(rkg.uids.pallets[0].comment.value, "name@Real");
-      assert.equal(rkg.subKeys.pallets[0].type.value, "ki1");
-      assert.equal(rkg.subKeys.pallets[0].length.value, 4531);
-      assert.deepEqual(rkg.subKeys.pallets[0].usage.values, ["ki1.1", "ki1.2"]);
-      assert.equal(rkg.subKeys.pallets[1].type.value, "ki2");
-      assert.equal(rkg.subKeys.pallets[1].length.value, 5413);
-      assert.deepEqual(rkg.subKeys.pallets[1].usage.values, ["ki2.1", "ki2.2"]);
-    });
+    assert.equal(rkg.password.password, "password");
+    assert.equal(rkg.password.verify, "v-password");
+    // assert.equal(rkg.adminPin.password, "adminPin");
+    // assert.equal(rkg.adminPin.verify, "v-adminPin");
+    // assert.equal(rkg.userPin.verify, "v-userPin");
+    // assert.equal(rkg.userPin.verify, "v-userPin");
+    assert.equal(rkg.keyInfo.type.value, "RS");
+    assert.equal(rkg.keyInfo.length.value, 4777);
+    assert.deepEqual(rkg.keyInfo.usage.values, ["murks", "lurks"]);
+    assert.equal(rkg.uids.pallets[0].name.value, "nameReal");
+    assert.equal(rkg.uids.pallets[0].email.value, "name@Real");
+    assert.equal(rkg.uids.pallets[0].comment.value, "name@Real");
+    assert.equal(rkg.subKeys.pallets[0].type.value, "ki1");
+    assert.equal(rkg.subKeys.pallets[0].length.value, 4531);
+    assert.deepEqual(rkg.subKeys.pallets[0].usage.values, ["ki1.1", "ki1.2"]);
+    assert.equal(rkg.subKeys.pallets[1].type.value, "ki2");
+    assert.equal(rkg.subKeys.pallets[1].length.value, 5413);
+    assert.deepEqual(rkg.subKeys.pallets[1].usage.values, ["ki2.1", "ki2.2"]);
+  });
 
-    it("is invalid", () => {
-      let invalid = makeKeyGen();
-      assert.equal(invalid.valid(), false);
-    });
-    it("is valid", () => {
-      let valid = makeValidKeyGen();
-      assert.equal(valid.valid(), false);
-    });
+  it("is invalid", () => {
+    let invalid = makeKeyGen();
+    assert.equal(invalid.valid(), false);
+  });
+  it("is valid", () => {
+    let valid = makeValidKeyGen();
+    assert.equal(valid.valid(), false);
+  });
 });

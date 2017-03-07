@@ -46,14 +46,14 @@ export class AskAdminPin extends React.Component<AskAdminPinProps, AskAdminPinSt
   }
 
   public render(): JSX.Element {
-    console.log(">>>>", this.getSetAdminPin())
+    // console.log(">>>>", this.getSetAdminPin())
     return (<span>
       <label>AdminPin:</label>
-        <input type="password" 
-          name={`ask-${this.props.serialNo}-pin`} required={true}
-          onChange={this.handleChange}
-        />
-      </span>)
+      <input type="password"
+        name={`ask-${this.props.serialNo}-pin`} required={true}
+        onChange={this.handleChange}
+      />
+    </span>)
   }
 }
 

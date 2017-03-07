@@ -5,6 +5,7 @@ import Dispatcher from './dispatcher'
 
 import * as Gpg from './gpg/gpg';
 import ChangeCard from './gpg/change_card';
+import * as CardStatus from './gpg/card_status';
 
 import * as Progress from './progress';
 
@@ -12,29 +13,30 @@ export class GpgChangeCard implements Dispatcher {
 
   gpg: Gpg.Gpg
 
-  constructor(g: Gpg.Gpg){
+  constructor(g: Gpg.Gpg) {
     this.gpg = g
   }
 
-  public run(ws: WebSocket, m: Message.Message) : boolean {
+  public run(ws: WebSocket, m: Message.Message): boolean {
     console.log("GpgChangeCard.run", m.header)
-    if (m.header.action != "ChangeCard") {
+    if (m.header.action != "SetCardAttributes.Request") {
       // ws.send(Message.prepare("Progressor.Clavator", Progress.fail("Ohh")))
       return false;
     }
-    let a = JSON.parse(m.data) || {}
+    let a = JSON.parse(m.data) || {};
     let cc = ChangeCard.fill(a);
     // console.log(m, a, kg)
     // console.log(kg.valid(), kg.errText())
+    let header = Message.toHeader(m, "Progressor.Clavator");
     if (!cc.valid()) {
-      ws.send(Message.prepare("Progressor.Clavator", Progress.fail("Failed received ChangeCard is not valid")))
+      ws.send(Message.prepare(header, Progress.fail("Failed received ChangeCard is not valid")))
       return;
     }
     // console.log(">>>", kg.masterCommand())
-    ws.send(Message.prepare("Progressor.Clavator", Progress.info(`ChangeCard Action ${cc.action}`)));
+    ws.send(Message.prepare(header, Progress.info(`ChangeCard Action`)));
     this.gpg.changeCard(cc, (res: Gpg.Result) => {
-      ws.send(Message.prepare("Progressor.Clavator", Progress.info(res.stdOut)));
-      ws.send(Message.prepare("Progressor.Clavator", Progress.error(res.stdErr)));
+      ws.send(Message.prepare(header, Progress.info(res.stdOut)));
+      ws.send(Message.prepare(header, Progress.error(res.stdErr)));
       // send cardlist
     })
     return true;

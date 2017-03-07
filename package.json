@@ -81,7 +81,8 @@
     "react-modal": ">=1.6.5",
     "@types/react-modal": ">=1.6.2",
     "react-tabs": ">=0.8.2",
-    "@types/react-tabs": ">=0.5.22"
+    "@types/react-tabs": ">=0.5.22",
+    "react-copy-to-clipboard": ">=4.2.3"
   },
   "publishConfig": {
     "tag": "next"

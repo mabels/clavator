@@ -6,7 +6,7 @@ export class RequestAscii {
   public action: string;
   public fingerprint: string;
 
-  public static fill(js: any) : RequestAscii {
+  public static fill(js: any): RequestAscii {
     let ra = new RequestAscii();
     ra.action = js['action']
     ra.passphrase = MutableString.fill(js['passphrase'])

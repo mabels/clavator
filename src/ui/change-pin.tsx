@@ -41,8 +41,7 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
 
   public doPinChange(pin: RequestChangePin) {
     // debugger
-    this.props.channel.send(Message.prepare("GpgChangePinYubikey.run", pin), (error: any) => {
-    });
+    this.props.channel.send(Message.newTransaction("GpgChangePinYubikey.run", pin).asMsg());
   }
 
   public render(): JSX.Element {

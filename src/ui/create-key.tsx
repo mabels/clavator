@@ -11,11 +11,17 @@ import * as WsChannel from './ws-channel';
 
 import * as KeyGen from '../gpg/key-gen';
 
+import * as ReactModal from 'react-modal';
+
+import { Progressor } from './progressor';
+
 
 interface CreateKeyState {
-  create: boolean,
+  createDialog: boolean,
   keyGen: KeyGen.KeyGen
   create_status: string
+  transaction: Message.Transaction<KeyGen.KeyGen>;
+  handleTransaction: (action: Message.Header, data: string) => void;
 }
 
 interface CreateKeyProps extends React.Props<CreateKey> {
@@ -29,9 +35,11 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     let kg = KeyGen.KeyGen.withSubKeys(3);
     kg.uids.add(new KeyGen.Uid());
     this.state = {
-      create: false,
+      createDialog: false,
       keyGen: kg,
-      create_status: "create-key"
+      create_status: "create-key",
+      transaction: null,
+      handleTransaction: null
     };
     // this.handleCreateClick = this.handleCreateClick.bind(this);
   }
@@ -57,21 +65,31 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
       keyGen: this.state.keyGen
     }));
   }
-  onMessage(action: Message.Header, data: string) {
-    if (action.action == "Progressor.Clavator" && JSON.parse(data).isEndOfMessages) {
-      this.setState(Object.assign({}, this.state, {
-        create_status: "create-key"
-      }));
-    }
-  }
-  onClose(e: CloseEvent) {
-    // this.setState(Object.assign({}, this.state, { cardStatusList: [] }));
-  }
 
-  componentWillReceiveProps(nextProps: any, nextContext: any) {
-    if (nextProps.channel) {
-      nextProps.channel.register(this);
+ 
+
+  public render_creating() : JSX.Element {
+    if (!this.state.createDialog) {
+      return null
     }
+    return (
+      <ReactModal
+        isOpen={true}
+        closeTimeoutMS={150}
+        onAfterOpen={() => { }}
+        contentLabel="Modal"
+        shouldCloseOnOverlayClick={true}
+      >
+        <i style={{ float: "right" }} 
+           onClick={(() => { this.setState({createDialog: false}) }).bind(this)}
+           className="fa fa-close"></i>
+        <h4>Createing Key:</h4>
+        <Progressor 
+          channel={this.props.channel} 
+          transaction={this.state.transaction.header.transaction}
+          controls={true} />
+      </ReactModal>
+    )
   }
 
   public render_option<T>(name: string, op: KeyGen.Option<T>): JSX.Element {
@@ -126,15 +144,24 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     )
   }
 
+  handleTransaction(action: Message.Header, data: string) {
+    if (action.transaction == this.state.transaction.header.transaction) {
+      this.setState(Object.assign({}, this.state, {
+        create_status: "create-key"
+      }));
+    }
+  }
+
   public create_key() {
     console.log("create_key", this);
     // this.state.create_status = "requested";
-    this.setState(this.state);
-    // debugger
-    this.props.channel.send(Message.prepare("CreateKeySet", this.state.keyGen), (error: any) => {
-      // this.state.create_status = "err("+error+")";
-      this.setState(this.state);
+    let transaction = Message.newTransaction("CreateKeySet.Request", this.state.keyGen);
+    this.setState({
+      transaction: transaction,
+      handleTransaction: this.props.channel.onMessage(this.handleTransaction.bind(this)),
+      createDialog: true
     });
+    this.props.channel.send(transaction.asMsg());
   }
 
   // public isGood(valid: boolean) : string {
@@ -294,7 +321,6 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
           </div>)
         })}
 
-
         <div className="row">
           <div className="four columns"> </div>
           <div className={classnames({ four: true, columns: true, good: this.state.keyGen.valid() })} >
@@ -315,6 +341,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     return (
       <div className="row CreateKey" >
         {this.render_form()}
+        {this.render_creating()}
       </div>
     );
   }

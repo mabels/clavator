@@ -4,14 +4,14 @@ import * as http from 'http'
 import * as https from 'https'
 
 
-let privateKey : string = null;
-let certificate : string = null;
+let privateKey: string = null;
+let certificate: string = null;
 try {
-  privateKey  = fs.readFileSync('/etc/letsencrypt/live/clavator.com/privkey.pem', 'utf8');
+  privateKey = fs.readFileSync('/etc/letsencrypt/live/clavator.com/privkey.pem', 'utf8');
   certificate = fs.readFileSync('/etc/letsencrypt/live/clavator.com/fullchain.pem', 'utf8');
-} catch(e) {
+} catch (e) {
 }
-const credentials = {key: privateKey, cert: certificate};
+const credentials = { key: privateKey, cert: certificate };
 
 import { join } from 'path';
 import * as express from 'express';
@@ -45,7 +45,7 @@ redirectHttp.listen(redirectPort);
 console.log(`Started redirectPort on ${redirectPort}`)
 
 
-let httpServer : https.Server | http.Server;
+let httpServer: https.Server | http.Server;
 if (privateKey) {
   httpServer = https.createServer(credentials);
   console.log(`Listen on: https ${applicationPort}`)

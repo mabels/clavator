@@ -2,7 +2,7 @@ export class RespondAscii {
   public action: string;
   public fingerprint: string;
   public data: string;
-  public static fill(js: any) : RespondAscii {
+  public static fill(js: any): RespondAscii {
     return new RespondAscii(js['action'], js['fingerprint'], js['data']);
   }
   constructor(action: string, fingerprint: string, data: string) {

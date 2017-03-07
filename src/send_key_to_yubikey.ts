@@ -13,26 +13,28 @@ export class SendKeyToYubiKey implements Dispatcher {
 
   gpg: Gpg.Gpg
 
-  constructor(g: Gpg.Gpg){
+  constructor(g: Gpg.Gpg) {
     this.gpg = g
   }
 
-  public run(ws: WebSocket, m: Message.Message) : boolean {
+  public run(ws: WebSocket, m: Message.Message): boolean {
     console.log("SendKeyToYubiKey.run", m.header)
     if (m.header.action != "SendKeyToYubiKey.run") {
       return false;
     }
     let a = JSON.parse(m.data) || {};
     let rcp = KeyToYubiKey.fill(a);
+    let header = m.header.setAction("Progressor.Clavator");
 
-    ws.send(Message.prepare("Progressor.Clavator", Progress.ok(`SendKeyToYubiKey:${rcp} ...`)))
+    ws.send(Message.prepare(header, Progress.ok(`SendKeyToYubiKey:${rcp} ...`)))
 
-    this.gpg.keyToYubiKey(rcp,  (res: Gpg.Result) => {
+    this.gpg.keyToYubiKey(rcp, (res: Gpg.Result) => {
       if (res.exitCode != 0) {
-        ws.send(Message.prepare("Progressor.Clavator", Progress.fail(res.stdOut +"\n" + res.stdErr)))
+        ws.send(Message.prepare(header, Progress.fail(res.stdOut + "\n" + res.stdErr)))
       } else {
-        ws.send(Message.prepare("Progressor.Clavator", Progress.ok(`keyToYubiKey for ${rcp} changed`, true)))
+        ws.send(Message.prepare(header, Progress.ok(`keyToYubiKey for ${rcp} changed`, true)))
       }
+      ws.send(Message.prepare(header.setAction("SendKeyToYubiKey.Completed")));
     })
     return true;
   }
