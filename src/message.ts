@@ -62,9 +62,9 @@ export class Transaction<T> {
   public header: Header;
   public data: T;
 
-  public asMsg() : string {
+  public asMsg(data?: T) : string {
     console.log("Transaction:asMsg:", this);
-    return prepare(this.header, this.data);
+    return prepare(this.header, data || this.data);
   }
 }
 

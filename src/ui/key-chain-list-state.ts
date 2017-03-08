@@ -9,10 +9,8 @@ import { AdminPin, Pin } from '../gpg/pin';
 import * as WsChannel from './ws-channel';
 import * as Message from '../message';
 
-// import DevTools from 'mobx-react-devtools';
 
 export class KeyChainListState implements WsChannel.WsChannel {
-  // @observable timer = 0;
   @observable keyChainList: ListSecretKeys.SecretKey[] = [];
   @observable adminPins = observable.map<string>()
 
@@ -23,10 +21,8 @@ export class KeyChainListState implements WsChannel.WsChannel {
 
   onMessage(action: Message.Header, data: string) {
     if (action.action == "KeyChainList") {
-      // this.keyChainList.length = 0;
       let ret = JSON.parse(data);
       this.keyChainList = ret;
-      console.log("KeyChainList", action, this.keyChainList)
     }
   }
   onClose(e: CloseEvent) {

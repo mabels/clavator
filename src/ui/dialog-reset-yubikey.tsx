@@ -1,16 +1,9 @@
-
 import * as React from 'react';
-
 import * as ReactModal from 'react-modal';
-
 import * as CardStatus from '../gpg/card_status';
-
 import * as Message from '../message';
-
 import * as WsChannel from './ws-channel';
-
 import { Progressor } from './progressor';
-
 import ButtonToProgressor from './button-to-progressor';
 
 interface DialogResetYubiKeyState {
@@ -45,7 +38,7 @@ export class DialogResetYubiKey extends React.Component<DialogResetYubiKeyProps,
       contentLabel="Modal"
       shouldCloseOnOverlayClick={true}
     >
-      <i style={{ float: "right" }} onClick={this.props.onClose} className="fa fa-close"></i>
+      <i style={{ float: "right" }} onClick={this.props.onClose} className="closeBox fa fa-close"></i>
       <h4>ResetYubikey:</h4>
       <h5>{this.props.cardStatus.name}({this.props.cardStatus.reader.cardid})</h5>
 

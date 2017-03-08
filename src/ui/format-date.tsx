@@ -1,9 +1,4 @@
-
-
-
 import * as React from 'react';
-import './app.less';
-
 import * as KeyGen from '../gpg/key-gen'
 
 interface FormatDateState {
@@ -23,7 +18,6 @@ export class FormatDate
   }
 
   public render(): JSX.Element {
-    // {d.getFullYear()}-{d.getMonth() + 1}-{d.getDate()}
     let d = new Date(1000 * this.props.ticks);
     return (
       <span key={this.props.ticks}>

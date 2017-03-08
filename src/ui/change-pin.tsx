@@ -1,14 +1,8 @@
-
 import * as React from 'react';
-
 import * as classnames from 'classnames';
-
 import RequestChangePin from '../gpg/request_change_pin';
-
 import * as WsChannel from './ws-channel';
-
 import * as Message from '../message';
-
 import ButtonToProgressor from './button-to-progressor';
 
 interface ChangePinState {
@@ -35,7 +29,6 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
   }
 
   componentWillMount() {
-    console.log("ChangePin:componentWillMount:", this.props.type);
     this.setState(Object.assign({}, this.state, {
       pin: this.state.pin.changeAction(this.props.type)
     }))
@@ -52,11 +45,6 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
   }
 
   public render(): JSX.Element {
-    // console.log("Render:", 
-    //   this.state.pin.admin_pin,
-    //   this.state.pin.new_pin,
-    //   this.state.pin.new_pin_verify,
-    //   this.state.pin.verifyText())
     return (
       <form className={classnames({ "ChangePin": true, good: this.state.pin.verify() })}>
         <div className="row">
@@ -97,17 +85,6 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
           onClick={this.doPinChange}
           transaction={this.state.transaction}
         >Change</ButtonToProgressor>
-
-        {/*<button type="button"
-          className={classnames({ good: this.state.pin.verify() })}
-          disabled={!this.state.pin.verify()}
-          onClick={(e: any) => {
-            this.state.pin.app_id = this.props.app_id;
-            this.setState(Object.assign({}, this.state, {
-              pin: this.state.pin
-            }))
-            this.doPinChange(this.state.pin)
-          }}>Change</button>*/}
 
       </form>
     );

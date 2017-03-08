@@ -1,25 +1,12 @@
-
 import * as React from 'react';
-
 import * as ReactModal from 'react-modal';
-
 import * as CardStatus from '../gpg/card_status';
-
 import * as Message from '../message';
-
 import * as WsChannel from './ws-channel';
-
 import { Progressor } from './progressor';
-
-import { ChangePin } from './change-pin';
-
-import { Pin } from '../gpg/pin';
-
 import ChangeCard from '../gpg/change_card';
-
 import * as classnames from 'classnames';
 import { observer } from 'mobx-react';
-
 import ButtonToProgressor from './button-to-progressor';
 
 interface DialogChangeAttributesState {
@@ -63,7 +50,7 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
         contentLabel="Modal"
         shouldCloseOnOverlayClick={true}
       >
-        <i style={{ float: "right" }} onClick={this.props.onClose} className="fa fa-close"></i>
+        <i style={{ float: "right" }} onClick={this.props.onClose} className="closeBox fa fa-close"></i>
         <h4>ChangeAttributes:</h4>
         <h5>{this.state.changeCard.name}({this.state.changeCard.serialNo})</h5>
         {/*<form>*/}
@@ -115,7 +102,6 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
       </ReactModal>
     );
   }
-
  
 }
 

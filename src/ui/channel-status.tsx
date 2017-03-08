@@ -39,12 +39,13 @@ export class ChannelStatus extends
 
   private renderStatus() {
     if (this.state.status == "connected" || this.state.status == "not started") {
-      console.log("NOT: renderStatus:", this.state.status);
+      // console.log("NOT: renderStatus:", this.state.status);
       return null;
     }
     console.log("renderStatus:", this.state.status);
     return (
       <ReactModal
+        className="waitForConnect"
         isOpen={true}
         closeTimeoutMS={150}
         contentLabel="Modal"
@@ -55,7 +56,6 @@ export class ChannelStatus extends
   }
 
   public render(): JSX.Element {
-    // debugger
     return (
       <div className={this.state.status}>
         {this.props.children}

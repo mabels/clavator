@@ -3,21 +3,12 @@ import * as React from 'react';
 
 import * as ReactModal from 'react-modal';
 
-import * as CardStatus from '../gpg/card_status';
-
 import * as Message from '../message';
 
 import * as WsChannel from './ws-channel';
 
 import { Progressor } from './progressor';
 
-import { ChangePin } from './change-pin';
-
-import { Pin } from '../gpg/pin';
-
-import ChangeCard from '../gpg/change_card';
-
-import * as classnames from 'classnames';
 import { observer } from 'mobx-react';
 
 interface ButtonToProgressorState {
@@ -39,6 +30,7 @@ export class ButtonToProgressor extends React.Component<ButtonToProgressorProps,
       running: false
     };
   }
+
   public render() {
     if (this.state.running) {
       return <Progressor

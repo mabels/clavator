@@ -1,43 +1,29 @@
 import * as React from 'react';
-import './app.less';
-
 import * as ListSecretKeys from '../gpg/list_secret_keys';
-
 import * as Message from '../message';
 import RequestAscii from '../gpg/request_ascii';
 import RespondAscii from '../respond_ascii';
-
 import { AskPassphrase } from './ask-passphrase';
 import { AskKeyToYubiKey } from './ask-key-to-yubi-key';
-
 import KeyToYubiKey from '../gpg/key-to-yubikey';
-
 import * as WsChannel from './ws-channel';
 import FormatDate from './format-date';
-
 import * as classnames from 'classnames';
-
 import { KeyChainListState } from './key-chain-list-state';
-
 import { CardStatusListState } from './card-status-list-state';
-
 import * as CopyToClipboard from 'react-copy-to-clipboard';
-
 import MutableString from '../gpg/mutable_string';
-
 import * as ReactModal from 'react-modal';
-
 import { observer } from 'mobx-react';
+import DialogSendToCard from './dialog-send-to-card';
+import DialogRenderAscii from './dialog-render-ascii';
+import DialogAskRenderAscii from './dialog-ask-render-ascii';
 
-// import * as CopyToClipboard from 'react-copy-to-clipboard';
 
 enum Dialogs {
   closed, openAscii, askPassPhraseAscii, sendToCard
 }
 
-// interface ResponseMap {
-//    { [id:string]: ResponseAscii }
-// }
 interface KeyChainListComponentState {
   dialog: Dialogs;
   action: string;
@@ -46,11 +32,7 @@ interface KeyChainListComponentState {
   respondAscii: RespondAscii;
   passPhrase: MutableString;
   idx: number;
-  // respondAscii: Map<string, RespondAscii>;
-  // requestAscii: Map<string, RequestAscii>;
-  // keyToYubiKeys: Map<string, KeyToYubiKey>;
 }
-//export default KeyChainListState;
 
 interface KeyChainListProps extends React.Props<KeyChainList> {
   channel: WsChannel.Dispatch;
@@ -65,7 +47,6 @@ export class KeyChainList
   constructor() {
     super();
     this.state = {
-      // secretKeys: [],
       dialog: Dialogs.closed,
       action: null,
       key: null,
@@ -79,43 +60,6 @@ export class KeyChainList
   public static contextTypes = {
     socket: React.PropTypes.object
   };
-
-
-  // // onRequestClose={this.constAction}
-  //         /*<tr>
-  //       <td colSpan={20}>
-  //         <AskPassphrase
-  //           fingerprint={sk.fingerPrint.fpr}
-  //           completed={() => {
-  //             this.requestAscii(sk, this.state.requestAscii.get(sk.fingerPrint.fpr).action)();
-  //           }}
-  //           passphrase={this.state.requestAscii.get(sk.fingerPrint.fpr).passphrase} />
-  //       </td>
-  //     </tr>*/
-  // console.log("render_requestAscii:", this.state);
-  // protected componentWillMount() {
-  //   // this.props.channel.register(this)
-  // }
-
-  // protected componentWillUnmount(): void {
-  //   // this.setState(Object.assign({}, this.state, { secretKeys: [] }));
-  // }
-
-  // onOpen(e: Event) { }
-
-  // onMessage(action: Message.Header, data: string) {
-
-  // }
-  // onClose(e: CloseEvent) {
-  //   // this.setState(Object.assign({}, this.state, { secretKeys: [] }));
-  // }
-
-
-  // componentWillReceiveProps(nextProps: any, nextContext: any) {
-  //   if (nextProps.channel) {
-  //     nextProps.channel.register(this);
-  //   }
-  // }
 
   processAscii(key: ListSecretKeys.Key, action: string, dialog: Dialogs, pp: string = null) {
     let ra = new RequestAscii();
@@ -146,6 +90,13 @@ export class KeyChainList
     this.props.channel.send(Message.newTransaction("RequestAscii", ra).asMsg());
   }
 
+  requestAscii(key: ListSecretKeys.Key, action: string) {
+    return (() => {
+      this.processAscii(key, action, Dialogs.openAscii);
+    }).bind(this);
+  }
+
+
   requestAsciiWithPassphrase(key: ListSecretKeys.Key, action: string) {
     return (() => {
       this.setState(Object.assign({}, this.state, {
@@ -158,11 +109,6 @@ export class KeyChainList
     }).bind(this)
   }
 
-  requestAscii(key: ListSecretKeys.Key, action: string) {
-    return (() => {
-      this.processAscii(key, action, Dialogs.openAscii);
-    }).bind(this);
-  }
 
   public deleteSecretKey(key: ListSecretKeys.SecretKey) {
     return (() => {
@@ -174,16 +120,6 @@ export class KeyChainList
 
   public sendToCard(key: ListSecretKeys.Key, idx: number) {
     return (() => {
-      // this.state.keyToYubiKeys.delete(key.fingerPrint.fpr);
-      // if (this.state.keyToYubiKeys.has(key.fingerPrint.fpr)) {
-      //   // console.log("sendToCard-delete", key.fingerPrint.fpr)
-      //   this.state.keyToYubiKeys.delete(key.fingerPrint.fpr)
-      // } else {
-      //   let rqa = new KeyToYubiKey();
-      //   rqa.fingerprint = key.fingerPrint.fpr;
-      //   this.state.keyToYubiKeys.set(key.fingerPrint.fpr, rqa);
-      //   // console.log("sendToCard-add", key.fingerPrint.fpr)
-      // }
       console.log("sendToCard:Activate")
       this.setState(Object.assign({}, this.state, {
         dialog: Dialogs.sendToCard,
@@ -215,11 +151,6 @@ export class KeyChainList
         name="pem-revoke">
         <i className="fa fa-bug"></i>
       </a>
-      {/*<a title="Send Key to Smartcard"
-        onClick={this.sendToCard(key)}
-        name="Send Key to Smartcard">
-        <i className="fa fa-credit-card"></i>
-      </a>*/}
       <a title="delete"
         onClick={this.deleteSecretKey(sk)}
         name="delete">
@@ -248,8 +179,6 @@ export class KeyChainList
   }
 
   public render_key(clazz: string, sk: ListSecretKeys.SecretKey, key: ListSecretKeys.Key, idx: number): JSX.Element {
-    //<td>{key.funky}</td>
-    // {this.render_buttons(key)}
     return (
       <tr className={clazz} key={key.key}>
         {this.render_buttons(clazz, sk, key, idx)}
@@ -265,8 +194,6 @@ export class KeyChainList
   }
 
   public render_uid(key: ListSecretKeys.Key, uid: ListSecretKeys.Uid): JSX.Element {
-    //<td>{this.format_date(uid.created)}</td>
-    //<td>{uid.id}</td>
     return (
       <tbody key={uid.key}>
         <tr className="uid">
@@ -278,28 +205,6 @@ export class KeyChainList
       </tbody>);
   }
 
-  public render_respondAscii(): JSX.Element {
-    if (!this.state.respondAscii) {
-      return null
-    }
-    console.log("render_respondAscii:", this.state.respondAscii);
-    return (
-      <div>
-        <CopyToClipboard text={this.state.respondAscii.data}>
-          <button>Copy to clipboard</button>
-        </CopyToClipboard>
-        <pre style={{ "background-color": "#ccc" }}>
-          {this.state.respondAscii.data}
-        </pre>
-      </div>
-      /*<textarea
-        style={{ width: "100%", height: "100%" }}
-        readOnly={true}
-        defaultValue={this.state.respondAscii.data}>
-      </textarea>
-    </div>*/
-    );
-  }
 
   public closeAsciiModal() {
     this.props.channel.unMessage(this.state.receiver);
@@ -312,94 +217,33 @@ export class KeyChainList
     }))
   }
 
-  public renderAsciiModal(): JSX.Element {
-    console.log("renderAsciiModal", this.state)
-    return (
-      <ReactModal
-        isOpen={true}
-        closeTimeoutMS={150}
-        onAfterOpen={() => { }}
-        contentLabel="Modal"
-      >
-        <i style={{ float: "right" }} onClick={this.closeAsciiModal} className="fa fa-close"></i>
-        <h4>{this.state.action}:{this.state.key.fingerPrint.fpr}</h4>
-        {this.render_respondAscii()}
-      </ReactModal>
-    );
-  }
-
-  public renderAskPassPhraseAsciiModal(): JSX.Element {
-    return (
-      <ReactModal
-        isOpen={true}
-        closeTimeoutMS={150}
-        onAfterOpen={() => { }}
-        contentLabel="Modal"
-      >
-        <i style={{ float: "right" }} onClick={this.closeAsciiModal} className="fa fa-close"></i>
-        <h4>{this.state.action}:{this.state.key.fingerPrint.fpr}</h4>
-        <AskPassphrase
-          passphrase={this.state.passPhrase}
-          fingerprint={this.state.key.fingerPrint.fpr}
-          completed={(pp) => {
-            this.processAscii(this.state.key, "pem-private", Dialogs.askPassPhraseAscii, pp);
-          }} />
-        {this.render_respondAscii()}
-      </ReactModal>
-    );
-  }
-
-
-
-  public renderSendToCard(): JSX.Element {
-    /*sk: ListSecretKeys.Key, idx: number
-      <tr>
-        <td colSpan={20}>
-          <AskKeyToYubiKey
-            slot_id={idx + 1}
-            fingerprint={sk.fingerPrint.fpr}
-            channel={this.props.channel}
-            cardStatusListState={this.props.cardStatusListState}
-          />
-        </td>
-      </tr>*/
-    return (
-      <ReactModal
-        isOpen={true}
-        closeTimeoutMS={150}
-        onAfterOpen={() => { }}
-        contentLabel="Modal"
-      >
-        <i style={{ float: "right" }} onClick={this.closeAsciiModal} className="fa fa-close"></i>
-        <h4>SendKeyToCard</h4>
-        {this.state.key.fingerPrint.fpr}
-        <AskKeyToYubiKey
-          slot_id={this.state.idx + 1}
-          fingerprint={this.state.key.fingerPrint.fpr}
-          channel={this.props.channel}
-          cardStatusListState={this.props.cardStatusListState}
-        />
-      </ReactModal>
-
-    );
-  }
-
   // (sk: ListSecretKeys.Key, idx: number): JSX.Element {
   public render_modal(): JSX.Element {
     switch (this.state.dialog) {
       case Dialogs.openAscii:
-        return this.renderAsciiModal();
+        return <DialogRenderAscii action={this.state.action}
+          secKey={this.state.key}
+          onClose={() => this.setState({ dialog: Dialogs.closed })}
+          channel={this.props.channel} />
       case Dialogs.askPassPhraseAscii:
-        return this.renderAskPassPhraseAsciiModal();
+        return <DialogAskRenderAscii action={this.state.action}
+          secKey={this.state.key}
+          onClose={() => this.setState({ dialog: Dialogs.closed })}
+          channel={this.props.channel} />
       case Dialogs.sendToCard:
-        return this.renderSendToCard();
+        return <DialogSendToCard
+          idx={this.state.idx}
+          onClose={() => this.setState({ dialog: Dialogs.closed })}
+          cardStatusListState={this.props.cardStatusListState}
+          secKey={this.state.key}
+          channel={this.props.channel} />
     }
     return null;
   }
 
   public render(): JSX.Element {
     // SecretKeys {this.state.secretKeys.length || ""}
-  // {/*{sk.subKeys.map((ssb, idx) => this.render_result(ssb, idx))}*/}
+    // {/*{sk.subKeys.map((ssb, idx) => this.render_result(ssb, idx))}*/}
     // console.log("render.KeyChainList", this.props.keyChainListState.keyChainList.length)
     return (
       <div className="KeyChainList">

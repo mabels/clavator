@@ -1,15 +1,11 @@
 
 import * as React from 'react';
-import './app.less';
-//import KeyChainListState from './key-chain-list-state';
 
 import MutableString from '../gpg/mutable_string';
-
 
 interface AskPassphraseState {
   value: string
 }
-//export default KeyChainListState;
 
 interface AskPassphraseProps extends React.Props<AskPassphrase> {
   passphrase?: MutableString,
@@ -28,9 +24,6 @@ export class AskPassphrase
   }
 
   public render(): JSX.Element {
-    // SecretKeys {this.state.cardStatusList.length || ""}
-    //<h3>AskPassphrase.{this.props.msg}
-    // <button onClick={this.handleClearClick}>Clear({this.state.progressList.length})</button>
     return (
       <form className="AskPassphrase" key={this.props.fingerprint}>
         <label>Passphrase:</label><input type="password"
@@ -41,7 +34,6 @@ export class AskPassphrase
             } else {
               this.props.passphrase.value = e.target.value;
             }
-            // this.setState(this.state);
           }} />
         <button type="button" onClick={(e: any) => {
           this.props.completed && this.props.completed(this.state.value || this.props.passphrase.value)

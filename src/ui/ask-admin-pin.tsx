@@ -1,10 +1,4 @@
-
-
-
-
 import * as React from 'react';
-import './app.less';
-import { observable } from 'mobx';
 
 import * as Message from '../message';
 import ChangeCard from '../gpg/change_card';
@@ -20,8 +14,7 @@ interface AskAdminPinProps extends React.Props<AskAdminPin> {
   cardStatusListState: CardStatusListState;
 }
 
-export class AskAdminPin extends React.Component<AskAdminPinProps, AskAdminPinState>
-{
+export class AskAdminPin extends React.Component<AskAdminPinProps, AskAdminPinState> {
 
   constructor() {
     super();
@@ -35,18 +28,14 @@ export class AskAdminPin extends React.Component<AskAdminPinProps, AskAdminPinSt
       this.props.cardStatusListState.adminPins.set(this.props.serialNo, "");
     }
     let val = this.props.cardStatusListState.adminPins.get(this.props.serialNo);
-    console.log(this.props.serialNo, val);
     return val;
   }
 
   private handleChange(e: any) {
-    console.log("handleChange", e.target.value)
-    // this.props.cardStatusListState.adminPins[this.props.serialNo] = 
     this.props.cardStatusListState.adminPins.set(this.props.serialNo, e.target.value);
   }
 
   public render(): JSX.Element {
-    // console.log(">>>>", this.getSetAdminPin())
     return (<span>
       <label>AdminPin:</label>
       <input type="password"

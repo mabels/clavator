@@ -1,8 +1,6 @@
 
 import * as React from 'react';
-
 import * as classnames from 'classnames';
-
 import RequestChangePin from '../gpg/request_change_pin';
 
 interface ChangePinState {
@@ -22,12 +20,6 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
     this.state = {
       pin: null,
     };
-  }
-
-  componentWillReceiveProps(nextProps: any, nextContext: any) {
-    if (nextProps.channel) {
-      nextProps.channel.register(this);
-    }
   }
 
   public render(): JSX.Element {

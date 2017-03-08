@@ -1,20 +1,11 @@
 
 import * as React from 'react';
-
 import * as classnames from 'classnames';
-
-import './app.less';
-
 import * as Message from '../message';
-
 import * as WsChannel from './ws-channel';
-
 import * as KeyGen from '../gpg/key-gen';
-
 import * as ReactModal from 'react-modal';
-
 import { Progressor } from './progressor';
-
 import ButtonToProgressor from './button-to-progressor';
 
 interface CreateKeyState {
@@ -23,7 +14,6 @@ interface CreateKeyState {
   keyGen: KeyGen.KeyGen
   create_status: string
   transaction: Message.Transaction<KeyGen.KeyGen>;
-  // handleTransaction: (action: Message.Header, data: string) => void;
 }
 
 interface CreateKeyProps extends React.Props<CreateKey> {
@@ -42,14 +32,9 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
       keyGen: kg,
       create_status: "create-key",
       transaction: null,
-      // handleTransaction: null
     };
     this.create_key = this.create_key.bind(this);
-    // this.handleCreateClick = this.handleCreateClick.bind(this);
   }
-  // public static contextTypes = {
-  //  socket: React.PropTypes.object
-  // };
 
   private handleDelUid(idx: number) {
     if (this.state.keyGen.uids.pallets.length > 1) {
@@ -70,22 +55,17 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     }));
   }
 
-
-
   public render_option<T>(name: string, op: KeyGen.Option<T>): JSX.Element {
-    //return(<option value={o} {s?"selected":""}>{o}</option>)
     let value = "";
     let ret = op.map((s, o) => {
       value = s ? o.toString() : value;
       return (<option key={o.toString()} value={o.toString()}>{o}</option>)
     });
-    // debugger
     return (
       <select className="u-full-width" name={name} defaultValue={value} onChange={(e: any) => {
         op.value = e.target.value;
         this.setState(this.state);
-      }
-      }>
+      }}>
         {ret}
       </select>
     )
@@ -124,40 +104,15 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     )
   }
 
-  handleTransaction(action: Message.Header, data: string) {
-    // console.log("CreateKey:", action, this.state.transaction.header.transaction);
-    if (action.transaction == this.state.transaction.header.transaction) {
-      if (action.action == "CreateKeySet.Completed") {
-        // this.props.channel.unMessage(this.state.handleTransaction);
-        this.setState({
-          transaction: null,
-          // handleTransaction: null,
-          completed: true
-        });
-      }
-      /*
-      this.setState(Object.assign({}, this.state, {
-        create_status: "create-key"
-      }));
-      */
-    }
-  }
-
   public create_key() {
-    console.log("create_key", this);
-    // this.state.create_status = "requested";
     let transaction = Message.newTransaction("CreateKeySet.Request", this.state.keyGen);
     this.setState({
       transaction: transaction,
-      // handleTransaction: this.props.channel.onMessage(this.handleTransaction.bind(this)),
       createDialog: true
     });
     this.props.channel.send(transaction.asMsg());
   }
 
-  // public isGood(valid: boolean) : string {
-  //   return (valid) ? "good" : "unknown"
-  // }
   public render_password(label: string, key: string, pp: KeyGen.PwPair): JSX.Element {
     return (
       <div className={classnames({ six: true, columns: true })} >
@@ -187,7 +142,6 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
   }
 
   public render_delete_button(idx: number): JSX.Element {
-
     if (this.state.keyGen.uids.pallets.filter((i) => i).length > 1) {
       return (
         <button type="button" onClick={this.handleDelUid.bind(this, idx)}>Delete Uid</button>
@@ -249,13 +203,6 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
   }
 
   public render_form(): JSX.Element {
-    // if (!this.state.create) {
-    //     return (<span></span>)
-    // }
-    // <div className="three columns">
-    // <label>Sub-Key-Length:</label>{this.render_option("subKeyLength", this.state.keyGen.subKeyLength)}
-    // </div>
-
     return (
       <form>
         <div className="row">
@@ -315,24 +262,18 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
         })}
 
         <div className="row">
-          {/*<div className="four columns"> </div>*/}
-          {/*<div className={classnames({ four: true, columns: true, good: this.state.keyGen.valid() })} >*/}
           <ButtonToProgressor
             channel={this.props.channel}
             onClick={this.create_key}
             transaction={this.state.transaction}
           >Create Key</ButtonToProgressor>
-          {/*</div>*/}
         </div>
       </form>
     );
-    // min={KeyGen.format_date(Date.now())}
-    // value={KeyGen.format_date(this.state.keyGen.expireDate)} />
   }
 
 
   public render(): JSX.Element {
-    // <h3>CreateKey</h3>
     return (
       <div className="row CreateKey" >
         {this.render_form()}

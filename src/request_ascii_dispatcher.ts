@@ -27,11 +27,11 @@ export class RequestAsciiDispatcher implements Dispatcher {
   }
 
   public run(ws: WebSocket, m: Message.Message): boolean {
-    console.log("RequestAscii.run", m.header)
     if (m.header.action != "RequestAscii") {
       // ws.send(Message.prepare("Progressor.Clavator", Progress.fail("Ohh")))
       return false;
     }
+    console.log("RequestAscii.run", m)
     let payload = RequestAscii.fill(JSON.parse(m.data));
     // ws.send(Message.prepare("Progressor.Clavator",
     //   Progress.ok("RequestAscii="+m.data)))

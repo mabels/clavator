@@ -1,38 +1,17 @@
 import * as React from 'react';
-import './app.less';
-//import KeyChainListState from './key-chain-list-state';
-
 import * as CardStatus from '../gpg/card_status';
-
 import FormatDate from './format-date'
-
 import * as Message from '../message';
-
 import * as WsChannel from './ws-channel';
-
 import { ChangePin } from './change-pin';
-
 import * as Gpg from '../gpg/gpg';
-
 import ChangeCard from '../gpg/change_card';
-
 import { observer } from 'mobx-react';
-
 import { CardStatusListState } from './card-status-list-state';
-
-
-// import EditableCard from './editable-card';
-
 import { AskPassphrase } from './ask-passphrase';
-
 import { Pin } from '../gpg/pin';
-
 import * as classnames from 'classnames';
-
-import * as ReactModal from 'react-modal';
-
 import { Progressor } from './progressor';
-
 import DialogResetYubikey from './dialog-reset-yubikey';
 import DialogChangePin from './dialog-change-pin';
 import DialogChangeAttributes from './dialog-change-attributes';
@@ -42,20 +21,11 @@ enum Dialogs {
   closed, changeAttributes, changeAdminPin, changeUserPin, resetYubikey
 }
 
-enum PinType {
-  none, admin, user
-}
-
 interface CardStatusState {
   dialog: Dialogs;
   cardStatus: CardStatus.Gpg2CardStatus;
   transaction: Message.Transaction<ChangeCard>;
-  handleTransaction: (action: Message.Header, data: string) => void;
-  // currentAdminPin: string;
-  // newPin: string;
-  pinType: PinType;
 }
-//export default KeyChainListState;
 
 interface CardStatusListProps extends React.Props<CardStatusList> {
   channel: WsChannel.Dispatch;
@@ -71,30 +41,11 @@ export class CardStatusList extends React.Component<CardStatusListProps, CardSta
       dialog: Dialogs.closed,
       cardStatus: null,
       transaction: null,
-      handleTransaction: null,
-      // currentAdminPin: "12345678",
-      // newPin: null,
-      pinType: PinType.none
     };
     this.closeModal = this.closeModal.bind(this)
     this.changeDialog = this.changeDialog.bind(this)
   }
 
-  // public changePin(cs: CardStatus.Gpg2CardStatus, admin_or_user: string) {
-  //   return ((e: any) => {
-  //     if (this.state.requestPin && admin_or_user == this.state.requestPin) {
-  //       this.setState(Object.assign({}, this.state, {
-  //         requestPin: null
-  //       }));
-  //     } else {
-  //       this.setState(Object.assign({}, this.state, {
-  //         requestPin: admin_or_user
-  //       }));
-  //     }
-  //   }).bind(this)
-  // }
-
- 
 
   public changeDialog(dialog: Dialogs, cs: CardStatus.Gpg2CardStatus) {
     return ((e: any) => {
@@ -145,19 +96,6 @@ export class CardStatusList extends React.Component<CardStatusListProps, CardSta
     }))
   }
 
-   handleTransaction(action: Message.Header, data: string) {
-    // console.log("CreateKey:", action, this.state.transaction.header.transaction);
-    if (action.transaction == this.state.transaction.header.transaction) {
-      if (action.action == "CreateKeySet.Completed") {
-        this.props.channel.unMessage(this.state.handleTransaction);
-        this.setState({
-          transaction: null,
-          handleTransaction: null,
-        });
-      }
-    }
-  }
-
   public render_dialog(): JSX.Element {
     switch (this.state.dialog) {
       case Dialogs.changeAdminPin:
@@ -184,31 +122,12 @@ export class CardStatusList extends React.Component<CardStatusListProps, CardSta
           onClose={()=>{this.setState({dialog: Dialogs.closed})}} />
     }
     return null;
-    /*if (this.state.requestPin) {
-      return (<tr>
-        <td colSpan={10}>
-          Change Pin {this.state.requestPin}
-          <ChangePin type={this.state.requestPin}
-            channel={this.props.channel}
-            app_id={cs.reader.cardid} />
-        </td>
-      </tr>);
-    } else {
-      // if (this.state.changeAdminPin) {
-      //     return (<ChangePin pin={this.state.changeAdminPin}/>)
-      // }
-      // if (this.state.changeUserPin) {
-      //     return (<ChangePin pin={this.state.changeUserPin}/>)
-      // }
-      return null
-    }*/
   }
 
   public render(): JSX.Element {
     return (
       <div className="CardStatusList">
         {this.props.cardStatusListState.cardStatusList.map((cs: CardStatus.Gpg2CardStatus, idx: number) => {
-          {/*console.log("Render", cs.serial, cs.url);*/}
           let login = "" + cs.login;
           return (<table key={cs.serial}>
             <tbody>
