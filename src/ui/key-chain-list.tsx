@@ -27,6 +27,8 @@ import MutableString from '../gpg/mutable_string';
 
 import * as ReactModal from 'react-modal';
 
+import { observer } from 'mobx-react';
+
 // import * as CopyToClipboard from 'react-copy-to-clipboard';
 
 enum Dialogs {
@@ -56,6 +58,7 @@ interface KeyChainListProps extends React.Props<KeyChainList> {
   keyChainListState: KeyChainListState;
 }
 
+@observer
 export class KeyChainList
   extends React.Component<KeyChainListProps, KeyChainListComponentState> {
 
@@ -396,7 +399,8 @@ export class KeyChainList
 
   public render(): JSX.Element {
     // SecretKeys {this.state.secretKeys.length || ""}
-    // {/*{sk.subKeys.map((ssb, idx) => this.render_result(ssb, idx))}*/}
+  // {/*{sk.subKeys.map((ssb, idx) => this.render_result(ssb, idx))}*/}
+    // console.log("render.KeyChainList", this.props.keyChainListState.keyChainList.length)
     return (
       <div className="KeyChainList">
         {this.render_modal()}

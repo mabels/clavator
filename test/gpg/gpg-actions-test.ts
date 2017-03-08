@@ -90,9 +90,12 @@ describe('Gpg', () => {
       assert.equal(res.exitCode, 0, "delete secret key")
       gpg.deletePublicKey(key.fingerPrint.fpr, (res: Gpg.Result) => {
         assert.equal(res.exitCode, 0, "delete pub key")
-        gpg.runAgent(["killagent", "/bye"], null, (res: Gpg.Result) => {
-          // Rimraf.sync(gpg.homeDir)
-          done()
+        gpg.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
+          assert.equal(keys.length, 0);
+          gpg.runAgent(["killagent", "/bye"], null, (res: Gpg.Result) => {
+            Rimraf.sync(gpg.homeDir)
+            done()
+          })
         })
       })
     })

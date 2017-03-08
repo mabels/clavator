@@ -19,7 +19,7 @@ export class GpgChangeCard implements Dispatcher {
 
   public run(ws: WebSocket, m: Message.Message): boolean {
     console.log("GpgChangeCard.run", m.header)
-    if (m.header.action != "SetCardAttributes.Request") {
+    if (m.header.action != "ChangeCard.Request") {
       // ws.send(Message.prepare("Progressor.Clavator", Progress.fail("Ohh")))
       return false;
     }
@@ -37,6 +37,7 @@ export class GpgChangeCard implements Dispatcher {
     this.gpg.changeCard(cc, (res: Gpg.Result) => {
       ws.send(Message.prepare(header, Progress.info(res.stdOut)));
       ws.send(Message.prepare(header, Progress.error(res.stdErr)));
+      ws.send(Message.prepare(header.setAction("ChangeCard.Completed")));
       // send cardlist
     })
     return true;

@@ -26,12 +26,19 @@ interface StringFunc {
 
 type Mixed = string | StringFunc;
 
+class ResultQueue {
+  cmd: string;
+  attributes: Mixed[];
+  cb: (res: Result) => void;
+}
+
 export class Result {
   stdOut: string = "";
   stdErr: string = "";
   stdIn: string = "";
   env: { [id: string]: string; } = {};
   exitCode: number;
+  runQueue: ResultQueue[] = [];
 
   constructor() {
     (<any>Object).assign(this.env, process.env);
@@ -48,6 +55,19 @@ export class Result {
   }
 
   run(cmd: string, attributes: Mixed[], cb: (res: Result) => void) {
+    this.runQueue.push({cmd: cmd, attributes: attributes, cb: cb});
+    if (this.runQueue.length == 1) {
+      this._run(cmd, attributes, cb);
+    }
+  }
+  processQueue() {
+    this.runQueue.shift();
+    if (this.runQueue.length > 0) {
+      let head = this.runQueue[0];
+      this._run(head.cmd, head.attributes, head.cb);
+    }
+  }
+  _run(cmd: string, attributes: Mixed[], cb: (res: Result) => void) {
     // console.log("run=["+cmd+"]", attributes);
     let fds: (() => string)[] = [];
     let freeFd = 3;
@@ -79,6 +99,7 @@ export class Result {
     c.on("error", (e: Event) => {
       console.log(e);
       cb(this);
+      this.processQueue();
     });
     if (this.stdIn && this.stdIn.length > 0) {
       var s = new stream.Readable();
@@ -117,6 +138,7 @@ export class Result {
     c.on('close', (code: number) => {
       this.exitCode = code;
       cb(this);
+      this.processQueue();
     });
   }
 }
@@ -213,7 +235,7 @@ export class Gpg {
       "scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40",
       "scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40",
       "scd apdu 00 e6 00 00",
-      "scd apdu 00 44 00 00"].join("\n")
+      "scd apdu 00 44 00 00", ""].join("\n")
   }
 
   public list_secret_keys(cb: (err: string, keys: ListSecretKeys.SecretKey[]) => void) {
@@ -252,7 +274,7 @@ export class Gpg {
   }
 
   deleteSecretKey(fingerPrint: string, cb: (res: Result) => void) {
-    this.run(['--batch', '--delete-secret-key', fingerPrint], null, cb);
+    this.run(['--expert', '--batch', '--delete-secret-key', fingerPrint], null, cb);
   }
 
   deletePublicKey(fingerPrint: string, cb: (res: Result) => void) {
@@ -369,6 +391,7 @@ export class Gpg {
       },
       '--change-pin', type, rcp.app_id
     ];
+    console.log("changePin:", args)
     this.run(args, null, cb);
   }
 
@@ -499,15 +522,37 @@ export class Gpg {
   }
 
   public changeCard(cc: ChangeCard, cb: (res: Result) => void) {
-    [
-      { "name": [cc.name.split(/\s+/)[0], cc.name.split(/\s+/)].slice(1).join(" ") },
-      { "lang": [cc.lang] },
-      { "lang": cc.lang },
-      { "lang": cc.lang },
+    let sname = cc.name.split(/\s+/)
+    let actions = [
+      [ "name", [ sname.slice(1).join(" "), sname[0] ] ],
+      [ "language", [cc.lang] ],
+      [ "sex", [ cc.sex[0]=="f" ? 2: 1 ] ],
+      [ "login", [cc.login] ],
+      [ "url", [cc.url] ]
     ]
+    this._changeCard(cc, actions, cb, [])     
   }
+  _changeCard(cc: ChangeCard, actions: any[], cb: (res: Result) => void, results: Result[]) {
+    if (actions.length == 0) {
+      let res = new Result();
+      results.forEach((r) => {
+        res.exitCode += r.exitCode;
+        res.stdErr += r.stdErr;
+        res.stdOut += r.stdOut;
+      })
+      cb(res);
+      return;
+    }
+    let current = actions.shift();
+    console.log("current:", current);
+    this.changeAttribute(cc.adminPin.pin, current[0], current[1], cc.serialNo, (res) => {
+      results.push(res);
+      this._changeCard(cc, actions, cb, results)
+    });
+  }
+
   private changeAttribute(adminPin: string, attrName: string,
-    value: string, serialNo: string, cb: (res: Result) => void) {
+    value: string[], serialNo: string, cb: (res: Result) => void) {
     // create copy of the selected key to avoid
     // that this key will removed from the current
     // key database
@@ -517,7 +562,7 @@ export class Gpg {
         // console.log(">>keyToYubiKey:passphrase[", ktyk.passphrase.value, "]")
         return adminPin //+ "\n"
       },
-      '--quick-change-card',
+      '--change-card',
       attrName
     ];
     args = args.concat(value);

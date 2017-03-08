@@ -38,7 +38,7 @@ export class ChannelStatus extends
   }
 
   private renderStatus() {
-    if (this.state.status == "connected") {
+    if (this.state.status == "connected" || this.state.status == "not started") {
       console.log("NOT: renderStatus:", this.state.status);
       return null;
     }

@@ -148,6 +148,9 @@ export class SecretKey extends Key {
   subKeys: Key[] = [];
 
   public eq(o: SecretKey) {
+    if (!super.eq(o)) {
+      return false;
+    }
     if (this.uids.length != o.uids.length) {
       return false;
     }
@@ -164,6 +167,7 @@ export class SecretKey extends Key {
         return false;
       }
     }
+    return true;
   }
 }
 

@@ -108,7 +108,7 @@ export class Gpg2CardStatus {
   public eq(o: Gpg2CardStatus): boolean {
     let eq = true;
     eq = eq && this.reader.eq(o.reader)
-    !eq && console.log("Reader !=")
+    // !eq && console.log("Reader !=")
     eq = eq && this.keyStates.length == o.keyStates.length;
     for (let i = 0; eq && i < this.keyStates.length; ++i) {
       eq = eq && this.keyStates[i].eq(o.keyStates[i]);
@@ -133,6 +133,13 @@ export class Gpg2CardStatus {
       ret = this.keyStates[slot] = new KeyState();
     }
     return ret;
+  }
+
+  static decode(str: string) {
+    return str.replace(/\\x[a-fA-F0-9]{2}/, (val) => {
+      let num = parseInt(val.slice("\\x".length), 16);
+      return  String.fromCharCode(num);
+    })
   }
 
   // typedef std::function<bool(Gpg2CardStatus &gcs, const std::vector<std::string> &strs)> GcsAction;
@@ -171,7 +178,7 @@ export class Gpg2CardStatus {
         return true;
       },
       "url": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
-        gcs.url = strs[1];
+        gcs.url = Gpg2CardStatus.decode(strs[1]);
         return true;
       },
       "login": (gcs: Gpg2CardStatus, strs: string[]): boolean => {

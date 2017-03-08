@@ -25,7 +25,7 @@ export class GpgResetYubikey implements Dispatcher {
     ws.send(Message.prepare(header, Progress.ok("Resetting your Yubikey now. This will take a couple of seconds. ...")))
 
     this.gpg.resetYubikey((res: Gpg.Result) => {
-      ws.send(Message.prepare(header, res));
+      // ws.send(Message.prepare(header, res));
       if (res.stdOut.split("\n").find((i: string) => { return i.startsWith("ERR ") })) {
         res.stdOut.split("\n").forEach((s: string) => {
           ws.send(Message.prepare(header, Progress.fail(s)))

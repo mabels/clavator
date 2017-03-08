@@ -24,6 +24,7 @@ export class CardStatusListState implements WsChannel.WsChannel {
   onMessage(action: Message.Header, data: string) {
     if (action.action == "CardStatusList") {
       this.cardStatusList = JSON.parse(data)
+      // console.log("DATA", this.cardStatusList, data)
     }
   }
   onClose(e: CloseEvent) {

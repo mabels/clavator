@@ -14,8 +14,11 @@ import * as classnames from 'classnames';
 import * as WsChannel from './ws-channel';
 import * as Message from '../message';
 
+import ButtonToProgressor from './button-to-progressor';
+
 interface AskKeyToYubiKeyState {
-  keyToYubiKey: KeyToYubiKey
+  keyToYubiKey: KeyToYubiKey;
+  transaction: Message.Transaction<KeyToYubiKey>;
 }
 
 interface AskKeyToYubiKeyProps extends React.Props<AskKeyToYubiKey> {
@@ -30,9 +33,13 @@ export class AskKeyToYubiKey
 {
   constructor() {
     super();
+    let transaction = Message.newTransaction<KeyToYubiKey>("SendKeyToYubiKey.run");
+    transaction.data = new KeyToYubiKey();
     this.state = {
-      keyToYubiKey: new KeyToYubiKey()
+      keyToYubiKey: transaction.data,
+      transaction: transaction
     };
+    this.sendKeyToYubiKey = this.sendKeyToYubiKey.bind(this)
   }
 
   componentWillMount() {
@@ -47,7 +54,8 @@ export class AskKeyToYubiKey
   // public passphrase: MutableString = new MutableString();
   public sendKeyToYubiKey() {
     console.log("sendKeyToYubiKey", this.state.keyToYubiKey)
-    this.props.channel.send(Message.newTransaction("SendKeyToYubiKey.run", this.state.keyToYubiKey).asMsg());
+    this.state.transaction.data = this.state.keyToYubiKey;
+    this.props.channel.send(this.state.transaction.asMsg());
   }
 
   public render_card_slot() {
@@ -81,6 +89,7 @@ export class AskKeyToYubiKey
         className={classnames({ "AskKeyToYubiKey": true, good: this.state.keyToYubiKey.verify() })}
         key={this.props.fingerprint}>
         {this.render_card_slot()}
+        <div className="row">
         <label>Passphrase:</label><input type="password"
           className={classnames({ good: this.state.keyToYubiKey.verify() })}
           name={`aktyk-${this.props.fingerprint}`} required={true}
@@ -90,7 +99,9 @@ export class AskKeyToYubiKey
               keyToYubiKey: this.state.keyToYubiKey
             }))
           }} />
+          </div>
 
+        <div className="row">
         <label>AdminPin:</label><input type="password"
           className={classnames({ good: this.state.keyToYubiKey.admin_pin.verify() })}
           name={`aktyk-${this.props.fingerprint}`} required={true}
@@ -100,14 +111,21 @@ export class AskKeyToYubiKey
               keyToYubiKey: this.state.keyToYubiKey
             }))
           }} />
+        </div>
 
-        <button
+         <ButtonToProgressor 
+          channel={this.props.channel}
+          onClick={this.sendKeyToYubiKey}
+          transaction={this.state.transaction}
+         >Send</ButtonToProgressor>
+
+        {/*<button
           className={classnames({ good: this.state.keyToYubiKey.verify() })}
           disabled={!this.state.keyToYubiKey.verify()}
           type="button"
           onClick={(e: any) => {
             this.sendKeyToYubiKey()
-          }}>Ready</button>
+          }}>Ready</button>*/}
       </form>
     );
   }

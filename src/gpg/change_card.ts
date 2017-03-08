@@ -1,8 +1,9 @@
 
 import Pin from './pin';
+import { Gpg2CardStatus } from './card_status';
 
 export class ChangeCard {
-  public adminPin: Pin;
+  public adminPin: Pin = new Pin();
   public serialNo: string;
 
   public lang: string;
@@ -24,11 +25,27 @@ export class ChangeCard {
     // return new ChangeCard(js['action'], js['params']);
   }
 
+  public static fromCardStatus(cs: Gpg2CardStatus, pin: string = null) {
+    // debugger
+    return ChangeCard.fill({
+      adminPin: { pin: pin },
+      serialNo: cs.reader.cardid,
+      lang: cs.lang,
+      name: cs.name,
+      login: cs.login,
+      sex: cs.sex,
+      url: cs.url
+    })
+  }
+
   public valid(): boolean {
-    // return !!(['name','login','sex','url'].find((a)=>this.action==a)) &&
-    //   this.params.length>0 && this.serialNo.length > 0 &&
-    //   this.adminPin.verify()
-    return false;
+    return this.adminPin.verify() &&
+      this.serialNo.length > 0 &&
+      typeof(this.lang) == "string" &&
+      typeof(this.name) == "string" &&
+      typeof(this.login) == "string" &&
+      typeof(this.sex) == "string" &&
+      typeof(this.url) == "string";
   }
 }
 

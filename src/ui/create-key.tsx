@@ -15,13 +15,15 @@ import * as ReactModal from 'react-modal';
 
 import { Progressor } from './progressor';
 
+import ButtonToProgressor from './button-to-progressor';
 
 interface CreateKeyState {
   createDialog: boolean,
+  completed: boolean,
   keyGen: KeyGen.KeyGen
   create_status: string
   transaction: Message.Transaction<KeyGen.KeyGen>;
-  handleTransaction: (action: Message.Header, data: string) => void;
+  // handleTransaction: (action: Message.Header, data: string) => void;
 }
 
 interface CreateKeyProps extends React.Props<CreateKey> {
@@ -36,11 +38,13 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     kg.uids.add(new KeyGen.Uid());
     this.state = {
       createDialog: false,
+      completed: false,
       keyGen: kg,
       create_status: "create-key",
       transaction: null,
-      handleTransaction: null
+      // handleTransaction: null
     };
+    this.create_key = this.create_key.bind(this);
     // this.handleCreateClick = this.handleCreateClick.bind(this);
   }
   // public static contextTypes = {
@@ -66,31 +70,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     }));
   }
 
- 
 
-  public render_creating() : JSX.Element {
-    if (!this.state.createDialog) {
-      return null
-    }
-    return (
-      <ReactModal
-        isOpen={true}
-        closeTimeoutMS={150}
-        onAfterOpen={() => { }}
-        contentLabel="Modal"
-        shouldCloseOnOverlayClick={true}
-      >
-        <i style={{ float: "right" }} 
-           onClick={(() => { this.setState({createDialog: false}) }).bind(this)}
-           className="fa fa-close"></i>
-        <h4>Createing Key:</h4>
-        <Progressor 
-          channel={this.props.channel} 
-          transaction={this.state.transaction.header.transaction}
-          controls={true} />
-      </ReactModal>
-    )
-  }
 
   public render_option<T>(name: string, op: KeyGen.Option<T>): JSX.Element {
     //return(<option value={o} {s?"selected":""}>{o}</option>)
@@ -145,10 +125,21 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
   }
 
   handleTransaction(action: Message.Header, data: string) {
+    // console.log("CreateKey:", action, this.state.transaction.header.transaction);
     if (action.transaction == this.state.transaction.header.transaction) {
+      if (action.action == "CreateKeySet.Completed") {
+        // this.props.channel.unMessage(this.state.handleTransaction);
+        this.setState({
+          transaction: null,
+          // handleTransaction: null,
+          completed: true
+        });
+      }
+      /*
       this.setState(Object.assign({}, this.state, {
         create_status: "create-key"
       }));
+      */
     }
   }
 
@@ -158,7 +149,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     let transaction = Message.newTransaction("CreateKeySet.Request", this.state.keyGen);
     this.setState({
       transaction: transaction,
-      handleTransaction: this.props.channel.onMessage(this.handleTransaction.bind(this)),
+      // handleTransaction: this.props.channel.onMessage(this.handleTransaction.bind(this)),
       createDialog: true
     });
     this.props.channel.send(transaction.asMsg());
@@ -194,6 +185,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
         />
       </div>)
   }
+
   public render_delete_button(idx: number): JSX.Element {
 
     if (this.state.keyGen.uids.pallets.filter((i) => i).length > 1) {
@@ -203,6 +195,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     }
     return null;
   }
+
   public render_uid(idx: number, uid: KeyGen.Uid): JSX.Element {
     return (
       <div className={classnames({ "u-full-width": true, "good": uid.valid() })} key={idx}>
@@ -322,12 +315,14 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
         })}
 
         <div className="row">
-          <div className="four columns"> </div>
-          <div className={classnames({ four: true, columns: true, good: this.state.keyGen.valid() })} >
-            <button type="button"
-              onClick={this.create_key.bind(this)}
-              disabled={!this.state.keyGen.valid()}>{this.state.create_status}</button>
-          </div>
+          {/*<div className="four columns"> </div>*/}
+          {/*<div className={classnames({ four: true, columns: true, good: this.state.keyGen.valid() })} >*/}
+          <ButtonToProgressor
+            channel={this.props.channel}
+            onClick={this.create_key}
+            transaction={this.state.transaction}
+          >Create Key</ButtonToProgressor>
+          {/*</div>*/}
         </div>
       </form>
     );
@@ -341,9 +336,10 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     return (
       <div className="row CreateKey" >
         {this.render_form()}
-        {this.render_creating()}
       </div>
     );
   }
 
 }
+
+export default CreateKey;

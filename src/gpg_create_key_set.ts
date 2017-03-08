@@ -85,7 +85,8 @@ export class GpgCreateKeySet implements Dispatcher {
               this.addUids(header, ws, 1, key.fingerPrint.fpr, kg, () => {
                 this.createSubKeys(header, ws, 0, key.fingerPrint.fpr, kg, () => {
                   ws.send(Message.prepare(header, Progress.ok("KeysetCreated", true)));
-                  ws.send(Message.prepare(header.setAction("CreateKeySet.Completed"), null))
+                  console.log("CreateKeySet.Completed", header.setAction("CreateKeySet.Completed"));
+                  ws.send(Message.prepare(header.setAction("CreateKeySet.Completed")));
                 });
               });
             }

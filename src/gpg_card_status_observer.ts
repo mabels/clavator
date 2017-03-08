@@ -14,6 +14,11 @@ class GpgCardStatusObserver {
   public gpg: Gpg.Gpg;
   public actionCount: number;
   public prev = new WssUpdate<CardStatus.Gpg2CardStatus>();
+
+  constructor() {
+    this.action = this.action.bind(this);
+  }
+
   public static create(gpg: Gpg.Gpg, obs: Observer.Observer) : GpgCardStatusObserver {
       let glsko = new GpgCardStatusObserver();
       glsko.gpg = gpg;
@@ -44,6 +49,7 @@ class GpgCardStatusObserver {
         keys = [];
       }
       this.prev.run("CardStatusList", wss, keys, () => {
+        // console.log("CardStatusList:setTimeout");
         this.timeoutId = setTimeout(this.action, 5000);
       })
     });

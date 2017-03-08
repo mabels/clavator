@@ -35,7 +35,7 @@ export class Progressor
   }
 
   protected componentWillUnmount(): void {
-    this.setState(Object.assign({}, this.state, { progressList: [] }));
+    this.setState({ progressList: [] });
     this.props.channel.unregister(this)
   }
 
@@ -43,15 +43,16 @@ export class Progressor
   }
 
   onMessage(action: Message.Header, data: string) {
-    if ((action.action == "Progressor." + this.props.msg) || 
-        (action.transaction == this.props.transaction)
-       ) {
-      console.log("Progressor.", this.props, action)
-      let js = JSON.parse(data);
-      this.state.progressList.push(Progress.fill(js));
-      this.setState(Object.assign({}, this.state, {
-        progressList: this.state.progressList
-      }));
+    // console.log("Progressor", this.props.msg, this.props.transaction, action);
+    if ((action.action == "Progressor." + this.props.msg)) {
+      if (!this.props.transaction || action.transaction == this.props.transaction) {
+        console.log("Progressor.", this.props, action, data)
+        let js = JSON.parse(data);
+        this.state.progressList.push(Progress.fill(js));
+        this.setState(Object.assign({}, this.state, {
+          progressList: this.state.progressList
+        }));
+      }
     }
   }
   onClose(e: CloseEvent) {
