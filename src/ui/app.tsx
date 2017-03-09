@@ -15,6 +15,7 @@ import * as WsChannel from './ws-channel';
 import { CardStatusListState } from './card-status-list-state'
 import { KeyChainListState } from './key-chain-list-state'
 import DialogCreateKey from './dialog-create-key';
+import Assistent from './assistent';
 
 const channel = WsChannel.Dispatch.create();
 const cardStatusListState = new CardStatusListState(channel);
@@ -72,7 +73,7 @@ export class App extends React.Component<{}, AppState> {
             <CardStatusList channel={channel} cardStatusListState={cardStatusListState} />
           </TabPanel>
           <TabPanel>
-            <h3>Assistent</h3>
+            <Assistent channel={channel}/>
           </TabPanel>
         </Tabs>
       </ChannelStatus>

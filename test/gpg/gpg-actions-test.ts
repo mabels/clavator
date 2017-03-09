@@ -47,19 +47,26 @@ describe('Gpg', () => {
 
   before(function (done) {
     gpg = new Gpg.Gpg();
-    let cmd = "gpg2";
+    // console.log(">>>>>", process.argv, process.execPath);
+    let cmd = [process.execPath, path.join(
+       path.dirname(process.argv[process.argv.length-1]), "gpg-mock.js")];
+    let cmdAgent = cmd.concat(["AGENT"]);
     if (fs.existsSync("/usr/local/bin/gpg2")) {
-      cmd = "/usr/local/bin/gpg2";
+      cmd = ["/usr/local/bin/gpg2"];
+      cmdAgent = ["/usr/local/bin/gpg-connect-agent"];
     }
     if (fs.existsSync("../gpg/gnupg/g10/gpg")) {
-      cmd = "../gpg/gnupg/g10/gpg";
+      cmd = ["../gpg/gnupg/g10/gpg"];
+      cmdAgent = ["../gpg/gnupg/tools/gpg-connect-agent"];
     }
     if (fs.existsSync("/gnupg/g10/gpg")) {
-      cmd = "/gnupg/g10/gpg";
+      cmd = ["/gnupg/g10/gpg"];
+      cmdAgent = ["/gnupg/tools/gpg-connect-agent"];
     }
     gpg.setGpgCmd(cmd);
+    gpg.setGpgAgentCmd(cmdAgent);
 
-    let homedir = path.join(process.cwd(), uuid.v4().toString());
+    let homedir = path.join(process.cwd(), `${uuid.v4().toString().slice(0,16)}.tdir`);
     gpg.setHomeDir(homedir)
     fs.mkdirSync(homedir)
 
@@ -139,7 +146,7 @@ describe('Gpg', () => {
     kytk.fingerprint = key.keyId;
     kytk.passphrase.value = "Gpg Test Jojo Akzu Luso";
     gpg.prepareKeyToYubiKey(kytk, (mygpg: Gpg.Gpg, res: Gpg.Result) => {
-      assert.equal(0, res.exitCode, "unknown exit code");
+      assert.equal(0, res.exitCode, `unknown exit code ${res.stdErr}`);
       assert.isNotNull(mygpg, "Gpg should be set");
       mygpg.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
         assert.equal(1, keys.length, "len should be one")
@@ -147,7 +154,7 @@ describe('Gpg', () => {
         // mygpg.runAgent(["killagent", "/bye"], null, (res: Gpg.Result) => {
         //   done()
         // })
-        Rimraf.sync(mygpg.homeDir)
+        Rimraf.sync(mygpg.homeDir);
         done();
       })
     })

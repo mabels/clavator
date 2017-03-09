@@ -54,10 +54,11 @@ export class Result {
     return this;
   }
 
-  run(cmd: string, attributes: Mixed[], cb: (res: Result) => void) {
-    this.runQueue.push({cmd: cmd, attributes: attributes, cb: cb});
+  run(cmd: string, cmdArgs: Mixed[], attributes: Mixed[], cb: (res: Result) => void) {
+    let args = cmdArgs.concat(attributes);
+    this.runQueue.push({cmd: cmd, attributes: args, cb: cb});
     if (this.runQueue.length == 1) {
-      this._run(cmd, attributes, cb);
+      this._run(cmd, args, cb);
     }
   }
   processQueue() {
@@ -79,13 +80,6 @@ export class Result {
       return i;
     })
     let writables: string[] = fds.map((func) => {
-      // console.log(">>>>", func)
-      // let w = new stream.Writable();
-      // let r = new stream.Readable();
-      // r.push(func());
-      // r.push(null);
-      // r.pipe(w);
-      // return w;
       return 'pipe'
     });
 
@@ -147,13 +141,17 @@ export class Gpg {
   homeDir: string = path.join(process.env.HOME, ".gnupg");
   //pinEntryServer: pse.PinEntryServer;
   gpgCmd: string = "gpg2";
+  gpgCmdArgs: string[] = [];
   gpgAgentCmd: string = "gpg-connect-agent";
+  gpgAgentCmdArgs: string[] = [];
 
   public clone(): Gpg {
     let ret = new Gpg();
     ret.homeDir = this.homeDir;
     ret.gpgCmd = this.gpgCmd;
+    ret.gpgCmdArgs = this.gpgCmdArgs;
     ret.gpgAgentCmd = this.gpgAgentCmd;
+    ret.gpgAgentCmdArgs = this.gpgAgentCmdArgs;
     return ret;
   }
 
@@ -165,10 +163,18 @@ export class Gpg {
     return this;
   }
 
-  public setGpgCmd(cmd: string): Gpg {
-    this.gpgCmd = cmd;
+  public setGpgCmd(cmd: string[]): Gpg {
+    this.gpgCmd = cmd[0];
+    this.gpgCmdArgs = cmd.slice(1);
     return this;
   }
+  
+  public setGpgAgentCmd(cmd: string[]): Gpg {
+    this.gpgAgentCmd = cmd[0];
+    this.gpgAgentCmdArgs = cmd.slice(1);
+    return this;
+  }
+
 
   public started(cb: (s: Result) => void) {
     this.run(["--print-md", "md5"], "test", cb);
@@ -177,13 +183,13 @@ export class Gpg {
   public getSocketName(cb: (sname: string) => void) {
     this.runAgent(["GETINFO socket_name", "/bye"], null, (res: Result) => {
       if (res.exitCode != 0) {
-        // console.log("getSocketName-1:", res);
+        //console.log("getSocketName-1:", res);
         cb(null)
         return;
       }
       let line = res.stdOut.split(/[\n\r]+/).find((line) => line.startsWith("D "))
       if (!line) {
-        // console.log("getSocketName-2:", line);
+        //console.log("getSocketName-2:", line);
         cb(null);
         return;
       }
@@ -202,7 +208,7 @@ export class Gpg {
     //     result.addEnv('F_MOD_HOME', "xxx");
     //     result.addEnv('S_PINENTRY_SOCKET', this.pinEntryServer.socketFile);
     // }
-    result.run(this.gpgCmd, attributes, cb);
+    result.run(this.gpgCmd, this.gpgCmdArgs, attributes, cb);
   }
 
   runAgent(attributes: string[], stdIn: string, cb: (res: Result) => void) {
@@ -215,7 +221,7 @@ export class Gpg {
     let result = (new Result()).setStdIn(stdIn);
 
     console.log(this.gpgAgentCmd, attributes, stdIn)
-    result.run(this.gpgAgentCmd, attributes, cb);
+    result.run(this.gpgAgentCmd, this.gpgAgentCmdArgs, attributes, cb);
   }
 
   public resetYubikey(cb: (res: Result) => void) {
@@ -320,7 +326,7 @@ export class Gpg {
       '--full-gen-key',
       '--batch'
     ];
-    console.log("createMasterKey:", args, keyGen.masterCommand());
+    console.log("createMasterKey:", this.gpgCmd, this.gpgCmdArgs, args);
     this.run(args, keyGen.masterCommand(), cb);
   }
 
@@ -400,7 +406,7 @@ export class Gpg {
       if (sName1 == null) {
         let res = new Result();
         res.exitCode = 47;
-        res.stdErr = "can't retrieve socketName";
+        res.stdErr = `can't retrieve socketName:${sName1}`;
         cb(res);
         return;
       }
@@ -408,7 +414,7 @@ export class Gpg {
         if (sName2 == null) {
           let res = new Result();
           res.exitCode = 48;
-          res.stdErr = "can't retrieve socketName";
+          res.stdErr = `can't retrieve socketName:${sName2}`;
           cb(res);
           return;
         }
@@ -440,7 +446,7 @@ export class Gpg {
         return;
       }
       let gpgSmartCard = this.clone();
-      let homedir = path.join(process.cwd(), Uuid.v4().toString());
+      let homedir = path.join(process.cwd(), `${Uuid.v4().toString().slice(0,16)}.ctr`);
       console.log("keyToYubiKey:", homedir)
       gpgSmartCard.setHomeDir(homedir);
       try {
@@ -461,7 +467,7 @@ export class Gpg {
             cb(null, sres)
             return
           }
-          gpgSmartCard.runAgent([], "killagent /bye", async (ares: Result) => {
+          gpgSmartCard.runAgent(["killagent", "/bye"], null, async (ares: Result) => {
             if (ares.exitCode != 0) {
               cb(null, ares);
               return

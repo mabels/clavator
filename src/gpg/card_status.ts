@@ -112,7 +112,7 @@ export class Gpg2CardStatus {
     eq = eq && this.keyStates.length == o.keyStates.length;
     for (let i = 0; eq && i < this.keyStates.length; ++i) {
       eq = eq && this.keyStates[i].eq(o.keyStates[i]);
-      !eq && console.log("KeyState !=", i, this.keyStates.length, this.keyStates[i], o.keyStates[i])
+      //!eq && console.log("KeyState !=", i, this.keyStates.length, this.keyStates[i], o.keyStates[i])
     }
     eq = eq && this.version == o.version;
     eq = eq && this.vendor == o.vendor;

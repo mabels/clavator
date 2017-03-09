@@ -58,6 +58,27 @@ module.exports = [{
   ]
 },{
   target: 'node',
+  entry: './src/gpg-mock',
+  output: {
+    path: __dirname + '/dist',
+    filename: 'gpg-mock.js',
+    libraryTarget: 'commonjs2'
+  },
+  module: {
+    loaders: [
+      {
+        test: /\.tsx?$/,
+        loader: 'awesome-typescript-loader?useBabel=false'
+      }
+    ]
+  },
+  externals: node_modules,
+  devtool: 'source-map',
+  resolve: {
+    extensions: ['.ts', '.webpack.js', '.web.js', '.js']
+  }
+},{
+  target: 'node',
   entry: './src/server',
   output: {
     path: __dirname + '/dist',

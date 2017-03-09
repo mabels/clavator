@@ -1,7 +1,8 @@
 
-import * as fs from 'fs'
-import * as http from 'http'
-import * as https from 'https'
+import * as fs from 'fs';
+import * as http from 'http';
+import * as https from 'https';
+import * as path from 'path';
 
 
 let privateKey: string = null;
@@ -59,16 +60,36 @@ const app = express();
 app.use(express.static(join(process.cwd(), 'dist')));
 
 let gpg = new Gpg.Gpg();
-let cmd = "gpg2";
-if (fs.existsSync("/usr/local/bin/gpg2")) {
-  cmd = "/usr/local/bin/gpg2";
-}
-if (fs.existsSync("../gpg/gnupg/g10/gpg")) {
-  cmd = "../gpg/gnupg/g10/gpg";
-}
-if (fs.existsSync("/gnupg/g10/gpg")) {
-  cmd = "/gnupg/g10/gpg";
-}
+let cmd = [process.execPath, path.join(
+  path.dirname(process.argv[process.argv.length - 1]), "gpg-mock.js")];
+let cmdAgent = cmd.concat(["AGENT"]);
+// if (fs.existsSync("/usr/bin/gpg")) {
+//   cmd = ["/usr/bin/gpg"];
+//   cmdAgent = ["/usr/bin/gpg-connect-agent"];
+// }
+// if (fs.existsSync("/usr/bin/gpg2")) {
+//   cmd = ["/usr/bin/gpg2"];
+//   cmdAgent = ["/usr/bin/gpg-connect-agent"];
+// }
+// if (fs.existsSync("/usr/local/bin/gpg")) {
+//   cmd = ["/usr/local/bin/gpg"];
+//   cmdAgent = ["/usr/local/bin/gpg-connect-agent"];
+// }
+// if (fs.existsSync("/usr/local/bin/gpg2")) {
+//   cmd = ["/usr/local/bin/gpg2"];
+//   cmdAgent = ["/usr/local/bin/gpg-connect-agent"];
+// }
+// if (fs.existsSync("../gpg/gnupg/g10/gpg")) {
+//   cmd = ["../gpg/gnupg/g10/gpg"];
+//   cmdAgent = ["../gpg/gnupg/tools/gpg-connect-agent"];
+// }
+// if (fs.existsSync("/gnupg/g10/gpg")) {
+//   cmd = ["/gnupg/g10/gpg"];
+//   cmdAgent = ["/gnupg/tools/gpg-connect-agent"];
+// }
+gpg.setGpgCmd(cmd);
+gpg.setGpgAgentCmd(cmdAgent);
+
 console.log(`Use GPG ${cmd}`)
 gpg.setGpgCmd(cmd);
 
