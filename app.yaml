@@ -1,0 +1,9 @@
+env: flex
+runtime: nodejs
+skip_files:
+  - ^node_modules/(.*)?
+  - ^src/(.*)?
+  - ^test/(.*)?
+  - ^logs/(.*)?
+  - ^pam/(.*)?
+  - ^image/(.*)?
