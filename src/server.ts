@@ -30,10 +30,10 @@ import * as Gpg from './gpg/gpg';
 import * as Message from './message';
 
 let redirectPort = 8080;
-let applicationPort = 8443;
+let applicationPort = process.env.PORT || 8443;
 if (process.getuid() == 0) {
   redirectPort = 80;
-  applicationPort = 443;
+  applicationPort = process.env.PORT || 443;
 }
 
 const redirectHttp = express();
@@ -49,10 +49,10 @@ console.log(`Started redirectPort on ${redirectPort}`)
 let httpServer: https.Server | http.Server;
 if (privateKey) {
   httpServer = https.createServer(credentials);
-  console.log(`Listen on: https ${applicationPort}`)
+  console.log(`Listen on: https ${applicationPort} ${process.env.PORT}`)
 } else {
   httpServer = http.createServer();
-  console.log(`Listen on: http ${applicationPort}`)
+  console.log(`Listen on: http ${applicationPort} ${process.env.PORT}`)
 }
 
 const app = express();
