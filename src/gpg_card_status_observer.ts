@@ -15,10 +15,6 @@ class GpgCardStatusObserver {
   public actionCount: number;
   public prev = new WssUpdate<CardStatus.Gpg2CardStatus>();
 
-  constructor() {
-    this.action = this.action.bind(this);
-  }
-
   public static create(gpg: Gpg.Gpg, obs: Observer.Observer) : GpgCardStatusObserver {
       let glsko = new GpgCardStatusObserver();
       glsko.gpg = gpg;
@@ -27,6 +23,10 @@ class GpgCardStatusObserver {
       glsko.action = glsko.action.bind(glsko);
       glsko.start();
       return glsko;
+  }
+
+  constructor() {
+    this.action = this.action.bind(this);
   }
 
   public register(ws: WebSocket) {

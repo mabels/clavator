@@ -1,20 +1,29 @@
 
 const fs = require('fs');
 const child_process = require('child_process');
+const http = require('http');
+const https = require('https');
 
-const extdir = fs.mkdtempSync('./');
-const docker = process.argv[process.argv.length-2]
+const extdir = fs.mkdtempSync(process.env['TMPDIR'] === undefined ? './' : process.env['TMPDIR']);
+
+const dockerFile = process.argv[process.argv.length-2]
 const dest = process.argv[process.argv.length-1]
 
-child_process.execSync(`docker pull ${docker}`);
-child_process.execSync(`docker save -o ${extdir}/docker.tar ${docker}`);
-child_process.execSync(`tar xfC ${extdir}/docker.tar ${extdir}`);
-const manifest = JSON.parse(fs.readFileSync(`${extdir}/manifest.json`));
-fs.mkdirSync(`${extdir}/root`)
-manifest.forEach((m) => {
-  m.Layers.forEach((l) => {
-    child_process.execSync(`tar xfC ${extdir}/${l} ${dest}`);
+try {
+  child_process.execSync(`mkdir -p ${extdir} ${dest}`);
+  child_process.execSync(`tar xfC ${dockerFile} ${extdir}`);
+  const manifest = JSON.parse(fs.readFileSync(`${extdir}/manifest.json`));
+  //fs.mkdirSync(`${extdir}/root`)
+  manifest.forEach((m) => {
+    m.Layers.forEach((l) => {
+      child_process.execSync(`tar xfC ${extdir}/${l} ${dest}`);
+    })
   })
-})
-child_process.execSync(`rm -r ${extdir}`)
-console.log(`extracted to ${dest}`)
+  console.log(`extracted [${dockerFile}] in [${dest}]`);
+  process.exit(0);
+} catch (e) {
+  process.exit(27);
+}
+finally {
+  child_process.execSync(`rm -r ${extdir}`)
+}

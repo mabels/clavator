@@ -8,11 +8,14 @@ import * as Gpg from './gpg/gpg';
 import * as Progress from './progress'
 
 export class GpgResetYubikey implements Dispatcher {
+  public gpg: Gpg.Gpg;
 
-  gpg: Gpg.Gpg
+  public static create(g: Gpg.Gpg) {
+    return new GpgResetYubikey(g)
+  }
 
   constructor(g: Gpg.Gpg) {
-    this.gpg = g
+    this.gpg = g;
   }
 
   public run(ws: WebSocket, m: Message.Message): boolean {
@@ -55,9 +58,7 @@ export class GpgResetYubikey implements Dispatcher {
     // ws.send(Message.prepare("Progressor.Clavator", Progress.fail("Mhhh")))
     return true;
   }
-  public static create(g: Gpg.Gpg) {
-    return new GpgResetYubikey(g)
-  }
+
 }
 
 export default GpgResetYubikey;

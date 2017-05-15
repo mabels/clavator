@@ -39,7 +39,7 @@ export class DialogAskRenderAscii extends React.Component<DialogAskRenderAsciiPr
         onAfterOpen={() => { }}
         contentLabel="Modal"
       >
-        <i style={{ float: "right" }} onClick={this.props.onClose} className="fa fa-close"></i>
+        <i style={{ float: "right" }} onClick={this.props.onClose} className="closeBox fa fa-close"></i>
         <h4>{this.props.action}:{this.props.secKey.fingerPrint.fpr}</h4>
         <AskPassphrase
           passphrase={this.state.passPhrase}

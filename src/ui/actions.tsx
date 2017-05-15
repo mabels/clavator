@@ -2,7 +2,7 @@
 import * as React from 'react';
 import * as classnames from 'classnames';
 
-import MutableString from '../gpg/mutable_string';
+// import MutableString from '../gpg/mutable_string';
 
 export enum Steps {
   None = 0x0,
@@ -32,8 +32,9 @@ export class Actions
     };
   }
 
-  classnames(action: Steps): string {
+  public classnames(action: Steps): string {
     return classnames({
+      ReactTabs__Tab: true,
       active: this.props.current == action,
       completed: !!(this.state.completed & action)
     });
@@ -42,16 +43,18 @@ export class Actions
   public render(): JSX.Element {
     return (
       <div>
-        <ul className="Actions">
-          <li onClick={() => this.props.onClick(Steps.CreateKey)}
-            className={this.classnames(Steps.CreateKey)}>Create-Key</li>
-          <li onClick={() => this.props.onClick(Steps.CheckCard)}
-            className={this.classnames(Steps.CheckCard)}>CheckCard</li>
-          <li onClick={() => this.props.onClick(Steps.SendToCard)}
-            className={this.classnames(Steps.SendToCard)}>Send-To-Card</li>
-          <li onClick={() => this.props.onClick(Steps.Completed)}
-            className={this.classnames(Steps.Completed)}>Completed</li>
-        </ul>
+        <div className="ReactTabs react-tabs row">
+          <ul className="Actions ReactTabs__TabList">
+            <li onClick={() => this.props.onClick(Steps.CreateKey)}
+              className={this.classnames(Steps.CreateKey)}>Create-Key</li>
+            <li onClick={() => this.props.onClick(Steps.CheckCard)}
+              className={this.classnames(Steps.CheckCard)}>CheckCard</li>
+            <li onClick={() => this.props.onClick(Steps.SendToCard)}
+              className={this.classnames(Steps.SendToCard)}>Send-To-Card</li>
+            <li onClick={() => this.props.onClick(Steps.Completed)}
+              className={this.classnames(Steps.Completed)}>Completed</li>
+          </ul>
+        </div>
         {this.props.children}
       </div>
     );

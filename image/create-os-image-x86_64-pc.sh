@@ -12,10 +12,13 @@ image_name=/$(basename $0 .sh)-$VERSION.img
 
 dd if=/dev/zero of=$image_name bs=1 count=1 seek=7516192767
 
-. /builder/map-os-image-x86_64-pc.sh
+sh /builder/retry_losetup.sh -f $image_name
+hole_disk=$(losetup -l | grep $image_name | awk '{print $1}')
 
 sext4=2048
 echo -e "n\np\n1\n$sext4\n$eext4\nt\n83\nw" | fdisk $hole_disk
+
+. /builder/map-os-image-x86_64-pc.sh
 
 mkfs.ext4 -O '^metadata_csum,^64bit' $part1 || mkfs.ext4 $part1
 ROOTID=$(blkid $part1 | awk '{print $2}')
@@ -24,11 +27,11 @@ mkdir /arch
 mount $part1 /arch
 
 
-[ -f /clavator/archlinux-bootstrap-2017.02.01-x86_64.tar.gz ] ||
+[ -f /clavator/archlinux-bootstrap-2017.04.01-x86_64.tar.gz ] ||
   wget --directory-prefix=/clavator \
-    $ARCHLINUX/iso/2017.02.01/archlinux-bootstrap-2017.02.01-x86_64.tar.gz
+    $ARCHLINUX/iso/2017.04.01/archlinux-bootstrap-2017.04.01-x86_64.tar.gz
 
-tar xzf /clavator/archlinux-bootstrap-2017.02.01-x86_64.tar.gz -C /arch
+tar xzf /clavator/archlinux-bootstrap-2017.04.01-x86_64.tar.gz -C /arch
 mv /arch/root.x86_64/* /arch/
 
 mkdir -p /arch/etc/pacman.d/
@@ -103,8 +106,8 @@ grub-install --modules part_msdos --root=/arch $hole_disk
 echo "$ROOTID / ext4 rw,relatime,data=ordered     0 0" >> /arch/etc/fstab
 
 umount /arch
-losetup -d $hole_disk
-losetup -d $part1
+sh /builder/retry_losetup.sh -d $hole_disk
+sh /builder/retry_losetup.sh -d $part1
 rm -f $image_name.p1
 
 . /builder/create-os-image-docker-x86_64-pc.sh

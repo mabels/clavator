@@ -27,8 +27,7 @@ interface AskKeyToYubiKeyProps extends React.Props<AskKeyToYubiKey> {
 }
 
 export class AskKeyToYubiKey
-  extends React.Component<AskKeyToYubiKeyProps, AskKeyToYubiKeyState>
-{
+  extends React.Component<AskKeyToYubiKeyProps, AskKeyToYubiKeyState> {
   constructor() {
     super();
     let transaction = Message.newTransaction<KeyToYubiKey>("SendKeyToYubiKey.run");
@@ -40,9 +39,9 @@ export class AskKeyToYubiKey
     this.sendKeyToYubiKey = this.sendKeyToYubiKey.bind(this)
   }
 
-  componentWillMount() {
-    this.state.keyToYubiKey.fingerprint = this.props.fingerprint
-    this.state.keyToYubiKey.slot_id = this.props.slot_id
+  public componentWillMount() {
+    this.state.keyToYubiKey.fingerprint = this.props.fingerprint;
+    this.state.keyToYubiKey.slot_id = this.props.slot_id;
     this.state.keyToYubiKey.card_id = this.props.cardStatusListState.cardStatusList[0].reader.cardid;
   }
 
@@ -75,7 +74,8 @@ export class AskKeyToYubiKey
 
   public render(): JSX.Element {
     return (
-      <form
+      <form 
+        onSubmit={(e) => e.preventDefault()}
         className={classnames({ "AskKeyToYubiKey": true, good: this.state.keyToYubiKey.verify() })}
         key={this.props.fingerprint}>
         {this.render_card_slot()}

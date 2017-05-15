@@ -27,48 +27,48 @@ interface StringFunc {
 type Mixed = string | StringFunc;
 
 class ResultQueue {
-  cmd: string;
-  attributes: Mixed[];
-  cb: (res: Result) => void;
+  public cmd: string;
+  public attributes: Mixed[];
+  public cb: (res: Result) => void;
 }
 
 export class Result {
-  stdOut: string = "";
-  stdErr: string = "";
-  stdIn: string = "";
-  env: { [id: string]: string; } = {};
-  exitCode: number;
-  runQueue: ResultQueue[] = [];
+  public stdOut: string = "";
+  public stdErr: string = "";
+  public stdIn: string = "";
+  public env: { [id: string]: string; } = {};
+  public exitCode: number;
+  public runQueue: ResultQueue[] = [];
 
   constructor() {
     (<any>Object).assign(this.env, process.env);
   }
 
-  setStdIn(stdIn: string) {
+  public setStdIn(stdIn: string) {
     this.stdIn = stdIn;
     return this;
   }
 
-  addEnv(key: string, value: string) {
+  public addEnv(key: string, value: string) {
     this.env[key] = value;
     return this;
   }
 
-  run(cmd: string, cmdArgs: Mixed[], attributes: Mixed[], cb: (res: Result) => void) {
+  public run(cmd: string, cmdArgs: Mixed[], attributes: Mixed[], cb: (res: Result) => void) {
     let args = cmdArgs.concat(attributes);
     this.runQueue.push({cmd: cmd, attributes: args, cb: cb});
     if (this.runQueue.length == 1) {
       this._run(cmd, args, cb);
     }
   }
-  processQueue() {
+  public processQueue() {
     this.runQueue.shift();
     if (this.runQueue.length > 0) {
       let head = this.runQueue[0];
       this._run(head.cmd, head.attributes, head.cb);
     }
   }
-  _run(cmd: string, attributes: Mixed[], cb: (res: Result) => void) {
+  private _run(cmd: string, attributes: Mixed[], cb: (res: Result) => void) {
     // console.log("run=["+cmd+"]", attributes);
     let fds: (() => string)[] = [];
     let freeFd = 3;
@@ -138,12 +138,12 @@ export class Result {
 }
 
 export class Gpg {
-  homeDir: string = path.join(process.env.HOME, ".gnupg");
+  public homeDir: string = path.join(process.env.HOME, ".gnupg");
   //pinEntryServer: pse.PinEntryServer;
-  gpgCmd: string = "gpg2";
-  gpgCmdArgs: string[] = [];
-  gpgAgentCmd: string = "gpg-connect-agent";
-  gpgAgentCmdArgs: string[] = [];
+  public gpgCmd: string = "gpg2";
+  public gpgCmdArgs: string[] = [];
+  public gpgAgentCmd: string = "gpg-connect-agent";
+  public gpgAgentCmdArgs: string[] = [];
 
   public clone(): Gpg {
     let ret = new Gpg();
@@ -168,13 +168,12 @@ export class Gpg {
     this.gpgCmdArgs = cmd.slice(1);
     return this;
   }
-  
+
   public setGpgAgentCmd(cmd: string[]): Gpg {
     this.gpgAgentCmd = cmd[0];
     this.gpgAgentCmdArgs = cmd.slice(1);
     return this;
   }
-
 
   public started(cb: (s: Result) => void) {
     this.run(["--print-md", "md5"], "test", cb);
@@ -197,7 +196,7 @@ export class Gpg {
     })
   }
 
-  run(attributes: Mixed[], stdIn: string, cb: (res: Result) => void) {
+  public run(attributes: Mixed[], stdIn: string, cb: (res: Result) => void) {
     if (this.homeDir) {
       attributes.splice(0, 0, this.homeDir);
       attributes.splice(0, 0, '--homedir')
@@ -211,7 +210,7 @@ export class Gpg {
     result.run(this.gpgCmd, this.gpgCmdArgs, attributes, cb);
   }
 
-  runAgent(attributes: string[], stdIn: string, cb: (res: Result) => void) {
+  public runAgent(attributes: string[], stdIn: string, cb: (res: Result) => void) {
     //console.log(stdIn);
     if (this.homeDir) {
       attributes.splice(0, 0, this.homeDir);
@@ -244,6 +243,25 @@ export class Gpg {
       "scd apdu 00 44 00 00", ""].join("\n")
   }
 
+  public getSecretKey(fpr : string, cb: (key: ListSecretKeys.SecretKey) => void) {
+    this.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
+      if (err) {
+        cb(null);
+        return;
+      }
+      let found = false;
+      for (let key of keys) {
+        if (key.fingerPrint.fpr == fpr) {
+          cb(key);
+          return;
+        }
+      }
+      if (!found) { 
+        cb(null); 
+      }
+    })
+  }
+
   public list_secret_keys(cb: (err: string, keys: ListSecretKeys.SecretKey[]) => void) {
     this.run(['--list-secret-keys', '--with-colons'], null, (result: Result) => {
       if (result.exitCode != 0) {
@@ -269,25 +287,40 @@ export class Gpg {
   }
 
 
-  write_pinentry_sh(fname: string, cb: (err: any) => void) {
-    fs.writeFile(fname, [
-      '#!' + process.argv[0],
-      "let pinentry = require(path.join(process.env.F_MOD_HOME), 'pinentry', 'client'));",
-      "pinentry.client(process.env.S_PINENTRY_SOCKET);"
-    ].join("\n"), (err) => {
-      fs.chmod(fname, 0o755, cb);
+  // public write_pinentry_sh(fname: string, cb: (err: any) => void) {
+  //   fs.writeFile(fname, [
+  //     '#!' + process.argv[0],
+  //     "let pinentry = require(path.join(process.env.F_MOD_HOME), 'pinentry', 'client'));",
+  //     "pinentry.client(process.env.S_PINENTRY_SOCKET);"
+  //   ].join("\n"), (err) => {
+  //     fs.chmod(fname, 0o755, cb);
+  //   });
+  // }
+
+  public deleteSecretKey(fingerPrint: string, cb: (res: Result) => void) {
+    let args : Mixed[] = [ '--no-tty' ];
+    this.getSecretKey(fingerPrint, (key) => {
+      if (!key) {
+        cb(null)
+        return;
+      }
+      // for (let i = 0; i < 1 + key.subKeys.length; ++i) {
+      //   args.push('--passphrase-fd', () => { 
+      //     console.log("--passphrase-fd y");
+      //     return "j\n"; 
+      //   });
+      // }
+      args.push('--expert', '--batch', '--yes', '--delete-secret-key', fingerPrint)
+      console.log("deleteSecretKey:", args);
+      this.run(args, null, cb);
     });
   }
 
-  deleteSecretKey(fingerPrint: string, cb: (res: Result) => void) {
-    this.run(['--expert', '--batch', '--delete-secret-key', fingerPrint], null, cb);
-  }
-
-  deletePublicKey(fingerPrint: string, cb: (res: Result) => void) {
+  public deletePublicKey(fingerPrint: string, cb: (res: Result) => void) {
     this.run(['--batch', '--delete-key', fingerPrint], null, cb);
   }
 
-  write_agent_conf(pinentryPath: string, cb: (err: any) => void) {
+  public write_agent_conf(pinentryPath: string, cb: (err: any) => void) {
     let gpgAgentFname = path.join(this.homeDir, 'gpg-agent.conf');
     Ac.AgentConf.read_file(gpgAgentFname, (err: any, ag: Ac.AgentConf) => {
       if (err) {

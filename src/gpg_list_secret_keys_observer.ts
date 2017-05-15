@@ -1,6 +1,6 @@
 import * as WebSocket from 'ws';
 
-import * as Message from './message';
+// import * as Message from './message';
 import * as Observer from './observer';
 
 import * as Gpg from './gpg/gpg';

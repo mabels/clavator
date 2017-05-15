@@ -2,15 +2,16 @@
 import * as React from 'react';
 import MutableString from '../gpg/mutable_string';
 import * as Actions from './actions';
-import * as WsChannel from './ws-channel';
+import CardStatusListState from './card-status-list-state';
+import * as CardStatus from '../gpg/card_status';
 
 interface AssistentCheckcardState {
-  current: Actions.Steps
+  current: Actions.Steps;
 }
 
 interface AssistentCheckcardProps extends React.Props<AssistentCheckcard> {
   onNext: () => void;
-  channel: WsChannel.Dispatch;
+  cardStatusListState: CardStatusListState;
 }
 
 export class AssistentCheckcard
@@ -23,10 +24,23 @@ export class AssistentCheckcard
     };
   }
 
+  private toState() : 
+
+  private render_card_state() {
+    switch (this.toState()) {
+      case OK:
+      case NOCARD:
+      case USED:
+    }
+
+  }
+
   public render(): JSX.Element {
     return (
       <div>
         AssistentCheckcard
+        {this.props.cardStatusListState.cardStatusList.map((cs: CardStatus.Gpg2CardStatus, idx: number) => {
+        })}
         <button onClick={this.props.onNext}>Next</button>
       </div>
     );

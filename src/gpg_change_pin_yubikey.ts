@@ -10,9 +10,12 @@ import * as Progress from './progress'
 
 export class GpgChangePinYubikey implements Dispatcher {
 
-  gpg: Gpg.Gpg
+  public gpg: Gpg.Gpg;
 
-  constructor(g: Gpg.Gpg){
+  public static create(g: Gpg.Gpg) {
+    return new GpgChangePinYubikey(g)
+  }
+  constructor(g: Gpg.Gpg) {
     this.gpg = g
   }
 
@@ -36,9 +39,7 @@ export class GpgChangePinYubikey implements Dispatcher {
     })
     return true;
   }
-  public static create(g: Gpg.Gpg) {
-    return new GpgChangePinYubikey(g)
-  }
+
 }
 
 export default GpgChangePinYubikey;

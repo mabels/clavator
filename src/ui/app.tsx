@@ -8,8 +8,8 @@ const Clavator = require('./clavator.png');
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import { KeyChainList } from './key-chain-list';
 import { CardStatusList } from './card-status-list';
-import { CreateKey } from './create-key';
-import { Progressor } from './progressor';
+// import { CreateKey } from './create-key';
+// import { Progressor } from './progressor';
 import { ChannelStatus } from './channel-status';
 import * as WsChannel from './ws-channel';
 import { CardStatusListState } from './card-status-list-state'
@@ -73,7 +73,7 @@ export class App extends React.Component<{}, AppState> {
             <CardStatusList channel={channel} cardStatusListState={cardStatusListState} />
           </TabPanel>
           <TabPanel>
-            <Assistent channel={channel}/>
+            <Assistent channel={channel} cardStatusListState={cardStatusListState} />
           </TabPanel>
         </Tabs>
       </ChannelStatus>

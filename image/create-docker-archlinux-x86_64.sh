@@ -8,11 +8,11 @@ echo VERSION=$VERSION
 arch=x86_64
 
 mkdir /arch
-[ -f /clavator/archlinux-bootstrap-2017.02.01-x86_64.tar.gz ] ||
+[ -f /clavator/archlinux-bootstrap-2017.04.01-x86_64.tar.gz ] ||
   wget --directory-prefix=/clavator \
-    $ARCHLINUX/iso/2017.02.01/archlinux-bootstrap-2017.02.01-x86_64.tar.gz
+    $ARCHLINUX/iso/2017.04.01/archlinux-bootstrap-2017.04.01-x86_64.tar.gz
 
-tar xzf /clavator/archlinux-bootstrap-2017.02.01-x86_64.tar.gz -C /arch
+tar xzf /clavator/archlinux-bootstrap-2017.04.01-x86_64.tar.gz -C /arch
 mv /arch/root.x86_64/* /arch/
 
 mkdir -p /arch/etc/pacman.d/

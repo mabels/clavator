@@ -91,51 +91,21 @@ export class Gpg2CardStatus {
   fpr:F78D5B547A9BB0E8A174C0F5060FF53CB3A32992:B3B94966DF73077EFA734EC83D851A5DF09DEB9C:2D32339F24A537406437181A28E66F405F1BE34D:
   fprtime:1465218501:1465218921:1464700773:
   */
-  reader: Reader;
-  version: string;
-  vendor: string;
-  serial: string;
-  name: string;
-  lang: string;
-  sex: string;
-  url: string;
-  login: string;
-  forcepin: string;
-  keyStates: KeyState[] = [];
-  sigcount: number;
+  public reader: Reader;
+  public version: string;
+  public vendor: string;
+  public serial: string;
+  public name: string;
+  public lang: string;
+  public sex: string;
+  public url: string;
+  public login: string;
+  public forcepin: string;
+  public keyStates: KeyState[] = [];
+  public sigcount: number;
   // cafpr: number = 0;
 
-  public eq(o: Gpg2CardStatus): boolean {
-    let eq = true;
-    eq = eq && this.reader.eq(o.reader)
-    // !eq && console.log("Reader !=")
-    eq = eq && this.keyStates.length == o.keyStates.length;
-    for (let i = 0; eq && i < this.keyStates.length; ++i) {
-      eq = eq && this.keyStates[i].eq(o.keyStates[i]);
-      //!eq && console.log("KeyState !=", i, this.keyStates.length, this.keyStates[i], o.keyStates[i])
-    }
-    eq = eq && this.version == o.version;
-    eq = eq && this.vendor == o.vendor;
-    eq = eq && this.serial == o.serial;
-    eq = eq && this.name == o.name;
-    eq = eq && this.lang == o.lang;
-    eq = eq && this.sex == o.sex;
-    eq = eq && this.url == o.url;
-    eq = eq && this.login == o.login;
-    eq = eq && this.forcepin == o.forcepin;
-    eq = eq && this.sigcount == o.sigcount;
-    return eq
-  }
-
-  allocKeyState(slot: number): KeyState {
-    let ret = this.keyStates[slot]
-    if (!ret) {
-      ret = this.keyStates[slot] = new KeyState();
-    }
-    return ret;
-  }
-
-  static decode(str: string) {
+  private static decode(str: string) {
     return str.replace(/\\x[a-fA-F0-9]{2}/, (val) => {
       let num = parseInt(val.slice("\\x".length), 16);
       return  String.fromCharCode(num);
@@ -143,7 +113,7 @@ export class Gpg2CardStatus {
   }
 
   // typedef std::function<bool(Gpg2CardStatus &gcs, const std::vector<std::string> &strs)> GcsAction;
-  static actors(): { [id: string]: ActionFunc } {
+  private static actors(): { [id: string]: ActionFunc } {
     return {
       "Reader": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         let reader = Reader.fill(strs);
@@ -287,6 +257,38 @@ export class Gpg2CardStatus {
     }
     return gcs;
   }
+
+
+  public eq(o: Gpg2CardStatus): boolean {
+    let eq = true;
+    eq = eq && this.reader.eq(o.reader)
+    // !eq && console.log("Reader !=")
+    eq = eq && this.keyStates.length == o.keyStates.length;
+    for (let i = 0; eq && i < this.keyStates.length; ++i) {
+      eq = eq && this.keyStates[i].eq(o.keyStates[i]);
+      //!eq && console.log("KeyState !=", i, this.keyStates.length, this.keyStates[i], o.keyStates[i])
+    }
+    eq = eq && this.version == o.version;
+    eq = eq && this.vendor == o.vendor;
+    eq = eq && this.serial == o.serial;
+    eq = eq && this.name == o.name;
+    eq = eq && this.lang == o.lang;
+    eq = eq && this.sex == o.sex;
+    eq = eq && this.url == o.url;
+    eq = eq && this.login == o.login;
+    eq = eq && this.forcepin == o.forcepin;
+    eq = eq && this.sigcount == o.sigcount;
+    return eq
+  }
+
+  allocKeyState(slot: number): KeyState {
+    let ret = this.keyStates[slot]
+    if (!ret) {
+      ret = this.keyStates[slot] = new KeyState();
+    }
+    return ret;
+  }
+
 }
 
 export function run(str: string): Gpg2CardStatus[] {

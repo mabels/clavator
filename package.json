@@ -11,7 +11,7 @@
     "prebuild": "npm run clean",
     "build": "webpack",
     "build:watch": "webpack --watch --debug --output-pathinfo --progress",
-    "start": "node ./dist/server.js",
+    "start": "nodemon ./dist/server.js",
     "pretest": "npm run build",
     "test": "mocha --require ./test/setup dist/test",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -w",

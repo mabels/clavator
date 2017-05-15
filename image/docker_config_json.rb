@@ -1,8 +1,14 @@
+#puts ARGV.inspect
 
 require "json"
 require "base64"
 
+if ARGV[0].start_with?("http://") or ARGV[0].start_with?("https://")
+  exit 0;
+end
+
 base=ARGV[0].split('/').first
+
 
 docker_config_json = JSON.parse(IO.read("#{ENV["HOME"]}/.docker/config.json"))
 

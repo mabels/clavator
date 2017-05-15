@@ -1,5 +1,5 @@
 rm -f /run/docker.sock
-docker daemon --storage-driver=overlay --graph=/mnt/var/lib/docker &
+dockerd --storage-driver=overlay --data-root=/mnt/var/lib/docker &
 DOCKER_PID=$!
 echo "daemon:"$DOCKER_PID
 until docker ps
@@ -7,6 +7,10 @@ do
   sleep 1
 done
 echo "DOCKER DAEMON is active"
+ls -la /docker/
+ls -lad /bin /usr/bin
+docker info
+df
 docker load < /docker/clavator-docker-$ARCH-$GNUPGVERSION-$NODEVERSION.docker
 echo "load:"$?
 docker images -a

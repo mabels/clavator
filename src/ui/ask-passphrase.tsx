@@ -4,12 +4,12 @@ import * as React from 'react';
 import MutableString from '../gpg/mutable_string';
 
 interface AskPassphraseState {
-  value: string
+  value: string;
 }
 
 interface AskPassphraseProps extends React.Props<AskPassphrase> {
-  passphrase?: MutableString,
-  fingerprint: string,
+  passphrase?: MutableString;
+  fingerprint: string;
   completed: (pp: string) => void;
 }
 
@@ -25,7 +25,9 @@ export class AskPassphrase
 
   public render(): JSX.Element {
     return (
-      <form className="AskPassphrase" key={this.props.fingerprint}>
+      <form 
+        onSubmit={(e) => e.preventDefault()}
+        className="AskPassphrase" key={this.props.fingerprint}>
         <label>Passphrase:</label><input type="password"
           name={`ap-${this.props.key}`} required={true}
           onChange={(e: any) => {

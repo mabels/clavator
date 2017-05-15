@@ -1,15 +1,20 @@
 #/bin/bash
 
+#sh create-clavator-os-images.sh 'index.docker.io/fastandfearless/clavator:' c108871 eaf5bb30e 20170511 /scable-1/docker-images https://archlinux.clavator.com/docker-images/
+
 DOCKER_REGISTRY=$1
-DOCKER_CONFIG_JSON=$(ruby docker_config_json.rb $DOCKER_REGISTRY)
 GNUPGVERSION=$2
 NODEVERSION=$3
-if [ -z $4 ]
+IMAGES=$4
+DOCKER_HTTP_REGISTRY=$5
+if [ -z $6 ]
 then
   VERSION=$(date "+%Y%m%d")
 else
-  VERSION=$4
+  VERSION=$6
 fi
+
+DOCKER_CONFIG_JSON=$(ruby docker_config_json.rb $DOCKER_REGISTRY)
 if [ -z $DOCKER_CONFIG_JSON ]
 then
   echo "Need a registry name"
@@ -29,13 +34,16 @@ docker run -ti --privileged ubuntu /sbin/losetup -D
 
 docker build -f Dockerfile-create-os-images -t clavator-create-os-images .
 
-for i in x86_64-pc aarch64-odroid_c2 arm-odroid_c1 x86_64-pc arm-rpi23 arm-odroid_xu3 
+#for i in x86_64-pc aarch64-odroid_c2 arm-odroid_c1 x86_64-pc arm-rpi23 arm-odroid_xu3 
+for i in aarch64-odroid_c2 x86_64-pc arm-odroid_c1 arm-rpi23 arm-odroid_xu3 
+#for i in x86_64-pc
 do
   echo "Run: /builder/create-clavator-os-image-$i.sh $VERSION"
   docker ps -qa -f "name=$i-create-clavator-os-image" | xargs docker rm -f
   docker run -d --privileged \
     -v /var/run/docker.sock:/var/run/docker.sock.outer \
     -v /var/cache/docker/clavator:/clavator \
+    -v $IMAGES:$IMAGES \
     --env "DOCKER_CONFIG_JSON=$DOCKER_CONFIG_JSON" \
     --env "DOCKER_REGISTRY=$DOCKER_REGISTRY" \
     --env "ARCHLINUXARM=$ARCHLINUXARM" \
@@ -43,6 +51,9 @@ do
     --env "ARCHLINUX=$ARCHLINUX" \
     --env "GNUPGVERSION=$GNUPGVERSION" \
     --env "NODEVERSION=$NODEVERSION" \
+    --env "VERSION=$VERSION" \
+    --env "IMAGES=$IMAGES" \
+    --env "DOCKER_HTTP_REGISTRY=$DOCKER_HTTP_REGISTRY" \
     --name $i-create-clavator-os-image \
     -t clavator-create-os-images \
     /bin/sh /builder/create-clavator-os-image-$i.sh $VERSION

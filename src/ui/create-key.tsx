@@ -4,20 +4,25 @@ import * as classnames from 'classnames';
 import * as Message from '../message';
 import * as WsChannel from './ws-channel';
 import * as KeyGen from '../gpg/key-gen';
-import * as ReactModal from 'react-modal';
-import { Progressor } from './progressor';
+// import * as ReactModal from 'react-modal';
+// import { Progressor } from './progressor';
 import ButtonToProgressor from './button-to-progressor';
+import * as ListSecretKeys from '../gpg/list_secret_keys';
 
 interface CreateKeyState {
-  createDialog: boolean,
-  completed: boolean,
-  keyGen: KeyGen.KeyGen
-  create_status: string
+  createDialog: boolean;
+  completed: boolean;
+  keyGen: KeyGen.KeyGen;
+  create_status: string;
   transaction: Message.Transaction<KeyGen.KeyGen>;
 }
 
 interface CreateKeyProps extends React.Props<CreateKey> {
   channel: WsChannel.Dispatch;
+  compact?: boolean;
+  onComplete?: () => void;
+  renderSubmit?: (ck: CreateKey) => JSX.Element;
+  secretKey?: ListSecretKeys.SecretKey;
 }
 
 export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
@@ -34,6 +39,28 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
       transaction: null,
     };
     this.create_key = this.create_key.bind(this);
+  }
+
+  componentWillMount() {
+    if (this.props.secretKey) {
+      this.setState({
+        keyGen: this.props.secretKey.toKeyGen(3)
+      })
+      console.log("CreateKey:componentWillMount", this.props.secretKey);
+    }
+    this.props.channel.onMessage((h: Message.Header, data: string) => {
+// console.log("CreateKey:", h, this.state.transaction.header)
+      if (this.state.transaction && 
+          this.state.transaction.header.transaction == h.transaction &&
+          h.action == "CreateKeySet.Completed") {
+            let skey = null;
+            if (data && this.props.secretKey) {
+              this.props.secretKey.jsfill(JSON.parse(data));
+            } 
+console.log("CreateKey:Matched", h, this.state.transaction.header, this.props, skey)
+            this.props.onComplete && this.props.onComplete();
+          } 
+    });
   }
 
   private handleDelUid(idx: number) {
@@ -55,15 +82,17 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     }));
   }
 
-  public render_option<T>(name: string, op: KeyGen.Option<T>): JSX.Element {
+  public render_option<T>(name: string, ops: KeyGen.Option<T>[]): JSX.Element {
     let value = "";
-    let ret = op.map((s, o) => {
+    let ret = ops[0].map((s, o) => {
       value = s ? o.toString() : value;
       return (<option key={o.toString()} value={o.toString()}>{o}</option>)
     });
     return (
       <select className="u-full-width" name={name} defaultValue={value} onChange={(e: any) => {
-        op.value = e.target.value;
+        ops.forEach((op) => {
+          op.value = e.target.value;
+        })
         this.setState(this.state);
       }}>
         {ret}
@@ -202,9 +231,76 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
       </div>);
   }
 
+  public render_compact(): JSX.Element {
+    if (!this.props.compact) {
+      return null
+    }
+    return <div className="row">
+      <div className="three columns">
+        <label>Master-Key-Length:</label>{this.render_option("masterKeyLength", [this.state.keyGen.keyInfo.length])}
+      </div>
+      <div className="three columns">
+        <label>Slave-Key-Length:</label>{this.render_option("subkeys.all.length", 
+        this.state.keyGen.subKeys.pallets.map((sb: KeyGen.KeyInfo, i: number) => {
+          return sb.length
+        }))}
+      </div>
+    </div>
+  }
+
+  public render_long(): JSX.Element {
+    if (this.props.compact) {
+      return null
+    }
+    return <div>
+      <div className="row">
+        <div className="two columns">MasterKey</div>
+        <div className="three columns">
+          <label>Key-Type:</label>{this.render_option("keyType", [this.state.keyGen.keyInfo.type])}
+        </div>
+        <div className="three columns">
+          <label>Master-Key-Length:</label>{this.render_option("masterKeyLength", [this.state.keyGen.keyInfo.length])}
+        </div>
+        <div className="three columns">
+          <label>Key-Usage:</label>{this.render_multioption("keyUsage", this.state.keyGen.keyInfo.usage)}
+        </div>
+      </div>
+
+      {this.state.keyGen.subKeys.pallets.map((sb: KeyGen.KeyInfo, i: number) => {
+        return (<div className="row" key={i}>
+          <div className="two columns">SubKey {i}</div>
+          <div className="three columns">
+            <label>Key-Type:</label>{this.render_option("subkeys." + i + ".keyType", [sb.type])}
+          </div>
+          <div className="three columns">
+            <label>Key-Length:</label>{this.render_option("subkeys." + i + ".length", [sb.length])}
+          </div>
+          <div className="three columns">
+            <label>Key-Usage:</label>{this.render_multioption("subkeys." + i + ".usage", sb.usage)}
+          </div>
+        </div>)
+      })}
+    </div>
+  }
+
+  public render_create() : JSX.Element {
+    if (this.props.renderSubmit) {
+      return this.props.renderSubmit(this);
+    }
+    return <ButtonToProgressor
+            channel={this.props.channel}
+            onClick={this.create_key}
+            transaction={this.state.transaction}
+          >Create Key</ButtonToProgressor>
+  }
+
   public render_form(): JSX.Element {
     return (
-      <form>
+      <form onSubmit={(e) => {
+        debugger;
+        e.stopPropagation();
+        e.preventDefault();
+      }}>
         <div className="row">
           <div className="three columns">
             <label>Expire-Date:</label><input type="date" name="expireDate"
@@ -232,41 +328,11 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
           {this.render_verify_password("Password", "cq-password", this.state.keyGen.password)}
         </div>
 
+        {this.render_long()}
+        {this.render_compact()}
 
         <div className="row">
-          <div className="two columns">MasterKey</div>
-          <div className="three columns">
-            <label>Key-Type:</label>{this.render_option("keyType", this.state.keyGen.keyInfo.type)}
-          </div>
-          <div className="three columns">
-            <label>Master-Key-Length:</label>{this.render_option("masterKeyLength", this.state.keyGen.keyInfo.length)}
-          </div>
-          <div className="three columns">
-            <label>Key-Usage:</label>{this.render_multioption("keyUsage", this.state.keyGen.keyInfo.usage)}
-          </div>
-        </div>
-
-        {this.state.keyGen.subKeys.pallets.map((sb: KeyGen.KeyInfo, i: number) => {
-          return (<div className="row" key={i}>
-            <div className="two columns">SubKey {i}</div>
-            <div className="three columns">
-              <label>Key-Type:</label>{this.render_option("subkeys." + i + ".keyType", sb.type)}
-            </div>
-            <div className="three columns">
-              <label>Key-Length:</label>{this.render_option("subkeys." + i + ".length", sb.length)}
-            </div>
-            <div className="three columns">
-              <label>Key-Usage:</label>{this.render_multioption("subkeys." + i + ".usage", sb.usage)}
-            </div>
-          </div>)
-        })}
-
-        <div className="row">
-          <ButtonToProgressor
-            channel={this.props.channel}
-            onClick={this.create_key}
-            transaction={this.state.transaction}
-          >Create Key</ButtonToProgressor>
+          {this.render_create()}
         </div>
       </form>
     );

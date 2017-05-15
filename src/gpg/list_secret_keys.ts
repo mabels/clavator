@@ -1,3 +1,4 @@
+import * as KeyGen from './key-gen';
 
 function debugArray(match: string[]) {
   // let ret = {};
@@ -8,14 +9,27 @@ function debugArray(match: string[]) {
 }
 const reNameAndEmail = /^\s*(.*)\s+\<(\S+)\>\s*$/;
 const reNameAndCommentAndEmail = /^\s*(.*)\s+\((.*)\)\s+\<(\S+)\>\s*$/;
+
 export class Uid {
-  trust: string;
-  name: string;
-  email: string;
-  comment: string;
-  created: number;
-  id: string;
-  key: string;
+  public trust: string;
+  public name: string;
+  public email: string;
+  public comment: string;
+  public created: number;
+  public id: string;
+  public key: string;
+
+  public static jsfill(js: any) {
+    let ret = new Uid();
+    ret.trust = js['trust'];
+    ret.name = js['name'];
+    ret.email = js['email'];
+    ret.comment = js['comment'];
+    ret.created = js['created'];
+    ret.id = js['id'];
+    ret.key = js['key'];
+    return ret;
+  }
 
   public eq(o: Uid) {
     return this.trust == o.trust &&
@@ -27,8 +41,16 @@ export class Uid {
       this.key == o.key;
   }
 
+  public toKeyGenUid() {
+    let ret = new KeyGen.Uid();
+    ret.comment.value = this.comment;
+    ret.email.value = this.email;
+    ret.name.value = this.name;
+    return ret;
+  }
+
   //uid:u::::1464699940::A319A573075CF1606705BDA9FD5F07E5AD24F257::Meno Abels <meno.abels@adviser.com>:::::::::
-  fill(match: string[]) {
+  public fill(match: string[]) {
     debugArray(match);
     this.trust = match[1];
     this.created = parseInt(match[5], 10);
@@ -49,31 +71,45 @@ export class Uid {
 }
 
 class FingerPrint {
-  fpr: string;
+  public fpr: string;
+
+  public static jsfill(js: any) {
+    let ret = new FingerPrint();
+    ret.fpr = js['fpr'];
+    return ret;
+  }
 
   public eq(o: FingerPrint) {
     return this.fpr == o.fpr;
   }
 
-  fill(match: string[]) {
+  public fill(match: string[]) {
     debugArray(match);
     this.fpr = match[9];
     return this;
   }
+
 }
 
 class Group {
-  grp: string;
+  public grp: string;
+
+  public static jsfill(js: any) {
+    let ret = new Group();
+    ret.grp = js['grp']
+    return ret;
+  }
 
   public eq(o: Group) {
     return this.grp == o.grp;
   }
 
-  fill(match: string[]) {
+  public fill(match: string[]) {
     debugArray(match);
     this.grp = match[9];
     return this;
   }
+
 }
 
 const Ciphers: { [id: string]: string; } = {
@@ -82,18 +118,24 @@ const Ciphers: { [id: string]: string; } = {
 }
 
 export class Key {
-  type: string;
-  trust: string;
-  cipher: string;
-  funky: string;
-  bits: number;
-  keyId: string;
-  key: string;
-  created: number;
-  expires: number;
-  uses: string[] = [];
-  group: Group = new Group();
-  fingerPrint: FingerPrint = new FingerPrint();
+  public type: string;
+  public trust: string;
+  public cipher: string;
+  public funky: string;
+  public bits: number;
+  public keyId: string;
+  public key: string;
+  public created: number;
+  public expires: number;
+  public uses: string[] = [];
+  public group: Group = new Group();
+  public fingerPrint: FingerPrint = new FingerPrint();
+
+  public static jsfill(js: any) {
+    let ret = new Key();
+    return ret.jsfill(js);
+  }
+
 
   public usesEq(o: string[]) {
     if (this.uses.length != o.length) {
@@ -106,6 +148,35 @@ export class Key {
     }
     return true;
   }
+
+  public toKeyGenInfo() {
+    let ret = new KeyGen.KeyInfo();
+    ret.length.value = this.bits;
+    ret.type.value = this.cipher;
+    // ret.usage.values = this.
+    return ret;
+  }
+
+  public jsfill(js: any) {
+    return this._jsfill(js);
+  }
+
+  protected _jsfill(js: any) {
+    this.type = js['type'];
+    this.trust = js['trust'];
+    this.cipher = js['cipher'];
+    this.funky = js['funky'];
+    this.bits = js['bits'];
+    this.keyId = js['keyId'];
+    this.key = js['key'];
+    this.created = js['created'];
+    this.expires = js['expires'];
+    this.uses = js['uses']||[];
+    this.group = Group.jsfill(js['group']||{});
+    this.fingerPrint = FingerPrint.jsfill(js['fingerPrint']||{});
+    return this;
+  }
+
 
   public eq(o: Key) {
     return this.type == o.type &&
@@ -128,7 +199,7 @@ export class Key {
   // ssb:u:4096:1:060FF53CB3A32992:1465218501:1622898501:::::es:::D2760001240102010006041775630000::ed25519:
   // ssb:u:4096:1:3D851A5DF09DEB9C:1465218921:1622898921:::::es:::D2760001240102010006041775630000::ed25519:
 
-  fill(match: string[]) {
+  public fill(match: string[]) {
     debugArray(match);
     this.type = match[0];
     this.trust = match[1];
@@ -144,8 +215,57 @@ export class Key {
 }
 
 export class SecretKey extends Key {
-  uids: Uid[] = [];
-  subKeys: Key[] = [];
+  public uids: Uid[] = [];
+  public subKeys: Key[] = [];
+
+  public static jsfill(js: any) {
+    let ret = new SecretKey();
+    return ret.jsfill(js);
+  }
+
+  public jsfill(js: any) {
+    this._jsfill(js)
+    for (let uid of js['uids']) {
+      this.uids.push(Uid.jsfill(uid));
+    }
+    for (let subKey of js['subKeys']) {
+      this.subKeys.push(Key.jsfill(subKey));
+    }
+    return this;
+  }
+
+  public isCreated(cb?: any) {
+    if (this.uids.length > 0 && this.uids[0].name && this.uids[0].name.length) {
+      return cb;
+    }
+    return null;
+  }
+
+  public toKeyGen(subKeys: number = 3) : KeyGen.KeyGen {
+    let ret = new KeyGen.KeyGen();
+    ret.keyInfo.length.value = this.bits || 4096;
+    ret.keyInfo.type.value = this.cipher || 'RSA';
+    ret.keyInfo.usage.values = ['cert'];
+    if (this.expires != null && this.expires > 0) {
+      ret.expireDate.value = new Date(this.expires * 1000);
+    } else {
+      ret.expireDate.value = KeyGen.expireDate();
+    }
+    for (let sb of this.subKeys) {
+      ret.subKeys.pallets.push(sb.toKeyGenInfo());
+    }
+    for (let i = 0; ret.subKeys.pallets.length < subKeys; ++i) {
+      ret.subKeys.add(new KeyGen.KeyInfo());
+    }
+    for (let uid of this.uids) {
+      ret.uids.add(uid.toKeyGenUid());
+    }
+    // debugger
+    if (ret.uids.length() < 1) {
+      ret.uids.add(new KeyGen.Uid());
+    }
+    return ret;
+  }
 
   public eq(o: SecretKey) {
     if (!super.eq(o)) {

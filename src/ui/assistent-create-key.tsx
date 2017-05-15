@@ -4,6 +4,7 @@ import MutableString from '../gpg/mutable_string';
 import * as Actions from './actions';
 import CreateKey from './create-key';
 import * as WsChannel from './ws-channel';
+import * as ListSecretKeys from '../gpg/list_secret_keys';
 
 interface AssistentCreateKeyState {
 }
@@ -11,6 +12,7 @@ interface AssistentCreateKeyState {
 interface AssistentCreateKeyProps extends React.Props<AssistentCreateKey> {
   onNext: () => void;
   channel: WsChannel.Dispatch;
+  secretKey: ListSecretKeys.SecretKey;
 }
 
 export class AssistentCreateKey
@@ -20,13 +22,26 @@ export class AssistentCreateKey
     super();
     this.state = {
     };
+    this.render_next = this.render_next.bind(this);
+  }
+  private render_next(ck?: CreateKey) {
+    return <button onClick={(e) => {
+      e.preventDefault();
+      this.props.onNext();
+
+     }}>Next</button>
   }
   public render(): JSX.Element {
+    // console.log(">>>>", this.state.renderSubmit)
     return (
       <div>
-        <CreateKey channel={this.props.channel} 
-          />
-        <button onClick={this.props.onNext}>Next</button>
+        <CreateKey compact={true} 
+          renderSubmit={this.props.secretKey.isCreated(this.render_next)}
+          secretKey={this.props.secretKey}
+          channel={this.props.channel} 
+          onComplete={() => { 
+            this.props.onNext(); 
+          } }/>
       </div>
     );
   }

@@ -1,20 +1,24 @@
 
 import * as React from 'react';
-import MutableString from '../gpg/mutable_string';
+// import MutableString from '../gpg/mutable_string';
 import * as Actions from './actions';
 import AssistentCreateKey from './assistent-create-key';
 import AssistentSendKeyToCard from './assistent-send-key-to-card';
 import AssistentCompleted from './assistent-completed';
 import AssistentCheckCard from './assistent-checkcard';
+import * as ListSecretKeys from '../gpg/list_secret_keys';
 import * as WsChannel from './ws-channel';
+import CardStatusListState from './card-status-list-state';
 
 interface AssistentState {
-  current: Actions.Steps
-  completed: Actions.Steps
+  current: Actions.Steps;
+  completed: Actions.Steps;
+  secretKey: ListSecretKeys.SecretKey;
 }
 
 interface AssistentProps extends React.Props<Assistent> {
   channel: WsChannel.Dispatch;
+  cardStatusListState: CardStatusListState;
 }
 
 export class Assistent
@@ -24,7 +28,8 @@ export class Assistent
     super();
     this.state = {
       current: Actions.Steps.CreateKey,
-      completed: Actions.Steps.None
+      completed: Actions.Steps.None,
+      secretKey: new ListSecretKeys.SecretKey()
     };
   }
   public render_steps() {
@@ -32,15 +37,19 @@ export class Assistent
       case Actions.Steps.CreateKey:
         return <AssistentCreateKey 
           channel={this.props.channel}
+          secretKey={this.state.secretKey}
           onNext={() => {
+            console.log("SecretKey:", this.state.secretKey);
             this.setState({
+              secretKey: this.state.secretKey,
               current: Actions.Steps.CheckCard,
               completed: this.state.completed|Actions.Steps.CreateKey
+                |Actions.Steps.CheckCard // achtung muss weg!
             })
           }} />
       case Actions.Steps.CheckCard:
         return <AssistentCheckCard 
-          channel={this.props.channel}
+          cardStatusListState={this.props.cardStatusListState}
           onNext={() => {
             this.setState({
               current: Actions.Steps.SendToCard,

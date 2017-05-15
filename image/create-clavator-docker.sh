@@ -5,6 +5,8 @@ DOCKER_CONFIG_JSON=$(ruby docker_config_json.rb $DOCKER_REGISTRY)
 IMAGEVERSION=$2
 NODEVERSION=$3
 GNUPGVERSION=$4
+IMAGES=$5
+DOCKER_HTTP_REGISTRY=$6
 
 if [ -z $DOCKER_CONFIG_JSON ]
 then
@@ -24,14 +26,17 @@ for i in x86_64 arm aarch64
 do
   echo "Run: /builder/create-clavator-docker-container $i -NODE $NODEVERSION -GNUPG $GNUPGVERSION"
   docker ps -qa -f "name=$i-create-clavator-docker-container" | xargs docker rm -f
-  docker run -ti --privileged \
+  docker run -d --privileged \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /var/cache/docker/clavator:/clavator \
+    -v $IMAGES:$IMAGES \
     --env "DOCKER_CONFIG_JSON=$DOCKER_CONFIG_JSON" \
     --env "DOCKER_REGISTRY=$DOCKER_REGISTRY" \
+    --env "DOCKER_HTTP_REGISTRY=$DOCKER_HTTP_REGISTRY" \
     --env "IMAGEVERSION=$IMAGEVERSION" \
     --env "NODEVERSION=$NODEVERSION" \
     --env "GNUPGVERSION=$GNUPGVERSION" \
+    --env "IMAGES=$IMAGES" \
     --name $i-create-clavator-docker-container \
     -t clavator-create-os-images \
     /bin/sh /builder/create-clavator-docker-container.sh $i $IMAGEVERSION

@@ -16,9 +16,11 @@ echo DOCKERVERSION=$DOCKERVERSION
 
 mkdir /arch
 mkdir /arch/gnupg
-node /builder/docker-extract.js ${DOCKER_REGISTRY}clavator-gnupg-$ARCH-$GNUPGVERSION /arch/gnupg
+node /builder/docker-2-docker.js clavator-gnupg-$ARCH-$GNUPGVERSION /arch/gnupg.docker ${DOCKER_REGISTRY} $DOCKER_HTTP_REGISTRY
+node /builder/docker-extract.js /arch/gnupg.docker /arch/gnupg
 mkdir /arch/clavator
-node /builder/docker-extract.js ${DOCKER_REGISTRY}clavator-node-$NODEVERSION /arch/clavator
+node /builder/docker-2-docker.js clavator-node-$NODEVERSION /arch/clavator.docker ${DOCKER_REGISTRY} $DOCKER_HTTP_REGISTRY
+node /builder/docker-extract.js /arch/clavator.docker /arch/clavator
 
 rm -rf /arch/etc/letsencrypt/live/clavator.com
 mkdir -p /arch/etc/letsencrypt/live/clavator.com
@@ -28,14 +30,16 @@ wget --directory-prefix=/arch/etc/letsencrypt/live/clavator.com https://clavator
 
 cp /builder/mirrorlist.$ARCH /arch/mirrorlist
 
+node /builder/docker-2-docker.js clavator-docker-archlinux-$ARCH-$DOCKERVERSION /arch/clavator-docker-archlinux-$ARCH-$DOCKERVERSION.docker ${DOCKER_REGISTRY} $DOCKER_HTTP_REGISTRY
+docker load < /arch/clavator-docker-archlinux-$ARCH-$DOCKERVERSION.docker
 cat > /arch/Dockerfile <<RUNNER
-FROM ${DOCKER_REGISTRY}clavator-docker-archlinux-$ARCH-$DOCKERVERSION
+FROM clavator-docker-archlinux-$ARCH-$DOCKERVERSION
 
 COPY clavator/ /clavator
 COPY etc/ /etc
 COPY gnupg/gnupg-clavator.pkg.tar.xz /
 COPY mirrorlist /etc/pacman.d/
-RUN pacman -Syu --noconfirm
+RUN pacman -Syu --force --noconfirm
 RUN pacman -U --noconfirm --force /gnupg-clavator.pkg.tar.xz
 RUN pacman -Scc --noconfirm ; rm -f /var/cache/pacman/pkg/* 
 

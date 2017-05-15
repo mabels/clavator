@@ -28,7 +28,7 @@ RUN git clone https://aur.archlinux.org/qemu-user-static.git
 RUN chown -R nobody:nobody qemu-user-static
 RUN cd qemu-user-static && sudo -u nobody makepkg -s
 RUN pacman --noconfirm -U qemu-user-static/qemu-user-static-*x86_64.pkg.tar.xz 
-RUN pacman -Syu --noconfirm grub virtualbox 
+RUN pacman -Syu --force --noconfirm grub virtualbox 
 RUN pacman -Scc --noconfirm ; rm -f /var/cache/pacman/pkg/*
 
 

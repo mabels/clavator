@@ -16,6 +16,15 @@ docker build -t $IMG_NAME $BASE_PATH
 echo docker tag $IMG_NAME ${DOCKER_REGISTRY}$IMG_NAME
 docker tag $IMG_NAME ${DOCKER_REGISTRY}$IMG_NAME
 
+echo "DOCKER-PUSH:[$IMAGES]"
+if [ -n $IMAGES -a -d $IMAGES ]
+then
+  echo docker save --output $IMAGES/$IMG_NAME.docker $IMG_NAME 
+  docker save --output $IMAGES/$IMG_NAME.docker $IMG_NAME 
+  chmod 755 $IMAGES
+  chmod 644 $IMAGES/$IMG_NAME.docker
+fi
+
 echo docker push ${DOCKER_REGISTRY}$IMG_NAME
 docker push ${DOCKER_REGISTRY}$IMG_NAME
 

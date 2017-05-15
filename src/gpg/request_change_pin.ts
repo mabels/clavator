@@ -8,6 +8,17 @@ export class RequestChangePin {
   public new_pin: Pin = new Pin();
   public new_pin_verify: Pin = new Pin();
 
+  public static fill(js: any): RequestChangePin {
+    let ra = new RequestChangePin();
+    ra.changeAction(js['action']);
+    ra.app_id = js['app_id']
+    ra.admin_pin.pin = js['admin_pin']['pin']
+    ra.new_pin.pin = js['new_pin']['pin']
+    ra.new_pin_verify.pin = js['new_pin_verify']['pin']
+    return ra;
+  }
+
+
   public changeAction(action: string): RequestChangePin {
     this.action = action;
     this.admin_pin.match = /^[0-9]{8}$/;
@@ -21,15 +32,6 @@ export class RequestChangePin {
     return this
   }
 
-  public static fill(js: any): RequestChangePin {
-    let ra = new RequestChangePin();
-    ra.changeAction(js['action']);
-    ra.app_id = js['app_id']
-    ra.admin_pin.pin = js['admin_pin']['pin']
-    ra.new_pin.pin = js['new_pin']['pin']
-    ra.new_pin_verify.pin = js['new_pin_verify']['pin']
-    return ra;
-  }
 
   public verify(): boolean {
     return this.verifyText().length == 0

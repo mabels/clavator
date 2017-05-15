@@ -1,6 +1,7 @@
 #/bin/bash
 
 VERSION=$2
+IMAGES=$3
 if [ -z $VERSION ]
 then
   VERSION=$(date "+%Y%m%d")
@@ -31,6 +32,8 @@ do
   docker run -d --privileged \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /var/cache/docker/clavator:/clavator \
+    -v $IMAGES:$IMAGES \
+    --env "IMAGES=$IMAGES" \
     --env "DOCKER_CONFIG_JSON=$DOCKER_CONFIG_JSON" \
     --env "DOCKER_REGISTRY=$DOCKER_REGISTRY" \
     --env "ARCHLINUXARM=$ARCHLINUXARM" \

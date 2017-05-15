@@ -31,8 +31,30 @@ export class AgentLine {
   }
 }
 export class AgentConf {
-  lines: AgentLine[] = [];
-  byKey: { [key: string]: AgentLine[] } = {};
+  public lines: AgentLine[] = [];
+  public byKey: { [key: string]: AgentLine[] } = {};
+
+  public static read_file(fname: string, done: (err: any, ag: AgentConf) => void) : void {
+    fs.readFile(fname, 'utf8', (err: any, data: string) => {
+      if (err && err.code == 'ENOENT') {
+        done(null, new AgentConf());
+        return;
+      }
+      if (err) {
+        done(err, null);
+        return;
+      }
+      done(null, AgentConf.read(data));
+    });
+  }
+
+  public static read(str: string): AgentConf {
+    let ag = new AgentConf();
+    str.split(reCrNl).forEach((line: string) => {
+      ag.add(new AgentLine(line));
+    });
+    return ag;
+  }
 
   public find(key: string): AgentLine[] {
     return this.byKey[key] || [];
@@ -49,34 +71,15 @@ export class AgentConf {
 
   public asString() {
     let lines = this.lines.map((al) => { return al.getLine(); })
-    let postcr = "";
+    let postcr = '';
     if (lines.length && lines[lines.length - 1].trim().length) {
-      postcr = "\n";
+      postcr = '\n';
     }
-    return lines.join("\n") + postcr;
+    return lines.join('\n') + postcr;
   }
 
   public write_file(fname: string, done: (err: any) => void) {
     fs.writeFile(fname, this.asString(), done);
   }
 
-  public static read_file(fname: string, done: (err: any, ag: AgentConf) => void) {
-    fs.readFile(fname, 'utf8', (err: any, data: string) => {
-      if (err && err.code == 'ENOENT') {
-        return done(null, new AgentConf());
-      }
-      if (err) {
-        return done(err, null);
-      }
-      done(null, AgentConf.read(data));
-    });
-  }
-
-  public static read(str: string): AgentConf {
-    let ag = new AgentConf();
-    str.split(reCrNl).forEach((line: string) => {
-      ag.add(new AgentLine(line));
-    });
-    return ag;
-  }
 }

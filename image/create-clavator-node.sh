@@ -1,3 +1,4 @@
+echo "IMAGES=$IMAGES"
 
 mkdir -p $HOME/.docker
 echo $DOCKER_CONFIG_JSON | base64 -d > $HOME/.docker/config.json
@@ -6,12 +7,12 @@ rm -rf /clavator/build.tmp
 git clone file:///clavator.git /clavator/build.tmp
 VERSION=$(cd /clavator/build.tmp && git rev-parse --verify --short HEAD)
 
-docker pull $DOCKER_REGISTRY:clavator-node-$VERSION
-if [ $? = 0 ]
-then
-  echo "Clavator Build Completed"
-  exit
-fi
+docker pull ${DOCKER_REGISTRY}clavator-node-$VERSION
+#if [ $? = 0 ]
+#then
+#  echo "Clavator Build Completed"
+#  exit
+#fi
 
 
 rm -rf /clavator/build

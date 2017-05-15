@@ -2,31 +2,24 @@
 const reCrNl = /\r?\n/;
 
 export class KeyState {
-  id: number = 0;
-  mode: number = 0;
-  bits: number = 0;
-  maxpinlen: number = 0;
-  pinretry: number = 0;
-  sigcount: number = 0;
-  cafpr: number = 0;
-  fpr: string;
-  fprtime: number;
+  public id: number = 0;
+  public mode: number = 0;
+  public bits: number = 0;
+  public maxpinlen: number = 0;
+  public pinretry: number = 0;
+  public sigcount: number = 0;
+  public cafpr: number = 0;
+  public fpr: string;
+  public fprtime: number;
 };
 
 export class Reader {
-  model: string;
-  aid: string;
-  cardid: string;
-  type: string;
+  public model: string;
+  public aid: string;
+  public cardid: string;
+  public type: string;
 
-  eq(obj: Reader): boolean {
-    return this.model == obj.model &&
-      this.aid == obj.aid &&
-      this.cardid == obj.cardid &&
-      this.type == obj.type;
-  }
-
-  static fill(match: string[]): Reader {
+  public static fill(match: string[]): Reader {
     if (!(match.length >= 5 && match[0] == "Reader")) {
       return null;
     }
@@ -50,6 +43,13 @@ export class Reader {
     } else {
       return null;
     }
+  }
+
+  public eq(obj: Reader): boolean {
+    return this.model == obj.model &&
+      this.aid == obj.aid &&
+      this.cardid == obj.cardid &&
+      this.type == obj.type;
   }
 }
 
@@ -79,30 +79,23 @@ export class Gpg2CardStatus {
   fpr:F78D5B547A9BB0E8A174C0F5060FF53CB3A32992:B3B94966DF73077EFA734EC83D851A5DF09DEB9C:2D32339F24A537406437181A28E66F405F1BE34D:
   fprtime:1465218501:1465218921:1464700773:
   */
-  reader: Reader;
-  version: string;
-  vendor: string;
-  serial: string;
-  name: string;
-  lang: string;
-  sex: string;
-  url: string;
-  login: string;
-  forcepin: string;
-  keyStates: KeyState[] = [];
-  sigcount: number;
+  public reader: Reader;
+  public version: string;
+  public vendor: string;
+  public serial: string;
+  public name: string;
+  public lang: string;
+  public sex: string;
+  public url: string;
+  public login: string;
+  public forcepin: string;
+  public keyStates: KeyState[] = [];
+  public sigcount: number;
   // cafpr: number = 0;
 
-  allocKeyState(slot: number): KeyState {
-    let ret = this.keyStates[slot]
-    if (!ret) {
-      ret = this.keyStates[slot] = new KeyState();
-    }
-    return ret;
-  }
-
+ 
   // typedef std::function<bool(Gpg2CardStatus &gcs, const std::vector<std::string> &strs)> GcsAction;
-  static actors(): { [id: string]: ActionFunc } {
+  public static actors(): { [id: string]: ActionFunc } {
     return {
       "Reader": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         let reader = Reader.fill(strs);
@@ -209,8 +202,7 @@ export class Gpg2CardStatus {
     };
   }
 
-
-  static read(str: string): Gpg2CardStatus[] {
+  public static read(str: string): Gpg2CardStatus[] {
     let gcs: Gpg2CardStatus[] = [];
     // std::vector<Gpg2CardStatus>::iterator gcsi = gcs.end();
     let actors = Gpg2CardStatus.actors();
@@ -246,6 +238,15 @@ export class Gpg2CardStatus {
     }
     return gcs;
   }
+
+  public allocKeyState(slot: number): KeyState {
+    let ret = this.keyStates[slot];
+    if (!ret) {
+      ret = this.keyStates[slot] = new KeyState();
+    }
+    return ret;
+  }
+
 }
 
 export function run(str: string): Gpg2CardStatus[] {

@@ -11,7 +11,8 @@ image_name=/$(basename $0 .sh)-$VERSION.img
 
 dd if=/dev/zero of=$image_name bs=1 count=1 seek=7516192767
 
-. /builder/map-os-image-arm-rpi23.sh
+sh /builder/retry_losetup.sh -f $image_name
+hole_disk=$(losetup -l | grep $image_name | awk '{print $1}')
 
 sfat=2048
 fatsize=128
@@ -20,6 +21,8 @@ sext4=$(expr $efat + 1)
 eext4=""
 echo -e "n\np\n1\n$sfat\n$efat\nn\np\n2\n$sext4\n$eext4\nt\n1\n6\nt\n2\n83\nw" | fdisk $hole_disk
 
+. /builder/map-os-image-arm-rpi23.sh
+
 mkfs.vfat $part1
 mkfs.ext4 -O '^metadata_csum,^64bit' $part2 || mkfs.ext4 $part2
 mkdir arch
@@ -27,10 +30,10 @@ mount $part2 arch
 mkdir arch/boot
 mount $part1 arch/boot
 
-[ -f /clavator/ArchLinuxARM-rpi-2-latest.tar.gz ] ||
-  wget --directory-prefix=/clavator \
+[ -f /clavator/ArchLinuxARM-rpi-2-latest-$VERSION.tar.gz ] ||
+  wget --directory-prefix=/clavator -O /clavator/ArchLinuxARM-rpi-2-latest-$VERSION.tar.gz \
     $ARCHLINUXARM/os/ArchLinuxARM-rpi-2-latest.tar.gz
-bsdtar -xpf /clavator/ArchLinuxARM-rpi-2-latest.tar.gz -C /arch
+bsdtar -xpf /clavator/ArchLinuxARM-rpi-2-latest-$VERSION.tar.gz -C /arch
 
 mkdir -p /arch/etc/pacman.d/
 mv /arch/etc/pacman.d/mirrorlist /arch/etc/pacman.d/mirrorlist.orig
@@ -65,10 +68,10 @@ mv /arch/etc/pacman.d/mirrorlist.orig /arch/etc/pacman.d/mirrorlist
 mv /arch/etc/hosts.orig /arch/etc/hosts
 umount /arch/boot
 umount /arch
-losetup -d $hole_disk
-losetup -d $part1
+sh /builder/retry_losetup.sh -d $hole_disk
+sh /builder/retry_losetup.sh -d $part1
 rm -f $image_name.p1
-losetup -d $part2
+sh /builder/retry_losetup.sh -d $part2
 rm -f $image_name.p2
 
 . /builder/create-os-image-docker-arm-rpi23.sh

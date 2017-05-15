@@ -11,21 +11,22 @@ image_name=/$(basename $0 .sh)-$VERSION.img
 
 dd if=/dev/zero of=$image_name bs=1 count=1 seek=7516192767
 
-
-. /builder/map-os-image-aarch64-odroid_c2.sh
+sh /builder/retry_losetup.sh -f $image_name
+hole_disk=$(losetup -l | grep $image_name | awk '{print $1}')
 
 sext4=2048
 echo -e "n\np\n1\n$sext4\n$eext4\nt\n83\nw" | fdisk $hole_disk
 
+. /builder/map-os-image-aarch64-odroid_c2.sh
 
 mkfs.ext4 -O '^metadata_csum,^64bit' $part1 || mkfs.ext4 $part1
 mkdir /arch
 mount $part1 /arch
 
-[ -f /clavator/ArchLinuxARM-odroid-c2-latest.tar.gz ] ||
-  wget --directory-prefix=/clavator \
+[ -f /clavator/ArchLinuxARM-odroid-c2-latest-$VERSION.tar.gz ] ||
+  wget --directory-prefix=/clavator -O /clavator/ArchLinuxARM-odroid-c2-latest-$VERSION.tar.gz \
     $ARCHLINUXARM/os/ArchLinuxARM-odroid-c2-latest.tar.gz
-bsdtar -xpf /clavator/ArchLinuxARM-odroid-c2-latest.tar.gz -C /arch
+bsdtar -xpf /clavator/ArchLinuxARM-odroid-c2-latest-$VERSION.tar.gz -C /arch
 
 mkdir -p /arch/etc/pacman.d/
 mv /arch/etc/pacman.d/mirrorlist /arch/etc/pacman.d/mirrorlist.orig
@@ -62,8 +63,8 @@ mv /arch/etc/pacman.d/mirrorlist.orig /arch/etc/pacman.d/mirrorlist
 mv /arch/etc/hosts.orig /arch/etc/hosts
 
 umount /arch
-losetup -d $hole_disk
-losetup -d $part1
+sh /builder/retry_losetup.sh -d $hole_disk
+sh /builder/retry_losetup.sh -d $part1
 rm -f $image_name.p1
 
 . /builder/create-os-image-docker-aarch64-odroid_c2.sh

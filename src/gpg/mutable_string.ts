@@ -3,7 +3,7 @@ export class MutableString {
   public static fill(js: any): MutableString {
     let m = new MutableString();
     if (js) {
-      m.value = js['value']
+      m.value = js['value'];
     }
     return m;
   }

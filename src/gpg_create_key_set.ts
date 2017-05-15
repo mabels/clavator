@@ -10,9 +10,14 @@ import * as Gpg from './gpg/gpg';
 import * as Progress from './progress'
 
 export class GpgCreateKeySet implements Dispatcher {
-  gpg: Gpg.Gpg;
+  public gpg: Gpg.Gpg;
+
+  public static create(g: Gpg.Gpg) {
+    return new GpgCreateKeySet(g)
+  }
+
   constructor(gpg: Gpg.Gpg) {
-    this.gpg = gpg
+    this.gpg = gpg;
   }
 
   public createSubKeys(header: Message.Header, ws: WebSocket, cnt: number, fpr:
@@ -66,7 +71,8 @@ export class GpgCreateKeySet implements Dispatcher {
     // console.log(kg.valid(), kg.errText())
     let header = Message.toHeader(m, "Progressor.Clavator");
     if (!kg.valid()) {
-      ws.send(Message.prepare(header, Progress.fail("Failed send KeyGen is not valid")))
+      ws.send(Message.prepare(header, 
+        Progress.fail(`Failed send KeyGen is not valid ${kg.errText().join("\n")}`)));
       return;
     }
     // console.log(">>>", kg.masterCommand())
@@ -84,9 +90,16 @@ export class GpgCreateKeySet implements Dispatcher {
             if (uid.name == kg.uids.pallets[0].name.value && uid.email == kg.uids.pallets[0].email.value) {
               this.addUids(header, ws, 1, key.fingerPrint.fpr, kg, () => {
                 this.createSubKeys(header, ws, 0, key.fingerPrint.fpr, kg, () => {
-                  ws.send(Message.prepare(header, Progress.ok("KeysetCreated", true)));
-                  console.log("CreateKeySet.Completed", header.setAction("CreateKeySet.Completed"));
-                  ws.send(Message.prepare(header.setAction("CreateKeySet.Completed")));
+                  this.gpg.getSecretKey(key.fingerPrint.fpr, (key: ListSecretKeys.SecretKey) => {
+                    if (key) {
+                      ws.send(Message.prepare(header, Progress.ok("KeysetCreated", true)));
+                      console.log("CreateKeySet.Completed", header.setAction("CreateKeySet.Completed"));
+                      ws.send(Message.prepare(header.setAction("CreateKeySet.Completed"), key));
+                    } else {
+                      ws.send(Message.prepare(header, Progress.ok("KeysetFailed", true)));
+                      ws.send(Message.prepare(header.setAction("CreateKeySet.Failed")));
+                    }
+                  });
                 });
               });
             }
@@ -103,9 +116,7 @@ export class GpgCreateKeySet implements Dispatcher {
     // ws.send(Message.prepare("Progressor.Clavator", Progress.fail("Mhhh")))
     return true;
   }
-  public static create(g: Gpg.Gpg) {
-    return new GpgCreateKeySet(g)
-  }
+
 }
 
 export default GpgCreateKeySet;

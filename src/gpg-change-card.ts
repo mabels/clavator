@@ -5,16 +5,19 @@ import Dispatcher from './dispatcher'
 
 import * as Gpg from './gpg/gpg';
 import ChangeCard from './gpg/change_card';
-import * as CardStatus from './gpg/card_status';
+// import * as CardStatus from './gpg/card_status';
 
 import * as Progress from './progress';
 
 export class GpgChangeCard implements Dispatcher {
+  public gpg: Gpg.Gpg;
 
-  gpg: Gpg.Gpg
+  public static create(g: Gpg.Gpg) {
+    return new GpgChangeCard(g)
+  }
 
   constructor(g: Gpg.Gpg) {
-    this.gpg = g
+    this.gpg = g;
   }
 
   public run(ws: WebSocket, m: Message.Message): boolean {
@@ -42,9 +45,7 @@ export class GpgChangeCard implements Dispatcher {
     })
     return true;
   }
-  public static create(g: Gpg.Gpg) {
-    return new GpgChangeCard(g)
-  }
+
 }
 
 export default GpgChangeCard;

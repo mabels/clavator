@@ -3,6 +3,7 @@
 DOCKER_REGISTRY=$1
 DOCKER_CONFIG_JSON=$(ruby docker_config_json.rb $DOCKER_REGISTRY)
 DOCKERVERSION=$2
+IMAGES=$3
 if [ -z $DOCKER_CONFIG_JSON ]
 then
   echo "Need a registry name"
@@ -24,12 +25,15 @@ docker ps -qa -f "name=create-clavator-node" | xargs docker rm -f
 docker run -d --privileged \
      -v /var/run/docker.sock:/var/run/docker.sock \
      -v /var/cache/docker/clavator:/clavator \
+     -v $IMAGES:$IMAGES \
      --env "DOCKER_CONFIG_JSON=$DOCKER_CONFIG_JSON" \
      --env "DOCKER_REGISTRY=$DOCKER_REGISTRY" \
+     --env "IMAGES=$IMAGES" \
      --name create-clavator-node \
      -t clavator-create-clavator \
      /bin/sh /builder/create-clavator-node.sh
 
+#exit
 
 for i in x86_64 arm aarch64 
 do
@@ -39,8 +43,10 @@ do
   docker run -d --privileged \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /var/cache/docker/clavator:/clavator \
+    -v $IMAGES:$IMAGES \
     --env "DOCKER_CONFIG_JSON=$DOCKER_CONFIG_JSON" \
     --env "DOCKER_REGISTRY=$DOCKER_REGISTRY" \
+    --env "IMAGES=$IMAGES" \
     --name $i-create-gnupg \
     -t clavator-create-clavator \
     /bin/sh /builder/create-gnupg.sh $DOCKERVERSION $i

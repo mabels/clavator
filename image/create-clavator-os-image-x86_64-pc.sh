@@ -12,9 +12,8 @@ ln -s /run/docker.sock.outer /run/docker.sock
 
 rm -rf /images
 mkdir -p /images
-node /builder/docker-extract.js \
-  ${DOCKER_REGISTRY}clavator-os-image-x86_64-pc-$VERSION \
-  /images
+node /builder/docker-2-docker.js clavator-os-image-x86_64-pc-$VERSION /images.docker ${DOCKER_REGISTRY} $DOCKER_HTTP_REGISTRY
+node /builder/docker-extract.js /images.docker /images
 
 xz -d /images/virtual.vdi.xz
 image_name=/images/virtual.raw
@@ -28,15 +27,15 @@ ls -la /images
 . /builder/load-clavator-docker.sh
 
 mkdir -p /mnt
-mount $part1 /mnt
+mount $root_disk /mnt
 
 . /builder/load-into-docker.sh
 
 ln -nfs /run/docker.sock.outer /run/docker.sock
-umount $part1
-losetup -d $part1
+umount $root_disk
+sh /builder/retry_losetup.sh -d $root_disk
 
 . /builder/create-os-image-docker-x86_64-pc.sh
 
-. /builder/docker-push.sh clavator-image-x86_64-pc-$VERSION /result
+. /builder/docker-push.sh clavator-image-x86_64-pc-$GNUPGVERSION-$NODEVERSION-$VERSION /result
 

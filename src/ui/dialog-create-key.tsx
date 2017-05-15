@@ -7,6 +7,7 @@ import * as KeyGen from '../gpg/key-gen';
 import * as ReactModal from 'react-modal';
 import { Progressor } from './progressor';
 import CreateKey from './create-key';
+import * as ListSecretKeys from '../gpg/list_secret_keys';
 
 interface DialogCreateKeyState {
 }

@@ -46,7 +46,9 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
 
   public render(): JSX.Element {
     return (
-      <form className={classnames({ "ChangePin": true, good: this.state.pin.verify() })}>
+      <form 
+        onSubmit={(e) => e.preventDefault()}
+        className={classnames({ "ChangePin": true, good: this.state.pin.verify() })}>
         <div className="row">
           <label>AdminPin:</label><input type="password"
             name="admin-pin" required={true}
