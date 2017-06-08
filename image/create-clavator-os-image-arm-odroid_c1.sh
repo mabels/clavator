@@ -16,7 +16,7 @@ mkdir -p /images
 node /builder/docker-2-docker.js clavator-os-image-arm-odroid_c1-$VERSION /images.docker ${DOCKER_REGISTRY} $DOCKER_HTTP_REGISTRY
 node /builder/docker-extract.js /images.docker /images
 
-image_name=/images/create-os-image-arm-odroid_c1-$VERSION.img
+. /builder/setup_image_name.sh /images/create-os-image-arm-odroid_c1-$VERSION.img
 xz -d $image_name.xz
 ls -la /images
 
@@ -26,6 +26,9 @@ ls -la /images
 
 mkdir -p /mnt
 mount $root_disk /mnt
+
+/bin/sh /builder/run-construqt.sh eth0 arm /mnt
+chroot /mnt /usr/bin/qemu-arm-static /bin/sh /deployer.sh force_hostname
 
 . /builder/load-into-docker.sh
 

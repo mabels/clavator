@@ -6,14 +6,13 @@ echo $DOCKER_CONFIG_JSON | base64 -d > $HOME/.docker/config.json
 echo VERSION=$VERSION
 #echo DOCKER_AUTH=$DOCKER_AUTH
 arch=x86_64
-image_name=/$(basename $0 .sh)-$VERSION.img
+. /builder/setup_image_name.sh /$(basename $0 .sh)-$VERSION.img
 
 #/usr/sbin/haveged --run 0
 
 dd if=/dev/zero of=$image_name bs=1 count=1 seek=7516192767
 
-sh /builder/retry_losetup.sh -f $image_name
-hole_disk=$(losetup -l | grep $image_name | awk '{print $1}')
+hole_disk=$(sh /builder/to_loop.sh $image_name)
 
 sext4=2048
 echo -e "n\np\n1\n$sext4\n$eext4\nt\n83\nw" | fdisk $hole_disk
@@ -39,7 +38,7 @@ cp /builder/mirrorlist.x86_64 /arch/etc/pacman.d/mirrorlist
 mv /arch/etc/hosts /arch/etc/hosts.orig
 cp /etc/hosts /arch/etc/hosts
 
-/bin/sh /builder/run-construqt.sh "enp0s3"
+#/bin/sh /builder/run-construqt.sh "enp0s3"
 
 #echo 'MODULES="piix ide_disk ahci libahci"' >> /arch/etc/mkinitcpio.conf
 #echo MODULES="ac acpi_cpufreq aesni_intel ahci ata_generic ata_piix atkbd battery button crc32_pclmul crc32c_intel crct10dif_pclmul e1000 evdev ext4 fjes floppy ghash_clmulni_intel i2c_piix4 i8042 input_leds intel_agp intel_cstate intel_powerclamp intel_rapl intel_rapl_perf mac_hid mousedev ohci_pci parport_pc pata_acpi pcc_cpufreq pcspkr psmouse sd_mod serio_raw sr_mod tpm_tis usbcore video"  >> /arch/etc/mkinitcpio.conf

@@ -12,20 +12,20 @@ export class ChangeCard {
   public sex: string;
   public url: string;
 
-  public static fill(js: any) {
+  public static fill(js: any): ChangeCard {
     let cc = new ChangeCard();
-    cc.adminPin = Pin.fill(js['adminPin'])
-    cc.serialNo = js['serialNo']
-    cc.lang = js['lang']
-    cc.name = js['name']
-    cc.login = js['login']
-    cc.sex = js['sex']
-    cc.url = js['url']
+    cc.adminPin = Pin.fill(js['adminPin']);
+    cc.serialNo = js['serialNo'];
+    cc.lang = js['lang'];
+    cc.name = js['name'];
+    cc.login = js['login'];
+    cc.sex = js['sex'];
+    cc.url = js['url'];
     return cc;
     // return new ChangeCard(js['action'], js['params']);
   }
 
-  public static fromCardStatus(cs: Gpg2CardStatus, pin: string = null) {
+  public static fromCardStatus(cs: Gpg2CardStatus, pin: string = null): ChangeCard {
     // debugger
     return ChangeCard.fill({
       adminPin: { pin: pin },
@@ -35,17 +35,17 @@ export class ChangeCard {
       login: cs.login,
       sex: cs.sex,
       url: cs.url
-    })
+    });
   }
 
   public valid(): boolean {
     return this.adminPin.verify() &&
       this.serialNo.length > 0 &&
-      typeof(this.lang) == "string" &&
-      typeof(this.name) == "string" &&
-      typeof(this.login) == "string" &&
-      typeof(this.sex) == "string" &&
-      typeof(this.url) == "string";
+      typeof(this.lang) == 'string' &&
+      typeof(this.name) == 'string' &&
+      typeof(this.login) == 'string' &&
+      typeof(this.sex) == 'string' &&
+      typeof(this.url) == 'string';
   }
 }
 

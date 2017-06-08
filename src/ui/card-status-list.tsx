@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as CardStatus from '../gpg/card_status';
-import FormatDate from './format-date'
+import FormatDate from './format-date';
 import * as Message from '../message';
 import * as WsChannel from './ws-channel';
 import { ChangePin } from './change-pin';
@@ -42,27 +42,27 @@ export class CardStatusList extends React.Component<CardStatusListProps, CardSta
       cardStatus: null,
       transaction: null,
     };
-    this.closeModal = this.closeModal.bind(this)
-    this.changeDialog = this.changeDialog.bind(this)
+    this.closeModal = this.closeModal.bind(this);
+    this.changeDialog = this.changeDialog.bind(this);
   }
 
 
-  public changeDialog(dialog: Dialogs, cs: CardStatus.Gpg2CardStatus) {
+  public changeDialog(dialog: Dialogs, cs: CardStatus.Gpg2CardStatus): (e: any) => void {
     return ((e: any) => {
       this.setState({
         dialog: dialog,
         cardStatus: cs
-      })
-    })
+      });
+    });
   }
 
-  public changeToAttributesDialog(cs: CardStatus.Gpg2CardStatus) {
+  public changeToAttributesDialog(cs: CardStatus.Gpg2CardStatus): (e: any) => void {
     return ((e: any) => {
       this.setState({
         dialog: Dialogs.changeAttributes,
         cardStatus: cs
-      })
-    })
+      });
+    });
   }
 
   public render_actions(cs: CardStatus.Gpg2CardStatus): JSX.Element {
@@ -90,45 +90,47 @@ export class CardStatusList extends React.Component<CardStatusListProps, CardSta
     </td>);
   }
 
-  public closeModal() {
+  public closeModal(): void {
     this.setState(Object.assign({}, this.state, {
       dialog: Dialogs.closed,
-    }))
+    }));
   }
 
   public render_dialog(): JSX.Element {
     switch (this.state.dialog) {
       case Dialogs.changeAdminPin:
-        return <DialogChangePin 
+        return <DialogChangePin
           channel={this.props.channel}
           cardStatus={this.state.cardStatus}
-          onClose={()=>{this.setState({dialog: Dialogs.closed})}}
-          type={"admin"} />
+          onClose={() => {this.setState({dialog: Dialogs.closed}); }}
+          type={'admin'} />;
       case Dialogs.changeUserPin:
-        return <DialogChangePin 
+        return <DialogChangePin
           channel={this.props.channel}
           cardStatus={this.state.cardStatus}
-          onClose={()=>{this.setState({dialog: Dialogs.closed})}}
-          type={"unblock"} />
+          onClose={() => {this.setState({dialog: Dialogs.closed}); }}
+          type={'unblock'} />;
       case Dialogs.changeAttributes:
         return <DialogChangeAttributes
           channel={this.props.channel}
           cardStatus={this.state.cardStatus}
-          onClose={()=>{this.setState({dialog: Dialogs.closed})}} />
+          onClose={() => {this.setState({dialog: Dialogs.closed}); }} />;
       case Dialogs.resetYubikey:
-        return <DialogResetYubikey 
+        return <DialogResetYubikey
           channel={this.props.channel}
           cardStatus={this.state.cardStatus}
-          onClose={()=>{this.setState({dialog: Dialogs.closed})}} />
+          onClose={() => {this.setState({dialog: Dialogs.closed}); }} />;
     }
     return null;
   }
 
   public render(): JSX.Element {
+    console.log('card-status-list:render');
     return (
       <div className="CardStatusList">
         {this.props.cardStatusListState.cardStatusList.map((cs: CardStatus.Gpg2CardStatus, idx: number) => {
-          let login = "" + cs.login;
+          console.log('card-status-list:map');
+          let login = '' + cs.login;
           return (<table key={cs.serial}>
             <tbody>
               <tr key={cs.serial}>
@@ -155,7 +157,7 @@ export class CardStatusList extends React.Component<CardStatusListProps, CardSta
                 <td colSpan={11}>
                   <table>
                     <tbody>
-                      {cs.keyStates.map((ks: CardStatus.KeyState, idx: number) => {
+                      {cs.keyStates.map((ks: CardStatus.KeyState, idxx: number) => {
                         return (
                           <tr key={ks.id}>
                             <td>{ks.id}</td>

@@ -4,7 +4,7 @@ import MutableString from '../gpg/mutable_string';
 import * as Actions from './actions';
 
 interface AssistentSendKeyToCardState {
-  current: Actions.Steps
+  current: Actions.Steps;
 }
 
 interface AssistentSendKeyToCardProps extends React.Props<AssistentSendKeyToCard> {
@@ -12,8 +12,7 @@ interface AssistentSendKeyToCardProps extends React.Props<AssistentSendKeyToCard
 }
 
 export class AssistentSendKeyToCard
-  extends React.Component<AssistentSendKeyToCardProps, AssistentSendKeyToCardState>
-{
+  extends React.Component<AssistentSendKeyToCardProps, AssistentSendKeyToCardState> {
   constructor() {
     super();
     this.state = {
@@ -24,9 +23,9 @@ export class AssistentSendKeyToCard
   public render(): JSX.Element {
     return (
       <div>
-        Test Card is present 
-        Test Card is empty 
-        Test Card is Write 
+        Test Card is present
+        Test Card is empty
+        Test Card is Write
         <button onClick={this.props.onNext}>Next</button>
       </div>
     );

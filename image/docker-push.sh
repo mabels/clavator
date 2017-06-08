@@ -20,7 +20,8 @@ echo "DOCKER-PUSH:[$IMAGES]"
 if [ -n $IMAGES -a -d $IMAGES ]
 then
   echo docker save --output $IMAGES/$IMG_NAME.docker $IMG_NAME 
-  docker save --output $IMAGES/$IMG_NAME.docker $IMG_NAME 
+  docker save --output $IMAGES/$IMG_NAME.loading $IMG_NAME 
+  mv $IMAGES/$IMG_NAME.loading $IMAGES/$IMG_NAME.docker
   chmod 755 $IMAGES
   chmod 644 $IMAGES/$IMG_NAME.docker
 fi

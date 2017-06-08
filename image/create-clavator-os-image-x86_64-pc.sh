@@ -12,11 +12,13 @@ ln -s /run/docker.sock.outer /run/docker.sock
 
 rm -rf /images
 mkdir -p /images
+echo node /builder/docker-2-docker.js clavator-os-image-x86_64-pc-$VERSION /images.docker ${DOCKER_REGISTRY} $DOCKER_HTTP_REGISTRY
 node /builder/docker-2-docker.js clavator-os-image-x86_64-pc-$VERSION /images.docker ${DOCKER_REGISTRY} $DOCKER_HTTP_REGISTRY
+echo node /builder/docker-extract.js /images.docker /images
 node /builder/docker-extract.js /images.docker /images
 
 xz -d /images/virtual.vdi.xz
-image_name=/images/virtual.raw
+. /builder/setup_image_name.sh /images/virtual.raw
 qemu-img convert \
   -O raw /images/virtual.vdi \
   $image_name
@@ -28,6 +30,9 @@ ls -la /images
 
 mkdir -p /mnt
 mount $root_disk /mnt
+
+/bin/sh /builder/run-construqt.sh enp0s3 x86_64 /mnt
+chroot /mnt /bin/sh /deployer.sh force_hostname
 
 . /builder/load-into-docker.sh
 

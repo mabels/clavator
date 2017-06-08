@@ -14,6 +14,7 @@ CONSTRUQT_PATH = ENV['CONSTRUQT_PATH'] || '../../'
   "#{CONSTRUQT_PATH}/construqt/flavours/nixian/dialects/ubuntu/lib",
   "#{CONSTRUQT_PATH}/construqt/flavours/nixian/dialects/coreos/lib",
   "#{CONSTRUQT_PATH}/construqt/flavours/nixian/dialects/arch/lib",
+  "#{CONSTRUQT_PATH}/construqt/flavours/nixian/dialects/docker/lib",
   "#{CONSTRUQT_PATH}/construqt/flavours/nixian/services/lib",
   "#{CONSTRUQT_PATH}/construqt/flavours/nixian/tastes/entities/lib",
   "#{CONSTRUQT_PATH}/construqt/flavours/nixian/tastes/systemd/lib",
@@ -29,8 +30,14 @@ require 'rubygems'
 require 'construqt'
 require 'construqt/flavour/nixian'
 require 'construqt/flavour/nixian/dialect/arch'
+require 'construqt/flavour/nixian/dialect/coreos'
+require 'construqt/flavour/nixian/dialect/docker'
+require 'construqt/flavour/nixian/dialect/ubuntu'
 
 server_device=ARGV[0]||"enp0s8"
+arch=ARGV[1]||"x86_64"
+node_version=ARGV[2]||"c108871"
+gnupg_version=ARGV[3]||"eaf5bb30e"
 
 [
  'clavator.rb'
@@ -44,6 +51,9 @@ def setup_region(name, network)
   nixian = Construqt::Flavour::Nixian::Factory.new
   nixian.services_factory.add(Clavator::Factory.new)
   nixian.add_dialect(Construqt::Flavour::Nixian::Dialect::Arch::Factory.new)
+  nixian.add_dialect(Construqt::Flavour::Nixian::Dialect::Docker::Factory.new)
+  nixian.add_dialect(Construqt::Flavour::Nixian::Dialect::CoreOs::Factory.new)
+  nixian.add_dialect(Construqt::Flavour::Nixian::Dialect::Ubuntu::Factory.new)
   region.flavour_factory.add(nixian)
   if ARGV.include?('plantuml')
     require 'construqt/flavour/plantuml.rb'
@@ -74,7 +84,7 @@ region = setup_region('clavator', network)
 #region.services.add(Dns::Service.new('DNS', nss))
 
 #firewall(region)
-region.hosts.add("clavator", "flavour" => "nixian", "dialect" => "arch",
+clavator = region.hosts.add("clavator", "flavour" => "nixian", "dialect" => "arch",
                  "services" => [Construqt::Flavour::Nixian::Services::Vagrant::Service.new.box("bugyt/archlinux")
                                     .add_cfg('config.vm.network "public_network", bridge: "bridge0"')]) do |host|
   region.interfaces.add_device(host, "lo", "mtu" => "9000", :description=>"#{host.name} lo",
@@ -85,7 +95,31 @@ region.hosts.add("clavator", "flavour" => "nixian", "dialect" => "arch",
               Construqt::Dhcp.new
                 .start("192.168.16.100")
                 .end("192.168.16.200")
-                .domain("clavator.com")))
+                .domain("clavator.com"))
+              .add_ip("fd00:c0a8:1001::/64")
+              .add_ip(Construqt::Addresses::DHCPV4))
+  end
+  region.interfaces.add_bridge(host, "docker0", "mtu" => 1500,
+                              "interfaces" => [],
+                              "startup" => false)
+end
+
+updowner = Construqt::Flavour::Nixian::Services::UpDowner::Service.new
+                                .taste(Construqt::Flavour::Nixian::Tastes::File::Factory.new)
+
+region.hosts.add('app', "flavour" => "nixian",
+                        "dialect" => "docker",
+                        "mother" => clavator,
+                        "services" => [updowner,
+  Construqt::Flavour::Nixian::Services::Invocation::Service.new(
+    Construqt::Flavour::Nixian::Services::Docker::SimpleContainer.new
+                  .container_name("clavator-docker-#{arch}-#{node_version}-#{gnupg_version}")
+                  .privileged
+                  .publish(80).publish(443))
+                        ]) do |host|
+  host.configip = host.id ||= Construqt::HostId.create do |my|
+    my.interfaces << iface = region.interfaces.add_device(host, "bridge",
+       "plug_in" => Construqt::Cables::Plugin.new.iface(clavator.interfaces.find_by_name("docker0")))
   end
 end
 

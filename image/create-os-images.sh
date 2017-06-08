@@ -5,6 +5,11 @@ DOCKER_REGISTRY=$1
 DOCKER_CONFIG_JSON=$(ruby docker_config_json.rb $DOCKER_REGISTRY)
 VERSION=$2
 IMAGES=$3
+ARCHS=$4
+if [ -z $ARCHS ]
+then
+  ARCHS="aarch64-odroid_c2 arm-odroid_c1 x86_64-pc arm-rpi23 arm-odroid_xu3"
+fi
 if [ -z $VERSION ]
 then
   VERSION=$(date "+%Y%m%d")
@@ -23,7 +28,7 @@ ARCHLINUX=https://archlinux.clavator.com/archlinux/
 echo Creating OS Images for $VERSION 
 
 docker run -ti --rm --privileged multiarch/qemu-user-static:register --reset
-docker run -ti --privileged ubuntu /sbin/losetup -D
+#docker run -ti --privileged ubuntu /sbin/losetup -D
 docker run -d --name haveged --privileged storytel/haveged
 
 #ruby construqt.rb
@@ -31,7 +36,9 @@ docker run -d --name haveged --privileged storytel/haveged
 docker build -f Dockerfile-create-os-images -t clavator-create-os-images-$VERSION .
 
 #for i in x86_64-pc # aarch64-odroid-c2
-for i in aarch64-odroid_c2 arm-odroid_c1 x86_64-pc arm-rpi23 arm-odroid_xu3 
+for i in $ARCHS
+#for i in arm-rpi23 arm-odroid_xu3 
+#for i in x86_64-pc
 do
   echo "Run: /builder/create-os-image-$i $VERSION"
   docker ps -qa -f "name=$i-create-os-image" | xargs docker rm -f

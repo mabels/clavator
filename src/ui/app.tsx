@@ -34,23 +34,23 @@ export class App extends React.Component<{}, AppState> {
     };
   }
 
-  protected componentWillUnmount(): void {
+  public componentWillUnmount(): void {
     channel.close();
   }
 
-  public render_createKey() {
+  public render_createKey(): JSX.Element {
     if (!this.state.createKeyDialog) {
       return null;
     }
-    return <DialogCreateKey channel={channel} 
-            onClose={() => this.setState({createKeyDialog: false})}/>
+    return <DialogCreateKey channel={channel}
+            onClose={() => this.setState({createKeyDialog: false})} />;
   }
 
   public render(): JSX.Element {
     return (
       <ChannelStatus channel={channel}>
         <img src={Clavator} className="logo" />
-        <Tabs selectedIndex={0} >
+        <Tabs >
           <TabList>
             <Tab>KeyChainList</Tab>
             <Tab>CardStatusList</Tab>

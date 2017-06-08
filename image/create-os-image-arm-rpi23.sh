@@ -5,14 +5,14 @@ echo $DOCKER_CONFIG_JSON | base64 -d > $HOME/.docker/config.json
 echo VERSION=$VERSION 
 #echo DOCKER_AUTH=$DOCKER_AUTH
 arch=armhf
-image_name=/$(basename $0 .sh)-$VERSION.img
+. /builder/setup_image_name.sh /$(basename $0 .sh)-$VERSION.img
 
 #/usr/sbin/haveged --run 0
 
 dd if=/dev/zero of=$image_name bs=1 count=1 seek=7516192767
 
-sh /builder/retry_losetup.sh -f $image_name
-hole_disk=$(losetup -l | grep $image_name | awk '{print $1}')
+hole_disk=$(sh /builder/to_loop.sh $image_name)
+#hole_disk=$(losetup -l | grep $image_name | awk '{print $1}')
 
 sfat=2048
 fatsize=128
@@ -53,7 +53,7 @@ echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x2
 
 #reflector --verbose --latest 5 --sort rate --save /arch/etc/pacman.d/mirrorlist
 
-/bin/sh /builder/run-construqt.sh eth0
+#/bin/sh /builder/run-construqt.sh eth0
 
 /bin/sh /builder/create-os-image-updater.sh
 

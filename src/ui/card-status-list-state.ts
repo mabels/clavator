@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 
-import { observable } from 'mobx';
+import { observable, ObservableMap } from 'mobx';
 
 import * as CardStatus from '../gpg/card_status';
 import { AdminPin, Pin } from '../gpg/pin';
@@ -13,22 +13,43 @@ import * as Message from '../message';
 
 export class CardStatusListState implements WsChannel.WsChannel {
   // @observable timer = 0;
-  @observable cardStatusList: CardStatus.Gpg2CardStatus[] = [];
-  @observable adminPins = observable.map<string>()
+  @observable public cardStatusList: CardStatus.Gpg2CardStatus[] = [];
+  @observable public adminPins: ObservableMap<string> = observable.map<string>();
 
   constructor(channel: WsChannel.Dispatch) {
     channel.register(this);
   }
-  onOpen(e: Event) { }
+  public onOpen(e: Event): void {
+    return;
+  }
 
-  onMessage(action: Message.Header, data: string) {
-    if (action.action == "CardStatusList") {
-      this.cardStatusList = JSON.parse(data)
+  public onMessage(action: Message.Header, data: string): void {
+    if (action.action == 'CardStatusList') {
+      let pdata = JSON.parse(data);
+      pdata.forEach((a: any, idx: number) => {
+        let found = false;
+        let n = CardStatus.Gpg2CardStatus.jsfill(a);
+        this.cardStatusList.forEach((csl) => {
+          if (csl.reader.eq(n.reader)) {
+            csl.jsfill(a);
+            console.log('onMessage:CardStatusList:update:', csl);
+            found = true;
+          }
+        });
+        if (!found) {
+          console.log('onMessage:CardStatusList:push:', n);
+          this.cardStatusList.push(n);
+        }
+      });
+      if (this.cardStatusList.length != pdata.length) {
+        console.log('onMessage:CardStatusList:len:', pdata.length);
+        this.cardStatusList.length = pdata.length;
+      }
       // console.log("DATA", this.cardStatusList, data)
     }
   }
-  onClose(e: CloseEvent) {
-    this.cardStatusList = []
+  public onClose(e: CloseEvent): void {
+    this.cardStatusList.length = 0; // = [];
   }
 }
 export default CardStatusListState;

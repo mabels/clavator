@@ -25,22 +25,23 @@ export class Progressor
     };
   }
 
-  protected componentWillMount() {
+  public componentWillMount(): void {
     this.props.channel.register(this);
   }
 
-  protected componentWillUnmount(): void {
+  public componentWillUnmount(): void {
     this.setState({ progressList: [] });
-    this.props.channel.unregister(this)
+    this.props.channel.unregister(this);
   }
 
-  onOpen() {
+  public onOpen(): void {
+    return;
   }
 
-  onMessage(action: Message.Header, data: string) {
-    if ((action.action == "Progressor." + this.props.msg)) {
+  public onMessage(action: Message.Header, data: string): void {
+    if ((action.action == 'Progressor.' + this.props.msg)) {
       if (!this.props.transaction || action.transaction == this.props.transaction) {
-        console.log("Progressor.", this.props, action, data)
+        console.log('Progressor.', this.props, action, data);
         let js = JSON.parse(data);
         this.state.progressList.push(Progress.fill(js));
         this.setState(Object.assign({}, this.state, {
@@ -50,7 +51,8 @@ export class Progressor
     }
   }
 
-  onClose(e: CloseEvent) {
+  public onClose(e: CloseEvent): void {
+    return;
   }
 
   private controls(): JSX.Element {

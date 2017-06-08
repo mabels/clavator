@@ -15,7 +15,7 @@ node /builder/docker-2-docker.js clavator-os-image-aarch64-odroid_c2-$VERSION /i
 node /builder/docker-extract.js /images.docker /images
 
 
-image_name=/images/create-os-image-aarch64-odroid_c2-$VERSION.img
+. /builder/setup_image_name.sh /images/create-os-image-aarch64-odroid_c2-$VERSION.img
 xz -d $image_name.xz
 ls -la /images
 
@@ -25,6 +25,9 @@ ls -la /images
 
 mkdir -p /mnt
 mount $root_disk /mnt
+
+/bin/sh /builder/run-construqt.sh eth0 aarch64 /mnt
+chroot /mnt /usr/bin/qemu-aarch64-static /bin/sh /deployer.sh force_hostname
 
 . /builder/load-into-docker.sh
 

@@ -2,17 +2,36 @@
 const reCrNl = /\r?\n/;
 
 export class KeyState {
-  id: number = 0;
-  mode: number = 0;
-  bits: number = 0;
-  maxpinlen: number = 0;
-  pinretry: number = 0;
-  sigcount: number = 0;
-  cafpr: number = 0;
-  fpr: string;
-  fprtime: number;
+  public id: number = 0;
+  public mode: number = 0;
+  public bits: number = 0;
+  public maxpinlen: number = 0;
+  public pinretry: number = 0;
+  public sigcount: number = 0;
+  public cafpr: number = 0;
+  public fpr: string;
+  public fprtime: number;
 
-  public eq(o: KeyState) {
+  public static jsfill(js: any): KeyState {
+    let ret = new KeyState();
+    ret.jsfill(js);
+    return ret;
+  }
+
+  public jsfill(js: any): KeyState {
+    this.id = js['id'];
+    this.mode = js['mode'];
+    this.bits = js['bits'];
+    this.maxpinlen = js['maxpinlen'];
+    this.pinretry = js['pinretry'];
+    this.sigcount = js['sigcount'];
+    this.cafpr = js['cafpr'];
+    this.fpr = js['fpr'];
+    this.fprtime = js['fprtime'];
+    return this;
+  }
+
+  public eq(o: KeyState): boolean {
     return this.id == o.id &&
       this.mode == o.mode &&
       this.bits == o.bits &&
@@ -23,38 +42,37 @@ export class KeyState {
       this.fpr == o.fpr &&
       this.fprtime == o.fprtime;
   }
-};
+}
 
 export class Reader {
-  model: string;
-  aid: string;
-  cardid: string;
-  type: string;
+  public model: string;
+  public aid: string;
+  public cardid: string;
+  public type: string;
 
-  eq(obj: Reader): boolean {
-    return this.model == obj.model &&
-      this.aid == obj.aid &&
-      this.cardid == obj.cardid &&
-      this.type == obj.type;
+  public static jsfill(js: any): Reader {
+    let ret = new Reader();
+    ret.jsfill(js);
+    return ret;
   }
 
-  static fill(match: string[]): Reader {
-    if (!(match.length >= 5 && match[0] == "Reader")) {
+  public static fill(match: string[]): Reader {
+    if (!(match.length >= 5 && match[0] == 'Reader')) {
       return null;
     }
     // Reader:1050:0407:X:0:AID:D2760001240102010006046450860000:openpgp-card:
     // Reader:Yubico Yubikey 4 OTP U2F CCID:AID:D2760001240102010006041775630000:openpgp-card:
-    if (match[2] == "AID") {
+    if (match[2] == 'AID') {
       let ret: Reader = new Reader();
       ret.model = match[1];
       ret.aid = match[2];
       ret.cardid = match[3];
       ret.type = match[4];
       return ret;
-    } else if (match[5] == "AID") {
+    } else if (match[5] == 'AID') {
       let ret: Reader = new Reader();
       let rest = [match[1], match[2], match[3], match[4]];
-      ret.model = rest.join(":")
+      ret.model = rest.join(':');
       ret.aid = match[5];
       ret.cardid = match[6];
       ret.type = match[7];
@@ -62,6 +80,21 @@ export class Reader {
     } else {
       return null;
     }
+  }
+
+  public jsfill(js: any): Reader {
+    this.model = js['model'];
+    this.aid = js['aid'];
+    this.cardid = js['cardid'];
+    this.type = js['type'];
+    return this;
+  }
+
+  public eq(obj: Reader): boolean {
+    return this.model == obj.model &&
+      this.aid == obj.aid &&
+      this.cardid == obj.cardid &&
+      this.type == obj.type;
   }
 }
 
@@ -91,7 +124,7 @@ export class Gpg2CardStatus {
   fpr:F78D5B547A9BB0E8A174C0F5060FF53CB3A32992:B3B94966DF73077EFA734EC83D851A5DF09DEB9C:2D32339F24A537406437181A28E66F405F1BE34D:
   fprtime:1465218501:1465218921:1464700773:
   */
-  public reader: Reader;
+  public reader: Reader = new Reader();
   public version: string;
   public vendor: string;
   public serial: string;
@@ -105,17 +138,23 @@ export class Gpg2CardStatus {
   public sigcount: number;
   // cafpr: number = 0;
 
-  private static decode(str: string) {
+  public static jsfill(js: any): Gpg2CardStatus {
+    let ret = new Gpg2CardStatus();
+    ret.jsfill(js);
+    return ret;
+  }
+
+  private static decode(str: string): string {
     return str.replace(/\\x[a-fA-F0-9]{2}/, (val) => {
-      let num = parseInt(val.slice("\\x".length), 16);
+      let num = parseInt(val.slice('\\x'.length), 16);
       return  String.fromCharCode(num);
-    })
+    });
   }
 
   // typedef std::function<bool(Gpg2CardStatus &gcs, const std::vector<std::string> &strs)> GcsAction;
   private static actors(): { [id: string]: ActionFunc } {
     return {
-      "Reader": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'Reader': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         let reader = Reader.fill(strs);
         if (!reader) {
           return false;
@@ -123,43 +162,43 @@ export class Gpg2CardStatus {
         gcs.reader = reader;
         return true;
       },
-      "version": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'version': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.version = strs[1];
         return true;
       },
-      "vendor": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
-        gcs.vendor = strs.slice(1, strs.length).join(":");
+      'vendor': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+        gcs.vendor = strs.slice(1, strs.length).join(':');
         return true;
       },
-      "serial": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
-        gcs.serial = strs.slice(1, strs.length).join(":");
+      'serial': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+        gcs.serial = strs.slice(1, strs.length).join(':');
         return true;
       },
-      "name": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
-        gcs.name = strs.slice(1, strs.length).join(" ");
+      'name': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+        gcs.name = strs.slice(1, strs.length).join(' ');
         return true;
       },
-      "lang": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'lang': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.lang = strs[1];
         return true;
       },
-      "sex": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'sex': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.sex = strs[1];
         return true;
       },
-      "url": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'url': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.url = Gpg2CardStatus.decode(strs[1]);
         return true;
       },
-      "login": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'login': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.login = strs[1];
         return true;
       },
-      "forcepin": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
-        gcs.forcepin = strs.slice(1, strs.length).join(":");
+      'forcepin': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+        gcs.forcepin = strs.slice(1, strs.length).join(':');
         return true;
       },
-      "keyattr": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'keyattr': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         let id = parseInt(strs[1], 10);
         let ki = gcs.allocKeyState(id - 1);
         ki.id = id;
@@ -167,7 +206,7 @@ export class Gpg2CardStatus {
         ki.bits = parseInt(strs[3], 10);
         return true;
       },
-      "maxpinlen": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'maxpinlen': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         let i = 0;
         for (let si = 1; si < strs.length; ++si, ++i) {
           let ki = gcs.allocKeyState(i);
@@ -175,7 +214,7 @@ export class Gpg2CardStatus {
         }
         return true;
       },
-      "pinretry": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'pinretry': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         let i = 0;
         for (let si = 1; si < strs.length; ++si, ++i) {
           let ki = gcs.allocKeyState(i);
@@ -183,7 +222,7 @@ export class Gpg2CardStatus {
         }
         return true;
       },
-      "sigcount": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'sigcount': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.sigcount = parseInt(strs[1], 10) || 0;
         let i = 0;
         for (let si = 2; si < strs.length; ++si, ++i) {
@@ -192,7 +231,7 @@ export class Gpg2CardStatus {
         }
         return true;
       },
-      "cafpr": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'cafpr': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         // gcs.cafpr = parseInt(strs[1], 10);
         let i = 0;
         for (let si = 1; si < strs.length; ++si, ++i) {
@@ -201,7 +240,7 @@ export class Gpg2CardStatus {
         }
         return true;
       },
-      "fpr": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'fpr': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         let i = 0;
         for (let si = 1; si < strs.length; ++si, ++i) {
           let ki = gcs.allocKeyState(i);
@@ -209,31 +248,30 @@ export class Gpg2CardStatus {
         }
         return true;
       },
-      "fprtime": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'fprtime': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         let i = 0;
         for (let si = 1; si < strs.length; ++si, ++i) {
           let ki = gcs.allocKeyState(i);
           ki.fprtime = parseInt(strs[si], 10);
         }
         return true;
-      },
+      }
     };
   }
 
-
-  static read(str: string): Gpg2CardStatus[] {
+  public static read(str: string): Gpg2CardStatus[] {
     let gcs: Gpg2CardStatus[] = [];
     // std::vector<Gpg2CardStatus>::iterator gcsi = gcs.end();
     let actors = Gpg2CardStatus.actors();
-    let line: string;
+    // let line: string;
     let gcsi: Gpg2CardStatus = null;
     str.split(reCrNl).forEach((line: string) => {
       line = line.trim();
       if (line[line.length - 1] == ':') {
         line = line.substr(0, line.length - 1);
       }
-      let strs = line.split(":");
-      if (strs[0] == "Reader") {
+      let strs = line.split(':');
+      if (strs[0] == 'Reader') {
         if (gcsi != null) {
           gcs.push(gcsi);
         }
@@ -258,15 +296,30 @@ export class Gpg2CardStatus {
     return gcs;
   }
 
+  public jsfill(js: any): Gpg2CardStatus {
+    this.reader.jsfill(js['reader']);
+    this.version = js['version'];
+    this.vendor = js['vendor'];
+    this.serial = js['serial'];
+    this.name = js['name'];
+    this.lang = js['lang'];
+    this.sex = js['sex'];
+    this.url = js['url'];
+    this.login = js['login'];
+    this.forcepin = js['forcepin'];
+    this.keyStates = js['keyStates'].map((i: any) => KeyState.jsfill(i));
+    this.sigcount = js['sigcount'];
+    return this;
+  }
 
   public eq(o: Gpg2CardStatus): boolean {
     let eq = true;
-    eq = eq && this.reader.eq(o.reader)
+    eq = eq && this.reader.eq(o.reader);
     // !eq && console.log("Reader !=")
     eq = eq && this.keyStates.length == o.keyStates.length;
     for (let i = 0; eq && i < this.keyStates.length; ++i) {
       eq = eq && this.keyStates[i].eq(o.keyStates[i]);
-      //!eq && console.log("KeyState !=", i, this.keyStates.length, this.keyStates[i], o.keyStates[i])
+      // !eq && console.log("KeyState !=", i, this.keyStates.length, this.keyStates[i], o.keyStates[i])
     }
     eq = eq && this.version == o.version;
     eq = eq && this.vendor == o.vendor;
@@ -278,11 +331,11 @@ export class Gpg2CardStatus {
     eq = eq && this.login == o.login;
     eq = eq && this.forcepin == o.forcepin;
     eq = eq && this.sigcount == o.sigcount;
-    return eq
+    return eq;
   }
 
-  allocKeyState(slot: number): KeyState {
-    let ret = this.keyStates[slot]
+  public allocKeyState(slot: number): KeyState {
+    let ret = this.keyStates[slot];
     if (!ret) {
       ret = this.keyStates[slot] = new KeyState();
     }

@@ -7,8 +7,8 @@ echo $DOCKER_CONFIG_JSON | base64 -d > $HOME/.docker/config.json
 echo ARCH=$ARCH 
 
 
-NODEVERSION=$(cat /clavator/build/.VERSION)
-GNUPGVERSION=$(cat /clavator/gnupg-$ARCH/.VERSION)
+#NODEVERSION=$(cat /clavator/build/.VERSION)
+#GNUPGVERSION=$(cat /clavator/gnupg-$ARCH/.VERSION)
 echo NODEVERSION=$NODEVERSION
 echo GNUPGVERSION=$GNUPGVERSION
 echo DOCKERVERSION=$DOCKERVERSION
@@ -16,10 +16,14 @@ echo DOCKERVERSION=$DOCKERVERSION
 
 mkdir /arch
 mkdir /arch/gnupg
+echo node /builder/docker-2-docker.js clavator-gnupg-$ARCH-$GNUPGVERSION /arch/gnupg.docker ${DOCKER_REGISTRY} $DOCKER_HTTP_REGISTRY
 node /builder/docker-2-docker.js clavator-gnupg-$ARCH-$GNUPGVERSION /arch/gnupg.docker ${DOCKER_REGISTRY} $DOCKER_HTTP_REGISTRY
+echo "EXIT(docker-2-docker)=$?"
 node /builder/docker-extract.js /arch/gnupg.docker /arch/gnupg
 mkdir /arch/clavator
+echo node /builder/docker-2-docker.js clavator-node-$NODEVERSION /arch/clavator.docker ${DOCKER_REGISTRY} $DOCKER_HTTP_REGISTRY
 node /builder/docker-2-docker.js clavator-node-$NODEVERSION /arch/clavator.docker ${DOCKER_REGISTRY} $DOCKER_HTTP_REGISTRY
+echo "EXIT(docker-2-docker)=$?"
 node /builder/docker-extract.js /arch/clavator.docker /arch/clavator
 
 rm -rf /arch/etc/letsencrypt/live/clavator.com
@@ -40,6 +44,7 @@ COPY etc/ /etc
 COPY gnupg/gnupg-clavator.pkg.tar.xz /
 COPY mirrorlist /etc/pacman.d/
 RUN pacman -Syu --force --noconfirm
+RUN pacman -Syu --force --noconfirm nodejs npm
 RUN pacman -U --noconfirm --force /gnupg-clavator.pkg.tar.xz
 RUN pacman -Scc --noconfirm ; rm -f /var/cache/pacman/pkg/* 
 

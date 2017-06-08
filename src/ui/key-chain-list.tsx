@@ -1,4 +1,6 @@
 import * as React from 'react';
+// import * as PropTypes from 'prop-types';
+
 import * as ListSecretKeys from '../gpg/list_secret_keys';
 import * as Message from '../message';
 import RequestAscii from '../gpg/request_ascii';
@@ -18,7 +20,6 @@ import { observer } from 'mobx-react';
 import DialogSendToCard from './dialog-send-to-card';
 import DialogRenderAscii from './dialog-render-ascii';
 import DialogAskRenderAscii from './dialog-ask-render-ascii';
-
 
 enum Dialogs {
   closed, openAscii, askPassPhraseAscii, sendToCard
@@ -44,6 +45,10 @@ interface KeyChainListProps extends React.Props<KeyChainList> {
 export class KeyChainList
   extends React.Component<KeyChainListProps, KeyChainListComponentState> {
 
+  // public static contextTypes = {
+  //   socket: PropTypes.object
+  // };
+
   constructor() {
     super();
     this.state = {
@@ -55,13 +60,10 @@ export class KeyChainList
       passPhrase: null,
       idx: null
     };
-    this.closeAsciiModal = this.closeAsciiModal.bind(this)
+    this.closeAsciiModal = this.closeAsciiModal.bind(this);
   }
-  public static contextTypes = {
-    socket: React.PropTypes.object
-  };
 
-  processAscii(key: ListSecretKeys.Key, action: string, dialog: Dialogs, pp: string = null) {
+  private processAscii(key: ListSecretKeys.Key, action: string, dialog: Dialogs, pp: string = null): void {
     let ra = new RequestAscii();
     ra.action = action;
     ra.fingerprint = key.fingerPrint.fpr;
@@ -72,32 +74,33 @@ export class KeyChainList
       action: action,
       key: key,
       respondAscii: null,
-      receiver: this.props.channel.onMessage((action: Message.Header, data: string) => {
-        console.log("processAscii:", action)
-        if (action.action != "RespondAscii") {
+      receiver: this.props.channel.onMessage((actionx: Message.Header, data: string) => {
+        console.log('processAscii:', actionx);
+        if (actionx.action != 'RespondAscii') {
           return;
         }
         let pem = RespondAscii.fill(JSON.parse(data));
         if (key.fingerPrint.fpr != pem.fingerprint) {
           return;
         }
-        console.log("Got: Respond:", pem)
+        console.log('Got: Respond:', pem);
         this.setState(Object.assign({}, this.state, {
           respondAscii: pem
         }));
       })
-    }))
-    this.props.channel.send(Message.newTransaction("RequestAscii", ra).asMsg());
+    }));
+    this.props.channel.send(Message.newTransaction('RequestAscii', ra).asMsg());
   }
 
-  requestAscii(key: ListSecretKeys.Key, action: string) {
+  private requestAscii(key: ListSecretKeys.Key, action: string):
+    React.EventHandler<React.MouseEvent<HTMLAnchorElement>> {
     return (() => {
       this.processAscii(key, action, Dialogs.openAscii);
     }).bind(this);
   }
 
-
-  requestAsciiWithPassphrase(key: ListSecretKeys.Key, action: string) {
+  private requestAsciiWithPassphrase(key: ListSecretKeys.Key, action: string):
+    React.EventHandler<React.MouseEvent<HTMLAnchorElement>> {
     return (() => {
       this.setState(Object.assign({}, this.state, {
         dialog: Dialogs.askPassPhraseAscii,
@@ -105,49 +108,49 @@ export class KeyChainList
         key: key,
         passPhrase: new MutableString(),
         respondAscii: null
-      }))
-    }).bind(this)
+      }));
+    }).bind(this);
   }
 
-
-  public deleteSecretKey(key: ListSecretKeys.SecretKey) {
+  public deleteSecretKey(key: ListSecretKeys.SecretKey):
+    React.EventHandler<React.MouseEvent<HTMLAnchorElement>> {
     return (() => {
       if (confirm(`Really delete ${key.keyId} <${key.uids[0].email}>?`)) {
-        this.props.channel.send(Message.newTransaction("DeleteSecretKey", key.fingerPrint).asMsg());
+        this.props.channel.send(Message.newTransaction('DeleteSecretKey', key.fingerPrint).asMsg());
       }
     }).bind(this);
   }
 
-  public sendToCard(key: ListSecretKeys.Key, idx: number) {
+  public sendToCard(key: ListSecretKeys.Key, idx: number): React.EventHandler<React.MouseEvent<HTMLAnchorElement>> {
     return (() => {
-      console.log("sendToCard:Activate")
+      console.log('sendToCard:Activate');
       this.setState(Object.assign({}, this.state, {
         dialog: Dialogs.sendToCard,
         key: key,
         idx: idx
       }));
-    }).bind(this)
+    }).bind(this);
   }
 
   public render_sec_buttons(sk: ListSecretKeys.SecretKey, key: ListSecretKeys.Key): JSX.Element {
     return (<td className="action">
       <a title="pem-private"
-        onClick={this.requestAsciiWithPassphrase(key, "pem-private")}
+        onClick={this.requestAsciiWithPassphrase(key, 'pem-private')}
         name="pem-private">
         <i className="fa fa-key"></i>
       </a>
       <a title="pem-public"
-        onClick={this.requestAscii(key, "pem-public")}
+        onClick={this.requestAscii(key, 'pem-public')}
         name="pem-public">
         <i className="fa fa-bullhorn"></i>
       </a>
       <a title="ssh-public"
-        onClick={this.requestAscii(key, "ssh-public")}
+        onClick={this.requestAscii(key, 'ssh-public')}
         name="ssh-public">
         <i className="fa fa-terminal"></i>
       </a>
       <a title="pem-revoke"
-        onClick={this.requestAscii(key, "pem-revoke")}
+        onClick={this.requestAscii(key, 'pem-revoke')}
         name="pem-revoke">
         <i className="fa fa-bug"></i>
       </a>
@@ -170,8 +173,9 @@ export class KeyChainList
       </td>);
   }
 
-  public render_buttons(clazz: string, sk: ListSecretKeys.SecretKey, key: ListSecretKeys.Key, idx: number): JSX.Element {
-    if (clazz == "ssb") {
+  public render_buttons(clazz: string, sk: ListSecretKeys.SecretKey,
+    key: ListSecretKeys.Key, idx: number): JSX.Element {
+    if (clazz == 'ssb') {
       return this.render_sub_buttons(sk, key, idx);
     } else {
       return this.render_sec_buttons(sk, key);
@@ -205,8 +209,7 @@ export class KeyChainList
       </tbody>);
   }
 
-
-  public closeAsciiModal() {
+  public closeAsciiModal(): void {
     this.props.channel.unMessage(this.state.receiver);
     this.setState(Object.assign({}, this.state, {
       dialog: Dialogs.closed,
@@ -214,7 +217,7 @@ export class KeyChainList
       key: null,
       receiver: null,
       respondAscii: null
-    }))
+    }));
   }
 
   // (sk: ListSecretKeys.Key, idx: number): JSX.Element {
@@ -224,19 +227,19 @@ export class KeyChainList
         return <DialogRenderAscii action={this.state.action}
           secKey={this.state.key}
           onClose={() => this.setState({ dialog: Dialogs.closed })}
-          channel={this.props.channel} />
+          channel={this.props.channel} />;
       case Dialogs.askPassPhraseAscii:
         return <DialogAskRenderAscii action={this.state.action}
           secKey={this.state.key}
           onClose={() => this.setState({ dialog: Dialogs.closed })}
-          channel={this.props.channel} />
+          channel={this.props.channel} />;
       case Dialogs.sendToCard:
         return <DialogSendToCard
           idx={this.state.idx}
           onClose={() => this.setState({ dialog: Dialogs.closed })}
           cardStatusListState={this.props.cardStatusListState}
           secKey={this.state.key}
-          channel={this.props.channel} />
+          channel={this.props.channel} />;
     }
     return null;
   }
@@ -256,9 +259,9 @@ export class KeyChainList
               </table>
               <table >
                 <tbody>
-                  {this.render_key("sec", sk, sk, -1)}
-                  {sk.subKeys.map((ssb, idx) => {
-                    return this.render_key("ssb", sk, ssb, idx)
+                  {this.render_key('sec', sk, sk, -1)}
+                  {sk.subKeys.map((ssb, idxx) => {
+                    return this.render_key('ssb', sk, ssb, idxx);
                   })}
                 </tbody>
               </table>

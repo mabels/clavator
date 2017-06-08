@@ -22,63 +22,63 @@ interface AssistentProps extends React.Props<Assistent> {
 }
 
 export class Assistent
-  extends React.Component<AssistentProps, AssistentState>
-{
+  extends React.Component<AssistentProps, AssistentState> {
   constructor() {
     super();
     this.state = {
-      current: Actions.Steps.CreateKey,
+      current: Actions.Steps.CheckCard, // Actions.Steps.CreateKey,
       completed: Actions.Steps.None,
       secretKey: new ListSecretKeys.SecretKey()
     };
   }
-  public render_steps() {
+  public render_steps(): JSX.Element {
     switch (this.state.current) {
       case Actions.Steps.CreateKey:
-        return <AssistentCreateKey 
+        return <AssistentCreateKey
           channel={this.props.channel}
           secretKey={this.state.secretKey}
           onNext={() => {
-            console.log("SecretKey:", this.state.secretKey);
+            console.log('SecretKey:', this.state.secretKey);
             this.setState({
               secretKey: this.state.secretKey,
               current: Actions.Steps.CheckCard,
-              completed: this.state.completed|Actions.Steps.CreateKey
-                |Actions.Steps.CheckCard // achtung muss weg!
-            })
-          }} />
+              completed: this.state.completed | Actions.Steps.CreateKey
+                | Actions.Steps.CheckCard // achtung muss weg!
+            });
+          }} />;
       case Actions.Steps.CheckCard:
-        return <AssistentCheckCard 
+        return <AssistentCheckCard
           cardStatusListState={this.props.cardStatusListState}
+          secretKey={this.state.secretKey}
           onNext={() => {
             this.setState({
               current: Actions.Steps.SendToCard,
-              completed: this.state.completed|Actions.Steps.CheckCard
-            })
-          }} />
+              completed: this.state.completed | Actions.Steps.CheckCard
+            });
+          }} />;
       case Actions.Steps.SendToCard:
         return <AssistentSendKeyToCard onNext={() => {
             this.setState({
               current: Actions.Steps.Completed,
-              completed: this.state.completed|Actions.Steps.SendToCard|Actions.Steps.Completed
-            })
-          }} />
+              completed: this.state.completed | Actions.Steps.SendToCard | Actions.Steps.Completed
+            });
+          }} />;
       case Actions.Steps.Completed:
-        return <AssistentCompleted />
+        return <AssistentCompleted />;
     }
     return null;
   }
 
   public render(): JSX.Element {
     return (
-      <Actions.Actions current={this.state.current} 
-                       completed={this.state.completed} 
+      <Actions.Actions current={this.state.current}
+                       completed={this.state.completed}
                        onClick={(a) => {
-                         if (a&this.state.completed) {
-                           this.setState({current: a})
-                         } 
+                         if (a & this.state.completed) {
+                           this.setState({current: a});
+                         }
                        }}
-                       > 
+                       >
         {this.render_steps()}
       </Actions.Actions>
     );

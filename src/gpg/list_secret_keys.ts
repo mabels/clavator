@@ -1,6 +1,6 @@
 import * as KeyGen from './key-gen';
 
-function debugArray(match: string[]) {
+function debugArray(match: string[]) : void {
   // let ret = {};
   // for (let i = 0; i < match.length; ++i) {
   //     ret[i] = match[i];
@@ -19,7 +19,7 @@ export class Uid {
   public id: string;
   public key: string;
 
-  public static jsfill(js: any) {
+  public static jsfill(js: any): Uid {
     let ret = new Uid();
     ret.trust = js['trust'];
     ret.name = js['name'];
@@ -31,7 +31,7 @@ export class Uid {
     return ret;
   }
 
-  public eq(o: Uid) {
+  public eq(o: Uid): boolean {
     return this.trust == o.trust &&
       this.name == o.name &&
       this.email == o.email &&
@@ -41,7 +41,7 @@ export class Uid {
       this.key == o.key;
   }
 
-  public toKeyGenUid() {
+  public toKeyGenUid(): KeyGen.Uid {
     let ret = new KeyGen.Uid();
     ret.comment.value = this.comment;
     ret.email.value = this.email;
@@ -49,8 +49,8 @@ export class Uid {
     return ret;
   }
 
-  //uid:u::::1464699940::A319A573075CF1606705BDA9FD5F07E5AD24F257::Meno Abels <meno.abels@adviser.com>:::::::::
-  public fill(match: string[]) {
+  // uid:u::::1464699940::A319A573075CF1606705BDA9FD5F07E5AD24F257::Meno Abels <meno.abels@adviser.com>:::::::::
+  public fill(match: string[]): Uid {
     debugArray(match);
     this.trust = match[1];
     this.created = parseInt(match[5], 10);
@@ -65,7 +65,7 @@ export class Uid {
       this.name = nae[1];
       this.email = nae[2];
     }
-    //this.comment = match[5];
+    // this.comment = match[5];
     return this;
   }
 }
@@ -73,17 +73,17 @@ export class Uid {
 class FingerPrint {
   public fpr: string;
 
-  public static jsfill(js: any) {
+  public static jsfill(js: any): FingerPrint {
     let ret = new FingerPrint();
     ret.fpr = js['fpr'];
     return ret;
   }
 
-  public eq(o: FingerPrint) {
+  public eq(o: FingerPrint): boolean {
     return this.fpr == o.fpr;
   }
 
-  public fill(match: string[]) {
+  public fill(match: string[]): FingerPrint {
     debugArray(match);
     this.fpr = match[9];
     return this;
@@ -94,17 +94,17 @@ class FingerPrint {
 class Group {
   public grp: string;
 
-  public static jsfill(js: any) {
+  public static jsfill(js: any): Group {
     let ret = new Group();
-    ret.grp = js['grp']
+    ret.grp = js['grp'];
     return ret;
   }
 
-  public eq(o: Group) {
+  public eq(o: Group): boolean {
     return this.grp == o.grp;
   }
 
-  public fill(match: string[]) {
+  public fill(match: string[]): Group {
     debugArray(match);
     this.grp = match[9];
     return this;
@@ -113,9 +113,9 @@ class Group {
 }
 
 const Ciphers: { [id: string]: string; } = {
-  22: "ed25519",
-  1: "rsa"
-}
+  22: 'ed25519',
+  1: 'rsa'
+};
 
 export class Key {
   public type: string;
@@ -131,13 +131,13 @@ export class Key {
   public group: Group = new Group();
   public fingerPrint: FingerPrint = new FingerPrint();
 
-  public static jsfill(js: any) {
+  public static jsfill(js: any): Key {
     let ret = new Key();
     return ret.jsfill(js);
   }
 
 
-  public usesEq(o: string[]) {
+  public usesEq(o: string[]): boolean {
     if (this.uses.length != o.length) {
       return false;
     }
@@ -149,7 +149,7 @@ export class Key {
     return true;
   }
 
-  public toKeyGenInfo() {
+  public toKeyGenInfo(): KeyGen.KeyInfo {
     let ret = new KeyGen.KeyInfo();
     ret.length.value = this.bits;
     ret.type.value = this.cipher;
@@ -157,11 +157,11 @@ export class Key {
     return ret;
   }
 
-  public jsfill(js: any) {
+  public jsfill(js: any): Key {
     return this._jsfill(js);
   }
 
-  protected _jsfill(js: any) {
+  protected _jsfill(js: any): Key {
     this.type = js['type'];
     this.trust = js['trust'];
     this.cipher = js['cipher'];
@@ -171,14 +171,14 @@ export class Key {
     this.key = js['key'];
     this.created = js['created'];
     this.expires = js['expires'];
-    this.uses = js['uses']||[];
-    this.group = Group.jsfill(js['group']||{});
-    this.fingerPrint = FingerPrint.jsfill(js['fingerPrint']||{});
+    this.uses = js['uses'] || [];
+    this.group = Group.jsfill(js['group'] || {});
+    this.fingerPrint = FingerPrint.jsfill(js['fingerPrint'] || {});
     return this;
   }
 
 
-  public eq(o: Key) {
+  public eq(o: Key): boolean {
     return this.type == o.type &&
       this.trust == o.trust &&
       this.cipher == o.cipher &&
@@ -199,7 +199,7 @@ export class Key {
   // ssb:u:4096:1:060FF53CB3A32992:1465218501:1622898501:::::es:::D2760001240102010006041775630000::ed25519:
   // ssb:u:4096:1:3D851A5DF09DEB9C:1465218921:1622898921:::::es:::D2760001240102010006041775630000::ed25519:
 
-  public fill(match: string[]) {
+  public fill(match: string[]): Key {
     debugArray(match);
     this.type = match[0];
     this.trust = match[1];
@@ -218,13 +218,13 @@ export class SecretKey extends Key {
   public uids: Uid[] = [];
   public subKeys: Key[] = [];
 
-  public static jsfill(js: any) {
+  public static jsfill(js: any): SecretKey {
     let ret = new SecretKey();
     return ret.jsfill(js);
   }
 
-  public jsfill(js: any) {
-    this._jsfill(js)
+  public jsfill(js: any): SecretKey {
+    this._jsfill(js);
     for (let uid of js['uids']) {
       this.uids.push(Uid.jsfill(uid));
     }
@@ -234,14 +234,14 @@ export class SecretKey extends Key {
     return this;
   }
 
-  public isCreated(cb?: any) {
+  public isCreated(cb?: any): any {
     if (this.uids.length > 0 && this.uids[0].name && this.uids[0].name.length) {
       return cb;
     }
     return null;
   }
 
-  public toKeyGen(subKeys: number = 3) : KeyGen.KeyGen {
+  public toKeyGen(subKeys: number = 3): KeyGen.KeyGen {
     let ret = new KeyGen.KeyGen();
     ret.keyInfo.length.value = this.bits || 4096;
     ret.keyInfo.type.value = this.cipher || 'RSA';
@@ -267,7 +267,7 @@ export class SecretKey extends Key {
     return ret;
   }
 
-  public eq(o: SecretKey) {
+  public eq(o: SecretKey): boolean {
     if (!super.eq(o)) {
       return false;
     }
@@ -302,11 +302,13 @@ export function run(str: string): SecretKey[] {
   let currentSec: SecretKey = null;
   let currentKey: Key = null;
   str.split(reCrNl).forEach((line: string) => {
-    if (!line.trim().length) { return }
+    if (!line.trim().length) { return; }
     let match = line.split(':');
     switch (match[0]) {
       case 'sec':
-        currentSec = (new SecretKey()).fill(match);
+        let sec = new SecretKey();
+        sec.fill(match);
+        currentSec = sec;
         currentKey = currentSec;
         ret.push(currentSec);
         break;
@@ -318,13 +320,13 @@ export function run(str: string): SecretKey[] {
         currentSec.subKeys.push(currentKey);
         break;
       case 'fpr':
-        currentKey.fingerPrint.fill(match)
+        currentKey.fingerPrint.fill(match);
         break;
       case 'grp':
-        currentKey.group.fill(match)
+        currentKey.group.fill(match);
         break;
       default:
-        console.warn("unknown type:", match[0]);
+        console.warn('unknown type:', match[0]);
     }
   });
   return ret;

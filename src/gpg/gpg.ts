@@ -1,13 +1,14 @@
 
 
 import { spawn } from 'child_process';
-import * as ListSecretKeys from "./list_secret_keys";
-import * as CardStatus from "./card_status";
-import * as path from "path";
-import * as fs from "fs";
-import * as fsPromise from "fs-promise";
-//import * as pse from "../pinentry/server";
-import * as Ac from "./agent_conf";
+import * as ListSecretKeys from './list_secret_keys';
+import * as CardStatus from './card_status';
+import * as path from 'path';
+import * as fs from 'fs';
+// import * as fsPromise from "fs-promise";
+import * as fsPromise from 'fs-extra';
+// import * as pse from "../pinentry/server";
+import * as Ac from './agent_conf';
 import * as stream from 'stream';
 import * as Uuid from 'node-uuid';
 
@@ -33,9 +34,9 @@ class ResultQueue {
 }
 
 export class Result {
-  public stdOut: string = "";
-  public stdErr: string = "";
-  public stdIn: string = "";
+  public stdOut: string = '';
+  public stdErr: string = '';
+  public stdIn: string = '';
   public env: { [id: string]: string; } = {};
   public exitCode: number;
   public runQueue: ResultQueue[] = [];
@@ -44,43 +45,43 @@ export class Result {
     (<any>Object).assign(this.env, process.env);
   }
 
-  public setStdIn(stdIn: string) {
+  public setStdIn(stdIn: string): Result {
     this.stdIn = stdIn;
     return this;
   }
 
-  public addEnv(key: string, value: string) {
+  public addEnv(key: string, value: string): Result {
     this.env[key] = value;
     return this;
   }
 
-  public run(cmd: string, cmdArgs: Mixed[], attributes: Mixed[], cb: (res: Result) => void) {
+  public run(cmd: string, cmdArgs: Mixed[], attributes: Mixed[], cb: (res: Result) => void): void {
     let args = cmdArgs.concat(attributes);
     this.runQueue.push({cmd: cmd, attributes: args, cb: cb});
     if (this.runQueue.length == 1) {
       this._run(cmd, args, cb);
     }
   }
-  public processQueue() {
+  public processQueue(): void {
     this.runQueue.shift();
     if (this.runQueue.length > 0) {
       let head = this.runQueue[0];
       this._run(head.cmd, head.attributes, head.cb);
     }
   }
-  private _run(cmd: string, attributes: Mixed[], cb: (res: Result) => void) {
+  private _run(cmd: string, attributes: Mixed[], cb: (res: Result) => void): void {
     // console.log("run=["+cmd+"]", attributes);
     let fds: (() => string)[] = [];
     let freeFd = 3;
     let attrs = attributes.map((i) => {
-      if (typeof (i) == "function") {
+      if (typeof (i) == 'function') {
         fds.push(i);
-        return "" + freeFd++;
+        return '' + freeFd++;
       }
       return i;
-    })
+    });
     let writables: string[] = fds.map((func) => {
-      return 'pipe'
+      return 'pipe';
     });
 
     let stdio: any[] = ['pipe', 'pipe', 'pipe']
@@ -90,29 +91,29 @@ export class Result {
       env: this.env,
       stdio: stdio
     });
-    c.on("error", (e: Event) => {
+    c.on('error', (e: Event) => {
       console.log(e);
       cb(this);
       this.processQueue();
     });
     if (this.stdIn && this.stdIn.length > 0) {
-      var s = new stream.Readable();
+      let s = new stream.Readable();
       s.push(this.stdIn);
       s.push(null);
       s.pipe(c.stdin);
     }
 
     // console.log(">>>>>>", stdio.length);
-    for (let i = 3; i < stdio.length; ++i) {
+    for (let j = 3; j < stdio.length; ++j) {
       ((i) => {
         let s_closed = false;
         c.stdio[i].on('error', (e: any) => {
           if (!s_closed) {
-            console.log("stdio->" + i + "->error", e)
+            console.error('stdio->' + i + '->error', e);
           }
-        })
+        });
         c.stdio[i].on('end', (e: any) => { /*console.log("stdio->"+i+"->end", e) */ })
-        var s = new stream.Readable();
+        let s = new stream.Readable();
         // console.log(">>>>>>", stdio.length, 1, fds[i-3]());
         s.push(fds[i - 3]());
         // console.log(">>>>>>", stdio.length, 2);
@@ -121,14 +122,14 @@ export class Result {
         s.pipe(c.stdio[i] as stream.Writable, { end: true });
         // console.log(">>>>>>", stdio.length, 4);
         s.on('end', () => {
-          s_closed = true
+          s_closed = true;
           // console.log("s.end:", i);
         });
-      })(i)
+      })(j);
     }
 
-    c.stdout.on('data', (data: string) => { this.stdOut += data });
-    c.stderr.on('data', (data: string) => { this.stdErr += data });
+    c.stdout.on('data', (data: string) => { this.stdOut += data; });
+    c.stderr.on('data', (data: string) => { this.stdErr += data; });
     c.on('close', (code: number) => {
       this.exitCode = code;
       cb(this);
@@ -138,11 +139,11 @@ export class Result {
 }
 
 export class Gpg {
-  public homeDir: string = path.join(process.env.HOME, ".gnupg");
-  //pinEntryServer: pse.PinEntryServer;
-  public gpgCmd: string = "gpg2";
+  public homeDir: string = path.join(process.env.HOME, '.gnupg');
+  // pinEntryServer: pse.PinEntryServer;
+  public gpgCmd: string = 'gpg2';
   public gpgCmdArgs: string[] = [];
-  public gpgAgentCmd: string = "gpg-connect-agent";
+  public gpgAgentCmd: string = 'gpg-connect-agent';
   public gpgAgentCmdArgs: string[] = [];
 
   public clone(): Gpg {
@@ -175,33 +176,33 @@ export class Gpg {
     return this;
   }
 
-  public started(cb: (s: Result) => void) {
-    this.run(["--print-md", "md5"], "test", cb);
+  public started(cb: (s: Result) => void): void {
+    this.run(['--print-md', 'md5'], 'test', cb);
   }
 
-  public getSocketName(cb: (sname: string) => void) {
-    this.runAgent(["GETINFO socket_name", "/bye"], null, (res: Result) => {
+  public getSocketName(cb: (sname: string) => void): void {
+    this.runAgent(['GETINFO socket_name', '/bye'], null, (res: Result) => {
       if (res.exitCode != 0) {
-        //console.log("getSocketName-1:", res);
-        cb(null)
-        return;
-      }
-      let line = res.stdOut.split(/[\n\r]+/).find((line) => line.startsWith("D "))
-      if (!line) {
-        //console.log("getSocketName-2:", line);
+        // console.log("getSocketName-1:", res);
         cb(null);
         return;
       }
-      cb(line.slice("D ".length))
-    })
+      let line = res.stdOut.split(/[\n\r]+/).find((linex) => linex.startsWith('D '));
+      if (!line) {
+        // console.log("getSocketName-2:", line);
+        cb(null);
+        return;
+      }
+      cb(line.slice('D '.length));
+    });
   }
 
-  public run(attributes: Mixed[], stdIn: string, cb: (res: Result) => void) {
+  public run(attributes: Mixed[], stdIn: string, cb: (res: Result) => void): void {
     if (this.homeDir) {
       attributes.splice(0, 0, this.homeDir);
-      attributes.splice(0, 0, '--homedir')
+      attributes.splice(0, 0, '--homedir');
     }
-    //console.log(attributes);
+    // console.log(attributes);
     let result = (new Result()).setStdIn(stdIn);
     // if (this.pinEntryServer) {
     //     result.addEnv('F_MOD_HOME', "xxx");
@@ -210,40 +211,40 @@ export class Gpg {
     result.run(this.gpgCmd, this.gpgCmdArgs, attributes, cb);
   }
 
-  public runAgent(attributes: string[], stdIn: string, cb: (res: Result) => void) {
-    //console.log(stdIn);
+  public runAgent(attributes: string[], stdIn: string, cb: (res: Result) => void): void {
+    // console.log(stdIn);
     if (this.homeDir) {
       attributes.splice(0, 0, this.homeDir);
-      attributes.splice(0, 0, '--homedir')
+      attributes.splice(0, 0, '--homedir');
     }
-    //console.log(attributes);
+    // console.log(attributes);
     let result = (new Result()).setStdIn(stdIn);
 
-    console.log(this.gpgAgentCmd, attributes, stdIn)
+    console.log(this.gpgAgentCmd, attributes, stdIn);
     result.run(this.gpgAgentCmd, this.gpgAgentCmdArgs, attributes, cb);
   }
 
-  public resetYubikey(cb: (res: Result) => void) {
-    this.runAgent([], this.resetCommand(), cb)
+  public resetYubikey(cb: (res: Result) => void): void {
+    this.runAgent([], this.resetCommand(), cb);
   }
 
-  private resetCommand() {
+  private resetCommand(): string {
     return [
-      "/hex",
-      "scd serialno",
-      "scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40",
-      "scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40",
-      "scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40",
-      "scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40",
-      "scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40",
-      "scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40",
-      "scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40",
-      "scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40",
-      "scd apdu 00 e6 00 00",
-      "scd apdu 00 44 00 00", ""].join("\n")
+      '/hex',
+      'scd serialno',
+      'scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40',
+      'scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40',
+      'scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40',
+      'scd apdu 00 20 00 81 08 40 40 40 40 40 40 40 40',
+      'scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40',
+      'scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40',
+      'scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40',
+      'scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40',
+      'scd apdu 00 e6 00 00',
+      'scd apdu 00 44 00 00', ''].join('\n');
   }
 
-  public getSecretKey(fpr : string, cb: (key: ListSecretKeys.SecretKey) => void) {
+  public getSecretKey(fpr: string, cb: (key: ListSecretKeys.SecretKey) => void): void {
     this.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
       if (err) {
         cb(null);
@@ -256,30 +257,30 @@ export class Gpg {
           return;
         }
       }
-      if (!found) { 
-        cb(null); 
+      if (!found) {
+        cb(null);
       }
-    })
+    });
   }
 
-  public list_secret_keys(cb: (err: string, keys: ListSecretKeys.SecretKey[]) => void) {
+  public list_secret_keys(cb: (err: string, keys: ListSecretKeys.SecretKey[]) => void): void {
     this.run(['--list-secret-keys', '--with-colons'], null, (result: Result) => {
       if (result.exitCode != 0) {
-        cb("gpg exit with a error code:" + result.exitCode +
-          "\n" + result.stdErr +
-          "\n" + result.stdOut, null);
+        cb('gpg exit with a error code:' + result.exitCode +
+          '\n' + result.stdErr +
+          '\n' + result.stdOut, null);
         return;
       }
       cb(null, ListSecretKeys.run(result.stdOut));
     });
   }
 
-  public card_status(cb: (err: string, keys: CardStatus.Gpg2CardStatus[]) => void) {
+  public card_status(cb: (err: string, keys: CardStatus.Gpg2CardStatus[]) => void): void {
     this.run(['--card-status', '--with-colons'], null, (result: Result) => {
       if (result.exitCode != 0) {
-        cb("gpg exit with a error code:" + result.exitCode +
-          "\n" + result.stdErr +
-          "\n" + result.stdOut, null);
+        cb('gpg exit with a error code:' + result.exitCode +
+          '\n' + result.stdErr +
+          '\n' + result.stdOut, null);
         return;
       }
       cb(null, CardStatus.run(result.stdOut));
@@ -297,144 +298,144 @@ export class Gpg {
   //   });
   // }
 
-  public deleteSecretKey(fingerPrint: string, cb: (res: Result) => void) {
-    let args : Mixed[] = [ '--no-tty' ];
+  public deleteSecretKey(fingerPrint: string, cb: (res: Result) => void): void {
+    let args: Mixed[] = [ '--no-tty' ];
     this.getSecretKey(fingerPrint, (key) => {
       if (!key) {
-        cb(null)
+        cb(null);
         return;
       }
       // for (let i = 0; i < 1 + key.subKeys.length; ++i) {
-      //   args.push('--passphrase-fd', () => { 
+      //   args.push('--passphrase-fd', () => {
       //     console.log("--passphrase-fd y");
-      //     return "j\n"; 
+      //     return "j\n";
       //   });
       // }
-      args.push('--expert', '--batch', '--yes', '--delete-secret-key', fingerPrint)
-      console.log("deleteSecretKey:", args);
+      args.push('--expert', '--batch', '--yes', '--delete-secret-key', fingerPrint);
+      console.log('deleteSecretKey:', args);
       this.run(args, null, cb);
     });
   }
 
-  public deletePublicKey(fingerPrint: string, cb: (res: Result) => void) {
+  public deletePublicKey(fingerPrint: string, cb: (res: Result) => void): void {
     this.run(['--batch', '--delete-key', fingerPrint], null, cb);
   }
 
-  public write_agent_conf(pinentryPath: string, cb: (err: any) => void) {
+  public write_agent_conf(pinentryPath: string, cb: (err: any) => void): void {
     let gpgAgentFname = path.join(this.homeDir, 'gpg-agent.conf');
     Ac.AgentConf.read_file(gpgAgentFname, (err: any, ag: Ac.AgentConf) => {
       if (err) {
         cb(err);
         return;
       }
-      let pp = "pinentry-program";
+      let pp = 'pinentry-program';
       let pv = pinentryPath;
       let als = ag.find(pp);
       if (!als) {
-        als = [new Ac.AgentLine([pp, pv].join(" "))];
+        als = [new Ac.AgentLine([pp, pv].join(' '))];
       }
-      als.forEach((al: Ac.AgentLine) => { al.value = pv });
-      ag.write_file(gpgAgentFname, (err: string) => {
-        if (err) {
-          cb(err);
+      als.forEach((al: Ac.AgentLine) => { al.value = pv; });
+      ag.write_file(gpgAgentFname, (errx: string) => {
+        if (errx) {
+          cb(errx);
           return;
         }
         cb(null);
-      })
-    })
+      });
+    });
   }
 
-  public createMasterKey(keyGen: KeyGen.KeyGen, cb: (res: Result) => void) {
+  public createMasterKey(keyGen: KeyGen.KeyGen, cb: (res: Result) => void): void {
     //  '--enable-large-rsa',
     let args: Mixed[] = [
       '--no-tty', '--pinentry-mode', 'loopback',
       '--passphrase-fd',
       () => {
-        return keyGen.password.password + "\n"
+        return keyGen.password.password + '\n';
       },
       '--passphrase-fd',
       () => {
-        return keyGen.password.password + "\n"
+        return keyGen.password.password + '\n';
       },
       '--full-gen-key',
       '--batch'
     ];
-    console.log("createMasterKey:", this.gpgCmd, this.gpgCmdArgs, args);
+    console.log('createMasterKey:', this.gpgCmd, this.gpgCmdArgs, args);
     this.run(args, keyGen.masterCommand(), cb);
   }
 
-  public pemPrivateKey(rqa: RequestAscii, cb: (res: Result) => void) {
+  public pemPrivateKey(rqa: RequestAscii, cb: (res: Result) => void): void {
     let args = [
       '--no-tty', '--pinentry-mode', 'loopback',
       '--passphrase-fd',
       () => {
-        return rqa.passphrase.value + "\n";
+        return rqa.passphrase.value + '\n';
       },
       '-a', '--export-secret-key', rqa.fingerprint
     ];
-    console.log("pemPrivateKey:", this.homeDir)
+    console.log('pemPrivateKey:', this.homeDir);
     this.run(args, null, cb);
   }
-  public pemPublicKey(rqa: RequestAscii, cb: (res: Result) => void) {
+  public pemPublicKey(rqa: RequestAscii, cb: (res: Result) => void): void {
     this.run(['-a', '--export', rqa.fingerprint], null, cb);
   }
-  public pemRevocation(rqa: RequestAscii, cb: (res: Result) => void) {
+  public pemRevocation(rqa: RequestAscii, cb: (res: Result) => void): void {
     this.run(['-a', '--gen-revoke', rqa.fingerprint], null, cb);
   }
-  public sshPublic(rqa: RequestAscii, cb: (res: Result) => void) {
+  public sshPublic(rqa: RequestAscii, cb: (res: Result) => void): void {
     this.run(['--export-ssh-key', rqa.fingerprint], null, cb);
   }
 
-  public addUid(fpr: string, kg: KeyGen.KeyGen, uid: KeyGen.Uid, cb: (res: Result) => void) {
+  public addUid(fpr: string, kg: KeyGen.KeyGen, uid: KeyGen.Uid, cb: (res: Result) => void): void {
     let args = [
       '--no-tty', '--pinentry-mode', 'loopback',
       '--passphrase-fd',
       () => {
-        return kg.password.password
+        return kg.password.password;
       },
       '--quick-adduid', fpr,
       uid.toString()
     ];
-    console.log("addUid", args);
+    console.log('addUid', args);
     this.run(args, null, cb);
   }
 
-  public createSubkey(fpr: string, kg: KeyGen.KeyGen, ki: KeyGen.KeyInfo, cb: (res: Result) => void) {
+  public createSubkey(fpr: string, kg: KeyGen.KeyGen, ki: KeyGen.KeyInfo, cb: (res: Result) => void): void {
     // gpg2  --quick-addkey  FDCF2566BA8134E3BAD15B7DDDC4941118503075 rsa2048 sign,auth,encr
     // '--enable-large-rsa'
     let args = [
       '--no-tty', '--pinentry-mode', 'loopback',
       '--passphrase-fd',
       () => {
-        return kg.password.password + "\n"
+        return kg.password.password + '\n';
       },
       '--quick-addkey', fpr,
-      ki.type.value.toLowerCase() + ki.length.value, ki.usage.values.join(","),
+      ki.type.value.toLowerCase() + ki.length.value, ki.usage.values.join(','),
       KeyGen.format_date(kg.expireDate.value)
     ];
-    console.log("createSubkey", args);
+    console.log('createSubkey', args);
     this.run(args, null, cb);
   }
 
-  public changePin(type: string, rcp: RequestChangePin, cb: (res: Result) => void) {
+  public changePin(type: string, rcp: RequestChangePin, cb: (res: Result) => void): void {
     let args = [
       '--no-tty', '--pinentry-mode', 'loopback',
       '--passphrase-fd', () => {
-        return rcp.admin_pin.pin + "\n"
+        return rcp.admin_pin.pin + '\n';
       },
       '--passphrase-fd', () => {
-        return rcp.new_pin.pin + "\n"
+        return rcp.new_pin.pin + '\n';
       },
       '--passphrase-fd', () => {
-        return rcp.new_pin_verify.pin + "\n"
+        return rcp.new_pin_verify.pin + '\n';
       },
       '--change-pin', type, rcp.app_id
     ];
-    console.log("changePin:", args)
+    console.log('changePin:', args);
     this.run(args, null, cb);
   }
 
-  private getSocketNames(g1: Gpg, g2: Gpg, cb: (res: Result, s1?: string, s2?: string) => void) {
+  private getSocketNames(g1: Gpg, g2: Gpg, cb: (res: Result, s1?: string, s2?: string) => void): void {
     g1.getSocketName((sName1) => {
       if (sName1 == null) {
         let res = new Result();
@@ -452,24 +453,24 @@ export class Gpg {
           return;
         }
         cb(null, sName1, sName2);
-      })
-    })
-
+      });
+    });
   }
-  public importSecretKey(ktyk: KeyToYubiKey, pem: string, cb: (res: Result) => void) {
+
+  public importSecretKey(ktyk: KeyToYubiKey, pem: string, cb: (res: Result) => void): void {
     let args = [
       '--pinentry-mode', 'loopback',
       '--passphrase-fd', () => {
-        return ktyk.passphrase.value + "\n"
+        return ktyk.passphrase.value + '\n';
       },
       '--import'
     ];
     this.run(args, pem, (pre: Result) => {
-      cb(pre)
-    })
+      cb(pre);
+    });
   }
 
-  public prepareKeyToYubiKey(ktyk: KeyToYubiKey, cb: (gpgYubiKey: Gpg, res: Result) => void) {
+  public prepareKeyToYubiKey(ktyk: KeyToYubiKey, cb: (gpgYubiKey: Gpg, res: Result) => void): void {
     let rqa = new RequestAscii();
     rqa.fingerprint = ktyk.fingerprint;
     rqa.passphrase = ktyk.passphrase;
@@ -479,8 +480,8 @@ export class Gpg {
         return;
       }
       let gpgSmartCard = this.clone();
-      let homedir = path.join(process.cwd(), `${Uuid.v4().toString().slice(0,16)}.ctr`);
-      console.log("keyToYubiKey:", homedir)
+      let homedir = path.join(process.cwd(), `${Uuid.v4().toString().slice(0, 16)}.ctr`);
+      console.log('keyToYubiKey:', homedir);
       gpgSmartCard.setHomeDir(homedir);
       try {
         await fsPromise.mkdir(homedir);
@@ -493,17 +494,17 @@ export class Gpg {
       }
       gpgSmartCard.importSecretKey(ktyk, res.stdOut, (ires: Result) => {
         if (ires.exitCode != 0) {
-          cb(null, ires)
+          cb(null, ires);
         }
         this.getSocketNames(this, gpgSmartCard, (sres: Result, s1: string, s2: string) => {
           if (sres) {
-            cb(null, sres)
-            return
+            cb(null, sres);
+            return;
           }
-          gpgSmartCard.runAgent(["killagent", "/bye"], null, async (ares: Result) => {
+          gpgSmartCard.runAgent(['killagent', '/bye'], null, async (ares: Result) => {
             if (ares.exitCode != 0) {
               cb(null, ares);
-              return
+              return;
             }
             try {
               if (s1 != s2) {
@@ -511,8 +512,9 @@ export class Gpg {
                   await fsPromise.unlink(s2);
                 }
                 await fsPromise.symlink(s1, s2);
+                // fse.ensureSymlink
               }
-              console.log("killed:", s1, s2);
+              console.log('killed:', s1, s2);
               cb(gpgSmartCard, ares);
             } catch (e) {
               console.log(e);
@@ -521,13 +523,13 @@ export class Gpg {
               cb(null, ares);
               return;
             }
-          })
-        })
-      })
-    })
+          });
+        });
+      });
+    });
   }
 
-  public keyToYubiKey(ktyk: KeyToYubiKey, cb: (res: Result) => void) {
+  public keyToYubiKey(ktyk: KeyToYubiKey, cb: (res: Result) => void): void {
     // create copy of the selected key to avoid
     // that this key will removed from the current
     // key database
@@ -540,58 +542,58 @@ export class Gpg {
         '--pinentry-mode', 'loopback',
         '--passphrase-fd', () => {
           // console.log(">>keyToYubiKey:passphrase[", ktyk.passphrase.value, "]")
-          return ktyk.passphrase.value //+ "\n"
+          return ktyk.passphrase.value; // + "\n"
         },
         '--passphrase-fd', () => {
           // console.log(">>keyToYubiKey:admin[", ktyk.admin_pin.pin, "]")
-          return ktyk.admin_pin.pin //+ "\n"
+          return ktyk.admin_pin.pin; // + "\n"
         },
         '--quick-keytocard',
         ktyk.fingerprint,
-        "" + ktyk.slot_id, ktyk.card_id
+        '' + ktyk.slot_id, ktyk.card_id
       ];
-      console.log("keyToYubiKey", args)
-      gpgYubiKey.run(args, null, (res: Result) => {
-        if (res.exitCode == 0) {
+      console.log('keyToYubiKey', args);
+      gpgYubiKey.run(args, null, (resx: Result) => {
+        if (resx.exitCode == 0) {
           rimraf.sync(gpgYubiKey.homeDir);
         }
-        cb(res);
-      })
-    })
+        cb(resx);
+      });
+    });
   }
 
-  public changeCard(cc: ChangeCard, cb: (res: Result) => void) {
-    let sname = cc.name.split(/\s+/)
+  public changeCard(cc: ChangeCard, cb: (res: Result) => void): void {
+    let sname = cc.name.split(/\s+/);
     let actions = [
-      [ "name", [ sname.slice(1).join(" "), sname[0] ] ],
-      [ "language", [cc.lang] ],
-      [ "sex", [ cc.sex[0]=="f" ? 2: 1 ] ],
-      [ "login", [cc.login] ],
-      [ "url", [cc.url] ]
-    ]
-    this._changeCard(cc, actions, cb, [])     
+      [ 'name', [ sname.slice(1).join(' '), sname[0] ] ],
+      [ 'language', [cc.lang] ],
+      [ 'sex', [ cc.sex[0] == 'f' ? 2 : 1 ] ],
+      [ 'login', [cc.login] ],
+      [ 'url', [cc.url] ]
+    ];
+    this._changeCard(cc, actions, cb, []);
   }
-  _changeCard(cc: ChangeCard, actions: any[], cb: (res: Result) => void, results: Result[]) {
+  private _changeCard(cc: ChangeCard, actions: any[], cb: (res: Result) => void, results: Result[]): void {
     if (actions.length == 0) {
       let res = new Result();
       results.forEach((r) => {
         res.exitCode += r.exitCode;
         res.stdErr += r.stdErr;
         res.stdOut += r.stdOut;
-      })
+      });
       cb(res);
       return;
     }
     let current = actions.shift();
-    console.log("current:", current);
+    console.log('current:', current);
     this.changeAttribute(cc.adminPin.pin, current[0], current[1], cc.serialNo, (res) => {
       results.push(res);
-      this._changeCard(cc, actions, cb, results)
+      this._changeCard(cc, actions, cb, results);
     });
   }
 
   private changeAttribute(adminPin: string, attrName: string,
-    value: string[], serialNo: string, cb: (res: Result) => void) {
+    value: string[], serialNo: string, cb: (res: Result) => void): void {
     // create copy of the selected key to avoid
     // that this key will removed from the current
     // key database
@@ -599,14 +601,14 @@ export class Gpg {
       '--pinentry-mode', 'loopback',
       '--passphrase-fd', () => {
         // console.log(">>keyToYubiKey:passphrase[", ktyk.passphrase.value, "]")
-        return adminPin //+ "\n"
+        return adminPin; // + "\n"
       },
       '--change-card',
       attrName
     ];
     args = args.concat(value);
     args.push(serialNo);
-    console.log("changeCard", args)
+    console.log('changeCard', args);
     this.run(args, null, cb);
   }
 

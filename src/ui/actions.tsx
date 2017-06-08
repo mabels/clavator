@@ -23,8 +23,7 @@ interface ActionsProps extends React.Props<Actions> {
 }
 
 export class Actions
-  extends React.Component<ActionsProps, ActionsState>
-{
+  extends React.Component<ActionsProps, ActionsState> {
   constructor() {
     super();
     this.state = {

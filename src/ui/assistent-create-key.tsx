@@ -16,31 +16,31 @@ interface AssistentCreateKeyProps extends React.Props<AssistentCreateKey> {
 }
 
 export class AssistentCreateKey
-  extends React.Component<AssistentCreateKeyProps, AssistentCreateKeyState>
-{
+  extends React.Component<AssistentCreateKeyProps, AssistentCreateKeyState> {
   constructor() {
     super();
     this.state = {
     };
     this.render_next = this.render_next.bind(this);
   }
-  private render_next(ck?: CreateKey) {
+
+  private render_next(ck?: CreateKey): JSX.Element {
     return <button onClick={(e) => {
       e.preventDefault();
       this.props.onNext();
-
-     }}>Next</button>
+    }}>Next</button>;
   }
+
   public render(): JSX.Element {
     // console.log(">>>>", this.state.renderSubmit)
     return (
       <div>
-        <CreateKey compact={true} 
+        <CreateKey compact={true}
           renderSubmit={this.props.secretKey.isCreated(this.render_next)}
           secretKey={this.props.secretKey}
-          channel={this.props.channel} 
-          onComplete={() => { 
-            this.props.onNext(); 
+          channel={this.props.channel}
+          onComplete={() => {
+            this.props.onNext();
           } }/>
       </div>
     );
