@@ -1,10 +1,10 @@
 
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+// import * as React from 'react';
+// import * as ReactDOM from 'react-dom';
 import { observable, ObservableMap } from 'mobx';
 
 import * as ListSecretKeys from '../gpg/list_secret_keys';
-import { AdminPin, Pin } from '../gpg/pin';
+// import { AdminPin, Pin } from '../gpg/pin';
 
 import * as WsChannel from './ws-channel';
 import * as Message from '../message';

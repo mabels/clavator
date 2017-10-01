@@ -3,7 +3,7 @@ import ReactModal from 'react-modal';
 import * as CardStatus from '../gpg/card_status';
 import * as Message from '../message';
 import * as WsChannel from './ws-channel';
-import { Progressor } from './progressor';
+// import { Progressor } from './progressor';
 import ChangeCard from '../gpg/change_card';
 import * as classnames from 'classnames';
 import { observer } from 'mobx-react';
@@ -39,7 +39,7 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
   }
 
   public componentWillMoullnt(): void {
-    this.setState({ changeCard: ChangeCard.fromCardStatus(this.props.cardStatus) }) 
+    this.setState({ changeCard: ChangeCard.fromCardStatus(this.props.cardStatus) });
   }
 
   public render(): JSX.Element {

@@ -3,7 +3,7 @@ import { spawn } from 'child_process';
 import * as ListSecretKeys from './list_secret_keys';
 import * as CardStatus from './card_status';
 import * as path from 'path';
-import * as fs from 'fs';
+// import * as fs from 'fs';
 // import * as fsPromise from "fs-promise";
 import * as fsPromise from 'fs-extra';
 // import * as pse from "../pinentry/server";

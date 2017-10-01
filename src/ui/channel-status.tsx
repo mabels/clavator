@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as classnames from 'classnames';
+// import * as classnames from 'classnames';
 import * as Message from '../message';
 import * as WsChannel from './ws-channel';
 import ReactModal from 'react-modal';

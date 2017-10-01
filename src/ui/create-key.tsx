@@ -58,7 +58,9 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
               this.props.secretKey.jsfill(JSON.parse(data));
             }
             console.log('CreateKey:Matched', h, this.state.transaction.header, this.props, skey);
-            this.props.onComplete && this.props.onComplete();
+            if (this.props.onComplete) {
+               this.props.onComplete();
+            }
           }
     });
   }
@@ -120,7 +122,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
                   } else {
                     if (ofs >= 0) {
                       op.values[ofs] = op.values[op.values.length - 1];
-                      op.values = op.values.slice(0, -1)
+                      op.values = op.values.slice(0, -1);
                     }
                   }
                   this.setState(this.state);
@@ -253,37 +255,37 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
       return null;
     }
     return <div>
-      <div className='row'>
-        <div className='two columns'>MasterKey</div>
-        <div className='three columns'>
+      <div className="row">
+        <div className="two columns">MasterKey</div>
+        <div className="three columns">
           <label>Key-Type:</label>{this.render_option('keyType', [this.state.keyGen.keyInfo.type])}
         </div>
-        <div className='three columns'>
+        <div className="three columns">
           <label>Master-Key-Length:</label>{this.render_option('masterKeyLength', [this.state.keyGen.keyInfo.length])}
         </div>
-        <div className='three columns'>
+        <div className="three columns">
           <label>Key-Usage:</label>{this.render_multioption('keyUsage', this.state.keyGen.keyInfo.usage)}
         </div>
       </div>
 
       {this.state.keyGen.subKeys.pallets.map((sb: KeyGen.KeyInfo, i: number) => {
-        return (<div className='row' key={i}>
-          <div className='two columns'>SubKey {i}</div>
-          <div className='three columns'>
+        return (<div className="row" key={i}>
+          <div className="two columns">SubKey {i}</div>
+          <div className="three columns">
             <label>Key-Type:</label>{this.render_option('subkeys.' + i + '.keyType', [sb.type])}
           </div>
-          <div className='three columns'>
+          <div className="three columns">
             <label>Key-Length:</label>{this.render_option('subkeys.' + i + '.length', [sb.length])}
           </div>
-          <div className='three columns'>
+          <div className="three columns">
             <label>Key-Usage:</label>{this.render_multioption('subkeys.' + i + '.usage', sb.usage)}
           </div>
-        </div>)
+        </div>);
       })}
-    </div>
+    </div>;
   }
 
-  public render_create() : JSX.Element {
+  public render_create(): JSX.Element {
     if (this.props.renderSubmit) {
       return this.props.renderSubmit(this);
     }
@@ -291,7 +293,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
             channel={this.props.channel}
             onClick={this.create_key}
             transaction={this.state.transaction}
-          >Create Key</ButtonToProgressor>
+          >Create Key</ButtonToProgressor>;
   }
 
   public render_form(): JSX.Element {
@@ -301,11 +303,11 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
         e.stopPropagation();
         e.preventDefault();
       }}>
-        <div className='row'>
-          <div className='three columns'>
-            <label>Expire-Date:</label><input type='date' name='expireDate'
+        <div className="row">
+          <div className="three columns">
+            <label>Expire-Date:</label><input type="date" name="expireDate"
               className={classnames({ good: this.state.keyGen.expireDate.valid() })}
-              autoComplete='on'
+              autoComplete="on"
               required={true}
               min={Date.now()}
               onChange={(e: any) => {
@@ -319,7 +321,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
 
         {this.state.keyGen.uids.pallets.map((sb: KeyGen.Uid, i: number) => {
           if (sb) {
-            return this.render_uid(i, sb)
+            return this.render_uid(i, sb);
           }
         })}
 
@@ -331,17 +333,16 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
         {this.render_long()}
         {this.render_compact()}
 
-        <div className='row'>
+        <div className="row">
           {this.render_create()}
         </div>
       </form>
     );
   }
 
-
   public render(): JSX.Element {
     return (
-      <div className='row CreateKey' >
+      <div className="row CreateKey" >
         {this.render_form()}
       </div>
     );

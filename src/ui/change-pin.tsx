@@ -23,32 +23,32 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
     super();
     this.state = {
       pin: new RequestChangePin(),
-      transaction: Message.newTransaction<RequestChangePin>("GpgChangePinYubikey.run")
+      transaction: Message.newTransaction<RequestChangePin>('GpgChangePinYubikey.run')
     };
-    this.doPinChange = this.doPinChange.bind(this)
+    this.doPinChange = this.doPinChange.bind(this);
   }
 
-  componentWillMount() {
+  public componentWillMount(): void {
     this.setState(Object.assign({}, this.state, {
       pin: this.state.pin.changeAction(this.props.type)
-    }))
+    }));
   }
 
-  public doPinChange() {
+  public doPinChange(): void {
     this.state.pin.app_id = this.props.app_id;
     this.state.transaction.data = this.state.pin;
     this.setState({
       pin: this.state.pin,
       transaction: this.state.transaction
-    })
+    });
     this.props.channel.send(this.state.transaction.asMsg());
   }
 
   public render(): JSX.Element {
     return (
-      <form 
+      <form
         onSubmit={(e) => e.preventDefault()}
-        className={classnames({ "ChangePin": true, good: this.state.pin.verify() })}>
+        className={classnames({ 'ChangePin': true, good: this.state.pin.verify() })}>
         <div className="row">
           <label>AdminPin:</label><input type="password"
             name="admin-pin" required={true}
@@ -57,7 +57,7 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
               this.state.pin.admin_pin.pin = e.target.value;
               this.setState(Object.assign({}, this.state, {
                 pin: this.state.pin
-              }))
+              }));
             }} />
         </div>
 
@@ -66,19 +66,19 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
             name="new-pin" required={true}
             className={classnames({ good: this.state.pin.new_pin.verify() })}
             onChange={(e: any) => {
-              this.state.pin.new_pin.pin = e.target.value
+              this.state.pin.new_pin.pin = e.target.value;
               this.setState(Object.assign({}, this.state, {
                 pin: this.state.pin
-              }))
+              }));
             }} />
           <input type="password"
             name="verify-new-pin" required={true}
             className={classnames({ good: this.state.pin.new_pin_verify.verify() })}
             onChange={(e: any) => {
-              this.state.pin.new_pin_verify.pin = e.target.value
+              this.state.pin.new_pin_verify.pin = e.target.value;
               this.setState(Object.assign({}, this.state, {
                 pin: this.state.pin
-              }))
+              }));
             }} />
         </div>
 

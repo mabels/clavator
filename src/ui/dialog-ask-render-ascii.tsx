@@ -1,10 +1,10 @@
 import * as React from 'react';
 import ReactModal from 'react-modal';
-import * as CopyToClipboard from 'react-copy-to-clipboard';
+// import * as CopyToClipboard from 'react-copy-to-clipboard';
 import { AskPassphrase } from './ask-passphrase';
 import * as ListSecretKeys from '../gpg/list_secret_keys';
 import * as WsChannel from './ws-channel';
-import { CardStatusListState } from './card-status-list-state';
+// import { CardStatusListState } from './card-status-list-state';
 import MutableString from '../gpg/mutable_string';
 import ReadAsciiResponse from './read-ascii-respond';
 

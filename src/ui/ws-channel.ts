@@ -62,14 +62,18 @@ export class Dispatch {
       // debugger
       this.isActive = true;
       this.wscs.forEach((wsc: WsChannel) => {
-        wsc.onOpen && wsc.onOpen(e);
+        if (wsc.onOpen) {
+          wsc.onOpen(e);
+        }
       });
     };
     this.ws.onclose = (e: CloseEvent) => {
       // debugger
       this.isActive = false;
       this.wscs.forEach((wsc: WsChannel) => {
-        wsc.onClose && wsc.onClose(e);
+        if (wsc.onClose) {
+          wsc.onClose(e);
+        }
       });
       setTimeout(this.connector.bind(this), 1000);
     };
@@ -77,7 +81,9 @@ export class Dispatch {
       let msg = Message.fromData(e.data);
       // console.log('onmessage', msg);
       this.wscs.forEach((wsc: WsChannel) => {
-        wsc.onMessage && wsc.onMessage(msg.header, msg.data);
+        if (wsc.onMessage) {
+          wsc.onMessage(msg.header, msg.data);
+        }
       });
       this.onMessages.forEach((cb) => { cb(msg.header, msg.data); });
     };

@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 import ReactModal from 'react-modal';
-import * as CopyToClipboard from 'react-copy-to-clipboard';
+// import * as CopyToClipboard from 'react-copy-to-clipboard';
 import { AskKeyToYubiKey } from './ask-key-to-yubi-key';
 import * as ListSecretKeys from '../gpg/list_secret_keys';
 import * as WsChannel from './ws-channel';

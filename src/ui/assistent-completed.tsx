@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import MutableString from '../gpg/mutable_string';
+// import MutableString from '../gpg/mutable_string';
 import * as Actions from './actions';
 
 interface AssistentCompletedState {

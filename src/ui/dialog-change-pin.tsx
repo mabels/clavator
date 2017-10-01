@@ -4,7 +4,7 @@ import ReactModal from 'react-modal';
 import * as CardStatus from '../gpg/card_status';
 import * as Message from '../message';
 import * as WsChannel from './ws-channel';
-import { Progressor } from './progressor';
+// import { Progressor } from './progressor';
 import { ChangePin } from './change-pin';
 import { observer } from 'mobx-react';
 

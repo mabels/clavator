@@ -2,8 +2,8 @@ import * as React from 'react';
 import ReactModal from 'react-modal';
 import * as Message from '../message';
 import * as WsChannel from './ws-channel';
-import { Progressor } from './progressor';
-import * as CopyToClipboard from 'react-copy-to-clipboard';
+// import { Progressor } from './progressor';
+// import * as CopyToClipboard from 'react-copy-to-clipboard';
 import * as ListSecretKeys from '../gpg/list_secret_keys';
 import ReadAsciiRespond from './read-ascii-respond';
 
@@ -26,7 +26,6 @@ export class DialogRenderAscii extends React.Component<DialogRenderAsciiProps, D
       transaction: Message.newTransaction('ResetYubikey')
     };
   }
-
 
 public render(): JSX.Element {
     return (

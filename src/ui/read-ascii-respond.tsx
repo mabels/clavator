@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as ReactModal from 'react-modal';
+// import * as ReactModal from 'react-modal';
 import * as CopyToClipboard from 'react-copy-to-clipboard';
 import * as WsChannel from './ws-channel';
 import * as ListSecretKeys from '../gpg/list_secret_keys';
@@ -32,17 +32,17 @@ export class ReadAsciiRespond extends React.Component<ReadAsciiRespondProps, Rea
     };
   }
 
-  componentWillMount() {
+  public componentWillMount(): void {
     let ra = new RequestAscii();
     ra.action = this.props.action;
     ra.fingerprint = this.props.secKey.fingerPrint.fpr;
     ra.passphrase = this.props.passPhrase;
-    let transaction = Message.newTransaction<RequestAscii>("RequestAscii")
+    let transaction = Message.newTransaction<RequestAscii>('RequestAscii');
     this.setState({
       transaction: transaction,
       receiver: this.props.channel.onMessage((action: Message.Header, data: string) => {
-        console.log("processAscii:", action, this.state.transaction)
-        if (!(action.action == "RespondAscii" && 
+        console.log('processAscii:', action, this.state.transaction);
+        if (!(action.action == 'RespondAscii' &&
               action.transaction == this.state.transaction.header.transaction)) {
           return;
         }
@@ -50,28 +50,28 @@ export class ReadAsciiRespond extends React.Component<ReadAsciiRespondProps, Rea
         if (this.props.secKey.fingerPrint.fpr != pem.fingerprint) {
           return;
         }
-        console.log("Got: Respond:", pem)
+        console.log('Got: Respond:', pem);
         this.setState( { data: pem.data });
       })
     });
     this.props.channel.send(transaction.asMsg(ra));
   }
-  
-  componentWillUnmount() {
-    this.props.channel.unMessage(this.state.receiver)
+
+  public componentWillUnmount(): void {
+    this.props.channel.unMessage(this.state.receiver);
   }
 
   public render(): JSX.Element {
     if (!this.state.data) {
-      return <span>loading...</span>
+      return <span>loading...</span>;
     } else {
-      console.log("Render:", this.state)
+      console.log('Render:', this.state);
       return (
         <div>
           <CopyToClipboard text={this.state.data}>
             <button>Copy to clipboard</button>
           </CopyToClipboard>
-          <pre style={{ backgroundColor: "#ccc" }}>
+          <pre style={{ backgroundColor: '#ccc' }}>
             {this.state.data}
           </pre>
         </div>

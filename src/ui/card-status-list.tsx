@@ -3,16 +3,16 @@ import * as CardStatus from '../gpg/card_status';
 import FormatDate from './format-date';
 import * as Message from '../message';
 import * as WsChannel from './ws-channel';
-import { ChangePin } from './change-pin';
-import * as Gpg from '../gpg/gpg';
+// import { ChangePin } from './change-pin';
+// import * as Gpg from '../gpg/gpg';
 import ChangeCard from '../gpg/change_card';
 import KeyState from '../gpg/key_state';
 import { observer } from 'mobx-react';
 import { CardStatusListState } from './card-status-list-state';
-import { AskPassphrase } from './ask-passphrase';
-import { Pin } from '../gpg/pin';
-import * as classnames from 'classnames';
-import { Progressor } from './progressor';
+// import { AskPassphrase } from './ask-passphrase';
+// import { Pin } from '../gpg/pin';
+// import * as classnames from 'classnames';
+// import { Progressor } from './progressor';
 import DialogResetYubikey from './dialog-reset-yubikey';
 import DialogChangePin from './dialog-change-pin';
 import DialogChangeAttributes from './dialog-change-attributes';
@@ -125,7 +125,6 @@ export class CardStatusList extends React.Component<CardStatusListProps, CardSta
       <div className="CardStatusList">
         {this.props.cardStatusListState.cardStatusList.map((cs: CardStatus.Gpg2CardStatus, idx: number) => {
           console.log('card-status-list:map');
-          let login = '' + cs.login;
           return (<table key={cs.serial}>
             <tbody>
               <tr key={cs.serial}>
