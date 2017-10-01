@@ -62,3 +62,5 @@ export class ChannelStatus extends
   }
 
 }
+
+export default ChannelStatus;

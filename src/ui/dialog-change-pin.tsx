@@ -37,7 +37,9 @@ export class DialogChangePin extends React.Component<DialogChangePinProps, Dialo
         contentLabel="Modal"
         shouldCloseOnOverlayClick={true}
       >
-        <i style={{ float: 'right' }} onClick={this.props.onClose} className="fa fa-close"></i>
+        <i style={{ float: 'right' }}
+           onClick={this.props.onClose}
+           className="fa fa-close"></i>
         <h4>ChangePin:{this.props.type}</h4>
         <h5>{this.props.cardStatus.name}({this.props.cardStatus.reader.cardid})</h5>
         <ChangePin type={this.props.type}

@@ -10,7 +10,7 @@ import { KeyChainList } from './key-chain-list';
 import { CardStatusList } from './card-status-list';
 // import { CreateKey } from './create-key';
 // import { Progressor } from './progressor';
-import { ChannelStatus } from './channel-status';
+import ChannelStatus from './channel-status';
 import * as WsChannel from './ws-channel';
 import { CardStatusListState } from './card-status-list-state';
 import { KeyChainListState } from './key-chain-list-state';

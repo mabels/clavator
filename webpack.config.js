@@ -19,10 +19,10 @@ module.exports = [{
     filename: 'client.js'
   },
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.tsx?$/,
-        loader: 'awesome-typescript-loader?useBabel=false'
+        loader: 'ts-loader'
       },
       {
         test: /\.css$/,

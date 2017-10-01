@@ -38,7 +38,7 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
     }).bind(this);
   }
 
-  public componentWillMoullnt(): void {
+  public componentWillMount(): void {
     this.setState({ changeCard: ChangeCard.fromCardStatus(this.props.cardStatus) });
   }
 

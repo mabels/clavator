@@ -1,13 +1,7 @@
-
 import * as React from 'react';
-// import * as classnames from 'classnames';
-// import * as Message from '../message';
 import * as WsChannel from './ws-channel';
-// import * as KeyGen from '../gpg/key-gen';
 import ReactModal from 'react-modal';
-// import { Progressor } from './progressor';
 import CreateKey from './create-key';
-// import * as ListSecretKeys from '../gpg/list_secret_keys';
 
 interface DialogCreateKeyState {
 }
@@ -34,7 +28,12 @@ export class DialogCreateKey extends React.Component<DialogCreateKeyProps, Dialo
         contentLabel="Modal"
         shouldCloseOnOverlayClick={true}
       >
-        <i onClick={(() => { this.setState({createDialog: false}); this.props.onClose(); }).bind(this)}
+        <i onClick={
+            (() => {
+              this.setState({createDialog: false});
+              this.props.onClose();
+            }).bind(this)
+          }
            className="closeBox fa fa-close"></i>
         <h4>Creating Key:</h4>
         <CreateKey channel={this.props.channel} />
