@@ -1,10 +1,10 @@
 
 import * as React from 'react';
-import MutableString from '../gpg/mutable_string';
+// import MutableString from '../gpg/mutable_string';
 import * as Actions from './actions';
 import CardStatusListState from './card-status-list-state';
 import * as ListSecretKeys from '../gpg/list_secret_keys';
-import * as CardStatus from '../gpg/card_status';
+// import * as CardStatus from '../gpg/card_status';
 
 export enum Status {
   UNKNOWN = 0x0,

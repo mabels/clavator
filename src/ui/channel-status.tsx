@@ -1,10 +1,8 @@
-
 import * as React from 'react';
 import * as classnames from 'classnames';
 import * as Message from '../message';
 import * as WsChannel from './ws-channel';
-import * as ReactModal from 'react-modal';
-
+import ReactModal from 'react-modal';
 
 interface ChannelStatusState {
   status: string;
@@ -19,40 +17,39 @@ export class ChannelStatus extends
 
   constructor() {
     super();
-    this.state = { status: "not started" };
+    this.state = { status: 'not started' };
   }
 
-  onOpen(e: Event) {
-    this.setState({ status: "connected" });
+  public onOpen(e: Event): void {
+    this.setState({ status: 'connected' });
   }
 
-  onClose(e: CloseEvent) {
-    this.setState({ status: "not connected" });
+  public onClose(e: CloseEvent): void {
+    this.setState({ status: 'not connected' });
   }
 
-  onMessage(action: Message.Header, data: string) {
+  public onMessage(action: Message.Header, data: string): void {
+    /* */
   }
 
-  componentWillMount() {
+  public componentWillMount(): void {
     this.props.channel.register(this);
   }
 
-  private renderStatus() {
-    if (this.state.status == "connected" || this.state.status == "not started") {
+  private renderStatus(): JSX.Element {
+    if (this.state.status == 'connected' || this.state.status == 'not started') {
       // console.log("NOT: renderStatus:", this.state.status);
       return null;
     }
-    console.log("renderStatus:", this.state.status);
-    return (
-      <ReactModal
+    console.log('renderStatus:', this.state.status);
+    return <ReactModal
         className="waitForConnect"
         isOpen={true}
         closeTimeoutMS={150}
         contentLabel="Modal"
       >
         <h3>Wait for Reconnect</h3>
-      </ReactModal>
-    )
+      </ReactModal>;
   }
 
   public render(): JSX.Element {

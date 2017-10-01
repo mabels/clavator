@@ -4,15 +4,15 @@ import * as WebSocket from 'ws';
 import * as Observer from './observer';
 
 import * as Gpg from './gpg/gpg';
-import * as ListSecretKeys from "./gpg/list_secret_keys";
-import WssUpdate from './wss_update'
+import * as ListSecretKeys from './gpg/list_secret_keys';
+import WssUpdate from './wss_update';
 
 class GpgListSecretKeysObserver {
   public observer: Observer.Observer;
   public timeoutId: any;
   public gpg: Gpg.Gpg;
   public actionCount: number;
-  public prev = new WssUpdate<ListSecretKeys.SecretKey>();
+  public prev: WssUpdate<ListSecretKeys.SecretKey> = new WssUpdate<ListSecretKeys.SecretKey>();
 
   public static create(gpg: Gpg.Gpg, obs: Observer.Observer): GpgListSecretKeysObserver {
     let glsko = new GpgListSecretKeysObserver();
@@ -24,14 +24,14 @@ class GpgListSecretKeysObserver {
     return glsko;
   }
 
-  public register(ws: WebSocket) {
+  public register(ws: WebSocket): void {
     clearTimeout(this.timeoutId);
     this.action([ws]);
   }
 
-  public action(wss = this.observer.wss) {
+  public action(wss = this.observer.wss): void {
     this.actionCount++;
-    //console.log("actionCount:", this.actionCount, this.observer.wss.length, this.gpg);
+    // console.log('actionCount:', this.actionCount, this.observer.wss.length, this.gpg);
     if (!wss.length) {
       return;
     }
@@ -40,14 +40,14 @@ class GpgListSecretKeysObserver {
         console.error(err);
         keys = [];
       }
-      this.prev.run("KeyChainList", wss, keys, () => {
+      this.prev.run('KeyChainList', wss, keys, () => {
         this.timeoutId = setTimeout(this.action, 5000);
       });
     });
   }
 
-  public start() {
-    // console.log("started");
+  public start(): void {
+    // console.log('started');
   }
 }
 

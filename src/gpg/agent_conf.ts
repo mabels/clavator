@@ -4,11 +4,12 @@ import * as fs from 'fs';
 const reCrNl = /\r?\n/;
 
 export class AgentLine {
-  public nr: number = -1;
-  line: string;
+  public nr: number;
+  private line: string;
   public key: string;
   public value: string;
   constructor(line: string) {
+    this.nr = -1;
     let trimmed = line.trim();
     if (!trimmed.length) {
       this.key = '';
@@ -24,17 +25,17 @@ export class AgentLine {
     }
   }
   public getLine(): string {
-    if (this.key == "" || this.key == '#') {
+    if (this.key == '' || this.key == '#') {
       return this.line;
     }
-    return this.key + " " + this.value;
+    return this.key + ' ' + this.value;
   }
 }
 export class AgentConf {
   public lines: AgentLine[] = [];
   public byKey: { [key: string]: AgentLine[] } = {};
 
-  public static read_file(fname: string, done: (err: any, ag: AgentConf) => void) : void {
+  public static read_file(fname: string, done: (err: any, ag: AgentConf) => void): void {
     fs.readFile(fname, 'utf8', (err: any, data: string) => {
       if (err && err.code == 'ENOENT') {
         done(null, new AgentConf());
@@ -59,7 +60,7 @@ export class AgentConf {
   public find(key: string): AgentLine[] {
     return this.byKey[key] || [];
   }
-  public add(al: AgentLine) {
+  public add(al: AgentLine): void {
     this.byKey[al.key] = this.byKey[al.key] || [];
     // hack the missing predeclation of includes ES7
     if (!(<any>this.byKey[al.key])['includes'](al)) {
@@ -69,8 +70,8 @@ export class AgentConf {
     }
   }
 
-  public asString() {
-    let lines = this.lines.map((al) => { return al.getLine(); })
+  public asString(): string {
+    let lines = this.lines.map((al) => { return al.getLine(); });
     let postcr = '';
     if (lines.length && lines[lines.length - 1].trim().length) {
       postcr = '\n';
@@ -78,7 +79,7 @@ export class AgentConf {
     return lines.join('\n') + postcr;
   }
 
-  public write_file(fname: string, done: (err: any) => void) {
+  public write_file(fname: string, done: (err: any) => void): void {
     fs.writeFile(fname, this.asString(), done);
   }
 

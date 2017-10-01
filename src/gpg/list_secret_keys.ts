@@ -1,12 +1,13 @@
 import * as KeyGen from './key-gen';
 
-function debugArray(match: string[]) : void {
+function debugArray(match: string[]): void {
   // let ret = {};
   // for (let i = 0; i < match.length; ++i) {
   //     ret[i] = match[i];
   // }
   // console.log(ret);
 }
+
 const reNameAndEmail = /^\s*(.*)\s+\<(\S+)\>\s*$/;
 const reNameAndCommentAndEmail = /^\s*(.*)\s+\((.*)\)\s+\<(\S+)\>\s*$/;
 
@@ -136,7 +137,6 @@ export class Key {
     return ret.jsfill(js);
   }
 
-
   public usesEq(o: string[]): boolean {
     if (this.uses.length != o.length) {
       return false;
@@ -176,7 +176,6 @@ export class Key {
     this.fingerPrint = FingerPrint.jsfill(js['fingerPrint'] || {});
     return this;
   }
-
 
   public eq(o: Key): boolean {
     return this.type == o.type &&
@@ -241,7 +240,7 @@ export class SecretKey extends Key {
     return null;
   }
 
-  public toKeyGen(subKeys: number = 3): KeyGen.KeyGen {
+  public toKeyGen(subKeys = 3): KeyGen.KeyGen {
     let ret = new KeyGen.KeyGen();
     ret.keyInfo.length.value = this.bits || 4096;
     ret.keyInfo.type.value = this.cipher || 'RSA';
@@ -292,7 +291,8 @@ export class SecretKey extends Key {
 }
 
 const reCrNl = /\r?\n/;
-// const reKey = /^(sec|ssb)([\#\>]*)\s+([a-zA-Z]+)(\d+)\/([0-9A-F]+)\s+(\S+)\s+\[(\S+)\]\s+\[\S*\s*(\d+\-\d+\-\d+)\s*\]\s*$/;
+// const reKey = /^(sec|ssb)([\#\>]*)\s+([a-zA-Z]+)(\d+)\/([0-9A-F]+)\s+(\S+)\s+\
+//    [(\S+)\]\s+\[\S*\s*(\d+\-\d+\-\d+)\s*\]\s*$/;
 // const reLongKeyId = /^(sec|ssb)([\#\>]*)\s+([a-zA-Z]+)(\d+)\s+(\S+)\s+\[(\S+)\]\s+\[\S*\s*(\d+\-\d+\-\d+)\s*\]\s*$/;
 // const reUid = /^uid\s+\[\s*(\S+)\s*\]\s+(.*)\s+\<(\S+)\>\s*$/;
 // const reKeyId = /^\s+([0-9A-F]+)\s*$/;

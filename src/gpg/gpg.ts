@@ -1,5 +1,4 @@
 
-
 import { spawn } from 'child_process';
 import * as ListSecretKeys from './list_secret_keys';
 import * as CardStatus from './card_status';
@@ -34,15 +33,18 @@ class ResultQueue {
 }
 
 export class Result {
-  public stdOut: string = '';
-  public stdErr: string = '';
-  public stdIn: string = '';
+  public stdOut: string;
+  public stdErr: string;
+  public stdIn: string;
   public env: { [id: string]: string; } = {};
   public exitCode: number;
   public runQueue: ResultQueue[] = [];
 
   constructor() {
     (<any>Object).assign(this.env, process.env);
+    this.stdIn = '';
+    this.stdOut = '';
+    this.stdErr = '';
   }
 
   public setStdIn(stdIn: string): Result {
@@ -84,7 +86,7 @@ export class Result {
       return 'pipe';
     });
 
-    let stdio: any[] = ['pipe', 'pipe', 'pipe']
+    let stdio: any[] = ['pipe', 'pipe', 'pipe'];
     stdio = stdio.concat(writables);
     // console.log("run=",cmd, attrs);
     const c = spawn(cmd, attrs, {
@@ -112,7 +114,7 @@ export class Result {
             console.error('stdio->' + i + '->error', e);
           }
         });
-        c.stdio[i].on('end', (e: any) => { /*console.log("stdio->"+i+"->end", e) */ })
+        c.stdio[i].on('end', (e: any) => { /*console.log("stdio->"+i+"->end", e) */ });
         let s = new stream.Readable();
         // console.log(">>>>>>", stdio.length, 1, fds[i-3]());
         s.push(fds[i - 3]());
@@ -141,10 +143,15 @@ export class Result {
 export class Gpg {
   public homeDir: string = path.join(process.env.HOME, '.gnupg');
   // pinEntryServer: pse.PinEntryServer;
-  public gpgCmd: string = 'gpg2';
+  public gpgCmd: string;
   public gpgCmdArgs: string[] = [];
-  public gpgAgentCmd: string = 'gpg-connect-agent';
+  public gpgAgentCmd: string;
   public gpgAgentCmdArgs: string[] = [];
+
+  constructor() {
+    this.gpgCmd = 'gpg2';
+    this.gpgAgentCmd = 'gpg-connect-agent';
+  }
 
   public clone(): Gpg {
     let ret = new Gpg();
@@ -286,7 +293,6 @@ export class Gpg {
       cb(null, CardStatus.run(result.stdOut));
     });
   }
-
 
   // public write_pinentry_sh(fname: string, cb: (err: any) => void) {
   //   fs.writeFile(fname, [

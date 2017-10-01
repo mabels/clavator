@@ -6,6 +6,7 @@ import * as WsChannel from './ws-channel';
 import { ChangePin } from './change-pin';
 import * as Gpg from '../gpg/gpg';
 import ChangeCard from '../gpg/change_card';
+import KeyState from '../gpg/key_state';
 import { observer } from 'mobx-react';
 import { CardStatusListState } from './card-status-list-state';
 import { AskPassphrase } from './ask-passphrase';
@@ -15,7 +16,6 @@ import { Progressor } from './progressor';
 import DialogResetYubikey from './dialog-reset-yubikey';
 import DialogChangePin from './dialog-change-pin';
 import DialogChangeAttributes from './dialog-change-attributes';
-
 
 enum Dialogs {
   closed, changeAttributes, changeAdminPin, changeUserPin, resetYubikey
@@ -46,7 +46,6 @@ export class CardStatusList extends React.Component<CardStatusListProps, CardSta
     this.changeDialog = this.changeDialog.bind(this);
   }
 
-
   public changeDialog(dialog: Dialogs, cs: CardStatus.Gpg2CardStatus): (e: any) => void {
     return ((e: any) => {
       this.setState({
@@ -68,23 +67,19 @@ export class CardStatusList extends React.Component<CardStatusListProps, CardSta
   public render_actions(cs: CardStatus.Gpg2CardStatus): JSX.Element {
     return (<td className="action">
       <a title="change-user-pin"
-        onClick={this.changeDialog(Dialogs.changeUserPin, cs)}
-        name="change-user-pin">
+        onClick={this.changeDialog(Dialogs.changeUserPin, cs)}>
         <i className="fa fa-user"></i>
       </a>
       <a title="change-admin-pin"
-        onClick={this.changeDialog(Dialogs.changeAdminPin, cs)}
-        name="change-admin-pin">
+        onClick={this.changeDialog(Dialogs.changeAdminPin, cs)}>
         <i className="fa fa-superpowers"></i>
       </a>
       <a title="change-attributes"
-        onClick={this.changeToAttributesDialog(cs)}
-        name="change-admin-attributes">
+        onClick={this.changeToAttributesDialog(cs)}>
         <i className="fa fa-pencil"></i>
       </a>
       <a title="reset-yubikey"
-        onClick={this.changeDialog(Dialogs.resetYubikey, cs)}
-        name="reset-yubikey">
+        onClick={this.changeDialog(Dialogs.resetYubikey, cs)}>
         <i className="fa fa-trash"></i>
       </a>
     </td>);
@@ -157,7 +152,7 @@ export class CardStatusList extends React.Component<CardStatusListProps, CardSta
                 <td colSpan={11}>
                   <table>
                     <tbody>
-                      {cs.keyStates.map((ks: CardStatus.KeyState, idxx: number) => {
+                      {cs.keyStates.map((ks: KeyState, idxx: number) => {
                         return (
                           <tr key={ks.id}>
                             <td>{ks.id}</td>
@@ -185,4 +180,3 @@ export class CardStatusList extends React.Component<CardStatusListProps, CardSta
   }
 
 }
-

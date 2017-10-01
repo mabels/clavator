@@ -1,17 +1,5 @@
-
+import KeyState from './key_state';
 const reCrNl = /\r?\n/;
-
-export class KeyState {
-  public id: number = 0;
-  public mode: number = 0;
-  public bits: number = 0;
-  public maxpinlen: number = 0;
-  public pinretry: number = 0;
-  public sigcount: number = 0;
-  public cafpr: number = 0;
-  public fpr: string;
-  public fprtime: number;
-};
 
 export class Reader {
   public model: string;
@@ -20,22 +8,22 @@ export class Reader {
   public type: string;
 
   public static fill(match: string[]): Reader {
-    if (!(match.length >= 5 && match[0] == "Reader")) {
+    if (!(match.length >= 5 && match[0] == 'Reader')) {
       return null;
     }
     // Reader:1050:0407:X:0:AID:D2760001240102010006046450860000:openpgp-card:
     // Reader:Yubico Yubikey 4 OTP U2F CCID:AID:D2760001240102010006041775630000:openpgp-card:
-    if (match[2] == "AID") {
+    if (match[2] == 'AID') {
       let ret: Reader = new Reader();
       ret.model = match[1];
       ret.aid = match[2];
       ret.cardid = match[3];
       ret.type = match[4];
       return ret;
-    } else if (match[5] == "AID") {
+    } else if (match[5] == 'AID') {
       let ret: Reader = new Reader();
       let rest = [match[1], match[2], match[3], match[4]];
-      ret.model = rest.join(":")
+      ret.model = rest.join(':');
       ret.aid = match[5];
       ret.cardid = match[6];
       ret.type = match[7];
@@ -76,7 +64,9 @@ export class Gpg2CardStatus {
   pinretry:3:0:3:
   sigcount:16:::
   cafpr::::
-  fpr:F78D5B547A9BB0E8A174C0F5060FF53CB3A32992:B3B94966DF73077EFA734EC83D851A5DF09DEB9C:2D32339F24A537406437181A28E66F405F1BE34D:
+  fpr:F78D5B547A9BB0E8A174C0F5060FF53CB3A32992:
+      B3B94966DF73077EFA734EC83D851A5DF09DEB9C:
+      2D32339F24A537406437181A28E66F405F1BE34D:
   fprtime:1465218501:1465218921:1464700773:
   */
   public reader: Reader;
@@ -93,11 +83,10 @@ export class Gpg2CardStatus {
   public sigcount: number;
   // cafpr: number = 0;
 
- 
   // typedef std::function<bool(Gpg2CardStatus &gcs, const std::vector<std::string> &strs)> GcsAction;
   public static actors(): { [id: string]: ActionFunc } {
     return {
-      "Reader": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'Reader': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         let reader = Reader.fill(strs);
         if (!reader) {
           return false;
@@ -105,43 +94,43 @@ export class Gpg2CardStatus {
         gcs.reader = reader;
         return true;
       },
-      "version": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'version': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.version = strs[1];
         return true;
       },
-      "vendor": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
-        gcs.vendor = strs.slice(1, strs.length).join(":");
+      'vendor': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+        gcs.vendor = strs.slice(1, strs.length).join(':');
         return true;
       },
-      "serial": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
-        gcs.serial = strs.slice(1, strs.length).join(":");
+      'serial': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+        gcs.serial = strs.slice(1, strs.length).join(':');
         return true;
       },
-      "name": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
-        gcs.name = strs.slice(1, strs.length).join(" ");
+      'name': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+        gcs.name = strs.slice(1, strs.length).join(' ');
         return true;
       },
-      "lang": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'lang': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.lang = strs[1];
         return true;
       },
-      "sex": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'sex': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.sex = strs[1];
         return true;
       },
-      "url": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'url': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.url = strs[1];
         return true;
       },
-      "login": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'login': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.login = strs[1];
         return true;
       },
-      "forcepin": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
-        gcs.forcepin = strs.slice(1, strs.length).join(":");
+      'forcepin': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+        gcs.forcepin = strs.slice(1, strs.length).join(':');
         return true;
       },
-      "keyattr": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'keyattr': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         let id = parseInt(strs[1], 10);
         let ki = gcs.allocKeyState(id - 1);
         ki.id = id;
@@ -149,7 +138,7 @@ export class Gpg2CardStatus {
         ki.bits = parseInt(strs[3], 10);
         return true;
       },
-      "maxpinlen": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'maxpinlen': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         let i = 0;
         for (let si = 1; si < strs.length; ++si, ++i) {
           let ki = gcs.allocKeyState(i);
@@ -157,7 +146,7 @@ export class Gpg2CardStatus {
         }
         return true;
       },
-      "pinretry": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'pinretry': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         let i = 0;
         for (let si = 1; si < strs.length; ++si, ++i) {
           let ki = gcs.allocKeyState(i);
@@ -165,7 +154,7 @@ export class Gpg2CardStatus {
         }
         return true;
       },
-      "sigcount": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'sigcount': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.sigcount = parseInt(strs[1], 10);
         let i = 0;
         for (let si = 2; si < strs.length; ++si, ++i) {
@@ -174,7 +163,7 @@ export class Gpg2CardStatus {
         }
         return true;
       },
-      "cafpr": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'cafpr': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         // gcs.cafpr = parseInt(strs[1], 10);
         let i = 0;
         for (let si = 1; si < strs.length; ++si, ++i) {
@@ -183,7 +172,7 @@ export class Gpg2CardStatus {
         }
         return true;
       },
-      "fpr": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'fpr': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         let i = 0;
         for (let si = 1; si < strs.length; ++si, ++i) {
           let ki = gcs.allocKeyState(i);
@@ -191,7 +180,7 @@ export class Gpg2CardStatus {
         }
         return true;
       },
-      "fprtime": (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      'fprtime': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         let i = 0;
         for (let si = 1; si < strs.length; ++si, ++i) {
           let ki = gcs.allocKeyState(i);
@@ -206,15 +195,15 @@ export class Gpg2CardStatus {
     let gcs: Gpg2CardStatus[] = [];
     // std::vector<Gpg2CardStatus>::iterator gcsi = gcs.end();
     let actors = Gpg2CardStatus.actors();
-    let line: string;
+    // let line: string;
     let gcsi: Gpg2CardStatus = null;
     str.split(reCrNl).forEach((line: string) => {
       line = line.trim();
       if (line[line.length - 1] == ':') {
         line = line.substr(0, line.length - 1);
       }
-      let strs = line.split(":");
-      if (strs[0] == "Reader") {
+      let strs = line.split(':');
+      if (strs[0] == 'Reader') {
         if (gcsi != null) {
           gcs.push(gcsi);
         }

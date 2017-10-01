@@ -15,7 +15,13 @@ RUN pacman-db-upgrade
 #RUN pacman --noconfirm -Syyu openssh openssl git npm gcc autoconf make wget base-devel docker arch-install-scripts dosfstools nodejs git npm gcc autoconf make libpng automake python2 pcsclite imagemagick mesa-libgl librsvg fig2dev ghostscript texinfo ruby 
 
 
-RUN pacman --noconfirm -Syyu openssh openssl git make wget base-devel docker arch-install-scripts dosfstools ruby nodejs bash bzip2 coreutils diffutils e2fsprogs file filesystem findutils gawk gcc-libs gettext glibc grep gzip inetutils iproute2 iputils less libutil-linux licenses logrotate lvm2 netctl pacman perl procps-ng psmisc sed shadow sysfsutils tar texinfo util-linux vi which qemu rsync 
+RUN pacman --noconfirm -Syyu openssh openssl git make wget base-devel \
+ docker arch-install-scripts dosfstools ruby nodejs bash bzip2 coreutils \
+ diffutils e2fsprogs file filesystem findutils gawk gcc-libs gettext glibc \
+ grep gzip inetutils iproute2 iputils less libutil-linux licenses logrotate \
+ lvm2 netctl pacman perl procps-ng psmisc sed shadow sysfsutils tar \
+ texinfo util-linux vi which qemu rsync s3cmd
+
 RUN pacman-db-upgrade
 #RUN pacman --noconfirm -Sy git npm gcc autoconf make wget 
 #RUN pacman --noconfirm -Syu

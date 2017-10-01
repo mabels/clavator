@@ -1,12 +1,11 @@
 
 import * as React from 'react';
-import * as ReactModal from 'react-modal';
+import ReactModal from 'react-modal';
 import * as CopyToClipboard from 'react-copy-to-clipboard';
 import { AskKeyToYubiKey } from './ask-key-to-yubi-key';
 import * as ListSecretKeys from '../gpg/list_secret_keys';
 import * as WsChannel from './ws-channel';
 import { CardStatusListState } from './card-status-list-state';
-
 
 interface DialogSendToCardState {
 }
@@ -32,10 +31,10 @@ export class DialogSendToCard extends React.Component<DialogSendToCardProps, Dia
       <ReactModal
         isOpen={true}
         closeTimeoutMS={150}
-        onAfterOpen={() => { }}
+        onAfterOpen={() => { /* */ }}
         contentLabel="Modal"
       >
-        <i style={{ float: "right" }} onClick={this.props.onClose} className="closeBox fa fa-close"></i>
+        <i style={{ float: 'right' }} onClick={this.props.onClose} className="closeBox fa fa-close"></i>
         <h4>SendKeyToCard</h4>
         {this.props.secKey.fingerPrint.fpr}
         <AskKeyToYubiKey

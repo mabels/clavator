@@ -8,9 +8,9 @@ export class RequestAscii {
 
   public static fill(js: any): RequestAscii {
     let ra = new RequestAscii();
-    ra.action = js['action']
-    ra.passphrase = MutableString.fill(js['passphrase'])
-    ra.fingerprint = js['fingerprint']
+    ra.action = js['action'];
+    ra.passphrase = MutableString.fill(js['passphrase']);
+    ra.fingerprint = js['fingerprint'];
     return ra;
   }
 

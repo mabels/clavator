@@ -65,11 +65,10 @@ export class Progressor
           this.setState(Object.assign({}, this.state, {
             progressList: []
           }));
-        }}
-        name="reset-log">
+        }}>
         <i className="fa fa-trash"></i>
       </a>
-    </div>)
+    </div>);
   }
 
   public render(): JSX.Element {
@@ -77,9 +76,10 @@ export class Progressor
       <div className="Progressor">
         {this.controls()}
         <pre><code>
-          {this.state.progressList.map((ps: Progress.Progress, idx: number) => {
+          {this.state.progressList.map((ps: Progress.Progress, _: number) => {
             return (ps.msgs.map((msg: string, idx: number) => {
-              return (<div key={ps.id + ":" + idx} className={ps.isOk ? "ok" : "fail"}>{msg}{ps.isEndOfMessages ? "<EOM>" : ""}</div>);
+              return (<div key={ps.id + ':' + idx}
+                  className={ps.isOk ? 'ok' : 'fail'}>{msg}{ps.isEndOfMessages ? '<EOM>' : ''}</div>);
             }));
           })}
         </code>

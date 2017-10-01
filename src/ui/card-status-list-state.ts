@@ -1,11 +1,5 @@
-
-import * as React from 'react';
-
 import { observable, ObservableMap } from 'mobx';
-
 import * as CardStatus from '../gpg/card_status';
-import { AdminPin, Pin } from '../gpg/pin';
-
 import * as WsChannel from './ws-channel';
 import * as Message from '../message';
 

@@ -1,13 +1,10 @@
 
 import { assert } from 'chai';
 
+import * as Ac from '../../src/gpg/agent_conf';
+import * as fs from 'fs';
 
-import * as Ac from "../../src/gpg/agent_conf";
-import * as fs from "fs";
-
-
-
-function AgentConfString() {
+function AgentConfString(): string {
   return `
 # starting  comment
 start-key value multiple values 1
@@ -18,7 +15,7 @@ end-key value
 `.replace(/\t/g, '');
 }
 
-function UpdatedAgentConfString() {
+function UpdatedAgentConfString(): string {
   return `
 # starting  comment
 start-key value multiple values 1
@@ -33,7 +30,7 @@ end-key second update
 }
 
 describe('AgentConf', () => {
-  it("createRead", () => {
+  it('createRead', () => {
     let ac = Ac.AgentConf.read(AgentConfString());
     assert.equal(ac.lines.length, 8);
     assert.equal(ac.find('#').length, 3);
@@ -45,8 +42,8 @@ describe('AgentConf', () => {
     console.log(AgentConfString());
     assert.equal(ac.asString(), AgentConfString());
     ac.find('end-key')[0].value = 'test update';
-    ac.add(new Ac.AgentLine("test-value juhu"));
-    ac.add(new Ac.AgentLine("end-key   second update"));
+    ac.add(new Ac.AgentLine('test-value juhu'));
+    ac.add(new Ac.AgentLine('end-key   second update'));
     assert.equal(ac.find('end-key').length, 2);
     assert.equal(ac.find('end-key')[0].value, 'test update');
     assert.equal(ac.find('end-key')[1].value, 'second update');
@@ -54,13 +51,13 @@ describe('AgentConf', () => {
     assert.equal(ac.asString(), UpdatedAgentConfString());
     let fname = 'test-' + process.pid + '.agent';
     Ac.AgentConf.read_file(fname, (err: any, ag: Ac.AgentConf) => {
-      assert.equal(ag.asString(), "");
+      assert.equal(ag.asString(), '');
       ac.write_file(fname, () => {
-        Ac.AgentConf.read_file(fname, (err: any, ag: Ac.AgentConf) => {
-          assert.equal(ag.asString(), UpdatedAgentConfString());
+        Ac.AgentConf.read_file(fname, (_: any, _ag: Ac.AgentConf) => {
+          assert.equal(_ag.asString(), UpdatedAgentConfString());
           fs.unlinkSync(fname);
         });
       });
     });
-  })
+  });
 });

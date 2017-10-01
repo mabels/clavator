@@ -135,28 +135,23 @@ export class KeyChainList
   public render_sec_buttons(sk: ListSecretKeys.SecretKey, key: ListSecretKeys.Key): JSX.Element {
     return (<td className="action">
       <a title="pem-private"
-        onClick={this.requestAsciiWithPassphrase(key, 'pem-private')}
-        name="pem-private">
+        onClick={this.requestAsciiWithPassphrase(key, 'pem-private')}>
         <i className="fa fa-key"></i>
       </a>
       <a title="pem-public"
-        onClick={this.requestAscii(key, 'pem-public')}
-        name="pem-public">
+        onClick={this.requestAscii(key, 'pem-public')}>
         <i className="fa fa-bullhorn"></i>
       </a>
       <a title="ssh-public"
-        onClick={this.requestAscii(key, 'ssh-public')}
-        name="ssh-public">
+        onClick={this.requestAscii(key, 'ssh-public')}>
         <i className="fa fa-terminal"></i>
       </a>
       <a title="pem-revoke"
-        onClick={this.requestAscii(key, 'pem-revoke')}
-        name="pem-revoke">
+        onClick={this.requestAscii(key, 'pem-revoke')}>
         <i className="fa fa-bug"></i>
       </a>
       <a title="delete"
-        onClick={this.deleteSecretKey(sk)}
-        name="delete">
+        onClick={this.deleteSecretKey(sk)}>
         <i className="fa fa-trash"></i>
       </a>
     </td>);
@@ -166,8 +161,7 @@ export class KeyChainList
     return (
       <td className="action">
         <a title="Send Key to Smartcard"
-          onClick={this.sendToCard(key, idx)}
-          name="Send Key to Smartcard">
+          onClick={this.sendToCard(key, idx)}>
           <i className="fa fa-credit-card"></i>
         </a>
       </td>);

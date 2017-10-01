@@ -1,48 +1,6 @@
+import KeyState from './key_state';
 
 const reCrNl = /\r?\n/;
-
-export class KeyState {
-  public id: number = 0;
-  public mode: number = 0;
-  public bits: number = 0;
-  public maxpinlen: number = 0;
-  public pinretry: number = 0;
-  public sigcount: number = 0;
-  public cafpr: number = 0;
-  public fpr: string;
-  public fprtime: number;
-
-  public static jsfill(js: any): KeyState {
-    let ret = new KeyState();
-    ret.jsfill(js);
-    return ret;
-  }
-
-  public jsfill(js: any): KeyState {
-    this.id = js['id'];
-    this.mode = js['mode'];
-    this.bits = js['bits'];
-    this.maxpinlen = js['maxpinlen'];
-    this.pinretry = js['pinretry'];
-    this.sigcount = js['sigcount'];
-    this.cafpr = js['cafpr'];
-    this.fpr = js['fpr'];
-    this.fprtime = js['fprtime'];
-    return this;
-  }
-
-  public eq(o: KeyState): boolean {
-    return this.id == o.id &&
-      this.mode == o.mode &&
-      this.bits == o.bits &&
-      this.maxpinlen == o.maxpinlen &&
-      this.pinretry == o.pinretry &&
-      this.sigcount == o.sigcount &&
-      this.cafpr == o.cafpr &&
-      this.fpr == o.fpr &&
-      this.fprtime == o.fprtime;
-  }
-}
 
 export class Reader {
   public model: string;
@@ -121,7 +79,9 @@ export class Gpg2CardStatus {
   pinretry:3:0:3:
   sigcount:16:::
   cafpr::::
-  fpr:F78D5B547A9BB0E8A174C0F5060FF53CB3A32992:B3B94966DF73077EFA734EC83D851A5DF09DEB9C:2D32339F24A537406437181A28E66F405F1BE34D:
+  fpr:F78D5B547A9BB0E8A174C0F5060FF53CB3A32992:
+      B3B94966DF73077EFA734EC83D851A5DF09DEB9C:
+      2D32339F24A537406437181A28E66F405F1BE34D:
   fprtime:1465218501:1465218921:1464700773:
   */
   public reader: Reader = new Reader();

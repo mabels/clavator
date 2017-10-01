@@ -35,35 +35,35 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
       createDialog: false,
       completed: false,
       keyGen: kg,
-      create_status: "create-key",
+      create_status: 'create-key',
       transaction: null,
     };
     this.create_key = this.create_key.bind(this);
   }
 
-  componentWillMount() {
+  public componentWillMount(): void {
     if (this.props.secretKey) {
       this.setState({
         keyGen: this.props.secretKey.toKeyGen(3)
-      })
-      console.log("CreateKey:componentWillMount", this.props.secretKey);
+      });
+      console.log('CreateKey:componentWillMount', this.props.secretKey);
     }
     this.props.channel.onMessage((h: Message.Header, data: string) => {
-// console.log("CreateKey:", h, this.state.transaction.header)
-      if (this.state.transaction && 
+// console.log('CreateKey:', h, this.state.transaction.header)
+      if (this.state.transaction &&
           this.state.transaction.header.transaction == h.transaction &&
-          h.action == "CreateKeySet.Completed") {
+          h.action == 'CreateKeySet.Completed') {
             let skey = null;
             if (data && this.props.secretKey) {
               this.props.secretKey.jsfill(JSON.parse(data));
-            } 
-console.log("CreateKey:Matched", h, this.state.transaction.header, this.props, skey)
+            }
+            console.log('CreateKey:Matched', h, this.state.transaction.header, this.props, skey);
             this.props.onComplete && this.props.onComplete();
-          } 
+          }
     });
   }
 
-  private handleDelUid(idx: number) {
+  private handleDelUid(idx: number): void {
     if (this.state.keyGen.uids.pallets.length > 1) {
       delete this.state.keyGen.uids.pallets[idx];
       this.setState(Object.assign({}, this.state, {
@@ -72,7 +72,7 @@ console.log("CreateKey:Matched", h, this.state.transaction.header, this.props, s
     }
   }
 
-  private handleAddUid() {
+  private handleAddUid(): void {
     let uid = new KeyGen.Uid();
     let compacted = this.state.keyGen.uids.pallets.filter((i) => i);
     uid.name.value = compacted[compacted.length - 1].name.value;
@@ -83,39 +83,39 @@ console.log("CreateKey:Matched", h, this.state.transaction.header, this.props, s
   }
 
   public render_option<T>(name: string, ops: KeyGen.Option<T>[]): JSX.Element {
-    let value = "";
+    let value = '';
     let ret = ops[0].map((s, o) => {
       value = s ? o.toString() : value;
-      return (<option key={o.toString()} value={o.toString()}>{o}</option>)
+      return (<option key={o.toString()} value={o.toString()}>{o}</option>);
     });
     return (
       <select className="u-full-width" name={name} defaultValue={value} onChange={(e: any) => {
         ops.forEach((op) => {
           op.value = e.target.value;
-        })
+        });
         this.setState(this.state);
       }}>
         {ret}
       </select>
-    )
+    );
   }
 
   public render_multioption<T>(name: string, op: KeyGen.MultiOption<T>): JSX.Element {
-    // <input type="checkbox" name={name} value={v} {s?"checked":""}>{v}</input>)}
+    // <input type='checkbox' name={name} value={v} {s?'checked':''}>{v}</input>)}
     return (
       <div>
         {op.map((s: boolean, v: T) => {
           return (
-            <span key={v.toString()} style={{ marginRight: "0.2em", float: "left" }}>
+            <span key={v.toString()} style={{ marginRight: '0.2em', float: 'left' }}>
               <label>{v}</label>
               <input className="u-full-width" type="checkbox" checked={s} name={name}
                 value={v.toString()}
                 onChange={(e: any) => {
-                  let ofs = op.values.findIndex((a) => a == v)
+                  let ofs = op.values.findIndex((a) => a == v);
                   if (e.target.checked) {
                     if (ofs < 0) {
                       op.values.push(v);
-                      // console.log("add_value", v, e.target.checked, op.values, this.state.keyGen.keyUsage);
+                      // console.log('add_value', v, e.target.checked, op.values, this.state.keyGen.keyUsage);
                     }
                   } else {
                     if (ofs >= 0) {
@@ -126,15 +126,15 @@ console.log("CreateKey:Matched", h, this.state.transaction.header, this.props, s
                   this.setState(this.state);
                 }}
               />
-            </span>)
+            </span>);
         })
         }
       </div>
-    )
+    );
   }
 
-  public create_key() {
-    let transaction = Message.newTransaction("CreateKeySet.Request", this.state.keyGen);
+  public create_key(): void {
+    let transaction = Message.newTransaction('CreateKeySet.Request', this.state.keyGen);
     this.setState({
       transaction: transaction,
       createDialog: true
@@ -147,27 +147,27 @@ console.log("CreateKey:Matched", h, this.state.transaction.header, this.props, s
       <div className={classnames({ six: true, columns: true })} >
         <label>{label}:</label><input type="password"
           name={key} required={true}
-          className={classnames({ "u-full-width": true, good: pp.valid_password() })}
+          className={classnames({ 'u-full-width': true, good: pp.valid_password() })}
           onChange={(e: any) => {
             pp.password = e.target.value;
             this.setState(this.state);
           }}
         />
-      </div>)
+      </div>);
   }
 
   public render_verify_password(label: string, key: string, pp: KeyGen.PwPair): JSX.Element {
     return (
       <div className="six columns">
         <label>{label}(verify):</label><input type="password"
-          name={key + "-verify"} required={true}
-          className={classnames({ "u-full-width": true, good: pp.valid_verify() })}
+          name={key + '-verify'} required={true}
+          className={classnames({ 'u-full-width': true, good: pp.valid_verify() })}
           onChange={(e: any) => {
             pp.verify = e.target.value;
             this.setState(this.state);
           }}
         />
-      </div>)
+      </div>);
   }
 
   public render_delete_button(idx: number): JSX.Element {
@@ -181,13 +181,13 @@ console.log("CreateKey:Matched", h, this.state.transaction.header, this.props, s
 
   public render_uid(idx: number, uid: KeyGen.Uid): JSX.Element {
     return (
-      <div className={classnames({ "u-full-width": true, "good": uid.valid() })} key={idx}>
+      <div className={classnames({ 'u-full-width': true, 'good': uid.valid() })} key={idx}>
         <div className="row">
           <div className="five columns">
             <label>Name-Real:</label><input type="text"
-              className={classnames({ "u-full-width": true, "good": uid.name.valid() })}
+              className={classnames({ 'u-full-width': true, 'good': uid.name.valid() })}
               required={true}
-              name="uid.name.{idx}"
+              name={`uid.name.{idx}`}
               onChange={(e: any) => {
                 uid.name.value = e.target.value;
                 this.setState(this.state);
@@ -196,7 +196,7 @@ console.log("CreateKey:Matched", h, this.state.transaction.header, this.props, s
           </div>
           <div className="five columns">
             <label>Name-Email:</label><input type="email"
-              className={classnames({ "u-full-width": true, good: uid.email.valid() })}
+              className={classnames({ 'u-full-width': true, good: uid.email.valid() })}
               autoComplete="on"
               required={true}
               name="email"
@@ -213,7 +213,7 @@ console.log("CreateKey:Matched", h, this.state.transaction.header, this.props, s
         <div className="row">
           <div className="ten columns">
             <label>Name-Comment:</label><input type="text"
-              className={classnames({ "u-full-width": true, good: uid.comment.valid() })}
+              className={classnames({ 'u-full-width': true, good: uid.comment.valid() })}
               autoComplete="on"
               required={true}
               name="nameComment"
@@ -233,50 +233,50 @@ console.log("CreateKey:Matched", h, this.state.transaction.header, this.props, s
 
   public render_compact(): JSX.Element {
     if (!this.props.compact) {
-      return null
+      return null;
     }
     return <div className="row">
       <div className="three columns">
-        <label>Master-Key-Length:</label>{this.render_option("masterKeyLength", [this.state.keyGen.keyInfo.length])}
+        <label>Master-Key-Length:</label>{this.render_option('masterKeyLength', [this.state.keyGen.keyInfo.length])}
       </div>
       <div className="three columns">
-        <label>Slave-Key-Length:</label>{this.render_option("subkeys.all.length", 
+        <label>Slave-Key-Length:</label>{this.render_option('subkeys.all.length',
         this.state.keyGen.subKeys.pallets.map((sb: KeyGen.KeyInfo, i: number) => {
-          return sb.length
+          return sb.length;
         }))}
       </div>
-    </div>
+    </div>;
   }
 
   public render_long(): JSX.Element {
     if (this.props.compact) {
-      return null
+      return null;
     }
     return <div>
-      <div className="row">
-        <div className="two columns">MasterKey</div>
-        <div className="three columns">
-          <label>Key-Type:</label>{this.render_option("keyType", [this.state.keyGen.keyInfo.type])}
+      <div className='row'>
+        <div className='two columns'>MasterKey</div>
+        <div className='three columns'>
+          <label>Key-Type:</label>{this.render_option('keyType', [this.state.keyGen.keyInfo.type])}
         </div>
-        <div className="three columns">
-          <label>Master-Key-Length:</label>{this.render_option("masterKeyLength", [this.state.keyGen.keyInfo.length])}
+        <div className='three columns'>
+          <label>Master-Key-Length:</label>{this.render_option('masterKeyLength', [this.state.keyGen.keyInfo.length])}
         </div>
-        <div className="three columns">
-          <label>Key-Usage:</label>{this.render_multioption("keyUsage", this.state.keyGen.keyInfo.usage)}
+        <div className='three columns'>
+          <label>Key-Usage:</label>{this.render_multioption('keyUsage', this.state.keyGen.keyInfo.usage)}
         </div>
       </div>
 
       {this.state.keyGen.subKeys.pallets.map((sb: KeyGen.KeyInfo, i: number) => {
-        return (<div className="row" key={i}>
-          <div className="two columns">SubKey {i}</div>
-          <div className="three columns">
-            <label>Key-Type:</label>{this.render_option("subkeys." + i + ".keyType", [sb.type])}
+        return (<div className='row' key={i}>
+          <div className='two columns'>SubKey {i}</div>
+          <div className='three columns'>
+            <label>Key-Type:</label>{this.render_option('subkeys.' + i + '.keyType', [sb.type])}
           </div>
-          <div className="three columns">
-            <label>Key-Length:</label>{this.render_option("subkeys." + i + ".length", [sb.length])}
+          <div className='three columns'>
+            <label>Key-Length:</label>{this.render_option('subkeys.' + i + '.length', [sb.length])}
           </div>
-          <div className="three columns">
-            <label>Key-Usage:</label>{this.render_multioption("subkeys." + i + ".usage", sb.usage)}
+          <div className='three columns'>
+            <label>Key-Usage:</label>{this.render_multioption('subkeys.' + i + '.usage', sb.usage)}
           </div>
         </div>)
       })}
@@ -301,11 +301,11 @@ console.log("CreateKey:Matched", h, this.state.transaction.header, this.props, s
         e.stopPropagation();
         e.preventDefault();
       }}>
-        <div className="row">
-          <div className="three columns">
-            <label>Expire-Date:</label><input type="date" name="expireDate"
+        <div className='row'>
+          <div className='three columns'>
+            <label>Expire-Date:</label><input type='date' name='expireDate'
               className={classnames({ good: this.state.keyGen.expireDate.valid() })}
-              autoComplete="on"
+              autoComplete='on'
               required={true}
               min={Date.now()}
               onChange={(e: any) => {
@@ -324,14 +324,14 @@ console.log("CreateKey:Matched", h, this.state.transaction.header, this.props, s
         })}
 
         <div className={classnames({ row: true, good: this.state.keyGen.password.valid() })}>
-          {this.render_password("Password", "cq-password", this.state.keyGen.password)}
-          {this.render_verify_password("Password", "cq-password", this.state.keyGen.password)}
+          {this.render_password('Password', 'cq-password', this.state.keyGen.password)}
+          {this.render_verify_password('Password', 'cq-password', this.state.keyGen.password)}
         </div>
 
         {this.render_long()}
         {this.render_compact()}
 
-        <div className="row">
+        <div className='row'>
           {this.render_create()}
         </div>
       </form>
@@ -341,7 +341,7 @@ console.log("CreateKey:Matched", h, this.state.transaction.header, this.props, s
 
   public render(): JSX.Element {
     return (
-      <div className="row CreateKey" >
+      <div className='row CreateKey' >
         {this.render_form()}
       </div>
     );

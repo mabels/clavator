@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as ReactModal from 'react-modal';
+import ReactModal from 'react-modal';
 import * as CardStatus from '../gpg/card_status';
 import * as Message from '../message';
 import * as WsChannel from './ws-channel';
@@ -27,22 +27,22 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
     super();
     this.state = {
       changeCard: null,
-      transaction: Message.newTransaction<ChangeCard>("ChangeCard.Request")
-    }; 
+      transaction: Message.newTransaction<ChangeCard>('ChangeCard.Request')
+    };
   }
- 
- public updateAttributes() {
+
+ public updateAttributes(): () => void {
     return (() => {
       this.state.transaction.data = this.state.changeCard;
       this.props.channel.send(this.state.transaction.asMsg());
     }).bind(this);
   }
 
-  componentWillMount() {
+  public componentWillMoullnt(): void {
     this.setState({ changeCard: ChangeCard.fromCardStatus(this.props.cardStatus) }) 
   }
 
-  public render() {
+  public render(): JSX.Element {
     return (
       <ReactModal
         isOpen={true}
@@ -50,7 +50,7 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
         contentLabel="Modal"
         shouldCloseOnOverlayClick={true}
       >
-        <i style={{ float: "right" }} onClick={this.props.onClose} className="closeBox fa fa-close"></i>
+        <i style={{ float: 'right' }} onClick={this.props.onClose} className="closeBox fa fa-close"></i>
         <h4>ChangeAttributes:</h4>
         <h5>{this.state.changeCard.name}({this.state.changeCard.serialNo})</h5>
         {/*<form>*/}
@@ -94,7 +94,7 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
           }}
           value={this.state.changeCard.url} />
         <br />
-        <ButtonToProgressor 
+        <ButtonToProgressor
           channel={this.props.channel}
           onClick={this.updateAttributes()}
           transaction={this.state.transaction}
@@ -102,7 +102,6 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
       </ReactModal>
     );
   }
- 
 }
 
 export default DialogChangeAttributes;

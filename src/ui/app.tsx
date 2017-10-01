@@ -12,8 +12,8 @@ import { CardStatusList } from './card-status-list';
 // import { Progressor } from './progressor';
 import { ChannelStatus } from './channel-status';
 import * as WsChannel from './ws-channel';
-import { CardStatusListState } from './card-status-list-state'
-import { KeyChainListState } from './key-chain-list-state'
+import { CardStatusListState } from './card-status-list-state';
+import { KeyChainListState } from './key-chain-list-state';
 import DialogCreateKey from './dialog-create-key';
 import Assistent from './assistent';
 
@@ -58,8 +58,7 @@ export class App extends React.Component<{}, AppState> {
           </TabList>
           <TabPanel>
             <a title="add new key"
-                onClick={() => {this.setState({createKeyDialog: true})}}
-                name="create-key"
+                onClick={() => { this.setState({createKeyDialog: true}); }}
                 className="closeBox">
                 <i className="fa fa-plus"></i>
             </a>

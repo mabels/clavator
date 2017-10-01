@@ -1,16 +1,15 @@
 import * as React from 'react';
-import * as KeyGen from '../gpg/key-gen'
+import * as KeyGen from '../gpg/key-gen';
 
 interface FormatDateState {
 }
 
 interface FormatDateProps extends React.Props<FormatDate> {
-  ticks: number
+  ticks: number;
 }
 
 export class FormatDate
-  extends React.Component<FormatDateProps, FormatDateState>
-{
+  extends React.Component<FormatDateProps, FormatDateState> {
 
   constructor() {
     super();
@@ -23,7 +22,7 @@ export class FormatDate
       <span key={this.props.ticks}>
         {KeyGen.format_date(d)}
       </span>
-    )
+    );
   }
 }
 

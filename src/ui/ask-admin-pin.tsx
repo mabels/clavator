@@ -1,10 +1,10 @@
 import * as React from 'react';
 
-import * as Message from '../message';
-import ChangeCard from '../gpg/change_card';
-import * as WsChannel from './ws-channel';
-import CardStatusListState from './card-status-list-state'
-import Pin from '../gpg/pin';
+// import * as Message from '../message';
+// import ChangeCard from '../gpg/change_card';
+// import * as WsChannel from './ws-channel';
+import CardStatusListState from './card-status-list-state';
+// import Pin from '../gpg/pin';
 
 interface AskAdminPinState {
 }
@@ -23,15 +23,15 @@ export class AskAdminPin extends React.Component<AskAdminPinProps, AskAdminPinSt
     this.handleChange = this.handleChange.bind(this);
   }
 
-  private getSetAdminPin() {
+  public getSetAdminPin(): string {
     if (!this.props.cardStatusListState.adminPins.has(this.props.serialNo)) {
-      this.props.cardStatusListState.adminPins.set(this.props.serialNo, "");
+      this.props.cardStatusListState.adminPins.set(this.props.serialNo, '');
     }
     let val = this.props.cardStatusListState.adminPins.get(this.props.serialNo);
     return val;
   }
 
-  private handleChange(e: any) {
+  private handleChange(e: any): void {
     this.props.cardStatusListState.adminPins.set(this.props.serialNo, e.target.value);
   }
 
@@ -42,7 +42,7 @@ export class AskAdminPin extends React.Component<AskAdminPinProps, AskAdminPinSt
         name={`ask-${this.props.serialNo}-pin`} required={true}
         onChange={this.handleChange}
       />
-    </span>)
+    </span>);
   }
 }
 

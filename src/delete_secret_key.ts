@@ -1,50 +1,50 @@
-
 import * as ws from 'ws';
 import * as Message from './message';
-import Dispatcher from './dispatcher'
+import Dispatcher from './dispatcher';
 
 import * as Gpg from './gpg/gpg';
 
-import * as Progress from './progress'
+import * as Progress from './progress';
 
 export class DeleteSecretKey implements Dispatcher {
+  private gpg: Gpg.Gpg;
 
-  gpg: Gpg.Gpg
-
-  constructor(g: Gpg.Gpg) {
-    this.gpg = g
+  public static create(g: Gpg.Gpg): DeleteSecretKey {
+    return new DeleteSecretKey(g);
   }
 
-  public run(ws: ws, m: Message.Message): boolean {
-    console.log("DeleteSecretKey.run", m.header)
-    if (m.header.action != "DeleteSecretKey") {
-      // ws.send(Message.prepare("Progressor.Clavator", Progress.fail("Ohh")))
+  constructor(g: Gpg.Gpg) {
+    this.gpg = g;
+  }
+
+  public run(myws: ws, m: Message.Message): boolean {
+    console.log('DeleteSecretKey.run', m.header);
+    if (m.header.action != 'DeleteSecretKey') {
+      // ws.send(Message.prepare('Progressor.Clavator', Progress.fail('Ohh')))
       return false;
     }
     let payload = JSON.parse(m.data);
-    let header = Message.toHeader(m, "Progressor.Clavator");
-    ws.send(Message.prepare(header,
-      Progress.ok("DeleteSecretKey=" + m.data)))
+    let header = Message.toHeader(m, 'Progressor.Clavator');
+    myws.send(Message.prepare(header,
+      Progress.ok('DeleteSecretKey=' + m.data)));
     this.gpg.deleteSecretKey(payload.fpr, (res: Gpg.Result) => {
-      ws.send(Message.prepare(header, Progress.info(res.stdOut)));
-      ws.send(Message.prepare(header, Progress.error(res.stdErr)));
-      if (res.stdOut.split("\n").find((i: string) => { return i.startsWith("ERR ") })) {
-        res.stdOut.split("\n").forEach((s: string) => {
-          ws.send(Message.prepare(header, Progress.fail(s)));
-        })
+      myws.send(Message.prepare(header, Progress.info(res.stdOut)));
+      myws.send(Message.prepare(header, Progress.error(res.stdErr)));
+      if (res.stdOut.split('\n').find((i: string) => { return i.startsWith('ERR '); })) {
+        res.stdOut.split('\n').forEach((s: string) => {
+          myws.send(Message.prepare(header, Progress.fail(s)));
+        });
       } else {
-        this.gpg.deletePublicKey(payload.fpr, (res: Gpg.Result) => {
-          ws.send(Message.prepare(header, Progress.info(res.stdOut)));
-          ws.send(Message.prepare(header, Progress.error(res.stdErr)));
-          ws.send(Message.prepare(header, Progress.ok("DeleteKey Successfull", true)))
-        })
+        this.gpg.deletePublicKey(payload.fpr, (rs: Gpg.Result) => {
+          myws.send(Message.prepare(header, Progress.info(rs.stdOut)));
+          myws.send(Message.prepare(header, Progress.error(rs.stdErr)));
+          myws.send(Message.prepare(header, Progress.ok('DeleteKey Successfull', true)));
+        });
       }
-    })
+    });
     return true;
   }
-  public static create(g: Gpg.Gpg) {
-    return new DeleteSecretKey(g)
-  }
+
 }
 
 export default DeleteSecretKey;

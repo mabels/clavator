@@ -1,13 +1,13 @@
 
 import * as React from 'react';
-import * as classnames from 'classnames';
-import * as Message from '../message';
+// import * as classnames from 'classnames';
+// import * as Message from '../message';
 import * as WsChannel from './ws-channel';
-import * as KeyGen from '../gpg/key-gen';
-import * as ReactModal from 'react-modal';
-import { Progressor } from './progressor';
+// import * as KeyGen from '../gpg/key-gen';
+import ReactModal from 'react-modal';
+// import { Progressor } from './progressor';
 import CreateKey from './create-key';
-import * as ListSecretKeys from '../gpg/list_secret_keys';
+// import * as ListSecretKeys from '../gpg/list_secret_keys';
 
 interface DialogCreateKeyState {
 }
@@ -30,7 +30,7 @@ export class DialogCreateKey extends React.Component<DialogCreateKeyProps, Dialo
       <ReactModal
         isOpen={true}
         closeTimeoutMS={150}
-        onAfterOpen={() => { }}
+        onAfterOpen={() => { /* */ }}
         contentLabel="Modal"
         shouldCloseOnOverlayClick={true}
       >
@@ -39,7 +39,7 @@ export class DialogCreateKey extends React.Component<DialogCreateKeyProps, Dialo
         <h4>Creating Key:</h4>
         <CreateKey channel={this.props.channel} />
       </ReactModal>
-    )
+    );
   }
 }
 

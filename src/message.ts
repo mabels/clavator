@@ -1,35 +1,34 @@
-
 import * as uuid from 'node-uuid';
-//import * as WebSocket from 'ws';
-
-// import * as leftPad from 'left-pad';
 
 export class Header {
-  action: string
-  transaction: string
-  public setAction(a: string) {
-    let n = new Header();
-    n.action = a;
-    n.transaction = this.transaction;
-    return n;
-  }
-  public static fill(js: any) {
+  public action: string;
+  public transaction: string;
+
+  public static fill(js: any): Header {
     let h = new Header();
     h.action = js['action'];
     h.transaction = js['transaction'];
     return h;
   }
+
+  public setAction(a: string): Header {
+    let n = new Header();
+    n.action = a;
+    n.transaction = this.transaction;
+    return n;
+  }
+
 }
 export interface Message {
-  header: Header,
-  data: string
-};
+  header: Header;
+  data: string;
+}
 
-function fixlength(i: number, l: number) {
+function fixlength(i: number, l: number): string {
   let i_str = i.toString(16);
-  let zeros = "";
+  let zeros = '';
   for (let j = i_str.length; j < l; ++j) {
-    zeros = zeros + "0";
+    zeros = zeros + '0';
   }
   return zeros + i_str;
 }
@@ -48,7 +47,7 @@ export function fromData(data: string): Message {
   return {
     header: Header.fill(header),
     data: data.slice(8 + hlen)
-  }
+  };
 }
 
 export function prepare<T>(action: Header, data: T = null): string {
@@ -57,18 +56,17 @@ export function prepare<T>(action: Header, data: T = null): string {
   return fixlength(header.length, 8) + header + payload;
 }
 
-
 export class Transaction<T> {
   public header: Header;
   public data: T;
 
-  public asMsg(data?: T) : string {
-    console.log("Transaction:asMsg:", this);
+  public asMsg(data?: T): string {
+    console.log('Transaction:asMsg:', this);
     return prepare(this.header, data || this.data);
   }
 }
 
-export function newTransaction<T>(action: string, data: T = null) : Transaction<T> {
+export function newTransaction<T>(action: string, data: T = null): Transaction<T> {
   let t = new Transaction<T>();
   t.header = new Header();
   t.header.action = action;
@@ -77,14 +75,14 @@ export function newTransaction<T>(action: string, data: T = null) : Transaction<
   return t;
 }
 
-export function broadcast(action: string) {
+export function broadcast(action: string): Header {
   let h = new Header();
   h.action = action;
   h.transaction = undefined;
   return h;
 }
 
-export function toHeader(m: Message, action: string = null) : Header {
+export function toHeader(m: Message, action: string = null): Header {
   let h = new Header();
   h.action = action ? action : m.header.action;
   h.transaction = m.header.transaction;

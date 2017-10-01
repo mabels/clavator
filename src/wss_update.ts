@@ -6,10 +6,10 @@ export interface Equalizer<T> {
 }
 
 export class WssUpdate<T extends Equalizer<T>> {
-  prevWss: Set<WebSocket> = new Set<WebSocket>([]);
-  prevT: T[] = [];
+  private prevWss: Set<WebSocket> = new Set<WebSocket>([]);
+  private prevT: T[] = [];
 
-  public run(action: string, wss: WebSocket[], t: T[], cb: () => void) {
+  public run(action: string, wss: WebSocket[], t: T[], cb: () => void): void {
     let wssChanged: WebSocket[] = [];
     let wssUnChanged: WebSocket[] = [];
     wss.forEach((ws) => {
@@ -19,7 +19,7 @@ export class WssUpdate<T extends Equalizer<T>> {
       } else {
         wssUnChanged.push(ws);
       }
-    })
+    });
     let keysChanged = true;
     if (t.length == this.prevT.length) {
       keysChanged = false;
@@ -44,18 +44,19 @@ export class WssUpdate<T extends Equalizer<T>> {
       cb();
     }
   }
-  send(wss: WebSocket[], action: string, t:T[], cb: () => void) {
+
+  public send(wss: WebSocket[], action: string, t: T[], cb: () => void): boolean {
     let cnt = wss.length;
     let header = Message.broadcast(action);
     wss.forEach((ws: WebSocket) => {
-      console.log("header:", header);
+      console.log('header:', header);
       ws.send(Message.prepare(header, t), (error: any) => {
         if (--cnt <= 0) {
           cb();
         }
       });
-    })
-    return wss.length>0;
+    });
+    return wss.length > 0;
   }
 }
 

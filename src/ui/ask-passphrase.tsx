@@ -14,8 +14,8 @@ interface AskPassphraseProps extends React.Props<AskPassphrase> {
 }
 
 export class AskPassphrase
-  extends React.Component<AskPassphraseProps, AskPassphraseState>
-{
+  extends React.Component<AskPassphraseProps, AskPassphraseState> {
+
   constructor() {
     super();
     this.state = {
@@ -25,7 +25,7 @@ export class AskPassphrase
 
   public render(): JSX.Element {
     return (
-      <form 
+      <form
         onSubmit={(e) => e.preventDefault()}
         className="AskPassphrase" key={this.props.fingerprint}>
         <label>Passphrase:</label><input type="password"
@@ -38,7 +38,9 @@ export class AskPassphrase
             }
           }} />
         <button type="button" onClick={(e: any) => {
-          this.props.completed && this.props.completed(this.state.value || this.props.passphrase.value)
+          if (this.props.completed) {
+            this.props.completed(this.state.value || this.props.passphrase.value);
+          }
         }}>Ready</button>
       </form>
     );

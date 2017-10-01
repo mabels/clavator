@@ -4,27 +4,26 @@ import * as path from 'path';
 const processArgv = new Map();
 process.argv.forEach((arg, idx) => {
   processArgv.set(arg, idx);
-})
+});
 
-function exists(args: string[]) {
+function exists(args: string[]): boolean {
   let found = 0;
   args.forEach((a) => {
     if (processArgv.has(a)) {
       found++;
-    } 
-  })
+    }
+  });
   return found == args.length;
 }
 
-function homeDir() {
-  if (processArgv.has("--homedir")) {
-    return process.argv[processArgv.get("--homedir")+1];
+function homeDir(): string {
+  if (processArgv.has('--homedir')) {
+    return process.argv[processArgv.get('--homedir') + 1];
   }
-  return "";
+  return '';
 }
 
-
-if (exists(["--list-secret-keys", "--with-colons"])) {
+if (exists(['--list-secret-keys', '--with-colons'])) {
   let mock = path.join(homeDir(), `list-secret-keys.mock`);
   if (homeDir().length && fs.existsSync(mock)) {
     console.log(fs.readFileSync(mock).toString());
@@ -60,9 +59,9 @@ fpr:::::::::3228ACF3E25FF4CB70DEADE8FB05F8FAE6E6E470:
 grp:::::::::A5516054BF25070216663AD255A8FC2DFBB6324B:`);
   }
   process.exit(0);
-} else if (exists(["--full-gen-key","--batch"]) || exists(["--import"])) {
+} else if (exists(['--full-gen-key', '--batch']) || exists(['--import'])) {
   if (homeDir().length) {
-    fs.writeFileSync(path.join(homeDir(), `list-secret-keys.mock`), 
+    fs.writeFileSync(path.join(homeDir(), `list-secret-keys.mock`),
 `sec:u:256:22:19B013CF06A4CAFE:1464699940:1622379940::u:::cESCA:::#::ed25519::
 fpr:::::::::F36846C4A7DEFD55F492069C19B013CF06A4CAFE:
 grp:::::::::75E60BCBF5E25BBBF0E701CD55BC79F4C03BC320:
@@ -76,36 +75,36 @@ grp:::::::::6C90A35935E803A9F19DB71C76EDA1C53CA6E3B4:
 ssb:u:2048:1:FB05F8FAE6E6E470:1488957920:1646737200:::::esa:::+:::
 fpr:::::::::3228ACF3E25FF4CB70DEADE8FB05F8FAE6E6E470:
 grp:::::::::A5516054BF25070216663AD255A8FC2DFBB6324B:`
-    )
+    );
   }
   process.exit(0);
-} else if (exists(["--quick-addkey"])) {
+} else if (exists(['--quick-addkey'])) {
   process.exit(0);
-} else if (exists(["--export-secret-key"])) {
-  console.log("-----BEGIN PGP PRIVATE KEY BLOCK-----");
+} else if (exists(['--export-secret-key'])) {
+  console.log('-----BEGIN PGP PRIVATE KEY BLOCK-----');
   process.exit(0);
-} else if (exists(["--export"])) {
-  console.log("-----BEGIN PGP PUBLIC KEY BLOCK-----");
+} else if (exists(['--export'])) {
+  console.log('-----BEGIN PGP PUBLIC KEY BLOCK-----');
   process.exit(0);
-} else if (exists(["--export-ssh-key"])) {
-  console.log("ssh-rsa wurst kakkak");
+} else if (exists(['--export-ssh-key'])) {
+  console.log('ssh-rsa wurst kakkak');
   process.exit(0);
-} else if (exists(["--delete-secret-key"])) {
+} else if (exists(['--delete-secret-key'])) {
   process.exit(0);
-} else if (exists(["--delete-key"])) {
+} else if (exists(['--delete-key'])) {
   if (homeDir().length) {
-    fs.writeFileSync(path.join(homeDir(), `list-secret-keys.mock`),"");
+    fs.writeFileSync(path.join(homeDir(), `list-secret-keys.mock`), '');
   }
   process.exit(0);
-} else if (exists(["GETINFO socket_name","/bye"])) {
-  console.log(`D ${path.join(homeDir(), "S.gpg-agent-"+Math.random())}`);
-  console.log("OK");
+} else if (exists(['GETINFO socket_name', '/bye'])) {
+  console.log(`D ${path.join(homeDir(), 'S.gpg-agent-' + Math.random())}`);
+  console.log('OK');
   process.exit(0);
-} else if (exists(["killagent","/bye"])) {
-  console.log("OK closing connection");
+} else if (exists(['killagent', '/bye'])) {
+  console.log('OK closing connection');
   process.exit(0);
-} else if (exists(["--card-status","--with-colons"])) {
-  console.log(`Reader:1050:0405:X:0:AID:D2760001240102010006041775630000:openpgp-card:
+} else if (exists(['--card-status', '--with-colons'])) {
+  console.log([`Reader:1050:0405:X:0:AID:D2760001240102010006041775630000:openpgp-card:
 version:0201:
 vendor:0006:Yubico:
 serial:04178493:
@@ -122,20 +121,21 @@ maxpinlen:127:127:127:
 pinretry:3:0:3:
 sigcount:174:::
 cafpr::::
-fpr:F78D5B547A9BB0E8A174C0F5060FF53CB3ACAFEE:B3BCAFEEF73077EFA734EC83D851CAFFEEDEB9C:2D32339394392AF437181A28E66F405F1BE34D:
-fprtime:1465218201:1465218221:1464700783:
-`);
+fpr:F78D5B547A9BB0E8A174C0F5060FF53CB3ACAFEE:B3BCAFEEF73077EFA734EC83D851CAFFEEDEB9C`,
+`:2D32339394392AF437181A28E66F405F1BE34D:\n`,
+`fprtime:1465218201:1465218221:1464700783:
+`].join(''));
   process.exit(0);
 } else {
-  fs.appendFileSync("/tmp/gpg-mock.log", [process.execPath, process.argv].join(",")+"\n");
-  let data : string[] = [];
-  process.stdin.on("data", (a:any) => data.push(a.toString()))
-  process.stdin.on("error", () => {
-    fs.appendFileSync("/tmp/gpg-mock.log", [process.execPath, process.argv].join(",")+"\n");
+  fs.appendFileSync('/tmp/gpg-mock.log', [process.execPath, process.argv].join(',') + '\n');
+  let data: string[] = [];
+  process.stdin.on('data', (a: any) => data.push(a.toString()));
+  process.stdin.on('error', () => {
+    fs.appendFileSync('/tmp/gpg-mock.log', [process.execPath, process.argv].join(',') + '\n');
     process.exit(28);
-  })
-  process.stdin.on("end", () => {
-    fs.appendFileSync("/tmp/gpg-mock.log", [process.execPath, process.argv].join(",")+"\n{" + data.join("\n") + "}");
+  });
+  process.stdin.on('end', () => {
+    fs.appendFileSync('/tmp/gpg-mock.log', [process.execPath, process.argv].join(',') + '\n{' + data.join('\n') + '}');
     process.exit(29);
-  })
+  });
 }

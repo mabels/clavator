@@ -3,4 +3,3 @@ import * as ReactDOM from 'react-dom';
 import { App } from './ui/app';
 
 ReactDOM.render(<App />, (window as any).clavator);
-
