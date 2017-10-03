@@ -4,6 +4,9 @@ import * as classnames from 'classnames';
 import * as Message from '../message';
 import * as WsChannel from './ws-channel';
 import * as KeyGen from '../gpg/key-gen';
+import Option from '../gpg/option';
+import MultiOption from '../gpg/multi-option';
+import { format_date } from '../gpg/helper';
 // import * as ReactModal from 'react-modal';
 // import { Progressor } from './progressor';
 import ButtonToProgressor from './button-to-progressor';
@@ -84,7 +87,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     }));
   }
 
-  public render_option<T>(name: string, ops: KeyGen.Option<T>[]): JSX.Element {
+  public render_option<T>(name: string, ops: Option<T>[]): JSX.Element {
     let value = '';
     let ret = ops[0].map((s, o) => {
       value = s ? o.toString() : value;
@@ -102,7 +105,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     );
   }
 
-  public render_multioption<T>(name: string, op: KeyGen.MultiOption<T>): JSX.Element {
+  public render_multioption<T>(name: string, op: MultiOption<T>): JSX.Element {
     // <input type='checkbox' name={name} value={v} {s?'checked':''}>{v}</input>)}
     return (
       <div>
@@ -314,7 +317,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
                 this.state.keyGen.expireDate.value = new Date(e.target.value);
                 this.setState(this.state);
               }}
-              defaultValue={KeyGen.format_date(this.state.keyGen.expireDate.value)}
+              defaultValue={format_date(this.state.keyGen.expireDate.value)}
             />
           </div>
         </div>

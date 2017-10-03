@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as KeyGen from '../gpg/key-gen';
+import { format_date } from '../gpg/helper';
 
 interface FormatDateState {
 }
@@ -20,7 +20,7 @@ export class FormatDate
     let d = new Date(1000 * this.props.ticks);
     return (
       <span key={this.props.ticks}>
-        {KeyGen.format_date(d)}
+        {format_date(d)}
       </span>
     );
   }

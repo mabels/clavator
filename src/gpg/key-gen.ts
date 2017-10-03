@@ -1,75 +1,13 @@
+import Option from './option';
+import MultiOption from './multi-option';
+import DateValue from './date-value';
+import KeyGenUid from './key-gen-uid';
+import Container from './container';
+import Pallet from './pallet';
 
-export function format_date(date: Date): string {
-  return '' + date.getFullYear() + '-'
-    + (100 + date.getMonth() + 1).toString().slice(1) + '-'
-    + (100 + date.getDate()).toString().slice(1);
-}
+import { assignOnError, format_date, expireDate  } from './helper';
 
-export function expireDate(): Date {
-  let now = new Date();
-  now.setFullYear(now.getFullYear() + 5);
-  return now;
-}
-
-function assignOnError(valid: boolean, ret: string[], errText: string | string[]): void {
-  if (!valid) {
-    if (typeof(errText) == 'string') {
-      ret.push(errText);
-    } else {
-      Array.prototype.push.apply(ret, errText);
-    }
-  }
-}
-
-export class Option<T> {
-  public value: T;
-  public options: T[] = [];
-  public errText: string;
-
-  public static fill<U>(js: any, dv: Option<U>): void {
-    // console.log(">>>>Option>>>", js)
-    dv.value = js['value'] || dv.value;
-    // console.log("<<<<<<Option<<<<", dv)
-  }
-
-  public constructor(v: T, t: T[], e: string) {
-    this.value = v;
-    this.options = t;
-    this.errText = e;
-  }
-
-  public map(cb: (selected: boolean, o: T) => any): any {
-    return this.options.map((o) => cb(this.value == o, o));
-  }
-  public valid(): boolean {
-    return !!this.options.find((i: T) => i == this.value);
-  }
-}
-
-export class MultiOption<T> {
-  public values: T[];
-  public options: T[] = [];
-  public errText: string;
-
-  public static fill<U>(js: any, dv: MultiOption<U>): void {
-    dv.values = js['values'] || dv.values;
-  }
-
-  public constructor(v: T[], t: T[], e: string) {
-    this.values = v;
-    this.options = t;
-    this.errText = e;
-  }
-
-  public map(cb: (selected: boolean, o: T) => any): any {
-    return this.options.map((o) => cb(!!this.values.find((q: T) => q == o), o));
-  }
-
-  public valid(): boolean {
-    return this.values.length == this.options.filter((q: T) => {
-      return !!this.values.find((u: T) => u == q);
-    }).length;
-  }
+export class Uid extends KeyGenUid {
 
 }
 
@@ -113,56 +51,8 @@ export class PwPair {
   }
 }
 
-const EmailRegExp = new RegExp([`^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*`,
-    `@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+[a-z])|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))`,
-    `(:[0-9]{1,5})?$`].join(''), 'i');
-
-export class StringValue {
-  public match: RegExp;
-  public value: string;
-  public errText: string;
-
-  public static fill(js: any, dv: StringValue): void {
-    dv.value = js['value'] || dv.value;
-  }
-
-  public constructor(match: RegExp, e: string) {
-    this.match = match;
-    this.value = '';
-    this.errText = e;
-  }
-  public valid(): boolean {
-    return this.match.test(this.value);
-  }
-}
-
-export class DateValue {
-  public value: Date;
-  public errText: string;
-
-  public static fill(js: any, dv: DateValue): void {
-    dv.value = (new Date(js['value'])) || dv.value;
-  }
-
-  public constructor(v: Date, e: string) {
-    this.value = v;
-    this.errText = e;
-  }
-
-  public valid(): boolean {
-    let tomorrow = new Date(Date.now());
-    tomorrow.setHours(tomorrow.getHours() + 24);
-    return this.value.getTime() > tomorrow.getTime();
-  }
-}
-
-interface Validatable {
-  valid(): boolean;
-  errText(): string[];
-  fill(js: any): void;
-}
-
-export class KeyInfo implements Validatable {
+export class KeyInfo implements Pallet {
+  public key: string;
   public type: Option<string>;
   public length: Option<number>;
   public usage: MultiOption<string>;
@@ -222,92 +112,13 @@ export class KeyInfo implements Validatable {
 //   }
 // }
 
-export class Uid implements Validatable {
-  public name: StringValue = new StringValue(/^([A-Z][a-z]*\s*)+$/, 'name error');
-  public email: StringValue = new StringValue(EmailRegExp, 'email error');
-  public comment: StringValue = new StringValue(/.*/, 'comment error');
-
-  public fill(js: any): void {
-    StringValue.fill(js['name'] || {}, this.name);
-    StringValue.fill(js['email'] || {}, this.email);
-    StringValue.fill(js['comment'] || {}, this.comment);
-  }
-
-  public valid(): boolean {
-    return this.name.valid() && this.email.valid() &&
-      this.comment.valid();
-  }
-
-  public errText(): string[] {
-    let ret: string[] = [];
-    assignOnError(this.name.valid(), ret, this.name.errText);
-    assignOnError(this.email.valid(), ret, this.email.errText);
-    assignOnError(this.comment.valid(), ret, this.comment.errText);
-    return ret;
-  }
-
-  public toString(): string {
-    let name = this.name.value.trim();
-    let email = this.email.value.trim();
-    let comment = this.comment.value.trim();
-    let tmp = name + ' (' + comment + ') <' + email + '>';
-    if (comment == '') {
-      tmp = name + ' <' + email + '>';
-    }
-    return tmp;
-  }
-}
-
-export class Container<T extends Validatable> {
-  public pallets: T[] = [];
-  public factory: () => T;
-  constructor(factory: () => T) {
-    this.factory = factory;
-  }
-  public length(): number {
-    return this.pallets.length;
-  }
-
-  public errText(): string[] {
-    let ret: string[] = [];
-    for (let i of this.pallets) {
-      if (i) {
-        assignOnError(i.valid(), ret, i.errText());
-      }
-    }
-    return ret;
-  }
-  public add(i: T): void {
-    this.pallets.push(i);
-  }
-  public valid(): boolean {
-    let ret = true;
-    for (let sk of this.pallets) {
-      if (sk) {
-        ret = ret && sk.valid();
-      }
-    }
-    return ret;
-  }
-  public fill(js: any): void {
-    this.pallets = [];
-    for (let i of js['pallets']) {
-      if (i) {
-        let t: T = this.factory();
-        t.fill(i);
-        this.add(t);
-      }
-    }
-  }
-}
-
 export class KeyGen {
   public password: PwPair = new PwPair(/^.{14,1024}$/, 'Password Error');
   // adminPin: PwPair = new PwPair(/^[0-9]{8}$/, "adminPin Error");
   // userPin: PwPair = new PwPair(/^[0-9]{6,8}$/, "userPin Error");
   public keyInfo: KeyInfo = new KeyInfo('RSA', 4096, ['cert']);
   public expireDate: DateValue = new DateValue(expireDate(), 'expireDate error');
-  public uids: Container<Uid> = new Container<Uid>(() => { return new Uid(); });
+  public uids: Container<KeyGenUid> = new Container<KeyGenUid>(() => { return new KeyGenUid(); });
   public subKeys: Container<KeyInfo> = new Container<KeyInfo>(() => { return new KeyInfo(); });
 
   public static withSubKeys(cnt: number): KeyGen {

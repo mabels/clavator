@@ -1,4 +1,6 @@
 import * as KeyGen from './key-gen';
+import KeyGenUid from './key-gen-uid';
+import { expireDate } from './helper';
 
 function debugArray(match: string[]): void {
   // let ret = {};
@@ -42,8 +44,8 @@ export class Uid {
       this.key == o.key;
   }
 
-  public toKeyGenUid(): KeyGen.Uid {
-    let ret = new KeyGen.Uid();
+  public toKeyGenUid(): KeyGenUid {
+    let ret = new KeyGenUid();
     ret.comment.value = this.comment;
     ret.email.value = this.email;
     ret.name.value = this.name;
@@ -248,7 +250,7 @@ export class SecretKey extends Key {
     if (this.expires != null && this.expires > 0) {
       ret.expireDate.value = new Date(this.expires * 1000);
     } else {
-      ret.expireDate.value = KeyGen.expireDate();
+      ret.expireDate.value = expireDate();
     }
     for (let sb of this.subKeys) {
       ret.subKeys.pallets.push(sb.toKeyGenInfo());
@@ -261,7 +263,7 @@ export class SecretKey extends Key {
     }
     // debugger
     if (ret.uids.length() < 1) {
-      ret.uids.add(new KeyGen.Uid());
+      ret.uids.add(new KeyGenUid());
     }
     return ret;
   }

@@ -17,6 +17,8 @@ import * as KeyGen from './key-gen';
 import ChangeCard from './change_card';
 import RequestAscii from './request_ascii';
 import RequestChangePin from './request_change_pin';
+import KeyGenUid from './key-gen-uid';
+import { format_date } from './helper';
 
 import * as rimraf from 'rimraf';
 
@@ -392,7 +394,7 @@ export class Gpg {
     this.run(['--export-ssh-key', rqa.fingerprint], null, cb);
   }
 
-  public addUid(fpr: string, kg: KeyGen.KeyGen, uid: KeyGen.Uid, cb: (res: Result) => void): void {
+  public addUid(fpr: string, kg: KeyGen.KeyGen, uid: KeyGenUid, cb: (res: Result) => void): void {
     let args = [
       '--no-tty', '--pinentry-mode', 'loopback',
       '--passphrase-fd',
@@ -417,7 +419,7 @@ export class Gpg {
       },
       '--quick-addkey', fpr,
       ki.type.value.toLowerCase() + ki.length.value, ki.usage.values.join(','),
-      KeyGen.format_date(kg.expireDate.value)
+      format_date(kg.expireDate.value)
     ];
     console.log('createSubkey', args);
     this.run(args, null, cb);
