@@ -83,7 +83,7 @@ describe('Gpg', () => {
         key = keys[0];
         // console.log('=========', keyGen().subKeys.pallets[0]);
         gpg.createSubkey(key.fingerPrint.fpr, keyGen(),
-          keyGen().subKeys.pallets[0], (_res: Gpg.Result) => {
+          keyGen().subKeys.first(), (_res: Gpg.Result) => {
             console.log(`Use GPG ${cmd}:${homedir}:${key.keyId}`);
             assert.equal(0, _res.exitCode);
             done();

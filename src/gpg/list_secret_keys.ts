@@ -253,9 +253,9 @@ export class SecretKey extends Key {
       ret.expireDate.value = expireDate();
     }
     for (let sb of this.subKeys) {
-      ret.subKeys.pallets.push(sb.toKeyGenInfo());
+      ret.subKeys.push(sb.toKeyGenInfo());
     }
-    for (let i = 0; ret.subKeys.pallets.length < subKeys; ++i) {
+    for (let i = 0; ret.subKeys.length() < subKeys; ++i) {
       ret.subKeys.add(new KeyGen.KeyInfo());
     }
     for (let uid of this.uids) {

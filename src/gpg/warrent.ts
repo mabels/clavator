@@ -4,10 +4,10 @@ import StringValue from './string-value';
 let warrentKey = 1;
 export class Warrent implements Pallet {
   public readonly key: string;
-  public initial: StringValue = new StringValue(/.*/, 'comment error');
+  public initial: StringValue = new StringValue(/[a-zA-Z_\-0-9]{2,}/, 'comment error');
 
   constructor() {
-    this.key = '' + warrentKey++;
+    this.key = `Warrent:${warrentKey++}`;
   }
 
   public valid(): boolean {

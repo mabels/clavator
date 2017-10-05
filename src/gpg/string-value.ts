@@ -1,8 +1,12 @@
+import { observable } from 'mobx';
 import Validatable from './validatable';
 
+let objectId = 0;
+
 export class StringValue implements Validatable {
+  public readonly key: string;
   public match: RegExp;
-  public value: string;
+  @observable public value: string;
   public errorText: string;
 
   public static fill(js: any, dv: StringValue): void {
@@ -10,6 +14,7 @@ export class StringValue implements Validatable {
   }
 
   public constructor(match: RegExp, e: string) {
+    this.key = `StringValue:${objectId++}`;
     this.match = match;
     this.value = '';
     this.errorText = e;

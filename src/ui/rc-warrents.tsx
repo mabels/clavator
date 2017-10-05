@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { observer } from 'mobx-react';
+import * as classnames from 'classnames';
 import Warrent from '../gpg/warrent';
 import Warrents from '../gpg/warrents';
 
@@ -12,7 +14,7 @@ interface RcWarrentsProps extends React.Props<RcWarrents> {
   completed: () => void;
 }
 
-export class RcWarrents extends
+@observer export class RcWarrents extends
   React.Component<RcWarrentsProps, RcWarrentsState> {
 
   constructor() {
@@ -23,44 +25,51 @@ export class RcWarrents extends
     };
   }
 
-  public componentWillMount(): void {
-    /* */
+  private checkOrComplete(warrents: Warrents, warrent: Warrent): string {
+    const text = warrent.valid() ? 'add' : '';
+    if (warrents.length()) {
+      return warrent.initial.value.length ? text : 'done';
+    }
+    return text;
   }
 
-  private checkOrComplete(warrents: Warrents, warrent: Warrent): string {
-    if (warrents.pallets.length) {
-      return warrent.initial.value.length ? 'add' : 'done';
+  private renderButton(): JSX.Element {
+    const coc = this.checkOrComplete(this.props.warrents, this.state.warrent);
+    console.log('renderButton:', coc);
+    if (!coc.length) {
+      return null;
     }
-    return 'add';
+    return <button onClick={() => {
+      switch (this.checkOrComplete(this.props.warrents, this.state.warrent)) {
+        case 'add':
+          this.props.warrents.add(this.state.warrent);
+          this.setState({
+            warrent: new Warrent()
+          });
+          break;
+        default:
+          this.setState({
+            done: true
+          });
+          this.props.completed();
+          break;
+      }
+    }}>{coc}</button>;
   }
 
   private renderInput(): JSX.Element {
     if (this.state.done) {
-      return null;
+      return null ;
     }
     return <li key={'input'}>
       <input type="text"
+        className={classnames({ good: this.state.warrent.valid() })}
         value={this.state.warrent.initial.value}
         onChange={(e: any) => {
           this.state.warrent.initial.value = e.target.value;
           this.setState(this.state);
         }}
-      /><span onClick={() => {
-        switch (this.checkOrComplete(this.props.warrents, this.state.warrent)) {
-          case 'add':
-            this.props.warrents.add(this.state.warrent);
-            this.setState({
-              warrent: new Warrent()
-            });
-            break;
-          default:
-            this.setState({
-              done: true
-            });
-            this.props.completed();
-            break;
-        }
-      }}>{this.checkOrComplete(this.props.warrents, this.state.warrent)}</span>
+      />{this.renderButton()}
     </li>;
   }
 
@@ -69,7 +78,7 @@ export class RcWarrents extends
       <div>
         Warrents-List
         <ul>
-          {this.props.warrents.pallets.map(i => {
+          {this.props.warrents.map(i => {
             return <li key={i.key}>{i.initial.value}</li>;
           }).concat([this.renderInput()])}
         </ul>

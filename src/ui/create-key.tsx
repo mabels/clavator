@@ -11,6 +11,7 @@ import { format_date } from '../gpg/helper';
 // import { Progressor } from './progressor';
 import ButtonToProgressor from './button-to-progressor';
 import * as ListSecretKeys from '../gpg/list_secret_keys';
+import InputExpireDate from './input-expire-date';
 
 interface CreateKeyState {
   createDialog: boolean;
@@ -69,8 +70,8 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
   }
 
   private handleDelUid(idx: number): void {
-    if (this.state.keyGen.uids.pallets.length > 1) {
-      delete this.state.keyGen.uids.pallets[idx];
+    if (this.state.keyGen.uids.length() > 1) {
+      this.state.keyGen.uids.del(idx);
       this.setState(Object.assign({}, this.state, {
         keyGen: this.state.keyGen
       }));
@@ -79,8 +80,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
 
   private handleAddUid(): void {
     let uid = new KeyGen.Uid();
-    let compacted = this.state.keyGen.uids.pallets.filter((i) => i);
-    uid.name.value = compacted[compacted.length - 1].name.value;
+    uid.name.value = this.state.keyGen.uids.last().name.value;
     this.state.keyGen.uids.add(uid);
     this.setState(Object.assign({}, this.state, {
       keyGen: this.state.keyGen
@@ -176,7 +176,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
   }
 
   public render_delete_button(idx: number): JSX.Element {
-    if (this.state.keyGen.uids.pallets.filter((i) => i).length > 1) {
+    if (this.state.keyGen.uids.length() > 1) {
       return (
         <button type="button" onClick={this.handleDelUid.bind(this, idx)}>Delete Uid</button>
       );
@@ -246,7 +246,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
       </div>
       <div className="three columns">
         <label>Slave-Key-Length:</label>{this.render_option('subkeys.all.length',
-        this.state.keyGen.subKeys.pallets.map((sb: KeyGen.KeyInfo, i: number) => {
+        this.state.keyGen.subKeys.map((sb: KeyGen.KeyInfo, i: number) => {
           return sb.length;
         }))}
       </div>
@@ -271,7 +271,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
         </div>
       </div>
 
-      {this.state.keyGen.subKeys.pallets.map((sb: KeyGen.KeyInfo, i: number) => {
+      {this.state.keyGen.subKeys.map((sb: KeyGen.KeyInfo, i: number) => {
         return (<div className="row" key={i}>
           <div className="two columns">SubKey {i}</div>
           <div className="three columns">
@@ -306,23 +306,9 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
         e.stopPropagation();
         e.preventDefault();
       }}>
-        <div className="row">
-          <div className="three columns">
-            <label>Expire-Date:</label><input type="date" name="expireDate"
-              className={classnames({ good: this.state.keyGen.expireDate.valid() })}
-              autoComplete="on"
-              required={true}
-              min={Date.now()}
-              onChange={(e: any) => {
-                this.state.keyGen.expireDate.value = new Date(e.target.value);
-                this.setState(this.state);
-              }}
-              defaultValue={format_date(this.state.keyGen.expireDate.value)}
-            />
-          </div>
-        </div>
+      <InputExpireDate title="Expire-Date" expireDate={this.state.keyGen.expireDate} />
 
-        {this.state.keyGen.uids.pallets.map((sb: KeyGen.Uid, i: number) => {
+        {this.state.keyGen.uids.map((sb: KeyGen.Uid, i: number) => {
           if (sb) {
             return this.render_uid(i, sb);
           }

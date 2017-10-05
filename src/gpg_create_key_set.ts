@@ -23,14 +23,14 @@ export class GpgCreateKeySet implements Dispatcher {
   public createSubKeys(header: Message.Header, ws: WebSocket, cnt: number, fpr:
     string, ki: KeyGen.KeyGen, cb: () => void): void {
     // console.log('createSubKeys:1', cnt, ki.subKeys.subKeys.length);
-    if (cnt >= ki.subKeys.pallets.length) {
+    if (cnt >= ki.subKeys.length()) {
       // console.log('createSubKeys:2');
       cb();
       return;
     }
     ws.send(Message.prepare(header, Progress.info('create subKey:' + cnt)));
     // console.log('createSubKeys:3');
-    this.gpg.createSubkey(fpr, ki, ki.subKeys.pallets[cnt], (res: Gpg.Result) => {
+    this.gpg.createSubkey(fpr, ki, ki.subKeys.get(cnt), (res: Gpg.Result) => {
       // console.log('createSubKeys:4');
       ws.send(Message.prepare(header, Progress.info(res.stdOut)));
       ws.send(Message.prepare(header, Progress.error(res.stdErr)));
@@ -43,12 +43,12 @@ export class GpgCreateKeySet implements Dispatcher {
   public addUids(header: Message.Header, ws: WebSocket, cnt: number, fpr:
     string, ki: KeyGen.KeyGen, cb: () => void): void {
     // console.log('createSubKeys:1', cnt, ki.subKeys.subKeys.length);
-    if (cnt >= ki.uids.pallets.length) {
+    if (cnt >= ki.uids.length()) {
       cb();
       return;
     }
     ws.send(Message.prepare(header, Progress.info('create Uids:' + cnt)));
-    this.gpg.addUid(fpr, ki, ki.uids.pallets[cnt], (res: Gpg.Result) => {
+    this.gpg.addUid(fpr, ki, ki.uids.get(cnt), (res: Gpg.Result) => {
       ws.send(Message.prepare(header, Progress.info(res.stdOut)));
       ws.send(Message.prepare(header, Progress.error(res.stdErr)));
       // console.log('createSubKeys:5');
@@ -85,7 +85,7 @@ export class GpgCreateKeySet implements Dispatcher {
         }
         for (let key of keys) {
           for (let uid of key.uids) {
-            if (uid.name == kg.uids.pallets[0].name.value && uid.email == kg.uids.pallets[0].email.value) {
+            if (uid.name == kg.uids.first().name.value && uid.email == kg.uids.first().email.value) {
               this.addUids(header, ws, 1, key.fingerPrint.fpr, kg, () => {
                 this.createSubKeys(header, ws, 0, key.fingerPrint.fpr, kg, () => {
                   this.gpg.getSecretKey(key.fingerPrint.fpr, (_key: ListSecretKeys.SecretKey) => {

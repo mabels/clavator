@@ -1,31 +1,53 @@
 import * as React from 'react';
+import { observer } from 'mobx-react';
+import * as classnames from 'classnames';
 import SimpleYubiKey from '../gpg/simple-yubikey';
+import Warrent from '../gpg/warrent';
 
 interface CheckWarrentsState {
+  checkedWarrents: Warrent[];
 }
 
 interface CheckWarrentsProps extends React.Props<CheckWarrents> {
   simpleYubiKey: SimpleYubiKey;
+  valid?: boolean;
 }
 
-export class CheckWarrents extends
+@observer export class CheckWarrents extends
   React.Component<CheckWarrentsProps, CheckWarrentsState> {
 
   constructor() {
     super();
-    this.state = { status: 'not started' };
+    this.state = { checkedWarrents: [] };
+  }
+
+  private checkWarrents(i: Warrent): void {
+    if (!this.state.checkedWarrents.length) {
+      React.Children.map(this.props.children, (child) => {
+          console.log(child, (child as any).$$typeof);
+      });
+    }
+    this.state.checkedWarrents.push(i);
+    this.setState(this.state);
   }
 
   private renderWarrents(): JSX.Element {
-    return <ul>
-        {this.props.simpleYubiKey.warrents.pallets.map(i => <li>{i.initial.value}</li>)}
-      </ul>;
+    return <div className={classnames({row: true})} >
+      {this.props.simpleYubiKey.warrents.map((i, idx) => {
+        const good = !!this.state.checkedWarrents.find(j => i === j);
+        const disabled = !this.props.valid;
+        console.log('renderWarrents:', good, disabled);
+        return <button disabled={disabled || good}
+                className={classnames({ fail: this.props.valid && !good, good: good })}
+                key={i.key} type="button"
+                onClick={() => this.checkWarrents(i)}>{i.initial.value}</button>;
+      })}
+    </div>;
   }
 
   public render(): JSX.Element {
     return (
-      <div>
-        CheckWarrents
+      <div className={classnames({good: this.props.valid})} >
         {this.props.children}
         {this.renderWarrents()}
       </div>

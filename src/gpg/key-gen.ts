@@ -173,11 +173,11 @@ export class KeyGen {
       'Key-Type: ' + this.keyInfo.type.value,
       'Key-Length: ' + this.keyInfo.length.value,
       'Key-Usage: ' + this.keyInfo.usage.values,
-      'Name-Real: ' + this.uids.pallets[0].name.value,
-      'Name-Email: ' + this.uids.pallets[0].email.value,
+      'Name-Real: ' + this.uids.first().name.value,
+      'Name-Email: ' + this.uids.first().email.value,
     ];
-    if (this.uids.pallets[0].comment.value.length > 0) {
-      ret.push('Name-Comment: ' + this.uids.pallets[0].comment.value);
+    if (this.uids.first().comment.value.length > 0) {
+      ret.push('Name-Comment: ' + this.uids.first().comment.value);
     }
     ret.push('Expire-Date: ' + format_date(this.expireDate.value));
     ret.push('%commit');

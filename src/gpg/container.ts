@@ -1,14 +1,15 @@
 import Pallet from './pallet';
+import { observable } from 'mobx';
 import { assignOnError } from './helper';
 
 export class Container<T extends Pallet> {
-  public pallets: T[] = [];
+  @observable private pallets: T[] = [];
   public factory: () => T;
   constructor(factory: () => T) {
     this.factory = factory;
   }
   public length(): number {
-    return this.pallets.length;
+    return this.pallets.filter(i => i).length;
   }
 
   public errText(): string[] {
@@ -25,6 +26,32 @@ export class Container<T extends Pallet> {
       i.key = '' + (this.pallets.length + 1);
     }
     this.pallets.push(i);
+  }
+
+  public map(cb: (t: T, idx?: number) => any): any[] {
+    return this.pallets.map(cb);
+  }
+
+  public push(t: T): T {
+    this.pallets.push(t);
+    return t;
+  }
+
+  public first(): T {
+    return this.pallets.find(i => !!i);
+  }
+
+  public last(): T {
+    // uncool
+    return this.pallets.reverse().find(i => !!i);
+  }
+
+  public get(idx: number): T {
+    return this.pallets[idx];
+  }
+
+  public del(idx: number): void {
+    delete this.pallets[idx];
   }
   public valid(): boolean {
     let ret = true;

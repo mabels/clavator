@@ -1,6 +1,8 @@
 
 import * as React from 'react';
+import { observer } from 'mobx-react';
 import { observable } from 'mobx';
+import * as classnames from 'classnames';
 // import MutableString from '../gpg/mutable_string';
 import * as Actions from './actions';
 import AssistentCreateKey from './assistent-create-key';
@@ -15,6 +17,8 @@ import SimpleYubiKey from '../gpg/simple-yubikey';
 import RcWarrents from './rc-warrents';
 import CheckWarrents from './check-warrents';
 import RcPassPhrase from './rc-pass-phrase';
+import SimpleYubiKeyCommon from './simple-yubi-key-common';
+import InputPassPhrase from './input-pass-phrase';
 
 class AssistentState {
   // public current: Actions.Steps;
@@ -30,6 +34,7 @@ interface AssistentProps extends React.Props<Assistent> {
   cardStatusListState: CardStatusListState;
 }
 
+@observer
 export class Assistent
   extends React.Component<AssistentProps, AssistentState> {
   constructor() {
@@ -41,6 +46,7 @@ export class Assistent
       warrents: new Warrents(),
       simpleYubiKey: null
     };
+    this.handleReady = this.handleReady.bind(this);
   }
   public render_steps(): JSX.Element {
     // switch (this.state.current) {
@@ -80,44 +86,46 @@ export class Assistent
     return null;
   }
 
+  private handleReady(): void {
+    /* */
+  }
+
   private renderReady(): JSX.Element {
-    return <span>ready</span>;
+    return <div className="row">
+      <button type="button" onClick={this.handleReady}>ready</button>
+    </div>;
   }
 
   private renderSimpleCreateKey(): JSX.Element {
-    console.log(this.state.warrents.length(), this.state.warrents.valid());
-    if (!(this.state.warrents.length() && this.state.warrents.valid())) {
+    // console.log(this.state.warrents.length(), this.state.warrents.valid());
+    if (!this.state.simpleYubiKey) {
       return;
     }
-    return <ul>
-      <CheckWarrents simpleYubiKey={this.state.simpleYubiKey}>
-      <li>Expire-Date</li>
-      <li>Name-Real</li>
-      <li>Name-Email</li>
-      <li>Name-Comment</li>
-      <li>Key-Type</li>
-      <li>Master-Length</li>
-      <li>SubKey-Length</li>
-      </CheckWarrents>
-      <li><RcPassPhrase title="Password-Parts-0" simpleYubiKey={this.state.simpleYubiKey} /></li>
-      <li><RcPassPhrase title="Password-Parts-1" simpleYubiKey={this.state.simpleYubiKey} /></li>
-      <li><RcPassPhrase title="Admin-Key-Parts-0" simpleYubiKey={this.state.simpleYubiKey} /></li>
-      <li><RcPassPhrase title="Admin-Key-Parts-1" simpleYubiKey={this.state.simpleYubiKey} /></li>
-      <li>User-Key-0</li>
-      <li>User-Key-1</li>
-      <li>{this.renderReady()}</li>
-    </ul>;
+    return <form className={classnames({ good: this.state.simpleYubiKey.valid() })}>
+      <SimpleYubiKeyCommon simpleYubiKey={this.state.simpleYubiKey} />
+      <InputPassPhrase label="PasswordPhase" passPhrase={this.state.simpleYubiKey.passPhrase} />
+      <InputPassPhrase label="Admin-Key" passPhrase={this.state.simpleYubiKey.adminKey} />
+      <InputPassPhrase label="User-Key" passPhrase={this.state.simpleYubiKey.userKey}/>
+      {this.renderReady()}
+    </form>;
+  }
+
+  private renderWarrents(): JSX.Element {
+    if (this.state.simpleYubiKey) {
+      return;
+    }
+    return <RcWarrents warrents={this.state.warrents}
+    completed={() => {
+      this.setState(Object.assign(this.state, {
+        simpleYubiKey: new SimpleYubiKey(this.state.warrents)
+      }));
+    }} />;
   }
 
   public render(): JSX.Element {
     return (
       <div>
-        <RcWarrents warrents={this.state.warrents}
-          completed={() => {
-            this.setState(Object.assign(this.state, {
-              simpleYubiKey: new SimpleYubiKey(this.state.warrents)
-            }));
-          }} />
+        {this.renderWarrents()}
         {this.renderSimpleCreateKey()}
       </div>
       // <Actions.Actions current={this.state.current}
