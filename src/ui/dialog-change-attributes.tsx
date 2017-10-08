@@ -55,7 +55,7 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
         <h5>{this.state.changeCard.name}({this.state.changeCard.serialNo})</h5>
         {/*<form>*/}
         <label>AdminPin:</label><input type="password"
-          name="admin-pin" required={true}
+          name="admin-pin"
           className={classnames({ good: this.state.changeCard.adminPin.verify() })}
           onChange={(e: any) => {
             this.state.changeCard.adminPin.pin = e.target.value;

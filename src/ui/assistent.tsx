@@ -16,7 +16,6 @@ import Warrents from '../gpg/warrents';
 import SimpleYubiKey from '../gpg/simple-yubikey';
 import RcWarrents from './rc-warrents';
 import CheckWarrents from './check-warrents';
-import RcPassPhrase from './rc-pass-phrase';
 import SimpleYubiKeyCommon from './simple-yubi-key-common';
 import InputPassPhrase from './input-pass-phrase';
 

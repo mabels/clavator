@@ -1,6 +1,6 @@
 import Validatable from './validatable';
 import Warrent from './warrent';
-import Part from './part';
+import ApprovablePart from './approvable-part';
 
 let objectId = 0;
 
@@ -9,18 +9,18 @@ export class PassPhrase implements Validatable {
   public partCount: number;
   public partRegex: RegExp;
   public errorText: string;
-  public parts: Part[];
+  public parts: ApprovablePart[];
 
   constructor(pCountOrWarrents: Warrent[] | number, partRegex: RegExp, errText: string) {
-    this.key = '' + objectId++;
+    this.key = `PassPhrase:${objectId++}`;
     this.partRegex = partRegex;
     this.errorText = errText;
     if (typeof pCountOrWarrents == 'number') {
       this.partCount = pCountOrWarrents;
-      this.parts = Array(this.partCount).fill(new Part(this));
+      this.parts = Array(this.partCount).fill(new ApprovablePart(this));
     } else {
       this.partCount = pCountOrWarrents.length;
-      this.parts = pCountOrWarrents.map(w => new Part(this, w));
+      this.parts = pCountOrWarrents.map(w => new ApprovablePart(this, w));
     }
   }
 
@@ -40,7 +40,7 @@ export class PassPhrase implements Validatable {
     this.partCount = js['partCount'];
     this.partRegex = js['partRegex'];
     this.errorText = js['errorText'];
-    this.parts = js['parts'].map((i: any) => (new Part(this)).fill(i));
+    this.parts = js['parts'].map((i: any) => (new ApprovablePart(this)).fill(i));
   }
 
 }

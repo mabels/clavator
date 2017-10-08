@@ -82,7 +82,7 @@ export class AskKeyToYubiKey
         <div className="row">
         <label>Passphrase:</label><input type="password"
           className={classnames({ good: this.state.keyToYubiKey.verify() })}
-          name={`aktyk-${this.props.fingerprint}`} required={true}
+          name={`aktyk-${this.props.fingerprint}`}
           onChange={(e: any) => {
             this.state.keyToYubiKey.passphrase.value = e.target.value;
             this.setState(Object.assign({}, this.state, {
@@ -94,7 +94,7 @@ export class AskKeyToYubiKey
         <div className="row">
         <label>AdminPin:</label><input type="password"
           className={classnames({ good: this.state.keyToYubiKey.admin_pin.verify() })}
-          name={`aktyk-${this.props.fingerprint}`} required={true}
+          name={`aktyk-${this.props.fingerprint}`}
           onChange={(e: any) => {
             this.state.keyToYubiKey.admin_pin.pin = e.target.value;
             this.setState(Object.assign({}, this.state, {

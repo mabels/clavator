@@ -151,7 +151,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     return (
       <div className={classnames({ six: true, columns: true })} >
         <label>{label}:</label><input type="password"
-          name={key} required={true}
+          name={key}
           className={classnames({ 'u-full-width': true, good: pp.valid_password() })}
           onChange={(e: any) => {
             pp.password = e.target.value;
@@ -165,7 +165,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     return (
       <div className="six columns">
         <label>{label}(verify):</label><input type="password"
-          name={key + '-verify'} required={true}
+          name={key + '-verify'}
           className={classnames({ 'u-full-width': true, good: pp.valid_verify() })}
           onChange={(e: any) => {
             pp.verify = e.target.value;
@@ -191,7 +191,6 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
           <div className="five columns">
             <label>Name-Real:</label><input type="text"
               className={classnames({ 'u-full-width': true, 'good': uid.name.valid() })}
-              required={true}
               name={`uid.name.{idx}`}
               onChange={(e: any) => {
                 uid.name.value = e.target.value;
@@ -203,7 +202,6 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
             <label>Name-Email:</label><input type="email"
               className={classnames({ 'u-full-width': true, good: uid.email.valid() })}
               autoComplete="on"
-              required={true}
               name="email"
               onChange={(e: any) => {
                 uid.email.value = e.target.value;

@@ -21,7 +21,7 @@ export class SimpleYubikey {
   @observable public adminKey: PassPhrase;
   @observable public userKey: PassPhrase;
 
-  private static createPassPhrase(warrents: Warrents, reg: string, errText: string,
+  public static createPassPhrase(warrents: Warrents, reg: string, errText: string,
     minLen: number, maxLen?: number): PassPhrase {
     let strMaxLen = maxLen || '';
     let wlen = warrents.length();
@@ -45,6 +45,8 @@ export class SimpleYubikey {
     // } else {
     //   return (1 + quot) * wlen;
     // }
+    if (minLen == maxLen) {
+    }
     console.log('createPassPhrease', wlen, warrents, maxLen, minLen);
     const regex = new RegExp(`^${reg}{${minLen},${strMaxLen}}$`);
     return new PassPhrase(warrents.map(w => w), regex, errText);

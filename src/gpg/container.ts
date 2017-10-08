@@ -21,11 +21,12 @@ export class Container<T extends Pallet> {
     }
     return ret;
   }
-  public add(i: T): void {
+  public add(i: T): Container<T> {
     if (!i.key) {
       i.key = '' + (this.pallets.length + 1);
     }
     this.pallets.push(i);
+    return this;
   }
 
   public map(cb: (t: T, idx?: number) => any): any[] {

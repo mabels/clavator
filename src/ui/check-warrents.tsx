@@ -2,6 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 import * as classnames from 'classnames';
 import SimpleYubiKey from '../gpg/simple-yubikey';
+import BooleanValue from '../gpg/boolean-value';
 import Warrent from '../gpg/warrent';
 
 interface CheckWarrentsState {
@@ -11,6 +12,7 @@ interface CheckWarrentsState {
 interface CheckWarrentsProps extends React.Props<CheckWarrents> {
   simpleYubiKey: SimpleYubiKey;
   valid?: boolean;
+  readonly: BooleanValue;
 }
 
 @observer export class CheckWarrents extends
@@ -23,9 +25,7 @@ interface CheckWarrentsProps extends React.Props<CheckWarrents> {
 
   private checkWarrents(i: Warrent): void {
     if (!this.state.checkedWarrents.length) {
-      React.Children.map(this.props.children, (child) => {
-          console.log(child, (child as any).$$typeof);
-      });
+      this.props.readonly.set(true);
     }
     this.state.checkedWarrents.push(i);
     this.setState(this.state);
@@ -36,7 +36,7 @@ interface CheckWarrentsProps extends React.Props<CheckWarrents> {
       {this.props.simpleYubiKey.warrents.map((i, idx) => {
         const good = !!this.state.checkedWarrents.find(j => i === j);
         const disabled = !this.props.valid;
-        console.log('renderWarrents:', good, disabled);
+        {/* console.log('renderWarrents:', good, disabled); */}
         return <button disabled={disabled || good}
                 className={classnames({ fail: this.props.valid && !good, good: good })}
                 key={i.key} type="button"

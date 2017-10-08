@@ -1,11 +1,12 @@
+import { observable } from 'mobx';
 import Warrent from './warrent';
 import Validatable from './validatable';
 import PassPhrase from './pass-phrase';
 import StringValue from './string-value';
 
 export class Part implements Validatable {
-  public part: StringValue;
-  public verify: StringValue;
+  @observable public part: StringValue;
+  @observable public verify: StringValue;
   public warrent: Warrent;
   public passPhrase: PassPhrase;
 

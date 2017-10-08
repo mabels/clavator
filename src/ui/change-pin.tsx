@@ -51,7 +51,7 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
         className={classnames({ 'ChangePin': true, good: this.state.pin.verify() })}>
         <div className="row">
           <label>AdminPin:</label><input type="password"
-            name="admin-pin" required={true}
+            name="admin-pin"
             className={classnames({ good: this.state.pin.admin_pin.verify() })}
             onChange={(e: any) => {
               this.state.pin.admin_pin.pin = e.target.value;
@@ -63,7 +63,7 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
 
         <div className="row">
           <label>NewPin{this.props.type}:</label><input type="password"
-            name="new-pin" required={true}
+            name="new-pin"
             className={classnames({ good: this.state.pin.new_pin.verify() })}
             onChange={(e: any) => {
               this.state.pin.new_pin.pin = e.target.value;
@@ -72,7 +72,7 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
               }));
             }} />
           <input type="password"
-            name="verify-new-pin" required={true}
+            name="verify-new-pin"
             className={classnames({ good: this.state.pin.new_pin_verify.verify() })}
             onChange={(e: any) => {
               this.state.pin.new_pin_verify.pin = e.target.value;

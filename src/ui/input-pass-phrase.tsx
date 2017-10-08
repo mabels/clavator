@@ -2,15 +2,16 @@ import * as React from 'react';
 import * as classnames from 'classnames';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
+import BooleanValue from '../gpg/boolean-value';
 import SimpleYubiKey from '../gpg/simple-yubikey';
 import CheckWarrents from './check-warrents';
 import DateValue from '../gpg/date-value';
 import { format_date } from '../gpg/helper';
 import PassPhrase from '../gpg/pass-phrase';
-import Part from '../gpg/part';
+import ApprovablePart from '../gpg/approvable-part';
 import InputPassword from './input-password';
 
-interface InputPassPhraseState {
+class InputPassPhraseState {
 }
 
 interface InputPassPhraseProps extends React.Props<InputPassPhrase> {
@@ -18,17 +19,23 @@ interface InputPassPhraseProps extends React.Props<InputPassPhrase> {
   passPhrase: PassPhrase;
 }
 
-@observer export class InputPassPhrase extends
+@observer
+export class InputPassPhrase extends
   React.Component<InputPassPhraseProps, InputPassPhraseState> {
 
   constructor() {
     super();
-    this.state = {};
+    this.state = {
+    };
   }
 
-  public renderWarrent(pp: Part): JSX.Element {
+  public renderWarrent(pp: ApprovablePart): JSX.Element {
     if (pp.warrent) {
-      return <button>{pp.warrent.initial.value}</button>;
+      return <button disabled={pp.approved.value || !this.props.passPhrase.valid()}
+        onClick={(e) => {
+          e.stopPropagation();
+          pp.approved.set(true);
+        }} >{pp.warrent.initial.value}</button>;
     }
     return null;
   }
@@ -42,14 +49,12 @@ interface InputPassPhraseProps extends React.Props<InputPassPhrase> {
         {this.props.passPhrase.parts.map((pp, idx) => {
           return <div key={`p1-${this.props.passPhrase.key}-${idx}`}
             className={classnames({
-              two: true,
+              four: true,
               columns: true,
-              good: this.props.passPhrase.valid()
+              good: pp.valid()
             })} >
-            <InputPassword value={pp.part} />
-            < br />
-            <InputPassword value={pp.verify} />
-            < br />
+            <InputPassword readonly={pp.approved} value={pp.part} />
+            <InputPassword readonly={pp.approved} value={pp.verify} />
             {this.renderWarrent(pp)}
           </div>;
         })}

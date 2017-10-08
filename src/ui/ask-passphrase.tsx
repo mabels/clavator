@@ -29,7 +29,7 @@ export class AskPassphrase
         onSubmit={(e) => e.preventDefault()}
         className="AskPassphrase" key={this.props.fingerprint}>
         <label>Passphrase:</label><input type="password"
-          name={`ap-${this.props.key}`} required={true}
+          name={`ap-${this.props.key}`}
           onChange={(e: any) => {
             if (this.state.value) {
               this.setState({ value : e.target.value });
