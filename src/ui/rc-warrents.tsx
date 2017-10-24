@@ -5,7 +5,7 @@ import Warrent from '../gpg/warrent';
 import Warrents from '../gpg/warrents';
 
 interface RcWarrentsState {
-  warrent: Warrent;
+  // warrent: Warrent;
   done: boolean;
 }
 
@@ -20,7 +20,7 @@ interface RcWarrentsProps extends React.Props<RcWarrents> {
   constructor() {
     super();
     this.state = {
-      warrent: new Warrent(),
+      // warrent: new Warrent(),
       done: false
     };
     this.handlePressEnter = this.handlePressEnter.bind(this);
@@ -28,37 +28,38 @@ interface RcWarrentsProps extends React.Props<RcWarrents> {
   }
 
   private checkOrComplete(warrents: Warrents, warrent: Warrent): string {
-    const text = warrent.valid() ? 'add' : '';
-    if (warrents.length()) {
-      return warrent.initial.value.length ? text : 'done';
+    const text = warrents.valid() ? 'add' : '';
+    if (warrents.length() > 1) {
+      return warrent.warrent.value.length ? text : 'done';
     }
     return text;
   }
 
   private addClick(): void {
-    switch (this.checkOrComplete(this.props.warrents, this.state.warrent)) {
+    switch (this.checkOrComplete(this.props.warrents, this.props.warrents.last())) {
       case 'add':
-        this.props.warrents.add(this.state.warrent);
-        this.setState({
-          warrent: new Warrent()
-        });
+        this.props.warrents.add(new Warrent());
+        // this.setState({
+          // warrent: new Warrent()
+        // });
         break;
       default:
-        this.setState({
-          done: true
-        });
+        this.props.warrents.pop();
+        this.setState({ done: true });
         this.props.completed();
         break;
     }
   }
 
   private renderButton(): JSX.Element {
-    const coc = this.checkOrComplete(this.props.warrents, this.state.warrent);
-    console.log('renderButton:', coc);
-    if (!coc.length) {
+    const coc = this.checkOrComplete(this.props.warrents, this.props.warrents.last());
+    if (coc.length <= 1) {
       return null;
     }
-    return <button onClick={this.addClick}>{coc}</button>;
+    const clazz: any = { };
+    clazz[coc] = true;
+    return <button className={classnames(clazz)}
+      onClick={this.addClick}>{coc}</button>;
   }
 
   private handlePressEnter(e: any): void {
@@ -69,17 +70,22 @@ interface RcWarrentsProps extends React.Props<RcWarrents> {
   }
 
   private renderInput(): JSX.Element {
+    // console.log('-1-');
     if (this.state.done) {
       return null ;
     }
-    return <li key={'input'}>
+    // console.log('-2-', this.props.warrents.last().key);
+    return <li key={this.props.warrents.last().key}>
       <input type="text"
-        className={classnames({ good: this.state.warrent.valid() })}
-        value={this.state.warrent.initial.value}
+        autoFocus
+        className={classnames({
+           good: this.props.warrents.valid()
+        })}
+        value={this.props.warrents.last().warrent.value}
         onKeyPress={this.handlePressEnter}
         onChange={(e: any) => {
-          this.state.warrent.initial.value = e.target.value;
-          this.setState(this.state);
+          this.props.warrents.last().warrent.value = e.target.value;
+          // this.setState(this.tate);
         }}
       />{this.renderButton()}
     </li>;
@@ -87,14 +93,17 @@ interface RcWarrentsProps extends React.Props<RcWarrents> {
 
   public render(): JSX.Element {
     return (
-      <div>
-        Warrents-List
-        <ol>
-          {this.props.warrents.map(i => {
-            return <li key={i.key}>{i.initial.value}</li>;
-          }).concat([this.renderInput()])}
+        <ol className="WarrentsList">
+          {this.props.warrents.map((i, idx) => {
+            if (idx == this.props.warrents.length() - 1) {
+              // console.log(`Input:Warrents:${idx}:${this.props.warrents.length()}`);
+              return this.renderInput();
+            } else {
+              // console.log(`Li:Warrents:${idx}:${this.props.warrents.length()}`);
+              return <li key={i.key}>{i.warrent.value}</li>;
+            }
+          })}
         </ol>
-      </div>
     );
   }
 

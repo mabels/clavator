@@ -2,7 +2,6 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 import * as classnames from 'classnames';
 import SimpleYubiKey from '../gpg/simple-yubikey';
-import CheckWarrents from './check-warrents';
 import BooleanValue from '../gpg/boolean-value';
 import DateValue from '../gpg/date-value';
 import { format_date } from '../gpg/helper';

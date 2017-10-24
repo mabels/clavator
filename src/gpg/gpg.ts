@@ -516,11 +516,13 @@ export class Gpg {
             }
             try {
               if (s1 != s2) {
-                if (await fsPromise.exists(s2)) {
+                try {
+                  await fsPromise.ensureFile(s2);
                   await fsPromise.unlink(s2);
+                  await fsPromise.symlink(s1, s2);
+                } catch (e) {
+                  // nothing
                 }
-                await fsPromise.symlink(s1, s2);
-                // fse.ensureSymlink
               }
               console.log('killed:', s1, s2);
               cb(gpgSmartCard, ares);

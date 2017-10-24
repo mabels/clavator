@@ -13,10 +13,11 @@ import * as ListSecretKeys from '../gpg/list_secret_keys';
 import * as WsChannel from './ws-channel';
 import CardStatusListState from './card-status-list-state';
 import Warrents from '../gpg/warrents';
+import Warrent from '../gpg/warrent';
 import SimpleYubiKey from '../gpg/simple-yubikey';
 import RcWarrents from './rc-warrents';
-import CheckWarrents from './check-warrents';
-import SimpleYubiKeyCommon from './simple-yubi-key-common';
+import RcCheckWarrents from './rc-check-warrents';
+import RcSimpleKeyCommon from './rc-simple-key-common';
 import InputPassPhrase from './input-pass-phrase';
 
 class AssistentState {
@@ -42,47 +43,10 @@ export class Assistent
       // current: Actions.Steps.CheckCard, // Actions.Steps.CreateKey,
       // completed: Actions.Steps.None,
       // secretKey: new ListSecretKeys.SecretKey(),
-      warrents: new Warrents(),
+      warrents: (new Warrents()).add(new Warrent()),
       simpleYubiKey: null
     };
     this.handleReady = this.handleReady.bind(this);
-  }
-  public render_steps(): JSX.Element {
-    // switch (this.state.current) {
-    //   case Actions.Steps.CreateKey:
-    //     return <AssistentCreateKey
-    //       channel={this.props.channel}
-    //       secretKey={this.state.secretKey}
-    //       onNext={() => {
-    //         console.log('SecretKey:', this.state.secretKey);
-    //         this.setState({
-    //           secretKey: this.state.secretKey,
-    //           current: Actions.Steps.CheckCard,
-    //           completed: this.state.completed | Actions.Steps.CreateKey
-    //             | Actions.Steps.CheckCard // achtung muss weg!
-    //         });
-    //       }} />;
-    //   case Actions.Steps.CheckCard:
-    //     return <AssistentCheckCard
-    //       cardStatusListState={this.props.cardStatusListState}
-    //       secretKey={this.state.secretKey}
-    //       onNext={() => {
-    //         this.setState({
-    //           current: Actions.Steps.SendToCard,
-    //           completed: this.state.completed | Actions.Steps.CheckCard
-    //         });
-    //       }} />;
-    //   case Actions.Steps.SendToCard:
-    //     return <AssistentSendKeyToCard onNext={() => {
-    //         this.setState({
-    //           current: Actions.Steps.Completed,
-    //           completed: this.state.completed | Actions.Steps.SendToCard | Actions.Steps.Completed
-    //         });
-    //       }} />;
-    //   case Actions.Steps.Completed:
-    //     return <AssistentCompleted />;
-    // }
-    return null;
   }
 
   private handleReady(): void {
@@ -100,25 +64,48 @@ export class Assistent
     if (!this.state.simpleYubiKey) {
       return;
     }
-    return <form className={classnames({ good: this.state.simpleYubiKey.valid() })}>
-      <SimpleYubiKeyCommon simpleYubiKey={this.state.simpleYubiKey} />
-      <InputPassPhrase label="PasswordPhase" passPhrase={this.state.simpleYubiKey.passPhrase} />
-      <InputPassPhrase label="Admin-Key" passPhrase={this.state.simpleYubiKey.adminKey} />
-      <InputPassPhrase label="User-Key" passPhrase={this.state.simpleYubiKey.userKey}/>
+    console.log('renderSimpleCreateKey', this.state.simpleYubiKey.common.approvableWarrents.non());
+    return <div className={classnames({
+        SimpleCreateKey: true,
+        good: this.state.simpleYubiKey.valid(),
+        completed: this.state.simpleYubiKey.completed()
+    })}>
+      <RcSimpleKeyCommon simpleKeyCommon={this.state.simpleYubiKey.common} />
+      <div className={classnames({
+          Passwords: true,
+          readonly: this.state.simpleYubiKey.common.approvableWarrents.non()
+        })}>
+      <InputPassPhrase label="PasswordPhase"
+         readonly={this.state.simpleYubiKey.common.approvableWarrents.non()}
+         approvedWarrents={this.state.simpleYubiKey.common.approvableWarrents}
+         passPhrase={this.state.simpleYubiKey.passPhrase} />
+      <InputPassPhrase label="Admin-Key"
+         readonly={this.state.simpleYubiKey.common.approvableWarrents.non()}
+         approvedWarrents={this.state.simpleYubiKey.common.approvableWarrents}
+         passPhrase={this.state.simpleYubiKey.adminKey} />
+      <InputPassPhrase label="User-Key"
+         readonly={this.state.simpleYubiKey.common.approvableWarrents.non()}
+         approvedWarrents={this.state.simpleYubiKey.common.approvableWarrents}
+         passPhrase={this.state.simpleYubiKey.userKey}/>
+      </div>
       {this.renderReady()}
-    </form>;
+    </div>;
   }
 
   private renderWarrents(): JSX.Element {
     if (this.state.simpleYubiKey) {
       return;
     }
-    return <RcWarrents warrents={this.state.warrents}
-    completed={() => {
-      this.setState(Object.assign(this.state, {
-        simpleYubiKey: new SimpleYubiKey(this.state.warrents)
-      }));
-    }} />;
+    return <div>
+      <label>WarrentsList:</label>
+      <RcWarrents
+        warrents={this.state.warrents}
+        completed={() => {
+          this.setState(Object.assign(this.state, {
+            simpleYubiKey: new SimpleYubiKey(this.state.warrents)
+          }));
+        }} />
+        </div>;
   }
 
   public render(): JSX.Element {
@@ -127,16 +114,6 @@ export class Assistent
         {this.renderWarrents()}
         {this.renderSimpleCreateKey()}
       </div>
-      // <Actions.Actions current={this.state.current}
-      //                  completed={this.state.completed}
-      //                  onClick={(a) => {
-      //                    if (a & this.state.completed) {
-      //                      this.setState({current: a});
-      //                    }
-      //                  }}
-      //                  >
-      //   {this.render_steps()}
-      // </Actions.Actions>
     );
   }
 }

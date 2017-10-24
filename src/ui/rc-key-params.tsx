@@ -23,13 +23,16 @@ export class RcKeyParams extends
     return (
       <div className="row">
         <div className="three columns">
-          <RcOption label="Key-Type" option={this.props.keyParams.type} readonly={this.props.readonly} />
+          <RcOption name="KeyType" label="Key-Type"
+            option={this.props.keyParams.type} readonly={this.props.readonly} />
         </div>
         <div className="three columns">
-          <RcOption label="Master-Key-Length" option={this.props.keyParams.masterLen} readonly={this.props.readonly} />
+          <RcOption name="MasterKeyLength" label="Master-Key-Length"
+             option={this.props.keyParams.masterLen} readonly={this.props.readonly} />
         </div>
         <div className="three columns">
-          <RcOption label="Sub-Key-Length" option={this.props.keyParams.subLen} readonly={this.props.readonly} />
+          <RcOption name="SubKeyLength" label="Sub-Key-Length"
+             option={this.props.keyParams.subLen} readonly={this.props.readonly} />
         </div>
       </div>
     );

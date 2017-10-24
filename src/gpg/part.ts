@@ -1,5 +1,5 @@
 import { observable } from 'mobx';
-import Warrent from './warrent';
+import RegMinMaxWarrent from './reg-min-max-warrent';
 import Validatable from './validatable';
 import PassPhrase from './pass-phrase';
 import StringValue from './string-value';
@@ -7,14 +7,13 @@ import StringValue from './string-value';
 export class Part implements Validatable {
   @observable public part: StringValue;
   @observable public verify: StringValue;
-  public warrent: Warrent;
+  public regMinMaxWarrent: RegMinMaxWarrent;
   public passPhrase: PassPhrase;
 
-  constructor(passPhrase: PassPhrase, warrent?: Warrent) {
-
-    this.part = new StringValue(passPhrase.partRegex, '');
-    this.verify = new StringValue(passPhrase.partRegex, '');
-    this.warrent = warrent;
+  constructor(passPhrase: PassPhrase, warrent: RegMinMaxWarrent) {
+    this.part = new StringValue(warrent.createReg(), '');
+    this.verify = new StringValue(warrent.createReg(), '');
+    this.regMinMaxWarrent = warrent;
     this.passPhrase = passPhrase;
   }
 
@@ -30,8 +29,8 @@ export class Part implements Validatable {
   public fill(js: any): Part {
     this.part = js['part'];
     this.verify = js['verify'];
-    this.warrent = new Warrent();
-    this.warrent.fill(js['warrent']);
+    this.regMinMaxWarrent = RegMinMaxWarrent.fill(js['RegMinMaxWarrent']);
+    // this.regMinMaxWarrent.fill();
     // this.passPhrase = js['passPhrase'];
     return this;
   }

@@ -54,10 +54,15 @@ export class RcUids extends
   }
 
   private renderUid(idx: number, uid: Uid): JSX.Element {
-    return <div className={classnames({ 'u-full-width': true, 'good': uid.valid() })} key={idx}>
+    return <div className={classnames({
+        'Uid': true,
+        'u-full-width': true,
+        'good': uid.valid() })} key={idx}>
       <div className="row">
         <div className="five columns">
-          <label>Name-Real:</label><input type="text"
+          <label>Name-Real:</label><input
+            type="text"
+            autoFocus
             className={classnames({ 'u-full-width': true,
               'good': uid.name.valid(),
               'readonly': this.props.readonly.value
@@ -113,7 +118,10 @@ export class RcUids extends
         </div>
         <div className="two columns">
           <button type="button"
-                  className={classnames({ 'bad': uid.valid() })}
+                  className={classnames({
+                    AddUid: true,
+                    'bad': uid.valid()
+                  })}
                   disabled={this.props.readonly.value || !uid.valid()}
                   onClick={this.handleAddUid.bind(this)}>Add Uid</button>
         </div>
@@ -124,7 +132,10 @@ export class RcUids extends
 
   public render(): JSX.Element {
     return (
-      <div>
+      <div className={classnames({
+        'Uids': true,
+        'good': this.props.uids.valid()
+      })}>
         {this.props.uids.map((sb: Uid, i: number) => {
           if (sb) {
             return this.renderUid(i, sb);

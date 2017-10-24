@@ -10,6 +10,7 @@ interface RcOptionState<T> {
 }
 
 interface RcOptionProps<T> extends React.Props<RcOption<T>> {
+  name: string;
   label: string;
   option: Option<T>;
   readonly: BooleanValue;
@@ -33,7 +34,8 @@ export class RcOption<T> extends
     return (
       <span>
         <label>{this.props.label}:</label>
-        <select className={classnames({'u-full-width': true, readonly: this.props.readonly.value })}
+        <select name={this.props.name}
+          className={classnames({'u-full-width': true, readonly: this.props.readonly.value })}
           disabled={this.props.readonly.value}
           defaultValue={value}
           onChange={(e: any) => {

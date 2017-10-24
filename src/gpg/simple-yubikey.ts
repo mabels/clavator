@@ -6,70 +6,50 @@ import Validatable from './validatable';
 // import StringValue from './string-value';
 import KeyGenUid from './key-gen-uid';
 import Warrents from './warrents';
+import Warrent from './warrent';
 import KeyParams from './key-params';
 import PassPhrase from './pass-phrase';
+import SimpleKeyCommon from './simple-key-common';
 import { expireDate, assignOnError } from './helper';
 
 export class SimpleYubikey {
   @observable public readonly warrents: Warrents;
 
-  @observable public expireDate: DateValue;
-  @observable public keyParams: KeyParams;
+  @observable public common: SimpleKeyCommon;
 
-  @observable public uids: Container<KeyGenUid>;
   @observable public passPhrase: PassPhrase;
   @observable public adminKey: PassPhrase;
   @observable public userKey: PassPhrase;
 
-  public static createPassPhrase(warrents: Warrents, reg: string, errText: string,
-    minLen: number, maxLen?: number): PassPhrase {
-    let strMaxLen = maxLen || '';
-    let wlen = warrents.length();
-    if (wlen > maxLen) {
-      wlen = maxLen;
-    }
-    minLen = minLen / wlen;
-    if (!minLen) {
-      minLen = 1;
-    }
-    maxLen = maxLen / wlen;
-    if (!maxLen) {
-      maxLen = 1;
-    }
-    // if (wlen >= 8) {
-    //   return wlen;
-    // }
-    // let quot = ~~(8 / wlen);
-    // if (quot * wlen == 8) {
-    //   return 8;
-    // } else {
-    //   return (1 + quot) * wlen;
-    // }
-    if (minLen == maxLen) {
-    }
-    console.log('createPassPhrease', wlen, warrents, maxLen, minLen);
-    const regex = new RegExp(`^${reg}{${minLen},${strMaxLen}}$`);
-    return new PassPhrase(warrents.map(w => w), regex, errText);
-  }
   constructor(warrents: Warrents) {
     this.warrents = warrents;
-    this.expireDate = new DateValue(expireDate(), 'expireDate error');
-    this.keyParams = new KeyParams();
-    this.uids = new Container<KeyGenUid>(() => { return new KeyGenUid(); });
-    this.uids.add(new KeyGenUid());
-    this.passPhrase = SimpleYubikey.createPassPhrase(warrents, '.', 'PassPhrase error', 14);
-    this.adminKey = SimpleYubikey.createPassPhrase(warrents, '[0-9]', 'adminpin error', 8, 8);
-    this.userKey = new PassPhrase(1, /^[0-9]{6,8}$/, 'userPin Error');
+    this.common = new SimpleKeyCommon(warrents);
+    this.passPhrase = PassPhrase.createPassPhrase(warrents, '.', 'PassPhrase error', 14);
+    this.adminKey = PassPhrase.createPassPhrase(warrents, '[0-9]', 'adminpin error', 8, 8);
+    const me = (new Warrents()).add(warrents.first());
+    this.userKey = PassPhrase.createPassPhrase(me, '[0-9]', 'userPin Error', 6, 8);
   }
 
   public valid(): boolean {
     return this.warrents.valid() &&
-      this.expireDate.valid() &&
-      this.keyParams.valid() &&
-      this.uids.valid() &&
+      this.common.valid() &&
       this.passPhrase.valid() &&
       this.adminKey.valid() &&
       this.userKey.valid();
+  }
+
+  public completed(): boolean {
+    // console.log('SimpleYubikey:',
+    //       this.valid(),
+    //       this.common.completed(),
+    //       this.passPhrase.completed(),
+    //       this.adminKey.completed(),
+    //       this.userKey.valid());
+    return this.valid() &&
+           this.common.completed &&
+           this.passPhrase.completed() &&
+           this.adminKey.completed() &&
+           this.userKey.completed();
   }
 
   // public password: PwPair = new PwPair(/^.{14,1024}$/, 'Password Error');

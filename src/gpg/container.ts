@@ -3,7 +3,7 @@ import { observable } from 'mobx';
 import { assignOnError } from './helper';
 
 export class Container<T extends Pallet> {
-  @observable private pallets: T[] = [];
+  @observable protected pallets: T[] = [];
   public factory: () => T;
   constructor(factory: () => T) {
     this.factory = factory;
@@ -26,11 +26,20 @@ export class Container<T extends Pallet> {
       i.key = '' + (this.pallets.length + 1);
     }
     this.pallets.push(i);
+    // console.log('Container:Pallets:Push', this.pallets);
     return this;
   }
 
-  public map(cb: (t: T, idx?: number) => any): any[] {
-    return this.pallets.map(cb);
+  public map<A>(cb: (t: T, idx?: number, ar?: T[]) => A): A[] {
+    return this.pallets.map((a, b, c) => {
+      return !!a && cb(a, b, c);
+    });
+  }
+
+  public find<A>(cb: (t: T, idx?: number, ar?: T[]) => boolean): T {
+    return this.pallets.find((a, b, c) => {
+      return !!a && cb(a, b, c);
+    });
   }
 
   public push(t: T): T {
@@ -52,8 +61,25 @@ export class Container<T extends Pallet> {
   }
 
   public del(idx: number): void {
-    delete this.pallets[idx];
+    // delete this.pallets[idx];
+    this.pallets[idx] = undefined;
   }
+
+  public pop(): void {
+    // console.log('i-delLast:', this.length());
+    this.pallets.pop();
+    // this.pallets.reverse().find((i, idx) => {
+    //   if (i) {
+    //     console.log('-delLast:It:', idx, this.pallets.length, this.pallets);
+    //     delete this.pallets[(this.pallets.length - 1) - idx];
+    //     console.log('+delLast:It:', idx, this.pallets.length, this.pallets);
+    //     return true;
+    //   }
+    //   return false;
+    // });
+    // console.log('o-delLast:', this.length());
+  }
+
   public valid(): boolean {
     let ret = true;
     for (let sk of this.pallets) {
@@ -63,6 +89,7 @@ export class Container<T extends Pallet> {
     }
     return ret;
   }
+
   public fill(js: any): void {
     this.pallets = [];
     for (let i of js['pallets']) {

@@ -3,11 +3,12 @@ import Warrent from './warrent';
 import PassPhrase from './pass-phrase';
 import Part from './part';
 import BooleanValue from './boolean-value';
+import RegMinMaxWarrent from './reg-min-max-warrent';
 
 export class ApprovablePart extends Part {
   @observable public approved: BooleanValue;
 
-  constructor(passPhrase: PassPhrase, warrent?: Warrent) {
+  constructor(passPhrase: PassPhrase, warrent?: RegMinMaxWarrent) {
     super(passPhrase, warrent);
     this.approved = new BooleanValue('').set(false);
   }

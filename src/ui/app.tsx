@@ -51,10 +51,10 @@ export class App extends React.Component<{}, AppState> {
       <ChannelStatus channel={channel}>
         <img src={Clavator} className="logo" />
         <Tabs >
-          <TabList>
-            <Tab>KeyChainList</Tab>
-            <Tab>CardStatusList</Tab>
-            <Tab>Assistent</Tab>
+          <TabList className="MainMenu" >
+            <Tab className="KeyChainList">KeyChainList</Tab>
+            <Tab className="CardStatusList">CardStatusList</Tab>
+            <Tab className="Assistent">Assistent</Tab>
           </TabList>
           <TabPanel>
             <a title="add new key"
@@ -79,3 +79,5 @@ export class App extends React.Component<{}, AppState> {
     );
   }
 }
+
+export default App;

@@ -6,11 +6,17 @@ const EmailRegExp = new RegExp([`^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+
 `@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+[a-z])|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))`,
 `(:[0-9]{1,5})?$`].join(''), 'i');
 
+let key = 1;
+
 export class KeyGenUid implements Pallet {
   public key: string;
   public name: StringValue = new StringValue(/^([A-Z][a-z]*\s*)+$/, 'name error');
   public email: StringValue = new StringValue(EmailRegExp, 'email error');
   public comment: StringValue = new StringValue(/.*/, 'comment error');
+
+  constructor() {
+    this.key = 'KeyGenUid:' + key++;
+  }
 
   public fill(js: any): void {
     StringValue.fill(js['name'] || {}, this.name);
@@ -19,7 +25,10 @@ export class KeyGenUid implements Pallet {
   }
 
   public valid(): boolean {
-    return this.name.valid() && this.email.valid() &&
+    // console.log('KeyGenUid:', this.key, this.name.valid(),
+    //    this.email.valid(), this.comment.valid());
+    return this.name.valid() &&
+      this.email.valid() &&
       this.comment.valid();
   }
 
