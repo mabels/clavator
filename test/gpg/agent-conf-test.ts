@@ -1,7 +1,7 @@
 
 import { assert } from 'chai';
 
-import * as Ac from '../../src/gpg/agent_conf';
+import * as Ac from '../../src/gpg/agent-conf';
 import * as fs from 'fs';
 
 function AgentConfString(): string {

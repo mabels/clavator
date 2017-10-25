@@ -1,6 +1,6 @@
-import Option from './option';
-import Validatable from './validatable';
-import { assignOnError } from './helper';
+import Option from '../model/option';
+import Validatable from '../model/validatable';
+import { assignOnError } from '../model/helper';
 
 export class KeyParams implements Validatable {
   public type: Option<string>;

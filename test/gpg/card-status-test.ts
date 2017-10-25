@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import * as cs from '../../src/gpg/card_status';
+import * as cs from '../../src/gpg/card-status';
 
 function gpg_card_funny(): string {
   return [

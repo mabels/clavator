@@ -1,6 +1,6 @@
 import { assert } from 'chai';
 
-import PassPhrase from '../../src/gpg/pass-phrase';
+import PassPhrase from '../../src/ui/model/pass-phrase';
 import Warrents from '../../src/gpg/warrents';
 import Warrent from '../../src/gpg/warrent';
 

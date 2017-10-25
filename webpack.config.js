@@ -13,7 +13,7 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = [{
   target: 'web',
-  entry: './src/client',
+  entry: './src/ui/client',
   output: {
     path: __dirname + '/dist',
     filename: 'client.js'
@@ -58,7 +58,7 @@ module.exports = [{
   ]
 },{
   target: 'node',
-  entry: './src/gpg-mock',
+  entry: './src/server/gpg-mock',
   output: {
     path: __dirname + '/dist',
     filename: 'gpg-mock.js',

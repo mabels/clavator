@@ -1,6 +1,6 @@
-import { assignOnError } from './helper';
-import Pallet from './pallet';
-import StringValue from './string-value';
+import { assignOnError } from '../model/helper';
+import Pallet from '../model/pallet';
+import StringValue from '../model/string-value';
 
 const EmailRegExp = new RegExp([`^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*`,
 `@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+[a-z])|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))`,

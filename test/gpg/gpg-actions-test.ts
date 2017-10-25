@@ -7,13 +7,13 @@ import * as uuid from 'node-uuid';
 
 import * as path from 'path';
 
-import * as ListSecretKeys from '../../src/gpg/list_secret_keys';
+import * as ListSecretKeys from '../../src/gpg/list-secret-keys';
 
 import * as KeyGen from '../../src/gpg/key-gen';
 
 import * as Rimraf from 'rimraf';
 
-import { RequestAscii } from '../../src/gpg/request_ascii';
+import { RequestAscii } from '../../src/model/request-ascii';
 import KeyToYubiKey from '../../src/gpg/key-to-yubikey';
 
 function expireDate(): Date {

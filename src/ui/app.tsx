@@ -3,19 +3,19 @@ import './normalize.css';
 import './skeleton.css';
 import './app.less';
 import 'font-awesome/less/font-awesome.less';
-const Clavator = require('./clavator.png');
+const Clavator = require('./img/clavator.png');
 
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-import { KeyChainList } from './key-chain-list';
-import { CardStatusList } from './card-status-list';
+import { KeyChainList } from './components/key-chain-list';
+import { CardStatusList } from './components/card-status-list';
 // import { CreateKey } from './create-key';
 // import { Progressor } from './progressor';
-import ChannelStatus from './channel-status';
-import * as WsChannel from './ws-channel';
-import { CardStatusListState } from './card-status-list-state';
-import { KeyChainListState } from './key-chain-list-state';
-import DialogCreateKey from './dialog-create-key';
-import Assistent from './assistent';
+import ChannelStatus from './components/controls/channel-status';
+import * as WsChannel from './model/ws-channel';
+import { CardStatusListState } from './model/card-status-list-state';
+import { KeyChainListState } from './model/key-chain-list-state';
+import DialogCreateKey from './components/key-chain-list/dialog-create-key';
+import Assistent from './components/assistent';
 
 const channel = WsChannel.Dispatch.create();
 const cardStatusListState = new CardStatusListState(channel);

@@ -1,6 +1,6 @@
 
 import Pin from './pin';
-import MutableString from './mutable_string';
+import MutableString from '../model/mutable-string';
 
 export class KeyToYubiKey {
   public fingerprint: string;

@@ -1,24 +1,24 @@
 
 import { spawn } from 'child_process';
-import * as ListSecretKeys from './list_secret_keys';
-import * as CardStatus from './card_status';
+import * as ListSecretKeys from './list-secret-keys';
+import * as CardStatus from './card-status';
 import * as path from 'path';
 // import * as fs from 'fs';
 // import * as fsPromise from "fs-promise";
 import * as fsPromise from 'fs-extra';
 // import * as pse from "../pinentry/server";
-import * as Ac from './agent_conf';
+import * as Ac from './agent-conf';
 import * as stream from 'stream';
 import * as Uuid from 'node-uuid';
 
 import KeyToYubiKey from './key-to-yubikey';
 
 import * as KeyGen from './key-gen';
-import ChangeCard from './change_card';
-import RequestAscii from './request_ascii';
-import RequestChangePin from './request_change_pin';
+import ChangeCard from './change-card';
+import RequestAscii from '../model/request-ascii';
+import RequestChangePin from './request-change-pin';
 import KeyGenUid from './key-gen-uid';
-import { format_date } from './helper';
+import { format_date } from '../model/helper';
 
 import * as rimraf from 'rimraf';
 

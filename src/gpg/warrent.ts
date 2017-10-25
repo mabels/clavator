@@ -1,5 +1,5 @@
-import Pallet from './pallet';
-import StringValue from './string-value';
+import Pallet from '../model/pallet';
+import StringValue from '../model/string-value';
 // import RegMinMaxWarrent from './reg-min-max-warrent';
 
 let warrentKey = 1;
