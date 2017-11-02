@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 import * as classnames from 'classnames';
 // import SimpleYubiKey from '../gpg/simple-yubikey';
-import BooleanValue from '../../../model/boolean-value';
+// import BooleanValue from '../../../model/boolean-value';
 import DateValue from '../../../model/date-value';
 import { format_date } from '../../../model/helper';
 
@@ -12,7 +12,8 @@ interface InputExpireDateState {
 interface InputExpireDateProps extends React.Props<InputExpireDate> {
   title: string;
   expireDate: DateValue;
-  readonly?: BooleanValue;
+  readonly?: boolean;
+  completed?: boolean;
 }
 
 @observer
@@ -26,14 +27,15 @@ export class InputExpireDate extends
 
   public render(): JSX.Element {
     return (
-      <div className="row">
+      <div className={classnames({row: true, completed: this.props.completed})}>
           <div className="three columns">
             <label>{this.props.title}:</label><input type="date" name="expireDate"
               className={classnames({
+                 InputExpireDate: true,
                  good: this.props.expireDate.valid(),
-                 readonly:  this.props.readonly.value })}
-              disabled={this.props.readonly.value}
-              readOnly={this.props.readonly.value}
+                 readonly:  this.props.readonly })}
+              disabled={this.props.readonly}
+              readOnly={this.props.readonly}
               autoComplete="on"
               min={Date.now()}
               onChange={(e: any) => {

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as classnames from 'classnames';
 import { observer } from 'mobx-react';
-import BooleanValue from '../../../model/boolean-value';
+// import BooleanValue from '../../../model/boolean-value';
 import Container from '../../../model/container';
 import Uid from '../../../gpg/key-gen-uid';
 
@@ -10,7 +10,8 @@ interface RcUidsState {
 
 interface RcUidsProps extends React.Props<RcUids> {
   uids: Container<Uid>;
-  readonly?: BooleanValue;
+  readonly?: boolean;
+  completed?: boolean;
 }
 
 @observer
@@ -57,6 +58,7 @@ export class RcUids extends
     return <div className={classnames({
         'Uid': true,
         'u-full-width': true,
+        'completed': this.props.completed,
         'good': uid.valid() })} key={idx}>
       <div className="row">
         <div className="five columns">
@@ -65,10 +67,10 @@ export class RcUids extends
             autoFocus
             className={classnames({ 'u-full-width': true,
               'good': uid.name.valid(),
-              'readonly': this.props.readonly.value
+              'readonly': this.props.readonly
             })}
-            disabled={this.props.readonly.value}
-            readOnly={this.props.readonly.value}
+            disabled={this.props.readonly}
+            readOnly={this.props.readonly}
             pattern={uid.name.match.source}
             name={`uid.name.${idx}`}
             onChange={(e: any) => {
@@ -81,10 +83,10 @@ export class RcUids extends
           <label>Name-Email:</label><input type="email"
             className={classnames({ 'u-full-width': true,
               good: uid.email.valid(),
-              'readonly': this.props.readonly.value
+              'readonly': this.props.readonly
             })}
-            disabled={this.props.readonly.value}
-            readOnly={this.props.readonly.value}
+            disabled={this.props.readonly}
+            readOnly={this.props.readonly}
             autoComplete="on"
             pattern={uid.email.match.source}
             name={`email.${idx}`}
@@ -103,10 +105,10 @@ export class RcUids extends
           <label>Name-Comment:</label><input type="text"
             className={classnames({ 'u-full-width': true,
               good: uid.comment.valid(),
-              'readonly': this.props.readonly.value
+              'readonly': this.props.readonly
             })}
-            disabled={this.props.readonly.value}
-            readOnly={this.props.readonly.value}
+            disabled={this.props.readonly}
+            readOnly={this.props.readonly}
             autoComplete="on"
             pattern={uid.comment.match.source}
             name={`nameComment.${idx}`}
@@ -122,7 +124,7 @@ export class RcUids extends
                     AddUid: true,
                     'bad': uid.valid()
                   })}
-                  disabled={this.props.readonly.value || !uid.valid()}
+                  disabled={this.props.readonly || !uid.valid()}
                   onClick={this.handleAddUid.bind(this)}>Add Uid</button>
         </div>
 

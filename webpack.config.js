@@ -53,7 +53,7 @@ module.exports = [{
   plugins: [
     new ExtractTextPlugin('styles.css'),
     new HtmlWebpackPlugin({
-      template: './src/index.ejs'
+      template: './src/ui/index.ejs'
     })
   ]
 },{
@@ -79,7 +79,7 @@ module.exports = [{
   }
 },{
   target: 'node',
-  entry: './src/server',
+  entry: './src/server/server',
   output: {
     path: __dirname + '/dist',
     filename: 'server.js',

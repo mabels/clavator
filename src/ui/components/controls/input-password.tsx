@@ -1,19 +1,19 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
 import * as classnames from 'classnames';
-// import SimpleYubiKey from '../gpg/simple-yubikey';
-// import RcCheckWarrents from './rc-check-warrents';
-import StringValue from '../../../model/string-value';
-import BooleanValue from '../../../model/boolean-value';
-// import { format_date } from '../../../model/helper';
+// import StringValue from '../../../model/string-value';
+// import BooleanValue from '../../../model/boolean-value';
+import PasswordControl from '../../model/password-control';
+import DoublePassword from '../../model/double-password';
 
 interface InputPasswordState {
   readOnlyTimer: number;
 }
 
 interface InputPasswordProps extends React.Props<InputPassword> {
-  value: StringValue;
+  passwordControl: PasswordControl;
   readonly: boolean;
+  doublePassword: DoublePassword;
 }
 
 @observer
@@ -22,11 +22,12 @@ export class InputPassword extends
 
   constructor() {
     super();
-    this.state = {
-      // readable: false,
-      readOnlyTimer: null
-    };
+    this.state = { readOnlyTimer: null };
     this.lockUnlock = this.lockUnlock.bind(this);
+  }
+
+  public componentWillReceiveProps(next: InputPasswordProps): void {
+    this.props.passwordControl.readonly = next.readonly;
   }
 
   private lockUnlock(e: any): void {
@@ -37,31 +38,23 @@ export class InputPassword extends
     if (this.state.readOnlyTimer) {
       clearTimeout(this.state.readOnlyTimer);
     }
-    if (!this.props.readable) {
-      readOnlyTimer = setTimeout(this.lockUnlock, 1000) as any/* no browser api */;
+    if (!this.props.doublePassword.readable) {
+      readOnlyTimer = setTimeout(this.lockUnlock, 2000) as any/* no browser api */;
     }
-    this.props.readable = true;
+    this.props.doublePassword.readable = !this.props.doublePassword.readable;
     this.setState(Object.assign(this.state, {
-      readable: !this.props.readable,
       readOnlyTimer: readOnlyTimer
     }));
   }
 
-  private passwordText(): string {
-    if (this.props.readonly) {
-      return 'password';
-    }
-    return !this.props.readable ? 'password' : 'text';
-  }
-
   private renderReadable(): JSX.Element {
-    if (this.props.readonly) {
+    if (this.props.passwordControl.readonly) {
       return;
     }
     return <button className={classnames({
       fa: true,
-      'fa-lock': !this.props.readable,
-      'fa-unlock': this.props.readable })}
+      'fa-lock': !this.props.doublePassword.readable,
+      'fa-unlock': this.props.doublePassword.readable })}
       onClick={this.lockUnlock}
       tabIndex={10000}></button>;
   }
@@ -69,16 +62,17 @@ export class InputPassword extends
   public render(): JSX.Element {
     return (
       <div>
-        <input type={this.passwordText()}
-          name={this.props.value.key}
-          className={classnames({ good: !this.props.readonly && this.props.value.valid()})}
-          readOnly={this.props.readonly}
-          disabled={this.props.readonly}
-          pattern={this.props.value.match.source}
-          value={this.props.value.value}
-          placeholder={this.props.value.match.source}
+        <input type={this.props.doublePassword.passwordInputType()}
+          name={this.props.passwordControl.objectId()}
+          className={classnames({ good: !this.props.passwordControl.readonly &&
+                                        this.props.passwordControl.valid()})}
+          readOnly={this.props.passwordControl.readonly}
+          disabled={this.props.passwordControl.readonly}
+          pattern={this.props.passwordControl.password.match.source}
+          value={this.props.passwordControl.password.value}
+          placeholder={this.props.passwordControl.password.match.source}
           onChange={(e: any) => {
-            this.props.value.value = e.target.value;
+            this.props.passwordControl.password.value = e.target.value;
           }} />{this.renderReadable()}
       </div>
     );

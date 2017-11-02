@@ -5,22 +5,26 @@ import KeyParams from '../../gpg/key-params';
 import Container from '../../model/container';
 import KeyGenUid from '../../gpg/key-gen-uid';
 import Warrents from '../../gpg/warrents';
-import ApprovableWarrents from './approvable-warrents';
-import { expireDate, assignOnError } from '../../model/helper';
+import ViewWarrents from './view-warrents';
+import { expireDate } from '../../model/helper';
 
 export class SimpleKeyCommon {
-  @observable public readonly approvableWarrents: ApprovableWarrents;
+  @observable public readonly viewWarrents: ViewWarrents;
 
   @observable public expireDate: DateValue;
   @observable public keyParams: KeyParams;
   @observable public uids: Container<KeyGenUid>;
 
   constructor(warrents: Warrents) {
-    this.approvableWarrents = ApprovableWarrents.from(warrents);
+    this.viewWarrents = ViewWarrents.from(warrents);
     this.expireDate = new DateValue(expireDate(), 'expireDate error');
     this.keyParams = new KeyParams();
     this.uids = new Container<KeyGenUid>(() => { return new KeyGenUid(); });
     this.uids.add(new KeyGenUid());
+  }
+
+  public showWarrents(): boolean {
+    return this.viewWarrents.length() > 1;
   }
 
   public valid(): boolean {
@@ -32,9 +36,9 @@ export class SimpleKeyCommon {
   }
 
   @computed public get completed(): boolean {
-    console.log('SimpleKeyCommons:completed:', this.approvableWarrents.map(i => i.approved.value),
-       this.valid(), this.approvableWarrents.completed());
-    return this.approvableWarrents.completed() && this.valid();
+    console.log('SimpleKeyCommons:completed:', this.viewWarrents.map(i => i.approved),
+       this.valid(), this.viewWarrents.completed());
+    return this.viewWarrents.completed() && this.valid();
   }
 
 }

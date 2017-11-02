@@ -1,10 +1,8 @@
 import { observable } from 'mobx';
 import Validatable from './validatable';
+import ObjectId from './object-id';
 
-let objectId = 0;
-
-export class BooleanValue implements Validatable {
-  public readonly key: string;
+export class BooleanValue extends ObjectId implements Validatable {
   public errorText: string;
   @observable public value: boolean;
 
@@ -13,8 +11,8 @@ export class BooleanValue implements Validatable {
   }
 
   public constructor(errorText: string) {
+    super('BooleanValue');
     this.errorText = errorText;
-    this.key = `BooleanValue:${objectId++}`;
     this.value = true;
   }
 

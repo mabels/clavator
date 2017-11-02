@@ -1,5 +1,6 @@
 import * as React from 'react';
-import BooleanValue from '../../../model/boolean-value';
+import * as classnames from 'classnames';
+// import BooleanValue from '../../../model/boolean-value';
 import KeyParams from '../../../gpg/key-params';
 import RcOption from '../controls/rc-option';
 
@@ -8,7 +9,8 @@ interface RcKeyParamsState {
 
 interface RcKeyParamsProps extends React.Props<RcKeyParams> {
   keyParams: KeyParams;
-  readonly: BooleanValue;
+  readonly: boolean;
+  completed: boolean;
 }
 
 export class RcKeyParams extends
@@ -21,7 +23,7 @@ export class RcKeyParams extends
 
   public render(): JSX.Element {
     return (
-      <div className="row">
+      <div className={classnames({row: true, RcKeyParams: true, completed: this.props.completed })}>
         <div className="three columns">
           <RcOption name="KeyType" label="Key-Type"
             option={this.props.keyParams.type} readonly={this.props.readonly} />

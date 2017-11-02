@@ -36,6 +36,10 @@ export class ChannelStatus extends
     this.props.channel.register(this);
   }
 
+  public componentWillUnmount(): void {
+    this.props.channel.unregister(this);
+  }
+
   private renderStatus(): JSX.Element {
     if (this.state.status == 'connected' || this.state.status == 'not started') {
       // console.log("NOT: renderStatus:", this.state.status);

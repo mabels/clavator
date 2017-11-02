@@ -22,12 +22,13 @@ export class Container<T extends Pallet> {
     return ret;
   }
   public add(i: T): Container<T> {
-    if (!i.key) {
-      i.key = '' + (this.pallets.length + 1);
-    }
     this.pallets.push(i);
     // console.log('Container:Pallets:Push', this.pallets);
     return this;
+  }
+
+  public forEach(cb: (t: T, idx?: number, ar?: T[]) => void): void {
+    this.pallets.forEach(cb);
   }
 
   public map<A>(cb: (t: T, idx?: number, ar?: T[]) => A): A[] {
@@ -36,7 +37,7 @@ export class Container<T extends Pallet> {
     });
   }
 
-  public find<A>(cb: (t: T, idx?: number, ar?: T[]) => boolean): T {
+  public find(cb: (t: T, idx?: number, ar?: T[]) => boolean): T {
     return this.pallets.find((a, b, c) => {
       return !!a && cb(a, b, c);
     });

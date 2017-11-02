@@ -9,16 +9,17 @@ import * as classnames from 'classnames';
 // import AssistentSendKeyToCard from './assistent-send-key-to-card';
 // import AssistentCompleted from './assistent-completed';
 // import AssistentCheckCard from './assistent-checkcard';
-import * as ListSecretKeys from '../../gpg/list-secret-keys';
+// import * as ListSecretKeys from '../../gpg/list-secret-keys';
 import * as WsChannel from '../model/ws-channel';
 import CardStatusListState from '../model/card-status-list-state';
 import Warrents from '../../gpg/warrents';
 import Warrent from '../../gpg/warrent';
+// import ViewWarrents from '../model/warrent';
 import SimpleYubiKey from '../model/simple-yubikey';
-import RcWarrents from './assistent/rc-warrents';
-import RcCheckWarrents from './assistent/rc-check-warrents';
+import RcWarrents from './controls/rc-warrents';
+// import RcCheckWarrents from './assistent/rc-check-warrents';
 import RcSimpleKeyCommon from './assistent/rc-simple-key-common';
-import InputPassPhrase from './assistent/input-pass-phrase';
+import InputPassPhrase from './controls/input-pass-phrase';
 import DiceWareInputPassPhrase from './assistent/dice-ware-input-pass-phrase';
 import DiceWare from '../../dice-ware/dice-ware';
 import * as Message from '../../model/message';
@@ -87,6 +88,8 @@ export class Assistent
       return;
     }
     // console.log('renderSimpleCreateKey', this.state.simpleYubiKey.common.approvableWarrents.non());
+    // this.state.simpleYubiKey.adminKey.readonly.set(this.state.simpleYubiKey.common.viewWarrents.non());
+    // this.state.simpleYubiKey.userKey.readonly.set(this.state.simpleYubiKey.common.viewWarrents.non());
     return <div className={classnames({
         SimpleCreateKey: true,
         good: this.state.simpleYubiKey.valid(),
@@ -95,20 +98,20 @@ export class Assistent
       <RcSimpleKeyCommon simpleKeyCommon={this.state.simpleYubiKey.common} />
       <div className={classnames({
           Passwords: true,
-          readonly: this.state.simpleYubiKey.common.approvableWarrents.non()
+          readonly: this.state.simpleYubiKey.common.viewWarrents.non()
         })}>
         <DiceWareInputPassPhrase label="PasswordPhase"
           diceWare={this.state.diceWare}
-          readonly={this.state.simpleYubiKey.common.approvableWarrents.non()}
-          approvedWarrents={this.state.simpleYubiKey.common.approvableWarrents}
+          readonly={this.state.simpleYubiKey.common.viewWarrents.non()}
+          approvedWarrents={this.state.simpleYubiKey.common.viewWarrents}
           passPhrase={this.state.simpleYubiKey.passPhrase} />
         <InputPassPhrase label="Admin-Key"
-          readonly={this.state.simpleYubiKey.common.approvableWarrents.non()}
-          approvedWarrents={this.state.simpleYubiKey.common.approvableWarrents}
+          readonly={this.state.simpleYubiKey.common.viewWarrents.non()}
+          approvedWarrents={this.state.simpleYubiKey.common.viewWarrents}
           passPhrase={this.state.simpleYubiKey.adminKey} />
         <InputPassPhrase label="User-Key"
-          readonly={this.state.simpleYubiKey.common.approvableWarrents.non()}
-          approvedWarrents={this.state.simpleYubiKey.common.approvableWarrents}
+          readonly={this.state.simpleYubiKey.common.viewWarrents.non()}
+          approvedWarrents={this.state.simpleYubiKey.common.viewWarrents}
           passPhrase={this.state.simpleYubiKey.userKey}/>
       </div>
       {this.renderReady()}

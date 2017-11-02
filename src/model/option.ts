@@ -1,4 +1,6 @@
-export class Option<T> {
+import ObjectId from './object-id';
+
+export class Option<T> extends ObjectId {
   public value: T;
   public options: T[] = [];
   public errText: string;
@@ -10,6 +12,7 @@ export class Option<T> {
   }
 
   public constructor(v: T, t: T[], e: string) {
+    super('Option');
     this.value = v;
     this.options = t;
     this.errText = e;

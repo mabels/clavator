@@ -5,22 +5,20 @@ import * as classnames from 'classnames';
 // import SimpleYubiKey from '../gpg/simple-yubikey';
 // import RcCheckWarrents from './rc-check-warrents';
 import StringValue from '../../../model/string-value';
-import BooleanValue from '../../../model/boolean-value';
+// import BooleanValue from '../../../model/boolean-value';
 import { DiceWare, Diced } from '../../../dice-ware/dice-ware';
-import { format_date } from '../../../model/helper';
+// import { format_date } from '../../../model/helper';
+import { InputPassPhraseProps } from '../controls/input-pass-phrase';
 
 class InputDiceWareState {
   @observable public dicedValue: StringValue;
 }
 
-interface InputDiceWareProps extends React.Props<InputDiceWare> {
+export interface InputDiceWareProps extends InputPassPhraseProps {
   // value: StringValue;
-  readonly: boolean;
   diceWare: DiceWare;
-  diceResult: (diced: Diced) => void;
+  onDiceResult: (diced: Diced, props: InputDiceWareProps) => void;
 }
-
-let key = 0;
 
 @observer
 export class InputDiceWare extends
@@ -32,7 +30,6 @@ export class InputDiceWare extends
     this.state = {
       dicedValue: null
     };
-    this.key = `InputDiceWare@${++key}`;
   }
 
   public componentWillMount(): void {
@@ -44,25 +41,27 @@ export class InputDiceWare extends
   }
 
   public render(): JSX.Element {
-    if (this.props.readonly) {
-      return null;
-    }
+    // if (this.props.passPhrase.readOnly.value) {
+    //   return null;
+    // }
     return (
         <input type="text"
           key={this.key}
           name={this.key}
           className={classnames({ InputDiceWare: true})}
-          readOnly={this.props.readonly}
-          disabled={this.props.readonly}
+          readOnly={this.props.passPhrase.readOnly.value}
+          disabled={this.props.passPhrase.readOnly.value}
           value={this.state.dicedValue.value}
           pattern={`^[1-6]{${this.props.diceWare.dicesCount()},${this.props.diceWare.dicesCount()}}$`}
           placeholder="enter diced value"
           onChange={(e: any) => {
             this.state.dicedValue.value = e.target.value;
+            // console.log('diceWare:1:', this.state.dicedValue.value);
             if (this.state.dicedValue.valid()) {
               const diced = this.props.diceWare.dice(this.state.dicedValue.value);
+              // console.log('diceWare:2:', this.state.dicedValue.value, diced);
               if (diced) {
-                this.props.diceResult(diced);
+                this.props.onDiceResult(diced, this.props);
               }
             }
           }} />

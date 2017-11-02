@@ -1,14 +1,13 @@
+import ObjectId from '../model/object-id';
 import Pallet from '../model/pallet';
 import StringValue from '../model/string-value';
 // import RegMinMaxWarrent from './reg-min-max-warrent';
 
-let warrentKey = 1;
-export class Warrent implements Pallet {
-  public readonly key: string;
+export class Warrent extends ObjectId implements Pallet {
   public warrent: StringValue = new StringValue(/[a-zA-Z_\-0-9]{2,}/, 'comment error');
 
   constructor() {
-    this.key = `Warrent:${warrentKey++}`;
+    super('Warrent');
   }
 
   public value(): string {

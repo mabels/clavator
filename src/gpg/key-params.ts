@@ -1,13 +1,15 @@
+import ObjectId from '../model/object-id';
 import Option from '../model/option';
 import Validatable from '../model/validatable';
 import { assignOnError } from '../model/helper';
 
-export class KeyParams implements Validatable {
+export class KeyParams extends ObjectId implements Validatable {
   public type: Option<string>;
   public masterLen: Option<number>;
   public subLen: Option<number>;
 
   constructor() {
+    super('KeyParams');
     this.type = new Option('RSA', ['RSA', 'DSA'], 'keyType Error');
     this.masterLen = new Option(4096, [1024, 2048, 4096, 8192], 'master keyLength Error');
     this.subLen = new Option(4096, [1024, 2048, 4096, 8192], 'master keyLength Error');

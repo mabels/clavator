@@ -1,5 +1,6 @@
+import ObjectId from './object-id';
 
-export class MultiOption<T> {
+export class MultiOption<T> extends ObjectId {
   public values: T[];
   public options: T[] = [];
   public errText: string;
@@ -9,6 +10,7 @@ export class MultiOption<T> {
   }
 
   public constructor(v: T[], t: T[], e: string) {
+    super('MultiOption');
     this.values = v;
     this.options = t;
     this.errText = e;

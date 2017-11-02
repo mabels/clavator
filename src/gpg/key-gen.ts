@@ -4,6 +4,7 @@ import DateValue from '../model/date-value';
 import KeyGenUid from './key-gen-uid';
 import Container from '../model/container';
 import Pallet from '../model/pallet';
+import ObjectId from '../model/object-id';
 
 import { assignOnError, format_date, expireDate  } from '../model/helper';
 
@@ -51,13 +52,13 @@ export class PwPair {
   }
 }
 
-export class KeyInfo implements Pallet {
-  public key: string;
+export class KeyInfo extends ObjectId implements Pallet {
   public type: Option<string>;
   public length: Option<number>;
   public usage: MultiOption<string>;
 
   public constructor(type = 'RSA', length = 4096, usage = ['sign', 'encr', 'auth']) {
+    super('KeyInfo');
     this.type = new Option(type, ['RSA', 'DSA'], 'keyType Error');
     this.length = new Option(length, [1024, 2048, 4096, 8192], 'sub keyLength Error');
     this.usage = new MultiOption(usage, ['cert', 'sign', 'encr', 'auth'], 'keyUsage Error');

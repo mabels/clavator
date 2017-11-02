@@ -1,50 +1,55 @@
+// import { observable } from 'mobx';
+import ObjectId from '../../model/object-id';
+import BooleanValue from '../../model/boolean-value';
 import Validatable from '../../model/validatable';
 import Warrents from '../../gpg/warrents';
-import Warrent from '../../gpg/warrent';
-import ApprovablePart from './approvable-part';
-import RegMinMaxWarrent from './reg-min-max-warrent';
+// import Warrent from '../../gpg/warrent';
+import DoublePassword from './double-password';
+import ViewWarrent from './view-warrent';
+import ViewWarrents from './view-warrents';
+import MinMax from './min-max';
 
-let objectId = 0;
+export class PassPhrase extends ObjectId implements Validatable {
+  public readOnly: BooleanValue;
+  public readonly warrents: Warrents;
+  // public errorText: string;
+  public doublePasswords: DoublePassword[];
 
-export class PassPhrase implements Validatable {
-  public readonly key: string;
-  // public partCount: number;
-  // public partRegex: RegExp;
-  public errorText: string;
-  public parts: ApprovablePart[];
-
-  public static createPassPhrase(warrents: Warrents, reg: string, errText: string,
-    minLen: number, maxLen?: number): PassPhrase {
-    const regMinMaxs = warrents.map(t => new RegMinMaxWarrent(t, reg));
-    for (let min = 0; min < minLen; ++min) {
-      regMinMaxs[min % regMinMaxs.length].min++;
-    }
-    for (let max = 0; maxLen && max < maxLen; ++max) {
-      regMinMaxs[max % regMinMaxs.length].max++;
-    }
-    return new PassPhrase(regMinMaxs, errText);
+  // two Object Graphs
+  // First one DoublePassport Per Warrent
+  public static createPerWarrent(warrents: Warrents,
+    contReg: string, errText: string, minLen: number, maxLen?: number): PassPhrase {
+    const minMaxs = MinMax.create(warrents.length(), contReg, minLen, maxLen);
+    return new PassPhrase(warrents,
+      (new Array(warrents.length())).fill(42).map((_, idx) =>
+        new DoublePassword(new Warrents([warrents.get(idx)]), errText, minMaxs[idx])));
   }
 
-  constructor(pWarrents: RegMinMaxWarrent[], errText: string) {
-    this.key = `PassPhrase:${objectId++}`;
-    // this.partRegex = partRegex;
-    this.errorText = errText;
-    // if (typeof pCountOrWarrents == 'number') {
-    //   this.partCount = pCountOrWarrents;
-    //   this.parts = Array(this.partCount).fill(new ApprovablePart(this));
-    // } else {
-      // this.partCount = pWarrents.length;
-      this.parts = pWarrents.map(w => new ApprovablePart(this, w));
-    // }
+  // First n DoublePassports all Warrents per DoublePassports
+  public static createDoublePasswords(n: number, warrents: Warrents,
+    contReg: string, errText: string, minLen: number, maxLen?: number): PassPhrase {
+    const minMax = MinMax.create(1, contReg, minLen, maxLen)[0];
+    return new PassPhrase(warrents,
+      (new Array(n)).fill(42).map((_, idx) => new DoublePassword(
+          new Warrents([warrents.get(idx % warrents.length())]), errText, minMax)));
+  }
+
+  /* pWarrents: ViewWarrents, reg: string, errText: string */
+  constructor(warrents: Warrents, dps: DoublePassword[]) {
+    super('PassPhrase');
+    this.readOnly = new BooleanValue('readonly error');
+    this.warrents = warrents;
+    // this.errorText = errText;
+    this.doublePasswords = dps.map(dp => dp.setPassPhrase(this));
   }
 
   public valid(): boolean {
-    return this.parts.filter(p => p.valid()).length == this.parts.length;
+    return this.doublePasswords.filter(p => p.valid()).length == this.doublePasswords.length;
   }
 
   public completed(): boolean {
     return this.valid() &&
-      this.parts.filter(i => i.approved.value).length == this.parts.length;
+      this.doublePasswords.filter(i => i.warrents.approved()).length == this.doublePasswords.length;
   }
 
   public errText(): string[] {
@@ -56,10 +61,16 @@ export class PassPhrase implements Validatable {
   }
 
   public fill(js: any): void {
+    throw 'need implementation';
     // this.partCount = js['partCount'];
     // this.partRegex = js['partRegex'];
-    this.errorText = js['errorText'];
-    this.parts = js['parts'].map((i: any) => (new ApprovablePart(this)).fill(i));
+    // this.readonly = js['readonly'];
+    // this.errorText = js['errorText'];
+    // this.parts = [];
+    // js['parts'].forEach((i: any) => {
+    //   new DoublePassword(this,
+    //    RegMinMaxWarrent.fill(i), this.parts).fill(i));
+    //   });
   }
 
 }

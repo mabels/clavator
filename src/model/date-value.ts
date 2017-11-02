@@ -1,5 +1,6 @@
+import ObjectId from './object-id';
 
-export class DateValue {
+export class DateValue extends ObjectId {
   public value: Date;
   public errText: string;
 
@@ -8,6 +9,7 @@ export class DateValue {
   }
 
   public constructor(v: Date, e: string) {
+    super('DateValue');
     this.value = v;
     this.errText = e;
   }

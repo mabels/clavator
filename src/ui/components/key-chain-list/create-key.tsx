@@ -6,7 +6,7 @@ import * as WsChannel from '../../model/ws-channel';
 import * as KeyGen from '../../../gpg/key-gen';
 import Option from '../../../model/option';
 import MultiOption from '../../../model/multi-option';
-import { format_date } from '../../../model/helper';
+// import { format_date } from '../../../model/helper';
 // import * as ReactModal from 'react-modal';
 // import { Progressor } from './progressor';
 import ButtonToProgressor from '../controls/button-to-progressor';

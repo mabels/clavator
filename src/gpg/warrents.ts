@@ -4,8 +4,10 @@ import Container from '../model/container';
 import Warrent from './warrent';
 
 export class Warrents extends Container<Warrent> {
-  constructor() {
+
+  constructor(ws: Warrent[] = []) {
     super(() => { return new Warrent(); });
+    ws.forEach(w => this.add(w));
   }
 
   public valid(): boolean {

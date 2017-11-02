@@ -1,24 +1,24 @@
 import * as React from 'react';
 import * as classnames from 'classnames';
 import { observer } from 'mobx-react';
-import BooleanValue from '../../../model/boolean-value';
-import Container from '../../../model/container';
-import Uid from '../../../gpg/key-gen-uid';
+// import BooleanValue from '../../../model/boolean-value';
+// import Container from '../../../model/container';
+// import Uid from '../../../gpg/key-gen-uid';
 import Option from '../../../model/option';
 
-interface RcOptionState<T> {
+interface RcOptionState {
 }
 
 interface RcOptionProps<T> extends React.Props<RcOption<T>> {
   name: string;
   label: string;
   option: Option<T>;
-  readonly: BooleanValue;
+  readonly: boolean;
 }
 
 @observer
 export class RcOption<T> extends
-  React.Component<RcOptionProps<T>, RcOptionState<T>> {
+  React.Component<RcOptionProps<T>, RcOptionState> {
 
   constructor() {
     super();
@@ -35,8 +35,8 @@ export class RcOption<T> extends
       <span>
         <label>{this.props.label}:</label>
         <select name={this.props.name}
-          className={classnames({'u-full-width': true, readonly: this.props.readonly.value })}
-          disabled={this.props.readonly.value}
+          className={classnames({'u-full-width': true, readonly: this.props.readonly })}
+          disabled={this.props.readonly}
           defaultValue={value}
           onChange={(e: any) => {
           this.props.option.options.forEach((op) => {

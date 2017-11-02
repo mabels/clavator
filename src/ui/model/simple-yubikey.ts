@@ -14,13 +14,13 @@ import DiceWare from '../../dice-ware/dice-ware';
 import { expireDate, assignOnError } from '../../model/helper';
 
 export class SimpleYubikey {
-  @observable public readonly warrents: Warrents;
+  public readonly warrents: Warrents;
 
-  @observable public common: SimpleKeyCommon;
+  public readonly common: SimpleKeyCommon;
 
-  @observable public passPhrase: PassPhrase;
-  @observable public adminKey: PassPhrase;
-  @observable public userKey: PassPhrase;
+  public readonly passPhrase: PassPhrase;
+  public readonly adminKey: PassPhrase;
+  public readonly userKey: PassPhrase;
 
   public static createDiceWare(warrents: Warrents): Warrents {
     const ret = new Warrents();
@@ -33,10 +33,10 @@ export class SimpleYubikey {
   constructor(warrents: Warrents) {
     this.warrents = warrents;
     this.common = new SimpleKeyCommon(warrents);
-    this.passPhrase = PassPhrase.createPassPhrase(SimpleYubikey.createDiceWare(warrents), '.', 'PassPhrase error', 14);
-    this.adminKey = PassPhrase.createPassPhrase(warrents, '[0-9]', 'adminpin error', 8, 8);
+    this.passPhrase = PassPhrase.createDoublePasswords(8, warrents, '.', 'PassPhrase error', 4);
+    this.adminKey = PassPhrase.createPerWarrent(warrents, '[0-9]', 'adminpin error', 8, 8);
     const me = (new Warrents()).add(warrents.first());
-    this.userKey = PassPhrase.createPassPhrase(me, '[0-9]', 'userPin Error', 6, 8);
+    this.userKey = PassPhrase.createPerWarrent(me, '[0-9]', 'userPin Error', 6, 8);
   }
 
   public valid(): boolean {

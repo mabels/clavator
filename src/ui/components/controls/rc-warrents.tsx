@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
 import * as classnames from 'classnames';
-import Warrent from '../../../gpg/warrent';
 import Warrents from '../../../gpg/warrents';
+import Warrent from '../../../gpg/warrent';
+// import Warrents from '../../model/view-warrents';
 
 interface RcWarrentsState {
   // warrent: Warrent;
@@ -75,7 +76,7 @@ interface RcWarrentsProps extends React.Props<RcWarrents> {
       return null ;
     }
     // console.log('-2-', this.props.warrents.last().key);
-    return <li key={this.props.warrents.last().key}>
+    return <li key={this.props.warrents.last().objectId()}>
       <input type="text"
         autoFocus
         className={classnames({
@@ -100,7 +101,7 @@ interface RcWarrentsProps extends React.Props<RcWarrents> {
               return this.renderInput();
             } else {
               // console.log(`Li:Warrents:${idx}:${this.props.warrents.length()}`);
-              return <li key={i.key}>{i.warrent.value}</li>;
+              return <li key={i.objectId()}>{i.warrent.value}</li>;
             }
           })}
         </ol>

@@ -1,7 +1,7 @@
 
 export class Diced {
   public readonly diced: number;
-  public readonly part: string;
+  public readonly password: string;
 
   public static parse(line: string): Diced {
     const cols = line.split(/\s+/);
@@ -23,9 +23,9 @@ export class Diced {
     return new Diced(obj['diced'], obj['part']);
   }
 
-  constructor(diced: number, part: string) {
+  constructor(diced: number, password: string) {
     this.diced = diced;
-    this.part = part;
+    this.password = password;
   }
 
 }
