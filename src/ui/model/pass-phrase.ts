@@ -5,8 +5,9 @@ import Validatable from '../../model/validatable';
 import Warrents from '../../gpg/warrents';
 // import Warrent from '../../gpg/warrent';
 import DoublePassword from './double-password';
-import ViewWarrent from './view-warrent';
-import ViewWarrents from './view-warrents';
+import DiceWare from '../../dice-ware/dice-ware';
+// import ViewWarrent from './view-warrent';
+// import ViewWarrents from './view-warrents';
 import MinMax from './min-max';
 
 export class PassPhrase extends ObjectId implements Validatable {
@@ -17,21 +18,21 @@ export class PassPhrase extends ObjectId implements Validatable {
 
   // two Object Graphs
   // First one DoublePassport Per Warrent
-  public static createPerWarrent(warrents: Warrents,
+  public static createPerWarrent(warrents: Warrents, diceWare: DiceWare,
     contReg: string, errText: string, minLen: number, maxLen?: number): PassPhrase {
     const minMaxs = MinMax.create(warrents.length(), contReg, minLen, maxLen);
     return new PassPhrase(warrents,
       (new Array(warrents.length())).fill(42).map((_, idx) =>
-        new DoublePassword(new Warrents([warrents.get(idx)]), errText, minMaxs[idx])));
+        new DoublePassword(new Warrents([warrents.get(idx)]), errText, minMaxs[idx], diceWare)));
   }
 
   // First n DoublePassports all Warrents per DoublePassports
-  public static createDoublePasswords(n: number, warrents: Warrents,
+  public static createDoublePasswords(n: number, warrents: Warrents, diceWare: DiceWare,
     contReg: string, errText: string, minLen: number, maxLen?: number): PassPhrase {
     const minMax = MinMax.create(1, contReg, minLen, maxLen)[0];
     return new PassPhrase(warrents,
       (new Array(n)).fill(42).map((_, idx) => new DoublePassword(
-          new Warrents([warrents.get(idx % warrents.length())]), errText, minMax)));
+          new Warrents([warrents.get(idx % warrents.length())]), errText, minMax, diceWare)));
   }
 
   /* pWarrents: ViewWarrents, reg: string, errText: string */

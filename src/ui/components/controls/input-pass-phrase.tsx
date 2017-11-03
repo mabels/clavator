@@ -24,6 +24,7 @@ export interface InputPassPhraseProps extends React.Props<InputPassPhrase> {
   readOnly: NestedFlag;
   approvedWarrents?: ViewWarrents;
   childFactory?: (dp: DoublePassword, idx: number) => JSX.Element;
+  // onReadable?: (readable: boolean) => void;
 }
 
 @observer
@@ -46,11 +47,11 @@ export class InputPassPhrase extends
       }
       row.push(pp);
     });
-    console.log('input-pass-phrase:', this.props.readOnly);
+    // console.log('input-pass-phrase:', this.props.readOnly);
     return <div
         key={`InputPassPhrase.${this.props.passPhrase.objectId()}`}
         className={classnames({
-          DiceWareInputPassPhrase: true,
+          InputPassPhrase: true,
           completed: this.props.passPhrase.completed(),
           readonly: this.props.passPhrase.readOnly.value ||
                     (this.props.approvedWarrents && this.props.approvedWarrents.non())
@@ -62,8 +63,9 @@ export class InputPassPhrase extends
           <div key={`${this.props.passPhrase.objectId()}.${ridx}`} className="row">
             {row.map((dp, pidx) => {
               const idx = ridx * elements + pidx;
-              console.log('input-pass-phrase:render:', idx);
+              // console.log('input-pass-phrase:render:', idx);
               return <RcDoublePassword
+                onReadable={(r: boolean) => console.log('input-pass-phrase:onReadable:', dp.objectId(), r)}
                 readOnly={this.props.readOnly}
                 key={`${this.props.passPhrase.objectId()}.${idx}`}
                 doublePassword={dp} idx={idx} >

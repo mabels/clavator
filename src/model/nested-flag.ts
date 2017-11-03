@@ -21,7 +21,7 @@ export default class NestedFlag extends ObjectId {
 
   @computed
   public get is(): boolean {
-    console.log(`GET:${this.objectId()}:`, this.value);
+    // console.log(`GET:${this.objectId()}:`, this.value);
     if (this.value === undefined) {
       return this.parent.is;
     }
@@ -30,7 +30,7 @@ export default class NestedFlag extends ObjectId {
 
   public set is(v: boolean) {
     this.value = v;
-    console.log(`SET:${this.objectId()}:`, this.value);
+    // console.log(`SET:${this.objectId()}:`, this.value);
     this.resetChildren();
   }
 

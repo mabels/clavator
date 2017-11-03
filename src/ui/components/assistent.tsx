@@ -122,7 +122,7 @@ export class Assistent
   }
 
   private renderWarrents(): JSX.Element {
-    if (this.state.simpleYubiKey) {
+    if (this.state.simpleYubiKey && this.state.diceWare) {
       return;
     }
     return <div>
@@ -131,7 +131,7 @@ export class Assistent
         warrents={this.state.warrents}
         completed={() => {
           this.setState(Object.assign(this.state, {
-            simpleYubiKey: new SimpleYubiKey(this.state.warrents)
+            simpleYubiKey: new SimpleYubiKey(this.state.warrents, this.state.diceWare)
           }));
         }} />
         </div>;

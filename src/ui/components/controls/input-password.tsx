@@ -1,4 +1,5 @@
 import * as React from 'react';
+// import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import * as classnames from 'classnames';
 // import StringValue from '../../../model/string-value';
@@ -6,14 +7,15 @@ import NestedFlag from '../../../model/nested-flag';
 import PasswordControl from '../../model/password-control';
 import DoublePassword from '../../model/double-password';
 
-interface InputPasswordState {
-  readOnlyTimer: number;
+class InputPasswordState {
+  // @observable public readOnlyTimer: number;
 }
 
 interface InputPasswordProps extends React.Props<InputPassword> {
   passwordControl: PasswordControl;
   readOnly: NestedFlag;
   doublePassword: DoublePassword;
+  onReadable?: (readable: boolean) => void;
 }
 
 @observer
@@ -34,17 +36,11 @@ export class InputPassword extends
     if (e) {
       e.preventDefault();
     }
-    let readOnlyTimer: NodeJS.Timer = null;
-    if (this.state.readOnlyTimer) {
-      clearTimeout(this.state.readOnlyTimer);
-    }
+    let timeout = null;
     if (!this.props.doublePassword.readable) {
-      readOnlyTimer = setTimeout(this.lockUnlock, 2000) as any/* no browser api */;
+      timeout = 2000;
     }
-    this.props.doublePassword.readable = !this.props.doublePassword.readable;
-    this.setState(Object.assign(this.state, {
-      readOnlyTimer: readOnlyTimer
-    }));
+    this.props.doublePassword.setReadableWithTimeout(!this.props.doublePassword.readable, timeout);
   }
 
   private renderReadable(): JSX.Element {
@@ -64,7 +60,7 @@ export class InputPassword extends
       <div>
         <input type={this.props.doublePassword.passwordInputType()}
           name={this.props.passwordControl.objectId()}
-          className={classnames({ good: !this.props.passwordControl.readonly &&
+          className={classnames({ good: !this.props.readOnly.is &&
                                         this.props.passwordControl.valid()})}
           readOnly={this.props.readOnly.is}
           disabled={this.props.readOnly.is}

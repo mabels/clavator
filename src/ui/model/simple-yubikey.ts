@@ -1,18 +1,18 @@
-import { observable, computed } from 'mobx';
-import DateValue from '../../model/date-value';
-import BooleanValue from '../../model/boolean-value';
-import Option from '../../model/option';
-import Container from '../../model/container';
-import Validatable from '../../model/validatable';
+import { observable } from 'mobx';
+// import DateValue from '../../model/date-value';
+// import BooleanValue from '../../model/boolean-value';
+// import Option from '../../model/option';
+// import Container from '../../model/container';
+// import Validatable from '../../model/validatable';
 import NestedFlag from '../../model/nested-flag';
-import KeyGenUid from '../../gpg/key-gen-uid';
+// import KeyGenUid from '../../gpg/key-gen-uid';
 import Warrents from '../../gpg/warrents';
-import Warrent from '../../gpg/warrent';
-import KeyParams from '../../gpg/key-params';
+// import Warrent from '../../gpg/warrent';
+// import KeyParams from '../../gpg/key-params';
 import PassPhrase from './pass-phrase';
 import SimpleKeyCommon from './simple-key-common';
 import DiceWare from '../../dice-ware/dice-ware';
-import { expireDate, assignOnError } from '../../model/helper';
+// import { assignOnError } from '../../model/helper';
 
 export class SimpleYubikey {
   public readonly warrents: Warrents;
@@ -32,14 +32,14 @@ export class SimpleYubikey {
     return ret;
   }
 
-  constructor(warrents: Warrents) {
+  constructor(warrents: Warrents, diceWare: DiceWare) {
     this.warrents = warrents;
     this.readOnly = new NestedFlag(false);
     this.common = new SimpleKeyCommon(warrents, this.readOnly);
-    this.passPhrase = PassPhrase.createDoublePasswords(8, warrents, '.', 'PassPhrase error', 4);
-    this.adminKey = PassPhrase.createPerWarrent(warrents, '[0-9]', 'adminpin error', 8, 8);
+    this.passPhrase = PassPhrase.createDoublePasswords(8, warrents, diceWare,  '.', 'PassPhrase error', 4);
+    this.adminKey = PassPhrase.createPerWarrent(warrents, diceWare,  '[0-9]', 'adminpin error', 8, 8);
     const me = (new Warrents()).add(warrents.first());
-    this.userKey = PassPhrase.createPerWarrent(me, '[0-9]', 'userPin Error', 6, 8);
+    this.userKey = PassPhrase.createPerWarrent(me, diceWare, '[0-9]', 'userPin Error', 6, 8);
   }
 
   // @computed public get readOnly(): boolean {

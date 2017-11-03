@@ -1,23 +1,54 @@
 import * as React from 'react';
-import { observable } from 'mobx';
+// import { observable, computed } from 'mobx';
 import { observer } from 'mobx-react';
 import * as classnames from 'classnames';
 // import SimpleYubiKey from '../gpg/simple-yubikey';
 // import RcCheckWarrents from './rc-check-warrents';
-import StringValue from '../../../model/string-value';
+// import StringValue from '../../../model/string-value';
 // import BooleanValue from '../../../model/boolean-value';
-import { DiceWare, Diced } from '../../../dice-ware/dice-ware';
+import { Diced } from '../../../dice-ware/dice-ware';
 // import { format_date } from '../../../model/helper';
 import { InputPassPhraseProps } from '../controls/input-pass-phrase';
+import DoublePassword from '../../model/double-password';
+
+// class ResetOnUnreadable {
+//     private _dicedValue: StringValue;
+//     private _currentReadable: boolean;
+
+//     constructor(reg: RegExp, err: string) {
+//       this._dicedValue = new StringValue(reg, err);
+//       this._currentReadable = null;
+//     }
+
+//     public setDicedValue(v: string): void {
+//       this._dicedValue.value = v;
+//     }
+
+//     public validDicedValue(): boolean {
+//       return this._dicedValue.valid();
+//     }
+
+//     public dicedValue(readable?: boolean): string {
+//       if (readable !== undefined && !readable && !this._currentReadable) {
+//         // this._dicedValue.value = '';
+//         return '';
+//       }
+//       this._currentReadable = readable;
+//       return this._dicedValue.value;
+//     }
+
+// }
 
 class InputDiceWareState {
-  @observable public dicedValue: StringValue;
+  // @observable public diceValue: StringValue;
 }
 
 export interface InputDiceWareProps extends InputPassPhraseProps {
   // value: StringValue;
-  diceWare: DiceWare;
+  // diceWare: DiceWare;
+  doublePassword: DoublePassword;
   onDiceResult: (diced: Diced, props: InputDiceWareProps) => void;
+  readable: boolean;
 }
 
 @observer
@@ -28,49 +59,52 @@ export class InputDiceWare extends
   constructor() {
     super();
     this.state = {
-      dicedValue: null
+      diceValue: null
     };
   }
 
-  public componentWillMount(): void {
-    this.setState(Object.assign(this.state, {
-      dicedValue:
-        new StringValue(new RegExp(
-            `^[1-6]{${this.props.diceWare.dicesCount()},${this.props.diceWare.dicesCount()}}$`), '')
-    }));
-  }
-
-  public componentWillReceiveProps(nextProps: Readonly<InputDiceWareProps>): void {
-    // console.log('InputDiceWare:', nextProps, this.props);
+  private setDice(val: string): void {
+    const diceValue = this.props.doublePassword.diceValue;
+    diceValue.value = val;
+    // this.state.diceValue.setDicedValue(val);
+    // console.log('diceWare:1:', this.state.diceValue.dicedValue());
+    if (diceValue.valid()) {
+      // debugger;
+      const diced = this.props.doublePassword.diceWare.dice(diceValue.value);
+      // console.log('diceWare:2:', this.state.diceValue.dicedValue(), diced);
+      if (diced) {
+        this.props.onDiceResult(diced, this.props);
+      }
+    }
   }
 
   public render(): JSX.Element {
-    if (this.props.readOnly.is) {
+    if (this.props.readOnly.is ||
+      !(this.props.doublePassword && this.props.doublePassword.diceWare)) {
       return null;
     }
-    console.log('input-dice-ware:', this.props.readOnly.is);
+    // console.log('input-dice-ware:', this.props.doublePassword,
+    //   this.props.doublePassword.diceWare,
+    //   this.props.doublePassword.diceValue);
+    // console.log('input-dice-ware:', this.props.readable,
+    //   this.state.resetOnUnreadable.dicedValue(this.props.readable));
+    // console.log('input-dice-ware:', this.props.readOnly.is);
+    const diceWare = this.props.doublePassword.diceWare;
     return (
+      <div className="InputDiceWare">
         <input type="text"
           key={this.key}
           name={this.key}
-          className={classnames({ InputDiceWare: true})}
+          className={classnames({ InputDiceWareValue: true })}
           readOnly={this.props.readOnly.is}
           disabled={this.props.readOnly.is}
-          value={this.state.dicedValue.value}
-          pattern={`^[1-6]{${this.props.diceWare.dicesCount()},${this.props.diceWare.dicesCount()}}$`}
+          value={this.props.doublePassword.diceValue.value}
+          pattern={this.props.doublePassword.diceValue.match.source}
           placeholder="enter diced value"
-          onChange={(e: any) => {
-            this.state.dicedValue.value = e.target.value;
-            // console.log('diceWare:1:', this.state.dicedValue.value);
-            if (this.state.dicedValue.valid()) {
-              // debugger;
-              const diced = this.props.diceWare.dice(this.state.dicedValue.value);
-              console.log('diceWare:2:', this.state.dicedValue.value, diced);
-              if (diced) {
-                this.props.onDiceResult(diced, this.props);
-              }
-            }
-          }} />
+          onChange={(e: any) => this.setDice(e.target.value)} />
+        <button className="fa fa-random"
+          onClick={() => this.setDice('' + diceWare.randomDice().diced)}></button>
+      </div>
     );
   }
 

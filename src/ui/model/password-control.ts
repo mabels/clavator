@@ -5,7 +5,7 @@ import Validateable from '../../model/validatable';
 
 class PasswordControl extends ObjectId implements Validateable {
   @observable public password: StringValue;
-  @observable public readonly: boolean;
+  // @observable public readonly: boolean;
   // @observable public readable: boolean;
   public dicedPassword: string;
   // public readonly match: RegExp;
@@ -31,7 +31,7 @@ class PasswordControl extends ObjectId implements Validateable {
   public fill(o: any): PasswordControl {
     this.password.fill(o['value']);
     // this.readable = o['readable'];
-    this.readonly = o['readonly'];
+    // this.readonly = o['readonly'];
     return this;
   }
 

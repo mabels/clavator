@@ -99,6 +99,35 @@ div.good.completed {
   background-color: darkorange;
 }
 
+
+form {
+  /* This bit sets up the horizontal layout */
+  display:flex;
+  flex-direction:row;
+  
+  /* This bit draws the box around it */
+  border:1px solid grey;
+  padding:2px;
+}
+
+input {
+  /* Tell the input to use all the available space */
+  flex-grow:2;
+  /* And hide the input's outline, so the form looks like the outline */
+  border:none;
+}
+
+button {
+  /* Just a little styling to make it pretty */
+  border:1px solid blue;
+  padding-left: 10px;
+  padding-right: 10px;
+  background:blue;
+  color:white;
+}
+
+
+
 .Progressor .eom {
   background: blue
 }

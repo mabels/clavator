@@ -24,6 +24,7 @@ interface RcDoublePasswordProps extends React.Props<RcDoublePassword> {
   doublePassword: DoublePassword;
   idx: number;
   readOnly: NestedFlag;
+  onReadable?: (readable: boolean) => void;
 }
 
 @observer
@@ -48,7 +49,7 @@ export class RcDoublePassword extends
     // console.log('renderRow:', this.props.idx, dp.objectId(), dp.valid(), dp);
     // const readonly = dp.valid() && dp.warrents.valid();
       // !isApproved(this.props.doublePassword, this.props.approvedWarrents);
-    console.log('RcDoublePassword:', this.state.readOnly.is, this.state.readOnly);
+    // console.log('RcDoublePassword:', dp.objectId(), dp.readable, dp);
     return <div key={dp.objectId()}
       className={classnames({
         RcDoublePassword: true,
@@ -60,13 +61,16 @@ export class RcDoublePassword extends
       })} >
       <label>{this.props.idx + 1}</label>
       {React.Children.map(this.props.children, (child, i) => {
-        // debugger;
         return React.cloneElement(child as any, { readOnly: this.state.readOnly } );
-        // (child as any).readOnly = this.state.readOnly;
-        // return child;
       })}
-      <InputPassword readOnly={this.state.readOnly} doublePassword={dp} passwordControl={dp.first} />
-      <InputPassword readOnly={this.state.readOnly} doublePassword={dp} passwordControl={dp.second} />
+      <InputPassword onReadable={this.props.onReadable}
+        readOnly={this.state.readOnly}
+        doublePassword={dp}
+        passwordControl={dp.first} />
+      <InputPassword onReadable={this.props.onReadable}
+        readOnly={this.state.readOnly}
+        doublePassword={dp}
+        passwordControl={dp.second} />
       <RcApproveWarrents
         readOnly={this.state.readOnly}
         valid={dp.valid()}

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { observable } from 'mobx';
+// import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import NestedFlag from '../../../model/nested-flag';
 import SimpleKeyCommon from '../../model/simple-key-common';

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as classnames from 'classnames';
 import { observer } from 'mobx-react';
-// import BooleanValue from '../../../model/boolean-value';
+import NestedFlag from '../../../model/nested-flag';
 // import Container from '../../../model/container';
 // import Uid from '../../../gpg/key-gen-uid';
 import Option from '../../../model/option';
@@ -13,7 +13,7 @@ interface RcOptionProps<T> extends React.Props<RcOption<T>> {
   name: string;
   label: string;
   option: Option<T>;
-  readonly: boolean;
+  readOnly: NestedFlag;
 }
 
 @observer
@@ -29,14 +29,14 @@ export class RcOption<T> extends
     let value = '';
     let ret = this.props.option.map((s, o) => {
       value = s ? o.toString() : value;
-      return (<option key={o.toString()} value={o.toString()}>{o}</option>);
+      return (<option key={o.toString()} disabled={this.props.readOnly.is} value={o.toString()}>{o}</option>);
     });
     return (
       <span>
         <label>{this.props.label}:</label>
         <select name={this.props.name}
-          className={classnames({'u-full-width': true, readonly: this.props.readonly })}
-          disabled={this.props.readonly}
+          className={classnames({'u-full-width': true, readonly: this.props.readOnly.is })}
+          disabled={this.props.readOnly.is}
           defaultValue={value}
           onChange={(e: any) => {
           this.props.option.options.forEach((op) => {
@@ -47,7 +47,7 @@ export class RcOption<T> extends
               murks = e.target.value;
             }
           });
-          this.setState(this.state);
+          // this.setState(this.state);
         }}>
           {ret}
         </select>

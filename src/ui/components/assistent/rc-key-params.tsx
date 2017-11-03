@@ -26,15 +26,15 @@ export class RcKeyParams extends
       <div className={classnames({row: true, RcKeyParams: true, completed: this.props.completed })}>
         <div className="three columns">
           <RcOption name="KeyType" label="Key-Type"
-            option={this.props.keyParams.type} readonly={this.props.readOnly.is} />
+            option={this.props.keyParams.type} readOnly={this.props.readOnly} />
         </div>
         <div className="three columns">
           <RcOption name="MasterKeyLength" label="Master-Key-Length"
-             option={this.props.keyParams.masterLen} readonly={this.props.readOnly.is} />
+             option={this.props.keyParams.masterLen} readOnly={this.props.readOnly} />
         </div>
         <div className="three columns">
           <RcOption name="SubKeyLength" label="Sub-Key-Length"
-             option={this.props.keyParams.subLen} readonly={this.props.readOnly.is} />
+             option={this.props.keyParams.subLen} readOnly={this.props.readOnly} />
         </div>
       </div>
     );
