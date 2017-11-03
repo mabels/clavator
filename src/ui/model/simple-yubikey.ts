@@ -1,9 +1,10 @@
-import { observable } from 'mobx';
+import { observable, computed } from 'mobx';
 import DateValue from '../../model/date-value';
+import BooleanValue from '../../model/boolean-value';
 import Option from '../../model/option';
 import Container from '../../model/container';
 import Validatable from '../../model/validatable';
-// import StringValue from './string-value';
+import NestedFlag from '../../model/nested-flag';
 import KeyGenUid from '../../gpg/key-gen-uid';
 import Warrents from '../../gpg/warrents';
 import Warrent from '../../gpg/warrent';
@@ -21,6 +22,7 @@ export class SimpleYubikey {
   public readonly passPhrase: PassPhrase;
   public readonly adminKey: PassPhrase;
   public readonly userKey: PassPhrase;
+  @observable public readonly readOnly: NestedFlag;
 
   public static createDiceWare(warrents: Warrents): Warrents {
     const ret = new Warrents();
@@ -32,12 +34,17 @@ export class SimpleYubikey {
 
   constructor(warrents: Warrents) {
     this.warrents = warrents;
-    this.common = new SimpleKeyCommon(warrents);
+    this.readOnly = new NestedFlag(false);
+    this.common = new SimpleKeyCommon(warrents, this.readOnly);
     this.passPhrase = PassPhrase.createDoublePasswords(8, warrents, '.', 'PassPhrase error', 4);
     this.adminKey = PassPhrase.createPerWarrent(warrents, '[0-9]', 'adminpin error', 8, 8);
     const me = (new Warrents()).add(warrents.first());
     this.userKey = PassPhrase.createPerWarrent(me, '[0-9]', 'userPin Error', 6, 8);
   }
+
+  // @computed public get readOnly(): boolean {
+  //   return this.common.viewWarrents.non();
+  // }
 
   public valid(): boolean {
     return this.warrents.valid() &&

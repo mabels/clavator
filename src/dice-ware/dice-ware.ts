@@ -20,7 +20,7 @@ export class Diced {
   }
 
   public static fill(obj: any): Diced {
-    return new Diced(obj['diced'], obj['part']);
+    return new Diced(obj['diced'], obj['password']);
   }
 
   constructor(diced: number, password: string) {

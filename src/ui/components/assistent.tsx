@@ -92,25 +92,28 @@ export class Assistent
     // this.state.simpleYubiKey.userKey.readonly.set(this.state.simpleYubiKey.common.viewWarrents.non());
     return <div className={classnames({
         SimpleCreateKey: true,
+        readOnly: this.state.simpleYubiKey.readOnly.is,
         good: this.state.simpleYubiKey.valid(),
         completed: this.state.simpleYubiKey.completed()
     })}>
-      <RcSimpleKeyCommon simpleKeyCommon={this.state.simpleYubiKey.common} />
+      <RcSimpleKeyCommon
+        readOnly={this.state.simpleYubiKey.readOnly}
+        simpleKeyCommon={this.state.simpleYubiKey.common} />
       <div className={classnames({
           Passwords: true,
-          readonly: this.state.simpleYubiKey.common.viewWarrents.non()
+          readonly: this.state.simpleYubiKey.readOnly.is
         })}>
         <DiceWareInputPassPhrase label="PasswordPhase"
           diceWare={this.state.diceWare}
-          readonly={this.state.simpleYubiKey.common.viewWarrents.non()}
+          readOnly={this.state.simpleYubiKey.readOnly}
           approvedWarrents={this.state.simpleYubiKey.common.viewWarrents}
           passPhrase={this.state.simpleYubiKey.passPhrase} />
         <InputPassPhrase label="Admin-Key"
-          readonly={this.state.simpleYubiKey.common.viewWarrents.non()}
+          readOnly={this.state.simpleYubiKey.readOnly}
           approvedWarrents={this.state.simpleYubiKey.common.viewWarrents}
           passPhrase={this.state.simpleYubiKey.adminKey} />
         <InputPassPhrase label="User-Key"
-          readonly={this.state.simpleYubiKey.common.viewWarrents.non()}
+          readOnly={this.state.simpleYubiKey.readOnly}
           approvedWarrents={this.state.simpleYubiKey.common.viewWarrents}
           passPhrase={this.state.simpleYubiKey.userKey}/>
       </div>

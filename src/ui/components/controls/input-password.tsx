@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 import * as classnames from 'classnames';
 // import StringValue from '../../../model/string-value';
-// import BooleanValue from '../../../model/boolean-value';
+import NestedFlag from '../../../model/nested-flag';
 import PasswordControl from '../../model/password-control';
 import DoublePassword from '../../model/double-password';
 
@@ -12,7 +12,7 @@ interface InputPasswordState {
 
 interface InputPasswordProps extends React.Props<InputPassword> {
   passwordControl: PasswordControl;
-  readonly: boolean;
+  readOnly: NestedFlag;
   doublePassword: DoublePassword;
 }
 
@@ -26,9 +26,9 @@ export class InputPassword extends
     this.lockUnlock = this.lockUnlock.bind(this);
   }
 
-  public componentWillReceiveProps(next: InputPasswordProps): void {
-    this.props.passwordControl.readonly = next.readonly;
-  }
+  // public componentWillReceiveProps(next: InputPasswordProps): void {
+  //   this.props.passwordControl.readonly = next.readOnly;
+  // }
 
   private lockUnlock(e: any): void {
     if (e) {
@@ -48,7 +48,7 @@ export class InputPassword extends
   }
 
   private renderReadable(): JSX.Element {
-    if (this.props.passwordControl.readonly) {
+    if (this.props.readOnly.is) {
       return;
     }
     return <button className={classnames({
@@ -66,8 +66,8 @@ export class InputPassword extends
           name={this.props.passwordControl.objectId()}
           className={classnames({ good: !this.props.passwordControl.readonly &&
                                         this.props.passwordControl.valid()})}
-          readOnly={this.props.passwordControl.readonly}
-          disabled={this.props.passwordControl.readonly}
+          readOnly={this.props.readOnly.is}
+          disabled={this.props.readOnly.is}
           pattern={this.props.passwordControl.password.match.source}
           value={this.props.passwordControl.password.value}
           placeholder={this.props.passwordControl.password.match.source}

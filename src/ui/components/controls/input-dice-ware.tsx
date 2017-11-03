@@ -40,17 +40,22 @@ export class InputDiceWare extends
     }));
   }
 
+  public componentWillReceiveProps(nextProps: Readonly<InputDiceWareProps>): void {
+    // console.log('InputDiceWare:', nextProps, this.props);
+  }
+
   public render(): JSX.Element {
-    // if (this.props.passPhrase.readOnly.value) {
-    //   return null;
-    // }
+    if (this.props.readOnly.is) {
+      return null;
+    }
+    console.log('input-dice-ware:', this.props.readOnly.is);
     return (
         <input type="text"
           key={this.key}
           name={this.key}
           className={classnames({ InputDiceWare: true})}
-          readOnly={this.props.passPhrase.readOnly.value}
-          disabled={this.props.passPhrase.readOnly.value}
+          readOnly={this.props.readOnly.is}
+          disabled={this.props.readOnly.is}
           value={this.state.dicedValue.value}
           pattern={`^[1-6]{${this.props.diceWare.dicesCount()},${this.props.diceWare.dicesCount()}}$`}
           placeholder="enter diced value"
@@ -58,8 +63,9 @@ export class InputDiceWare extends
             this.state.dicedValue.value = e.target.value;
             // console.log('diceWare:1:', this.state.dicedValue.value);
             if (this.state.dicedValue.valid()) {
+              // debugger;
               const diced = this.props.diceWare.dice(this.state.dicedValue.value);
-              // console.log('diceWare:2:', this.state.dicedValue.value, diced);
+              console.log('diceWare:2:', this.state.dicedValue.value, diced);
               if (diced) {
                 this.props.onDiceResult(diced, this.props);
               }

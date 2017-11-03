@@ -1,5 +1,6 @@
 
 import { observable, computed } from 'mobx';
+import NestedFlag from '../../model/nested-flag';
 import DateValue from '../../model/date-value';
 import KeyParams from '../../gpg/key-params';
 import Container from '../../model/container';
@@ -10,12 +11,14 @@ import { expireDate } from '../../model/helper';
 
 export class SimpleKeyCommon {
   @observable public readonly viewWarrents: ViewWarrents;
+  @observable public readOnly: NestedFlag;
 
   @observable public expireDate: DateValue;
   @observable public keyParams: KeyParams;
   @observable public uids: Container<KeyGenUid>;
 
-  constructor(warrents: Warrents) {
+  constructor(warrents: Warrents, nestedFlag: NestedFlag) {
+    this.readOnly = new NestedFlag(nestedFlag);
     this.viewWarrents = ViewWarrents.from(warrents);
     this.expireDate = new DateValue(expireDate(), 'expireDate error');
     this.keyParams = new KeyParams();

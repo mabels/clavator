@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 import * as classnames from 'classnames';
 // import SimpleYubiKey from '../gpg/simple-yubikey';
-// import BooleanValue from '../../../model/boolean-value';
+import NestedFlag from '../../../model/nested-flag';
 import DateValue from '../../../model/date-value';
 import { format_date } from '../../../model/helper';
 
@@ -12,7 +12,7 @@ interface InputExpireDateState {
 interface InputExpireDateProps extends React.Props<InputExpireDate> {
   title: string;
   expireDate: DateValue;
-  readonly?: boolean;
+  readOnly: NestedFlag;
   completed?: boolean;
 }
 
@@ -33,9 +33,9 @@ export class InputExpireDate extends
               className={classnames({
                  InputExpireDate: true,
                  good: this.props.expireDate.valid(),
-                 readonly:  this.props.readonly })}
-              disabled={this.props.readonly}
-              readOnly={this.props.readonly}
+                 readonly:  this.props.readOnly.is })}
+              disabled={this.props.readOnly.is}
+              readOnly={this.props.readOnly.is}
               autoComplete="on"
               min={Date.now()}
               onChange={(e: any) => {

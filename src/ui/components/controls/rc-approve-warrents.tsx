@@ -3,7 +3,7 @@ import { observer } from 'mobx-react';
 import * as classnames from 'classnames';
 import ViewWarrents from '../../model/view-warrents';
 import ViewWarrent from '../../model/view-warrent';
-// import BooleanValue from '../../../model/boolean-value';
+import NestedFlag from '../../../model/nested-flag';
 
 interface RcApproveWarrentsState {
 }
@@ -14,7 +14,8 @@ interface RcApproveWarrentsProps extends React.Props<RcApproveWarrents> {
   classNames?: string[];
   valid?: boolean;
   completed?: boolean;
-  readonly?: boolean;
+  readOnly: NestedFlag;
+  approved?: (ap: ViewWarrent) => void;
 }
 
 @observer export class RcApproveWarrents extends
@@ -27,12 +28,11 @@ interface RcApproveWarrentsProps extends React.Props<RcApproveWarrents> {
 
   private checkWarrents(ap: ViewWarrent): void {
     console.log('checkWarrents:', this.props, ap);
-    // if (!this.props.viewWarrents.valid()) {
-    //   // this.props.readonly = true;
-    // }
     ap.approved = true;
-    // this.state.checkedWarrents.push(i);
-    // this.setState(this.state);
+    this.props.readOnly.is = true;
+    if (this.props.approved) {
+      this.props.approved(ap);
+    }
   }
 
   private renderWarrents(): JSX.Element {

@@ -2,7 +2,7 @@ import * as React from 'react';
 // import * as classnames from 'classnames';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
-// import BooleanValue from '../../../model/boolean-value';
+import NestedFlag from '../../../model/nested-flag';
 // import SimpleYubiKey from '../../model/simple-yubikey';
 // import RcCheckWarrents from './rc-check-warrents';
 // import DateValue from '../../../model/date-value';
@@ -17,7 +17,7 @@ import { InputDiceWare, InputDiceWareProps } from '../controls/input-dice-ware';
 import { InputPassPhrase, InputPassPhraseProps } from '../controls/input-pass-phrase';
 
 class DiceWareInputPassPhraseState {
-  @observable public readable: boolean;
+  // @observable public readable: boolean;
 }
 
 interface DiceWareInputPassPhraseProps extends InputPassPhraseProps {
@@ -30,20 +30,23 @@ export class DiceWareInputPassPhrase extends
 
   constructor() {
     super();
-    this.state = { readable: false };
+    this.state = { readOnly: null  };
   }
 
   public render(): JSX.Element {
+    console.log('dice-ware-input-pass-phrase:', this.props.readOnly);
     return <InputPassPhrase
             label={this.props.label}
             passPhrase={this.props.passPhrase}
+            readOnly={this.props.readOnly}
             childFactory={(dp: DoublePassword) => {
-             console.log('childFactory', this.props.passPhrase.readOnly.value);
-             return  <InputDiceWare
+              // const readOnly = new NestedFlag(this.props.readOnly);
+              return  <InputDiceWare
                        label={null}
+                       readOnly={null}
                        passPhrase={this.props.passPhrase}
                        onDiceResult={(dd: Diced, ippp: InputDiceWareProps) => {
-                       console.log('diced:', dd.password, dp.first.password.value);
+                        console.log('diced:', dd.password, dp.first.password.value);
                         if (
                             (dp.first.password.value.length == 0 &&
                              dp.second.password.value.length == 0) ||

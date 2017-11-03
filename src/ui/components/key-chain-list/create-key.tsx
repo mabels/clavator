@@ -6,6 +6,7 @@ import * as WsChannel from '../../model/ws-channel';
 import * as KeyGen from '../../../gpg/key-gen';
 import Option from '../../../model/option';
 import MultiOption from '../../../model/multi-option';
+import NestedFlag from '../../../model/nested-flag';
 // import { format_date } from '../../../model/helper';
 // import * as ReactModal from 'react-modal';
 // import { Progressor } from './progressor';
@@ -27,6 +28,7 @@ interface CreateKeyProps extends React.Props<CreateKey> {
   onComplete?: () => void;
   renderSubmit?: (ck: CreateKey) => JSX.Element;
   secretKey?: ListSecretKeys.SecretKey;
+  readOnly: NestedFlag;
 }
 
 export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
@@ -304,7 +306,10 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
         e.stopPropagation();
         e.preventDefault();
       }}>
-      <InputExpireDate title="Expire-Date" expireDate={this.state.keyGen.expireDate} />
+      <InputExpireDate
+        readOnly={this.props.readOnly}
+        title="Expire-Date"
+        expireDate={this.state.keyGen.expireDate} />
 
         {this.state.keyGen.uids.map((sb: KeyGen.Uid, i: number) => {
           if (sb) {

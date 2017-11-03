@@ -1,9 +1,11 @@
 import * as React from 'react';
 import * as WsChannel from '../../model/ws-channel';
+import NestedFlag from '../../../model/nested-flag';
 import ReactModal from 'react-modal';
 import CreateKey from './create-key';
 
 interface DialogCreateKeyState {
+  readOnly: NestedFlag;
 }
 
 interface DialogCreateKeyProps extends React.Props<DialogCreateKey> {
@@ -16,6 +18,7 @@ export class DialogCreateKey extends React.Component<DialogCreateKeyProps, Dialo
   constructor() {
     super();
     this.state = {
+      readOnly: new NestedFlag()
     };
   }
 
@@ -30,13 +33,13 @@ export class DialogCreateKey extends React.Component<DialogCreateKeyProps, Dialo
       >
         <i onClick={
             (() => {
-              this.setState({createDialog: false});
+              this.setState(Object.assign(this.state, {createDialog: false}));
               this.props.onClose();
             }).bind(this)
           }
            className="closeBox fa fa-close"></i>
         <h4>Creating Key:</h4>
-        <CreateKey channel={this.props.channel} />
+        <CreateKey readOnly={this.state.readOnly} channel={this.props.channel} />
       </ReactModal>
     );
   }

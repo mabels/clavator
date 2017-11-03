@@ -5,7 +5,7 @@ import { observer } from 'mobx-react';
 // import BooleanValue from '../../../model/boolean-value';
 // import SimpleYubiKey from '../../model/simple-yubikey';
 // import RcCheckWarrents from './rc-check-warrents';
-// import DateValue from '../../../model/date-value';
+import NestedFlag from '../../../model/nested-flag';
 // import { format_date } from '../../../model/helper';
 import PassPhrase from '../../model/pass-phrase';
 import DoublePassword from '../../model/double-password';
@@ -21,7 +21,7 @@ export interface InputPassPhraseProps extends React.Props<InputPassPhrase> {
   label: string;
   passPhrase: PassPhrase;
   elementsPerRow?: number;
-  readonly?: boolean;
+  readOnly: NestedFlag;
   approvedWarrents?: ViewWarrents;
   childFactory?: (dp: DoublePassword, idx: number) => JSX.Element;
 }
@@ -46,7 +46,7 @@ export class InputPassPhrase extends
       }
       row.push(pp);
     });
-    // console.log(`InputPassPhrase.${this.props.passPhrase.objectId()}`);
+    console.log('input-pass-phrase:', this.props.readOnly);
     return <div
         key={`InputPassPhrase.${this.props.passPhrase.objectId()}`}
         className={classnames({
@@ -62,7 +62,9 @@ export class InputPassPhrase extends
           <div key={`${this.props.passPhrase.objectId()}.${ridx}`} className="row">
             {row.map((dp, pidx) => {
               const idx = ridx * elements + pidx;
+              console.log('input-pass-phrase:render:', idx);
               return <RcDoublePassword
+                readOnly={this.props.readOnly}
                 key={`${this.props.passPhrase.objectId()}.${idx}`}
                 doublePassword={dp} idx={idx} >
                 {this.props.childFactory && this.props.childFactory(dp, idx)}
