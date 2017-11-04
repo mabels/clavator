@@ -48,7 +48,6 @@ export class DoublePassword extends ObjectId implements Validatable {
   // public set diceWare(diceWare: DiceWare) {
   //   this._diceWare = diceWare;
   //   console.log('add diceWare:', this.objectId());
-  //   
   // }
 
   public setReadableWithTimeout(v: boolean, timeout: number, cb?: (v: boolean) => void): void {
@@ -59,7 +58,7 @@ export class DoublePassword extends ObjectId implements Validatable {
       }
       clearTimeout(this.readableTimer);
     }
-    console.log('setReadableWithTimeout:', v, timeout);
+    // console.log('setReadableWithTimeout:', v, timeout);
     if (timeout) {
       this.readableCb = cb;
       this.readableTimer = setTimeout(() => {

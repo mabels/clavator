@@ -27,7 +27,7 @@ interface RcApproveWarrentsProps extends React.Props<RcApproveWarrents> {
   }
 
   private checkWarrents(ap: ViewWarrent): void {
-    console.log('checkWarrents:', this.props, ap);
+    // console.log('checkWarrents:', this.props, ap);
     ap.approved = true;
     this.props.readOnly.is = true;
     if (this.props.approved) {

@@ -78,7 +78,7 @@ export class RcDoublePassword extends
         showWarrents={dp.showWarrent()}
         approved={(vw: ViewWarrent) => {
           dp.readable = false;
-          console.log('RcApproveWarrents:approved');
+          // console.log('RcApproveWarrents:approved');
         }}
       />
     </div>;

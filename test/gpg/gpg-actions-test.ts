@@ -9,7 +9,8 @@ import * as path from 'path';
 
 import * as ListSecretKeys from '../../src/gpg/list-secret-keys';
 
-import * as KeyGen from '../../src/gpg/key-gen';
+import KeyGenUid from '../../src/gpg/key-gen-uid';
+import { KeyGen, KeyInfo } from '../../src/gpg/key-gen';
 
 import * as Rimraf from 'rimraf';
 
@@ -22,15 +23,15 @@ function expireDate(): Date {
   return now;
 }
 
-function keyGen(): KeyGen.KeyGen {
-  let keygen = new KeyGen.KeyGen();
+function keyGen(): KeyGen {
+  let keygen = new KeyGen();
   keygen.expireDate.value = expireDate();
   keygen.password.password = 'Gpg Test Jojo Akzu Luso';
-  let keyInfo = new KeyGen.KeyInfo();
+  let keyInfo = new KeyInfo();
   keyInfo.type.value = 'RSA';
   keyInfo.usage.values = ['sign', 'encr', 'auth'];
   keygen.subKeys.add(keyInfo);
-  let uid = new KeyGen.Uid();
+  let uid = new KeyGenUid();
   uid.email.value = 'gpg.sock@lodke.gpg';
   uid.name.value = 'Gpg Test Master';
   keygen.uids.add(uid);

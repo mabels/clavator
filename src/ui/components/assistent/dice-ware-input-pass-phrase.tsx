@@ -60,7 +60,7 @@ export class DiceWareInputPassPhrase extends
                             if (!v) {
                               dp.diceValue.value = '';
                             }
-                            console.log('readable reset', v);
+                            // console.log('readable reset', v);
                           });
                           dp.second.dicedPassword = dp.second.password.value = dd.password;
                         }

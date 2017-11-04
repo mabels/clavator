@@ -8,9 +8,9 @@ import ObjectId from '../model/object-id';
 
 import { assignOnError, format_date, expireDate  } from '../model/helper';
 
-export class Uid extends KeyGenUid {
+// export class Uid extends KeyGenUid {
 
-}
+// }
 
 export class ValidatableString {
   public match: RegExp;
@@ -187,3 +187,5 @@ export class KeyGen {
   }
 
 }
+
+export default KeyGen;

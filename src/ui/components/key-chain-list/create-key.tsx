@@ -4,6 +4,7 @@ import * as classnames from 'classnames';
 import * as Message from '../../../model/message';
 import * as WsChannel from '../../model/ws-channel';
 import * as KeyGen from '../../../gpg/key-gen';
+import KeyGenUid from '../../../gpg/key-gen-uid';
 import Option from '../../../model/option';
 import MultiOption from '../../../model/multi-option';
 import NestedFlag from '../../../model/nested-flag';
@@ -36,7 +37,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
   constructor() {
     super();
     let kg = KeyGen.KeyGen.withSubKeys(3);
-    kg.uids.add(new KeyGen.Uid());
+    kg.uids.add(new KeyGenUid());
     this.state = {
       createDialog: false,
       completed: false,
@@ -81,7 +82,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
   }
 
   private handleAddUid(): void {
-    let uid = new KeyGen.Uid();
+    let uid = new KeyGenUid();
     uid.name.value = this.state.keyGen.uids.last().name.value;
     this.state.keyGen.uids.add(uid);
     this.setState(Object.assign({}, this.state, {
@@ -186,7 +187,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
     return null;
   }
 
-  public render_uid(idx: number, uid: KeyGen.Uid): JSX.Element {
+  public render_uid(idx: number, uid: KeyGenUid): JSX.Element {
     return (
       <div className={classnames({ 'u-full-width': true, 'good': uid.valid() })} key={idx}>
         <div className="row">
@@ -311,7 +312,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
         title="Expire-Date"
         expireDate={this.state.keyGen.expireDate} />
 
-        {this.state.keyGen.uids.map((sb: KeyGen.Uid, i: number) => {
+        {this.state.keyGen.uids.map((sb: KeyGenUid, i: number) => {
           if (sb) {
             return this.render_uid(i, sb);
           }
