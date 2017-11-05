@@ -28,25 +28,44 @@ interface DiceWareInputPassPhraseProps extends InputPassPhraseProps {
 export class DiceWareInputPassPhrase extends
   React.Component<DiceWareInputPassPhraseProps, DiceWareInputPassPhraseState> {
 
+  private inputDiceWares: JSX.Element[];
+
   constructor() {
     super();
     this.state = { /* readOnly: null */ };
+    this.diceAll = this.diceAll.bind(this);
+  }
+
+  private diceAll(e: any): void {
+    console.log('diceAll');
+    this.props.passPhrase.doublePasswords.forEach(dp => dp.inputDiceWare.randomDice());
+  }
+
+  private labelWithDice(label: string | JSX.Element): string | JSX.Element {
+    if (this.props.passPhrase.warrents.length() > 1) {
+      return label;
+    }
+    return <span>{label}<button
+      className="fa fa-random"
+      onClick={this.diceAll}
+      ></button></span>;
   }
 
   public render(): JSX.Element {
     // console.log('dice-ware-input-pass-phrase:', this.props.readOnly);
     return <InputPassPhrase
-            label={this.props.label}
+            label={this.labelWithDice(this.props.label)}
             passPhrase={this.props.passPhrase}
             readOnly={this.props.readOnly}
             childFactory={(dp: DoublePassword) => {
               // dp.diceWare = this.props.diceWare;
               // const readOnly = new NestedFlag(this.props.readOnly);
-              return  <InputDiceWare
+              return <InputDiceWare
                        label={null}
                        readOnly={null}
                        readable={null}
                        doublePassword={dp}
+                       ref={(input: InputDiceWare) => { dp.setInputDiceWare(input); }}
                        passPhrase={this.props.passPhrase}
                        onDiceResult={(dd: Diced, ippp: InputDiceWareProps) => {
                         // console.log('diced:', dd.password, dp.first.password.value);
@@ -56,15 +75,15 @@ export class DiceWareInputPassPhrase extends
                             (dp.first.password.value == dp.first.dicedPassword &&
                              dp.second.password.value == dp.second.dicedPassword)) {
                           dp.first.dicedPassword = dp.first.password.value = dd.password;
+                          dp.second.dicedPassword = dp.second.password.value = dd.password;
                           dp.setReadableWithTimeout(true, 10000, (v) => {
                             if (!v) {
                               dp.diceValue.value = '';
                             }
                             // console.log('readable reset', v);
                           });
-                          dp.second.dicedPassword = dp.second.password.value = dd.password;
                         }
-                     }} />;
+                      }} />;
             }} />;
   }
 

@@ -10,6 +10,7 @@ import PassPhrase from './pass-phrase';
 import PasswordControl from './password-control';
 import Warrents from '../../gpg/warrents';
 import DiceWare from '../../dice-ware/dice-ware';
+import InputDiceWare from '../components/controls/input-dice-ware';
 
 export class DoublePassword extends ObjectId implements Validatable {
   // @observable public approved: BooleanValue;
@@ -24,6 +25,7 @@ export class DoublePassword extends ObjectId implements Validatable {
   private passPhrase: PassPhrase;
   private readableTimer: any;
   private readableCb: (v: boolean) => void;
+  public inputDiceWare: InputDiceWare;
 
   constructor(warrents: Warrents, errText: string, minmaxs: MinMax, diceWare: DiceWare) {
     super('DoublePassword');
@@ -40,6 +42,10 @@ export class DoublePassword extends ObjectId implements Validatable {
     // this.passPhrase = passPhrase;
     this.warrents = new ViewWarrents();
     warrents.forEach(w => this.warrents.add(new ViewWarrent(w)));
+  }
+
+  public setInputDiceWare(idw: InputDiceWare): void {
+    this.inputDiceWare = idw;
   }
 
   // public get diceWare(): DiceWare {

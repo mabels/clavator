@@ -26,6 +26,10 @@ export class Warrent extends ObjectId implements Pallet {
     return this.warrent.fill(js['initial']);
   }
 
+  public toObj(): any {
+    return this.warrent.value;
+  }
+
 }
 
 export default Warrent;

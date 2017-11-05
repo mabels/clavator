@@ -23,7 +23,7 @@ export class RcUids extends
     super();
     this.state = {};
     this.handleAddUid = this.handleAddUid.bind(this);
-    this.handleDelUid = this.handleDelUid.bind(this);
+    // this.handleDelUid = this.handleDelUid.bind(this);
   }
 
   private handleDelUid(idx: number): void {
@@ -36,7 +36,7 @@ export class RcUids extends
     }
   }
 
-  private handleAddUid(): void {
+  private handleAddUid(/*idx: number */): void {
     let uid = new Uid();
     uid.name.value = this.props.uids.last().name.value;
     this.props.uids.add(uid);
@@ -126,7 +126,7 @@ export class RcUids extends
                     'bad': uid.valid()
                   })}
                   disabled={this.props.readOnly.is || !uid.valid()}
-                  onClick={this.handleAddUid.bind(this)}>Add Uid</button>
+                  onClick={this.handleAddUid/*.bind(this)*/}>Add Uid</button>
         </div>
 
       </div>

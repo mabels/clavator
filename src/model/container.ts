@@ -101,6 +101,10 @@ export class Container<T extends Pallet> {
       }
     }
   }
+
+  public toObj(): any {
+    return this.pallets.map(ws => ws.toObj());
+  }
 }
 
 export default Container;

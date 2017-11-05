@@ -11,35 +11,39 @@ import DiceWare from '../../dice-ware/dice-ware';
 import MinMax from './min-max';
 
 export class PassPhrase extends ObjectId implements Validatable {
-  public readOnly: BooleanValue;
+  public readonly readOnly: BooleanValue;
   public readonly warrents: Warrents;
   // public errorText: string;
-  public doublePasswords: DoublePassword[];
+  public readonly doublePasswords: DoublePassword[];
+  public readonly joiner: string;
 
   // two Object Graphs
   // First one DoublePassport Per Warrent
   public static createPerWarrent(warrents: Warrents, diceWare: DiceWare,
-    contReg: string, errText: string, minLen: number, maxLen?: number): PassPhrase {
+    contReg: string, errText: string, joiner: string, minLen: number, maxLen?: number): PassPhrase {
     const minMaxs = MinMax.create(warrents.length(), contReg, minLen, maxLen);
     return new PassPhrase(warrents,
       (new Array(warrents.length())).fill(42).map((_, idx) =>
-        new DoublePassword(new Warrents([warrents.get(idx)]), errText, minMaxs[idx], diceWare)));
+        new DoublePassword(new Warrents([warrents.get(idx)]), errText, minMaxs[idx], diceWare)),
+        joiner);
   }
 
   // First n DoublePassports all Warrents per DoublePassports
   public static createDoublePasswords(n: number, warrents: Warrents, diceWare: DiceWare,
-    contReg: string, errText: string, minLen: number, maxLen?: number): PassPhrase {
+    contReg: string, errText: string, joiner: string, minLen: number, maxLen?: number): PassPhrase {
     const minMax = MinMax.create(1, contReg, minLen, maxLen)[0];
     return new PassPhrase(warrents,
       (new Array(n)).fill(42).map((_, idx) => new DoublePassword(
-          new Warrents([warrents.get(idx % warrents.length())]), errText, minMax, diceWare)));
+        new Warrents([warrents.get(idx % warrents.length())]), errText, minMax, diceWare)),
+        joiner);
   }
 
   /* pWarrents: ViewWarrents, reg: string, errText: string */
-  constructor(warrents: Warrents, dps: DoublePassword[]) {
+  constructor(warrents: Warrents, dps: DoublePassword[], joiner: string) {
     super('PassPhrase');
     this.readOnly = new BooleanValue('readonly error');
     this.warrents = warrents;
+    this.joiner = joiner;
     // this.errorText = errText;
     this.doublePasswords = dps.map(dp => dp.setPassPhrase(this));
   }
@@ -72,6 +76,15 @@ export class PassPhrase extends ObjectId implements Validatable {
     //   new DoublePassword(this,
     //    RegMinMaxWarrent.fill(i), this.parts).fill(i));
     //   });
+  }
+
+  public toObj(): any {
+    const ret: string[] = [];
+    this.doublePasswords.forEach(dp => ret.push.apply(ret, dp.warrents.toObj()));
+    return {
+      approvedWarrents: [...new Set(ret)],
+      value: this.doublePasswords.map(dp => dp.first.password.value).join(this.joiner)
+    };
   }
 
 }

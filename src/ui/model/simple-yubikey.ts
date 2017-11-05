@@ -36,10 +36,10 @@ export class SimpleYubikey {
     this.warrents = warrents;
     this.readOnly = new NestedFlag(false);
     this.common = new SimpleKeyCommon(warrents, this.readOnly);
-    this.passPhrase = PassPhrase.createDoublePasswords(8, warrents, diceWare,  '.', 'PassPhrase error', 4);
-    this.adminKey = PassPhrase.createPerWarrent(warrents, diceWare,  '[0-9]', 'adminpin error', 8, 8);
+    this.passPhrase = PassPhrase.createDoublePasswords(8, warrents, diceWare,  '.', 'PassPhrase error', ' ', 2);
+    this.adminKey = PassPhrase.createPerWarrent(warrents, diceWare,  '[0-9]', 'adminpin error', '', 8, 8);
     const me = (new Warrents()).add(warrents.first());
-    this.userKey = PassPhrase.createPerWarrent(me, diceWare, '[0-9]', 'userPin Error', 6, 8);
+    this.userKey = PassPhrase.createPerWarrent(me, diceWare, '[0-9]', 'userPin Error', '', 6, 8);
   }
 
   // @computed public get readOnly(): boolean {
@@ -75,6 +75,16 @@ export class SimpleYubikey {
   // public expireDate: DateValue = new DateValue(expireDate(), 'expireDate error');
   // public uids: Container<Uid> = new Container<Uid>(() => { return new Uid(); });
   // public subKeys: Container<KeyInfo> = new Container<KeyInfo>(() => { return new KeyInfo(); });
+
+  public toObj(): any {
+    return {
+      warrents: this.warrents.toObj(),
+      common: this.common.toObj(),
+      passPhrase: this.passPhrase.toObj(),
+      adminKey: this.adminKey.toObj(),
+      userKey: this.userKey.toObj(),
+    };
+  }
 
 }
 

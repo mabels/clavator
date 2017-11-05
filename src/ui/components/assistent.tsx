@@ -73,6 +73,7 @@ export class Assistent
   }
 
   private handleReady(): void {
+    console.log('ready:', this.state.simpleYubiKey.toObj());
     /* */
   }
 

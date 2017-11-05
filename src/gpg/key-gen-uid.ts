@@ -48,6 +48,14 @@ export class KeyGenUid extends ObjectId implements Pallet {
     }
     return tmp;
   }
+
+  public toObj(): any {
+    return {
+      name: this.name.value,
+      email: this.email.value,
+      comment: this.comment.value
+    };
+  }
 }
 
 export default KeyGenUid;

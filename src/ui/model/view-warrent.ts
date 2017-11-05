@@ -54,6 +54,13 @@ export class ViewWarrent extends ObjectId implements Pallet {
     // return null;
   }
 
+  public toObj(): any {
+    return {
+      warrent: this.warrent.toObj(),
+      approved: this.approved
+    };
+  }
+
 }
 
 export default ViewWarrent;

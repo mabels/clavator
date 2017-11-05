@@ -18,7 +18,7 @@ class InputPassPhraseState {
 }
 
 export interface InputPassPhraseProps extends React.Props<InputPassPhrase> {
-  label: string;
+  label: string | JSX.Element;
   passPhrase: PassPhrase;
   elementsPerRow?: number;
   readOnly: NestedFlag;

@@ -28,6 +28,7 @@ export class Warrents extends Container<Warrent> {
     // this.pallets.map(i => i.warrent.value));
     return reduced.length == this.pallets.length;
   }
+
 }
 
 export default Warrents;

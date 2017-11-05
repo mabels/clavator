@@ -61,6 +61,7 @@ export class InputDiceWare extends
     this.state = {
       diceValue: null
     };
+    this.randomDice = this.randomDice.bind(this);
   }
 
   private setDice(val: string): void {
@@ -76,6 +77,10 @@ export class InputDiceWare extends
         this.props.onDiceResult(diced, this.props);
       }
     }
+  }
+
+  public randomDice(): void {
+    this.setDice('' + this.props.doublePassword.diceWare.randomDice().diced);
   }
 
   public render(): JSX.Element {
@@ -103,7 +108,7 @@ export class InputDiceWare extends
           placeholder="enter diced value"
           onChange={(e: any) => this.setDice(e.target.value)} />
         <button className="fa fa-random"
-          onClick={() => this.setDice('' + diceWare.randomDice().diced)}></button>
+          onClick={this.randomDice}></button>
       </div>
     );
   }

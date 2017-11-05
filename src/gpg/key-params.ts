@@ -33,6 +33,14 @@ export class KeyParams extends ObjectId implements Validatable {
     this.subLen.value = js['subLen'];
   }
 
+  public toObj(): any {
+    return {
+      type: this.type.value,
+      masterLen: this.masterLen.value,
+      subLen: this.subLen.value
+    };
+  }
+
 }
 
 export default KeyParams;

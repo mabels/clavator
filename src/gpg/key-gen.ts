@@ -83,6 +83,14 @@ export class KeyInfo extends ObjectId implements Pallet {
     assignOnError(this.usage.valid(), ret, this.usage.errText);
     return ret;
   }
+
+  public toObj(): any {
+    return {
+      type: this.type.value,
+      length: this.length.value,
+      usage: this.usage.values
+    };
+  }
 }
 
 // export class SubKeys {

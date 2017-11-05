@@ -59,6 +59,10 @@ export class ViewWarrents extends Container<ViewWarrent> {
     return ret;
   }
 
+  public toObj(): any {
+    return this.pallets.map(ws => ws.warrent.toObj());
+  }
+
 }
 
 export default ViewWarrents;
