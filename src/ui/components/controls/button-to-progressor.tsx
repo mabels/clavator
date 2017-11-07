@@ -12,6 +12,7 @@ interface ButtonToProgressorProps extends React.Props<ButtonToProgressor> {
   onClick: () => void;
   channel: WsChannel.Dispatch;
   transaction: Message.Transaction<any>;
+  disabled?: boolean;
 }
 
 @observer
@@ -20,7 +21,7 @@ export class ButtonToProgressor extends React.Component<ButtonToProgressorProps,
   constructor() {
     super();
     this.state = {
-      running: false
+      running: false,
     };
   }
 
@@ -33,9 +34,11 @@ export class ButtonToProgressor extends React.Component<ButtonToProgressorProps,
         controls={true} />;
     } else {
       return <button onClick={() => {
-        this.setState({running: true});
-        this.props.onClick(); }
-        }>{this.props.children}</button>;
+          this.setState({running: true});
+          this.props.onClick(); }
+        }
+        disabled={this.props.disabled}
+        >{this.props.children}</button>;
     }
   }
 }

@@ -14,6 +14,7 @@ interface RcOptionProps<T> extends React.Props<RcOption<T>> {
   label: string;
   option: Option<T>;
   readOnly: NestedFlag;
+  onChange?: (val: T) => void;
 }
 
 @observer
@@ -35,20 +36,23 @@ export class RcOption<T> extends
       <span>
         <label>{this.props.label}:</label>
         <select name={this.props.name}
-          className={classnames({'u-full-width': true, readonly: this.props.readOnly.is })}
+          className={classnames({ 'u-full-width': true, readonly: this.props.readOnly.is })}
           disabled={this.props.readOnly.is}
           defaultValue={value}
           onChange={(e: any) => {
-          this.props.option.options.forEach((op) => {
-            let murks = op as any;
-            if (murks['value']) {
-              murks['value'] = e.target.value;
-            } else {
-              murks = e.target.value;
+            this.props.option.options.forEach((op) => {
+              let murks = op as any;
+              if (murks['value']) {
+                murks['value'] = e.target.value;
+              } else {
+                murks = e.target.value;
+              }
+            });
+            if (this.props.onChange) {
+              this.props.onChange(e.target.value);
             }
-          });
-          // this.setState(this.state);
-        }}>
+            // this.setState(this.state);
+          }}>
           {ret}
         </select>
       </span>

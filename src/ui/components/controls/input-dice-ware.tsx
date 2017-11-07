@@ -71,7 +71,7 @@ export class InputDiceWare extends
     // console.log('diceWare:1:', this.state.diceValue.dicedValue());
     if (diceValue.valid()) {
       // debugger;
-      const diced = this.props.doublePassword.diceWare.dice(diceValue.value);
+      const diced = this.props.doublePassword.diceWare().dice(diceValue.value);
       // console.log('diceWare:2:', this.state.diceValue.dicedValue(), diced);
       if (diced) {
         this.props.onDiceResult(diced, this.props);
@@ -80,12 +80,12 @@ export class InputDiceWare extends
   }
 
   public randomDice(): void {
-    this.setDice('' + this.props.doublePassword.diceWare.randomDice().diced);
+    this.setDice('' + this.props.doublePassword.diceWare().randomDice().diced);
   }
 
   public render(): JSX.Element {
     if (this.props.readOnly.is ||
-      !(this.props.doublePassword && this.props.doublePassword.diceWare)) {
+      !(this.props.doublePassword && this.props.doublePassword.diceWare())) {
       return null;
     }
     // console.log('input-dice-ware:', this.props.doublePassword,
@@ -94,7 +94,7 @@ export class InputDiceWare extends
     // console.log('input-dice-ware:', this.props.readable,
     //   this.state.resetOnUnreadable.dicedValue(this.props.readable));
     // console.log('input-dice-ware:', this.props.readOnly.is);
-    const diceWare = this.props.doublePassword.diceWare;
+    // const diceWare = this.props.doublePassword.diceWare();
     return (
       <div className="InputDiceWare">
         <input type="text"

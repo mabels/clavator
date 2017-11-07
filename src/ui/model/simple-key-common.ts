@@ -49,7 +49,7 @@ export class SimpleKeyCommon {
       expireDate: this.expireDate.value,
       approvedWarrents: this.viewWarrents.toObj(),
       keyParams: this.keyParams.toObj(),
-      uids: this.uids.toObj(),
+      uids: this.uids.toObj()
     };
   }
 }

@@ -19,22 +19,22 @@ export class PassPhrase extends ObjectId implements Validatable {
 
   // two Object Graphs
   // First one DoublePassport Per Warrent
-  public static createPerWarrent(warrents: Warrents, diceWare: DiceWare,
+  public static createPerWarrent(warrents: Warrents, diceWares: DiceWare[],
     contReg: string, errText: string, joiner: string, minLen: number, maxLen?: number): PassPhrase {
     const minMaxs = MinMax.create(warrents.length(), contReg, minLen, maxLen);
     return new PassPhrase(warrents,
       (new Array(warrents.length())).fill(42).map((_, idx) =>
-        new DoublePassword(new Warrents([warrents.get(idx)]), errText, minMaxs[idx], diceWare)),
+        new DoublePassword(new Warrents([warrents.get(idx)]), errText, minMaxs[idx], diceWares)),
         joiner);
   }
 
   // First n DoublePassports all Warrents per DoublePassports
-  public static createDoublePasswords(n: number, warrents: Warrents, diceWare: DiceWare,
+  public static createDoublePasswords(n: number, warrents: Warrents, diceWares: DiceWare[],
     contReg: string, errText: string, joiner: string, minLen: number, maxLen?: number): PassPhrase {
     const minMax = MinMax.create(1, contReg, minLen, maxLen)[0];
     return new PassPhrase(warrents,
       (new Array(n)).fill(42).map((_, idx) => new DoublePassword(
-        new Warrents([warrents.get(idx % warrents.length())]), errText, minMax, diceWare)),
+        new Warrents([warrents.get(idx % warrents.length())]), errText, minMax, diceWares)),
         joiner);
   }
 

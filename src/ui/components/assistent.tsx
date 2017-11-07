@@ -32,7 +32,7 @@ class AssistentState {
   @observable public warrents: Warrents;
   @observable public simpleYubiKey: SimpleYubiKey;
   public diceWareTransaction: Message.Transaction<DiceWare>;
-  public diceWare: DiceWare;
+  public diceWares: DiceWare[];
 }
 
 interface AssistentProps extends React.Props<Assistent> {
@@ -51,8 +51,8 @@ export class Assistent
       // secretKey: new ListSecretKeys.SecretKey(),
       warrents: (new Warrents()).add(new Warrent()),
       simpleYubiKey: null,
-      diceWareTransaction: Message.newTransaction('DiceWare.Request'),
-      diceWare: null
+      diceWareTransaction: Message.newTransaction('DiceWares.Request'),
+      diceWares: null
     };
     this.handleReady = this.handleReady.bind(this);
   }
@@ -61,12 +61,12 @@ export class Assistent
     this.props.channel.onMessage((cb, data) => {
       // debugger;
       // console.log('DiceWare:', cb.action);
-      if (cb.action == 'DiceWare.Response') {
-        const diceWare = JSON.parse(data);
+      if (cb.action == 'DiceWares.Response') {
+        const diceWares = JSON.parse(data);
         this.setState(Object.assign(this.state, {
-            diceWare: DiceWare.fill(diceWare)
+            diceWares: diceWares.map((dw: any) => DiceWare.fill(dw))
         }));
-        console.log('DiceWare.Response', this.state);
+        console.log('DiceWares.Response', this.state);
       }
     });
     this.props.channel.send(this.state.diceWareTransaction.asMsg());
@@ -79,13 +79,15 @@ export class Assistent
 
   private renderReady(): JSX.Element {
     return <div className="row">
-      <button type="button" onClick={this.handleReady}>ready</button>
+      <button
+        disabled={!this.state.simpleYubiKey.completed()}
+        onClick={this.handleReady}>ready</button>
     </div>;
   }
 
   private renderSimpleCreateKey(): JSX.Element {
     // console.log(this.state.warrents.length(), this.state.warrents.valid());
-    if (!(this.state.simpleYubiKey && this.state.diceWare)) {
+    if (!(this.state.simpleYubiKey && this.state.diceWares)) {
       return;
     }
     // console.log('renderSimpleCreateKey', this.state.simpleYubiKey.common.approvableWarrents.non());
@@ -105,7 +107,7 @@ export class Assistent
           readonly: this.state.simpleYubiKey.readOnly.is
         })}>
         <DiceWareInputPassPhrase label="PasswordPhase"
-          diceWare={this.state.diceWare}
+          diceWares={this.state.diceWares}
           readOnly={this.state.simpleYubiKey.readOnly}
           approvedWarrents={this.state.simpleYubiKey.common.viewWarrents}
           passPhrase={this.state.simpleYubiKey.passPhrase} />
@@ -123,7 +125,7 @@ export class Assistent
   }
 
   private renderWarrents(): JSX.Element {
-    if (this.state.simpleYubiKey && this.state.diceWare) {
+    if (this.state.simpleYubiKey && this.state.diceWares) {
       return;
     }
     return <div>
@@ -132,14 +134,14 @@ export class Assistent
         warrents={this.state.warrents}
         completed={() => {
           this.setState(Object.assign(this.state, {
-            simpleYubiKey: new SimpleYubiKey(this.state.warrents, this.state.diceWare)
+            simpleYubiKey: new SimpleYubiKey(this.state.warrents, this.state.diceWares)
           }));
         }} />
         </div>;
   }
 
   private renderLoadDiceWare(): JSX.Element {
-    if (this.state.diceWare) {
+    if (this.state.diceWares) {
       return;
     }
     return <div>

@@ -2,6 +2,9 @@ const fs = require('fs');
 const node_modules = fs.readdirSync('node_modules').filter(x => x !== '.bin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+// const WebpackShellPlugin = require('webpack-shell-plugin');
+
+
 //const globby = require('globby');
 
 

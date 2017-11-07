@@ -1,22 +1,26 @@
 
+const DICERegex = /^[1-6]{1,}$/;
+
 export class Diced {
   public readonly diced: number;
   public readonly password: string;
 
   public static parse(line: string): Diced {
     const cols = line.split(/\s+/);
-    if (cols.length < 2) {
-      return null;
+    if (cols.length == 1 && cols[0].length == 0) {
+      return null; // ignore empty lines
     }
-    const diced = parseInt(cols[0], 10);
-    if (diced <= 0) {
-      return null;
+    if (cols.length < 2) {
+      throw `Diced: line not parsable:[${line}][${cols}:${cols.length}]`;
+    }
+    if (!DICERegex.test(cols[0])) {
+      throw `Diced: illegal diced value:[${cols[0]}]`;
     }
     const part = cols.slice(1).join(' ');
-    if (part.length <= 2) {
-      return null;
+    if (part.length < 1) {
+      throw `Diced: needs password [${line}]`;
     }
-    return new Diced(diced, part);
+    return new Diced(parseInt(cols[0], 10), part);
   }
 
   public static fill(obj: any): Diced {
@@ -26,6 +30,27 @@ export class Diced {
   constructor(diced: number, password: string) {
     this.diced = diced;
     this.password = password;
+  }
+
+  public diceLength(): number {
+    return ('' + this.diced).length;
+  }
+
+  public equals(other: Diced): boolean {
+    return this.cmp(other) == 0;
+  }
+
+  public cmp(other: Diced): number {
+    const diffDiced = other.diced - this.diced;
+    if (diffDiced) {
+      return diffDiced;
+    }
+    if (this.password < other.password) {
+      return -1;
+    } else if (this.password > other.password) {
+      return 1;
+    }
+    return 0;
   }
 
 }
@@ -38,17 +63,18 @@ export class DiceWare {
   public static fill(obj: any): DiceWare {
     // debugger;
     const fname = obj['fname'];
-    const list = (obj['list'] || []).map((i: any) => Diced.fill(i));
+    const list = (obj['list'] || []).map((i: any) => Diced.fill(i)).filter((d: Diced) => d);
     return new DiceWare(fname, list);
   }
 
   constructor(fname?: string, list?: Diced[]) {
     this.fname = fname;
     this.diceWare = new Map<number, Diced>();
-    if (list) {
-      this.diceCount = ('' + list[0].diced).length;
+    if (list && list.length > 0) {
+      // console.log('DiceWare:', list);
+      this.diceCount = list[0].diceLength();
       list.forEach(d => {
-        if (d.diced.toString().length != this.diceCount) {
+        if (d.diceLength() != this.diceCount) {
           throw 'dice count missmatch';
         }
         this.diceWare.set(d.diced, d);
@@ -86,20 +112,19 @@ export class DiceWare {
     return this.diceWare.get(~~nstr);
   }
 
-  public toObject(): any {
-    return {
-      fname: this.fname,
-      list: Array.from(this.diceWare.values())
-    };
-  }
-
   public dices(): number[] {
-    let nr = 0;
-    return (new Array(this.dicesCount())).fill(0).map(i => nr++);
+    return (new Array(this.dicesCount())).fill(0).map((_, idx) => idx);
   }
 
   public dicesCount(): number {
     return this.diceCount;
+  }
+
+  public toObj(): any {
+    return {
+      fname: this.fname,
+      list: Array.from(this.diceWare.values())
+    };
   }
 
 }

@@ -41,7 +41,7 @@ export class ViewWarrent extends ObjectId implements Pallet {
   // }
 
   public valid(): boolean {
-    return this.warrent.valid() && this.approved;
+    return this.warrent && this.warrent.valid() && this.approved;
   }
 
   public errText(): string[] {

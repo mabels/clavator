@@ -10,7 +10,8 @@ import { observer } from 'mobx-react';
 // import PassPhrase from '../../model/pass-phrase';
 import DoublePassword from '../../model/double-password';
 // import ViewWarrents from '../../model//view-warrents';
-// import InputPassword from '../controls/input-password';
+import RcOption from '../controls/rc-option';
+import Option from '../../../model/option';
 import { DiceWare, Diced } from '../../../dice-ware/dice-ware';
 import { InputDiceWare, InputDiceWareProps } from '../controls/input-dice-ware';
 // import RcWarrent from './rc-warrent';
@@ -21,14 +22,14 @@ class DiceWareInputPassPhraseState {
 }
 
 interface DiceWareInputPassPhraseProps extends InputPassPhraseProps {
-  diceWare: DiceWare;
+  diceWares: DiceWare[];
 }
 
 @observer
 export class DiceWareInputPassPhrase extends
   React.Component<DiceWareInputPassPhraseProps, DiceWareInputPassPhraseState> {
 
-  private inputDiceWares: JSX.Element[];
+  // private inputDiceWares: JSX.Element[];
 
   constructor() {
     super();
@@ -37,15 +38,31 @@ export class DiceWareInputPassPhrase extends
   }
 
   private diceAll(e: any): void {
-    console.log('diceAll');
+    // console.log('diceAll');
     this.props.passPhrase.doublePasswords.forEach(dp => dp.inputDiceWare.randomDice());
   }
 
   private labelWithDice(label: string | JSX.Element): string | JSX.Element {
+    let diceWareOption: string | JSX.Element = '';
+    if (this.props.diceWares.length == 1) {
+      diceWareOption = `[${this.props.diceWares[0].fname}]`;
+      this.props.passPhrase.doublePasswords.forEach(dp => dp.selectDiceWare(this.props.diceWares[0].fname));
+    }
+    if (this.props.diceWares.length > 1) {
+      const fnames = this.props.diceWares.map(dw => dw.fname);
+      diceWareOption = <RcOption
+        onChange={(fname: string) => {
+          console.log('Switch:DiceWare:', fname);
+          this.props.passPhrase.doublePasswords.forEach(dp => dp.selectDiceWare(fname));
+        }}
+        name="DiceWare.Fname" label=""
+        option={new Option(fnames[0], fnames, '')}
+        readOnly={this.props.readOnly} />;
+    }
     if (this.props.passPhrase.warrents.length() > 1) {
       return label;
     }
-    return <span>{label}<button
+    return <span>{label}{diceWareOption}<button
       className="fa fa-random"
       onClick={this.diceAll}
       ></button></span>;

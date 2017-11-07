@@ -32,14 +32,14 @@ export class SimpleYubikey {
     return ret;
   }
 
-  constructor(warrents: Warrents, diceWare: DiceWare) {
+  constructor(warrents: Warrents, diceWares: DiceWare[]) {
     this.warrents = warrents;
     this.readOnly = new NestedFlag(false);
     this.common = new SimpleKeyCommon(warrents, this.readOnly);
-    this.passPhrase = PassPhrase.createDoublePasswords(8, warrents, diceWare,  '.', 'PassPhrase error', ' ', 2);
-    this.adminKey = PassPhrase.createPerWarrent(warrents, diceWare,  '[0-9]', 'adminpin error', '', 8, 8);
+    this.passPhrase = PassPhrase.createDoublePasswords(8, warrents, diceWares,  '.', 'PassPhrase error', ' ', 1);
+    this.adminKey = PassPhrase.createPerWarrent(warrents, null, '[0-9]', 'adminpin error', '', 8, 8);
     const me = (new Warrents()).add(warrents.first());
-    this.userKey = PassPhrase.createPerWarrent(me, diceWare, '[0-9]', 'userPin Error', '', 6, 8);
+    this.userKey = PassPhrase.createPerWarrent(me, null, '[0-9]', 'userPin Error', '', 6, 8);
   }
 
   // @computed public get readOnly(): boolean {

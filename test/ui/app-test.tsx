@@ -117,32 +117,32 @@ describe('<App>', () => {
       expect(wrapper.find('.MainMenu li')).to.have.length(3);
     });
 
-    step('Assistent Menu', () => {
-      const assistent = wrapper.find('.MainMenu .Assistent').first();
-      assistent.simulate('click');
-      // expect(wrapper.find('div:contains("Warrents-List")')).to.have.length(1);
-      const warrents_input = wrapper.find('.WarrentsList input[type="text"]');
-      expect(warrents_input).to.have.length(1);
-      warrents_input.last().simulate('change', {target: {value: 'David'}});
-      let warrents_buttons = wrapper.find('.WarrentsList button.add');
-      expect(warrents_buttons).to.have.length(1);
-      warrents_buttons.simulate('click');
-      expect(wrapper.find('.WarrentsList li')).to.have.length(2);
-      warrents_buttons = wrapper.find('.WarrentsList button.done');
-      warrents_buttons.last().simulate('click');
-      [
-          'expireDate', 'uid.name.0', 'email.0', 'nameComment.0'
-      ].forEach(t => {
-        expect(wrapper.find(`.SimpleCreateKey input[name="${t}"]`)).to.have.length(1, t);
-      });
-      [
-          'KeyType', 'MasterKeyLength', 'SubKeyLength'
-      ].forEach(t => {
-        expect(wrapper.find(`.SimpleCreateKey select[name="${t}"]`).length).to.have.gte(1, t);
-      });
-      // expect(wrapper.find('.SimpleCreateKey button.AddUid').first()).to.have.length(0);
-      // expect(date_inputs).to.have.length(1);
-    });
+    // step('Assistent Menu', () => {
+    //   const assistent = wrapper.find('.MainMenu .Assistent').first();
+    //   assistent.simulate('click');
+    //   // expect(wrapper.find('div:contains("Warrents-List")')).to.have.length(1);
+    //   const warrents_input = wrapper.find('.WarrentsList input[type="text"]');
+    //   expect(warrents_input).to.have.length(1);
+    //   warrents_input.last().simulate('change', {target: {value: 'David'}});
+    //   let warrents_buttons = wrapper.find('.WarrentsList button.add');
+    //   expect(warrents_buttons).to.have.length(1);
+    //   warrents_buttons.simulate('click');
+    //   expect(wrapper.find('.WarrentsList li')).to.have.length(2);
+    //   warrents_buttons = wrapper.find('.WarrentsList button.done');
+    //   warrents_buttons.last().simulate('click');
+    //   [
+    //       'expireDate', 'uid.name.0', 'email.0', 'nameComment.0'
+    //   ].forEach(t => {
+    //     expect(wrapper.find(`.SimpleCreateKey input[name="${t}"]`)).to.have.length(1, t);
+    //   });
+    //   [
+    //       'KeyType', 'MasterKeyLength', 'SubKeyLength'
+    //   ].forEach(t => {
+    //     expect(wrapper.find(`.SimpleCreateKey select[name="${t}"]`).length).to.have.gte(1, t);
+    //   });
+    //   // expect(wrapper.find('.SimpleCreateKey button.AddUid').first()).to.have.length(0);
+    //   // expect(date_inputs).to.have.length(1);
+    // });
 
     // step('Oops!', () => {
     //   const emailInput = appRoot.find("#emailInput");

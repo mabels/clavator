@@ -21,22 +21,27 @@ export class DoublePassword extends ObjectId implements Validatable {
   @observable public readable: boolean;
   // public passPhrase: PassPhrase;
   public readonly warrents: ViewWarrents;
-  public readonly diceWare: DiceWare;
+  public readonly diceWares: DiceWare[];
+  private currentDiceWare: DiceWare;
   private passPhrase: PassPhrase;
   private readableTimer: any;
   private readableCb: (v: boolean) => void;
   public inputDiceWare: InputDiceWare;
 
-  constructor(warrents: Warrents, errText: string, minmaxs: MinMax, diceWare: DiceWare) {
+  constructor(warrents: Warrents, errText: string, minmaxs: MinMax, diceWares: DiceWare[]) {
     super('DoublePassword');
     // console.log('approved', this.objectId, approved);
     // this.approved = new BooleanValue('').set(DoublePassword.approveIfJustOne(warrents));
     this.first = new PasswordControl(minmaxs.regExp, '');
     this.second = new PasswordControl(minmaxs.regExp, '');
-    this.diceWare = diceWare;
-    this.diceValue = new StringValue(
-          new RegExp(`^[1-6]{${diceWare.dicesCount()},${diceWare.dicesCount()}}$`),
-          'dices should be between 1-6');
+    if (diceWares) {
+      this.diceWares = diceWares;
+      this.currentDiceWare = this.diceWares[0];
+      // console.log('DoublePassword', this.objectId(), this);
+      this.diceValue = new StringValue(
+            new RegExp(`^[1-6]{${this.diceWare().dicesCount()},${this.diceWare().dicesCount()}}$`),
+            'dices should be between 1-6');
+    }
     this.readonly = false;
     this.readable = false;
     // this.passPhrase = passPhrase;
@@ -44,8 +49,17 @@ export class DoublePassword extends ObjectId implements Validatable {
     warrents.forEach(w => this.warrents.add(new ViewWarrent(w)));
   }
 
+  public diceWare(): DiceWare {
+    return this.currentDiceWare;
+  }
+
   public setInputDiceWare(idw: InputDiceWare): void {
     this.inputDiceWare = idw;
+  }
+
+  public selectDiceWare(fname: string): void {
+    this.currentDiceWare = this.diceWares.find(dw => dw.fname == fname);
+    this.diceValue.match = new RegExp(`^[1-6]{${this.diceWare().dicesCount()},${this.diceWare().dicesCount()}}$`);
   }
 
   // public get diceWare(): DiceWare {

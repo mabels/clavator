@@ -44,7 +44,7 @@ interface RcWarrentsProps extends React.Props<RcWarrents> {
           // warrent: new Warrent()
         // });
         break;
-      default:
+      case 'done':
         this.props.warrents.pop();
         this.setState({ done: true });
         this.props.completed();

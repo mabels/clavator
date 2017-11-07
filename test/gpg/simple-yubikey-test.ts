@@ -8,7 +8,7 @@ import DiceWareDispatcher from '../../src/server/dispatcher/dice-ware-dispatcher
 
 describe('PassPhrase', async () => {
 
-  const diceWare: DiceWare = await DiceWareDispatcher.read();
+  const diceWares: DiceWare[] = await DiceWareDispatcher.get();
 
   function warrents(i: number): Warrents {
     const wts = new Warrents();
@@ -22,17 +22,17 @@ describe('PassPhrase', async () => {
 
   describe('createDoublePassports', () => {
     it('warrents-0', () => {
-      const pp = PassPhrase.createDoublePasswords(0, warrents(0), diceWare, '[a-z]', 'error', '', 4);
+      const pp = PassPhrase.createDoublePasswords(0, warrents(0), diceWares, '[a-z]', 'error', '', 4);
       assert.equal(pp.doublePasswords.length, 0);
     });
 
     it('warrents-1 min', () => {
-      const pp = PassPhrase.createDoublePasswords(0, warrents(1), diceWare, '[a-z]', 'error', '', 4);
+      const pp = PassPhrase.createDoublePasswords(0, warrents(1), diceWares, '[a-z]', 'error', '', 4);
       assert.equal(pp.doublePasswords.length, 0);
     });
 
     it('warrents-1 min max', () => {
-      const pp = PassPhrase.createDoublePasswords(6, warrents(1), diceWare, '[a-z]', 'error', '', 4, 8);
+      const pp = PassPhrase.createDoublePasswords(6, warrents(1), diceWares, '[a-z]', 'error', '', 4, 8);
       assert.equal(pp.doublePasswords.length, 6);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual((new Array(pp.doublePasswords.length)).fill('^[a-z]{4,8}$'),
@@ -40,7 +40,7 @@ describe('PassPhrase', async () => {
     });
 
     it('warrents-1 min==max', () => {
-      const pp = PassPhrase.createDoublePasswords(6, warrents(1), diceWare, '[a-z]', 'error', '', 4, 4);
+      const pp = PassPhrase.createDoublePasswords(6, warrents(1), diceWares, '[a-z]', 'error', '', 4, 4);
       assert.equal(pp.doublePasswords.length, 6);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.isFalse(!!pp.doublePasswords.find((i, idx) => {
@@ -53,7 +53,7 @@ describe('PassPhrase', async () => {
     });
 
     it('warrents-2 min', () => {
-      const pp = PassPhrase.createDoublePasswords(6, warrents(2), diceWare, '[a-z]', 'error', '', 4);
+      const pp = PassPhrase.createDoublePasswords(6, warrents(2), diceWares, '[a-z]', 'error', '', 4);
       assert.equal(pp.doublePasswords.length, 6);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual((new Array(pp.doublePasswords.length)).fill('^[a-z]{4,}$'),
@@ -62,7 +62,7 @@ describe('PassPhrase', async () => {
     });
 
     it('warrents-2 min==max', () => {
-      const pp = PassPhrase.createDoublePasswords(6, warrents(2), diceWare, '[a-z]', 'error', '', 8, 8);
+      const pp = PassPhrase.createDoublePasswords(6, warrents(2), diceWares, '[a-z]', 'error', '', 8, 8);
       assert.equal(pp.doublePasswords.length, 6);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual((new Array(pp.doublePasswords.length)).fill('^[a-z]{8,8}$'),
@@ -74,13 +74,13 @@ describe('PassPhrase', async () => {
   describe('createPerWarrent', () => {
 
     it('warrents-0', () => {
-      const pp = PassPhrase.createPerWarrent(warrents(0), diceWare, '[a-z]', 'error', '', 4);
+      const pp = PassPhrase.createPerWarrent(warrents(0), diceWares, '[a-z]', 'error', '', 4);
       assert.equal(pp.doublePasswords.length, 0);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 0));
     });
 
     it('warrents-1 min', () => {
-      const pp = PassPhrase.createPerWarrent(warrents(1), diceWare, '[a-z]', 'error', '', 4);
+      const pp = PassPhrase.createPerWarrent(warrents(1), diceWares, '[a-z]', 'error', '', 4);
       assert.equal(pp.doublePasswords.length, 1);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual([
@@ -91,7 +91,7 @@ describe('PassPhrase', async () => {
     });
 
     it('warrents-1 min max', () => {
-      const pp = PassPhrase.createPerWarrent(warrents(1), diceWare, '[a-z]', 'error', '', 4, 8);
+      const pp = PassPhrase.createPerWarrent(warrents(1), diceWares, '[a-z]', 'error', '', 4, 8);
       assert.equal(pp.doublePasswords.length, 1);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual([
@@ -102,7 +102,7 @@ describe('PassPhrase', async () => {
     });
 
     it('warrents-1 min==max', () => {
-      const pp = PassPhrase.createPerWarrent(warrents(1), diceWare, '[a-z]', 'error', '', 4, 4);
+      const pp = PassPhrase.createPerWarrent(warrents(1), diceWares, '[a-z]', 'error', '', 4, 4);
       assert.equal(pp.doublePasswords.length, 1);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual([
@@ -112,7 +112,7 @@ describe('PassPhrase', async () => {
     });
 
     it('warrents-2 min', () => {
-      const pp = PassPhrase.createPerWarrent(warrents(2), diceWare, '[a-z]', 'error', '', 4);
+      const pp = PassPhrase.createPerWarrent(warrents(2), diceWares, '[a-z]', 'error', '', 4);
       assert.equal(pp.doublePasswords.length, 2);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual([
@@ -124,7 +124,7 @@ describe('PassPhrase', async () => {
     });
 
     it('warrents-2 min max', () => {
-      const pp = PassPhrase.createPerWarrent(warrents(2), diceWare, '[a-z]', 'error', '', 4, 8);
+      const pp = PassPhrase.createPerWarrent(warrents(2), diceWares, '[a-z]', 'error', '', 4, 8);
       assert.equal(pp.doublePasswords.length, 2);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual([
@@ -135,7 +135,7 @@ describe('PassPhrase', async () => {
     });
 
     it('warrents-2 min==max', () => {
-      const pp = PassPhrase.createPerWarrent(warrents(2), diceWare, '[a-z]', 'error', '', 8, 8);
+      const pp = PassPhrase.createPerWarrent(warrents(2), diceWares, '[a-z]', 'error', '', 8, 8);
       assert.equal(pp.doublePasswords.length, 2);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual([
@@ -146,7 +146,7 @@ describe('PassPhrase', async () => {
     });
 
     it('warrents-3 min', () => {
-      const pp = PassPhrase.createPerWarrent(warrents(3), diceWare, '[a-z]', 'error', '', 4);
+      const pp = PassPhrase.createPerWarrent(warrents(3), diceWares, '[a-z]', 'error', '', 4);
       assert.equal(pp.doublePasswords.length, 3);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual([
@@ -158,7 +158,7 @@ describe('PassPhrase', async () => {
     });
 
     it('warrents-3 min max', () => {
-      const pp = PassPhrase.createPerWarrent(warrents(3), diceWare, '[a-z]', 'error', '', 4, 8);
+      const pp = PassPhrase.createPerWarrent(warrents(3), diceWares, '[a-z]', 'error', '', 4, 8);
       assert.equal(pp.doublePasswords.length, 3);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual([
@@ -170,7 +170,7 @@ describe('PassPhrase', async () => {
     });
 
     it('warrents-3 min==max', () => {
-      const pp = PassPhrase.createPerWarrent(warrents(3), diceWare, '[a-z]', 'error', '', 8, 8);
+      const pp = PassPhrase.createPerWarrent(warrents(3), diceWares, '[a-z]', 'error', '', 8, 8);
       assert.equal(pp.doublePasswords.length, 3);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual([
@@ -182,7 +182,7 @@ describe('PassPhrase', async () => {
     });
 
     it('warrents-4 min', () => {
-      const pp = PassPhrase.createPerWarrent(warrents(4), diceWare, '[a-z]', 'error', '', 4);
+      const pp = PassPhrase.createPerWarrent(warrents(4), diceWares, '[a-z]', 'error', '', 4);
       assert.equal(pp.doublePasswords.length, 4);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual([
@@ -195,7 +195,7 @@ describe('PassPhrase', async () => {
     });
 
     it('warrents-4 min max', () => {
-      const pp = PassPhrase.createPerWarrent(warrents(4), diceWare, '[a-z]', 'error', '', 4, 8);
+      const pp = PassPhrase.createPerWarrent(warrents(4), diceWares, '[a-z]', 'error', '', 4, 8);
       assert.equal(pp.doublePasswords.length, 4);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual([
@@ -208,7 +208,7 @@ describe('PassPhrase', async () => {
     });
 
     it('warrents-4 min==max', () => {
-      const pp = PassPhrase.createPerWarrent(warrents(4), diceWare, '[a-z]', 'error', '', 8, 8);
+      const pp = PassPhrase.createPerWarrent(warrents(4), diceWares, '[a-z]', 'error', '', 8, 8);
       assert.equal(pp.doublePasswords.length, 4);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual([
@@ -221,7 +221,7 @@ describe('PassPhrase', async () => {
     });
 
     it('warrents-5 length 4 min', () => {
-      const pp = PassPhrase.createPerWarrent(warrents(5), diceWare, '[a-z]', 'error', '', 4);
+      const pp = PassPhrase.createPerWarrent(warrents(5), diceWares, '[a-z]', 'error', '', 4);
       assert.equal(pp.doublePasswords.length, 5);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual([
@@ -235,7 +235,7 @@ describe('PassPhrase', async () => {
     });
 
     it('warrents-5 length 4 min max', () => {
-      const pp = PassPhrase.createPerWarrent(warrents(5), diceWare, '[a-z]', 'error', '', 4, 8);
+      const pp = PassPhrase.createPerWarrent(warrents(5), diceWares, '[a-z]', 'error', '', 4, 8);
       assert.equal(pp.doublePasswords.length, 5);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual([
@@ -249,7 +249,7 @@ describe('PassPhrase', async () => {
     });
 
     it('warrents-5 length 4 min==max', () => {
-      const pp = PassPhrase.createPerWarrent(warrents(5), diceWare, '[a-z]', 'error', '', 8, 8);
+      const pp = PassPhrase.createPerWarrent(warrents(5), diceWares, '[a-z]', 'error', '', 8, 8);
       assert.equal(pp.doublePasswords.length, 5);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual([
@@ -263,7 +263,7 @@ describe('PassPhrase', async () => {
     });
 
     it('warrents-6 length 4 min', () => {
-      const pp = PassPhrase.createPerWarrent(warrents(6), diceWare, '[a-z]', 'error', '', 4);
+      const pp = PassPhrase.createPerWarrent(warrents(6), diceWares, '[a-z]', 'error', '', 4);
       assert.equal(pp.doublePasswords.length, 6);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual([
@@ -278,7 +278,7 @@ describe('PassPhrase', async () => {
     });
 
     it('warrents-6 length 4 min max', () => {
-      const pp = PassPhrase.createPerWarrent(warrents(6), diceWare, '[a-z]', 'error', '', 4, 8);
+      const pp = PassPhrase.createPerWarrent(warrents(6), diceWares, '[a-z]', 'error', '', 4, 8);
       assert.equal(pp.doublePasswords.length, 6);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual([
@@ -293,7 +293,7 @@ describe('PassPhrase', async () => {
     });
 
     it('warrents-6 length 4 min==max', () => {
-      const pp = PassPhrase.createPerWarrent(warrents(6), diceWare, '[a-z]', 'error', '', 8, 8);
+      const pp = PassPhrase.createPerWarrent(warrents(6), diceWares, '[a-z]', 'error', '', 8, 8);
       assert.equal(pp.doublePasswords.length, 6);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual([

@@ -13,4 +13,4 @@ script:
   #- cd gnupg && ./autogen.sh && ./configure && make
   #  - (cd pam && cmake -DCMAKE_BUILD_TYPE=Release . && make)
   #- (cd pam && ctest)
-  - npm install && npm test
+  - npm install && npm run lint && npm test
