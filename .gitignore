@@ -7,5 +7,5 @@ coverage/
 .nyc_output/
 npm-debug.log
 dist
-test/all.ts
+#test/all.ts
 **/.dice-req-cache/

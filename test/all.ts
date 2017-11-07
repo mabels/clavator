@@ -1,0 +1,9 @@
+import './gpg/agent-conf-test';
+import './gpg/card-status-test';
+import './gpg/gpg-actions-test';
+import './gpg/key-info-test';
+import './gpg/list-secret-keys-test';
+import './gpg/nested-flag-test';
+import './gpg/simple-yubikey-test';
+import './dice-ware/dice-ware-test';
+import './ui/app-test';
