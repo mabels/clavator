@@ -2,17 +2,20 @@ import { observable } from 'mobx';
 import ObjectId from '../../model/object-id';
 import StringValue from '../../model/string-value';
 import Validateable from '../../model/validatable';
+import MinMax from './min-max';
 
 class PasswordControl extends ObjectId implements Validateable {
-  @observable public password: StringValue;
+  @observable public readonly password: StringValue;
   // @observable public readonly: boolean;
   // @observable public readable: boolean;
-  public dicedPassword: string;
+  public prevPassword: string;
+  public readonly minMax: MinMax;
   // public readonly match: RegExp;
 
-  constructor(match: RegExp, e: string) {
+  constructor(minMax: MinMax, e: string) {
     super('PasswordControl');
-    this.password = new StringValue(match, e);
+    this.minMax = minMax;
+    this.password = new StringValue(minMax.asRegExp(), e);
     // this.match = this.password.match; // alias
   }
 

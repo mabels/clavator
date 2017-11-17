@@ -9,6 +9,7 @@ import DiceWare from '../../dice-ware/dice-ware';
 // import ViewWarrent from './view-warrent';
 // import ViewWarrents from './view-warrents';
 import MinMax from './min-max';
+import CharFormat from './char-format';
 
 export class PassPhrase extends ObjectId implements Validatable {
   public readonly readOnly: BooleanValue;
@@ -20,7 +21,7 @@ export class PassPhrase extends ObjectId implements Validatable {
   // two Object Graphs
   // First one DoublePassport Per Warrent
   public static createPerWarrent(warrents: Warrents, diceWares: DiceWare[],
-    contReg: string, errText: string, joiner: string, minLen: number, maxLen?: number): PassPhrase {
+    contReg: CharFormat, errText: string, joiner: string, minLen: number, maxLen?: number): PassPhrase {
     const minMaxs = MinMax.create(warrents.length(), contReg, minLen, maxLen);
     return new PassPhrase(warrents,
       (new Array(warrents.length())).fill(42).map((_, idx) =>
@@ -30,7 +31,7 @@ export class PassPhrase extends ObjectId implements Validatable {
 
   // First n DoublePassports all Warrents per DoublePassports
   public static createDoublePasswords(n: number, warrents: Warrents, diceWares: DiceWare[],
-    contReg: string, errText: string, joiner: string, minLen: number, maxLen?: number): PassPhrase {
+    contReg: CharFormat, errText: string, joiner: string, minLen: number, maxLen?: number): PassPhrase {
     const minMax = MinMax.create(1, contReg, minLen, maxLen)[0];
     return new PassPhrase(warrents,
       (new Array(n)).fill(42).map((_, idx) => new DoublePassword(

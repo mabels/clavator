@@ -39,13 +39,13 @@ export class InputPassPhrase extends
   public render(): JSX.Element {
     const rows: DoublePassword[][] = [];
     const elements = this.props.elementsPerRow || 3;
-    this.props.passPhrase.doublePasswords.forEach((pp, idx) => {
+    this.props.passPhrase.doublePasswords.forEach((dp, idx) => {
       let row = rows[~~(idx / elements)];
       if (!row) {
         row = [];
         rows.push(row);
       }
-      row.push(pp);
+      row.push(dp);
     });
     // console.log('input-pass-phrase:', this.props.readOnly);
     return <div
@@ -68,7 +68,7 @@ export class InputPassPhrase extends
                 onReadable={(r: boolean) => console.log('input-pass-phrase:onReadable:', dp.objectId(), r)}
                 readOnly={this.props.readOnly}
                 key={`${this.props.passPhrase.objectId()}.${idx}`}
-                doublePassword={dp} idx={idx} >
+                doublePassword={dp} idx={this.props.passPhrase.doublePasswords.length > 1 ? idx : null} >
                 {this.props.childFactory && this.props.childFactory(dp, idx)}
               </RcDoublePassword>;
             }

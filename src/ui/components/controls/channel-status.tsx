@@ -2,7 +2,7 @@ import * as React from 'react';
 // import * as classnames from 'classnames';
 import * as Message from '../../../model/message';
 import * as WsChannel from '../../model/ws-channel';
-import ReactModal from 'react-modal';
+import * as ReactModal from 'react-modal';
 
 interface ChannelStatusState {
   status: string;
@@ -56,10 +56,18 @@ export class ChannelStatus extends
       </ReactModal>;
   }
 
+  private renderChildren(): React.ReactNode {
+    if (this.state.status == 'connected' || this.state.status == 'not started') {
+      // console.log("NOT: renderStatus:", this.state.status);
+      return this.props.children;
+    }
+    return null;
+  }
+
   public render(): JSX.Element {
     return (
       <div className={this.state.status}>
-        {this.props.children}
+        {this.renderChildren()}
         {this.renderStatus()}
       </div>
     );

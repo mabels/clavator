@@ -4,6 +4,7 @@ import './gpg/gpg-actions-test';
 import './gpg/key-info-test';
 import './gpg/list-secret-keys-test';
 import './gpg/nested-flag-test';
-import './gpg/simple-yubikey-test';
+import './gpg/pass-phrase-test';
+import './gpg/card-format-test';
 import './dice-ware/dice-ware-test';
 import './ui/app-test';

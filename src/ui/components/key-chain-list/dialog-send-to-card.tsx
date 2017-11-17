@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import ReactModal from 'react-modal';
+import * as ReactModal from 'react-modal';
 // import * as CopyToClipboard from 'react-copy-to-clipboard';
 import { AskKeyToYubiKey } from '../card-status-list/ask-key-to-yubi-key';
 import * as ListSecretKeys from '../../../gpg/list-secret-keys';

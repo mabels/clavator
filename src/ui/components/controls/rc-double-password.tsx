@@ -44,6 +44,13 @@ export class RcDoublePassword extends
     }));
   }
 
+  private renderIndexLabel(idx: number): JSX.Element {
+    if (typeof(idx) != 'number') {
+      return null;
+    }
+    return <label>{this.props.idx + 1}</label>;
+  }
+
   public render(): JSX.Element {
     const dp = this.props.doublePassword;
     // console.log('renderRow:', this.props.idx, dp.objectId(), dp.valid(), dp);
@@ -59,10 +66,7 @@ export class RcDoublePassword extends
         columns: true,
         good: dp.valid()
       })} >
-      <label>{this.props.idx + 1}</label>
-      {React.Children.map(this.props.children, (child, i) => {
-        return React.cloneElement(child as any, { readOnly: this.state.readOnly } );
-      })}
+      {this.renderIndexLabel(this.props.idx)}
       <InputPassword onReadable={this.props.onReadable}
         readOnly={this.state.readOnly}
         doublePassword={dp}
@@ -71,6 +75,9 @@ export class RcDoublePassword extends
         readOnly={this.state.readOnly}
         doublePassword={dp}
         passwordControl={dp.second} />
+      {React.Children.map(this.props.children, (child, i) => {
+        return React.cloneElement(child as any, { readOnly: this.state.readOnly } );
+      })}
       <RcApproveWarrents
         readOnly={this.state.readOnly}
         valid={dp.valid()}

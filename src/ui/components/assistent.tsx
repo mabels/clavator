@@ -20,7 +20,9 @@ import RcWarrents from './controls/rc-warrents';
 // import RcCheckWarrents from './assistent/rc-check-warrents';
 import RcSimpleKeyCommon from './assistent/rc-simple-key-common';
 import InputPassPhrase from './controls/input-pass-phrase';
+import ButtonToProgressor from './controls/button-to-progressor';
 import DiceWareInputPassPhrase from './assistent/dice-ware-input-pass-phrase';
+import RandomInputPassPhrase from './assistent/random-input-pass-phrase';
 import DiceWare from '../../dice-ware/dice-ware';
 import * as Message from '../../model/message';
 
@@ -32,6 +34,7 @@ class AssistentState {
   @observable public warrents: Warrents;
   @observable public simpleYubiKey: SimpleYubiKey;
   public diceWareTransaction: Message.Transaction<DiceWare>;
+  public simpleYubiKeyTransaction: Message.Transaction<SimpleYubiKey>;
   public diceWares: DiceWare[];
 }
 
@@ -52,12 +55,13 @@ export class Assistent
       warrents: (new Warrents()).add(new Warrent()),
       simpleYubiKey: null,
       diceWareTransaction: Message.newTransaction('DiceWares.Request'),
+      simpleYubiKeyTransaction: Message.newTransaction<SimpleYubiKey>('SimpleYubiKey.run'),
       diceWares: null
     };
     this.handleReady = this.handleReady.bind(this);
   }
 
-  public componentWillMount(): void {
+  public componentDidMount(): void {
     this.props.channel.onMessage((cb, data) => {
       // debugger;
       // console.log('DiceWare:', cb.action);
@@ -66,7 +70,7 @@ export class Assistent
         this.setState(Object.assign(this.state, {
             diceWares: diceWares.map((dw: any) => DiceWare.fill(dw))
         }));
-        console.log('DiceWares.Response', this.state);
+        // console.log('DiceWares.Response', this.state);
       }
     });
     this.props.channel.send(this.state.diceWareTransaction.asMsg());
@@ -74,14 +78,20 @@ export class Assistent
 
   private handleReady(): void {
     console.log('ready:', this.state.simpleYubiKey.toObj());
+    this.state.simpleYubiKeyTransaction.data = this.state.simpleYubiKey.toObj();
+    this.props.channel.send(this.state.simpleYubiKeyTransaction.asMsg());
     /* */
   }
 
   private renderReady(): JSX.Element {
     return <div className="row">
-      <button
-        disabled={!this.state.simpleYubiKey.completed()}
-        onClick={this.handleReady}>ready</button>
+      {/* <ButtonToProgressor
+          disabled={!this.state.simpleYubiKey.completed()}
+          channel={this.props.channel}
+          onClick={this.handleReady}
+          transaction={this.state.simpleYubiKeyTransaction}
+          >ready</ButtonToProgressor> */}
+          <button onClick={this.handleReady}>testing</button>
     </div>;
   }
 
@@ -111,11 +121,11 @@ export class Assistent
           readOnly={this.state.simpleYubiKey.readOnly}
           approvedWarrents={this.state.simpleYubiKey.common.viewWarrents}
           passPhrase={this.state.simpleYubiKey.passPhrase} />
-        <InputPassPhrase label="Admin-Key"
+        <RandomInputPassPhrase label="Admin-Key"
           readOnly={this.state.simpleYubiKey.readOnly}
           approvedWarrents={this.state.simpleYubiKey.common.viewWarrents}
           passPhrase={this.state.simpleYubiKey.adminKey} />
-        <InputPassPhrase label="User-Key"
+        <RandomInputPassPhrase label="User-Key"
           readOnly={this.state.simpleYubiKey.readOnly}
           approvedWarrents={this.state.simpleYubiKey.common.viewWarrents}
           passPhrase={this.state.simpleYubiKey.userKey}/>

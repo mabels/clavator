@@ -1,5 +1,5 @@
 import * as React from 'react';
-import ReactModal from 'react-modal';
+import * as ReactModal from 'react-modal';
 import * as Message from '../../../model/message';
 import * as WsChannel from '../../model/ws-channel';
 // import { Progressor } from './progressor';

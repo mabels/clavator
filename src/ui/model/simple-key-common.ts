@@ -44,6 +44,13 @@ export class SimpleKeyCommon {
     return this.viewWarrents.completed() && this.valid();
   }
 
+  public fill(warrents: Warrents, obj: any): void {
+    const skc = new SimpleKeyCommon(warrents, new NestedFlag());
+    skc.expireDate = new DateValue(new Date(obj['expireDate']), 'expire date failed');
+    skc.keyParams.fill(obj['keyParams']);
+    skc.uids.fill(obj['uids']);
+  }
+
   public toObj(): any {
     return {
       expireDate: this.expireDate.value,

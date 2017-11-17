@@ -11,6 +11,7 @@ import PasswordControl from './password-control';
 import Warrents from '../../gpg/warrents';
 import DiceWare from '../../dice-ware/dice-ware';
 import InputDiceWare from '../components/controls/input-dice-ware';
+import CharFormat from './char-format';
 
 export class DoublePassword extends ObjectId implements Validatable {
   // @observable public approved: BooleanValue;
@@ -32,8 +33,8 @@ export class DoublePassword extends ObjectId implements Validatable {
     super('DoublePassword');
     // console.log('approved', this.objectId, approved);
     // this.approved = new BooleanValue('').set(DoublePassword.approveIfJustOne(warrents));
-    this.first = new PasswordControl(minmaxs.regExp, '');
-    this.second = new PasswordControl(minmaxs.regExp, '');
+    this.first = new PasswordControl(minmaxs, '');
+    this.second = new PasswordControl(minmaxs, '');
     if (diceWares) {
       this.diceWares = diceWares;
       this.currentDiceWare = this.diceWares[0];
@@ -89,6 +90,26 @@ export class DoublePassword extends ObjectId implements Validatable {
       }, timeout);
     } else {
       this.readable = v;
+    }
+  }
+
+  public generateRandom(): void {
+    let cf = this.first.minMax.contReg;
+    if (cf.dist() == 0) {
+      cf = CharFormat.password();
+    }
+    const vector = cf.vector();
+    const random = (new Array(this.first.minMax.max)).fill(0)
+      .map(_ => vector[DiceWare.oneThrow(0, vector.length - 1)]).join('');
+    const dp = this;
+    if (
+        (dp.first.password.value.length == 0 &&
+         dp.second.password.value.length == 0) ||
+        (dp.first.password.value == dp.first.prevPassword &&
+         dp.second.password.value == dp.second.prevPassword)) {
+      dp.first.prevPassword = dp.first.password.value = random;
+      dp.second.prevPassword = dp.second.password.value = random;
+      dp.setReadableWithTimeout(true, 10000, (v) => { /* */ });
     }
   }
 

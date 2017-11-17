@@ -1,5 +1,5 @@
 import * as React from 'react';
-import ReactModal from 'react-modal';
+import * as  ReactModal from 'react-modal';
 // import * as CopyToClipboard from 'react-copy-to-clipboard';
 import { AskPassphrase } from './ask-passphrase';
 import * as ListSecretKeys from '../../../gpg/list-secret-keys';

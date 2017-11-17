@@ -60,6 +60,19 @@ export class DiceWare {
   public readonly diceWare: Map<number, Diced>;
   public readonly diceCount: number;
 
+  public static oneThrow(min = 1, max = 6): number {
+    let random = 0;
+    if (window && window.crypto && window.crypto.getRandomValues) {
+      let array = new Uint32Array(1);
+      window.crypto.getRandomValues(array);
+      random = array[0] / 0x100000000;
+    } else {
+      random = Math.random();
+    }
+    // console.log('oneThrow:', random);
+    return (Math.floor(random * (max - min + 1)) + min);
+  }
+
   public static fill(obj: any): DiceWare {
     // debugger;
     const fname = obj['fname'];
@@ -87,23 +100,8 @@ export class DiceWare {
     }
   }
 
-  private oneThrow(): number {
-    const min = 1;
-    const max = 6;
-    let random = 0;
-    if (window && window.crypto && window.crypto.getRandomValues) {
-      let array = new Uint32Array(1);
-      window.crypto.getRandomValues(array);
-      random = array[0] / 0x100000000;
-    } else {
-      random = Math.random();
-    }
-    // console.log('oneThrow:', random);
-    return (Math.floor(random * (max - min + 1)) + min);
-  }
-
   public randomDice(): Diced {
-    const diced = (new Array(this.diceCount)).fill(0).map(_ => this.oneThrow()).join('');
+    const diced = (new Array(this.diceCount)).fill(0).map(_ => DiceWare.oneThrow()).join('');
     // console.log('randomDice:', diced);
     return this.dice(diced);
   }
