@@ -13,6 +13,7 @@ import PassPhrase from './pass-phrase';
 import SimpleKeyCommon from './simple-key-common';
 import DiceWare from '../../dice-ware/dice-ware';
 import CharFormat from './char-format';
+import { Warrent } from '../../gpg/warrent';
 // import { assignOnError } from '../../model/helper';
 
 export class SimpleYubikey {
@@ -34,12 +35,13 @@ export class SimpleYubikey {
   }
 
   public static fill(obj: any): SimpleYubikey {
-    const syk = new SimpleYubikey(new Warrents(), []);
-    syk.warrents.fill(obj['warrents']),
+    const warrents = new Warrents();
+    obj['warrents'].forEach((warrent: string) => warrents.add(new Warrent(warrent)));
+    const syk = new SimpleYubikey(warrents, []);
     syk.common.fill(syk.warrents, obj['common']);
     syk.passPhrase.fill(obj['passPhrase']);
-    syk.adminKey.fill('adminKey');
-    syk.userKey.fill('userKey');
+    syk.adminKey.fill(obj['adminKey']);
+    syk.userKey.fill(obj['userKey']);
     return syk;
   }
 
@@ -47,9 +49,10 @@ export class SimpleYubikey {
     this.warrents = warrents;
     this.readOnly = new NestedFlag(false);
     this.common = new SimpleKeyCommon(warrents, this.readOnly);
-    this.passPhrase = PassPhrase.createDoublePasswords(8, warrents, diceWares,
+    this.passPhrase = PassPhrase.createDoublePasswords(8, new Warrents(this.warrents.map(w => w)), diceWares,
       CharFormat.wildcard(), 'PassPhrase error', ' ', 1);
-    this.adminKey = PassPhrase.createPerWarrent(warrents, null, CharFormat.decNumber(), 'adminpin error', '', 8, 8);
+    this.adminKey = PassPhrase.createPerWarrent(new Warrents(this.warrents.map(w => w)), null,
+      CharFormat.decNumber(), 'adminpin error', '', 8, 8);
     const me = (new Warrents()).add(warrents.first());
     this.userKey = PassPhrase.createPerWarrent(me, null, CharFormat.decNumber(), 'userPin Error', '', 6, 8);
   }

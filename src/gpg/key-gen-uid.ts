@@ -20,6 +20,7 @@ export class KeyGenUid extends ObjectId implements Pallet {
     StringValue.fill(js['name'] || {}, this.name);
     StringValue.fill(js['email'] || {}, this.email);
     StringValue.fill(js['comment'] || {}, this.comment);
+    // console.log(`KeyGenUid:${this.objectId()}:${js}:${this.name.value}:${this.email.value}:${this.comment.value}`);
   }
 
   public valid(): boolean {
@@ -50,10 +51,11 @@ export class KeyGenUid extends ObjectId implements Pallet {
   }
 
   public toObj(): any {
+    // console.log('KeyUid:', this.objectId(), this.name.value, this.email.value, this.comment.value);
     return {
-      name: this.name.value,
-      email: this.email.value,
-      comment: this.comment.value
+      name: { value: this.name.value },
+      email: { value: this.email.value },
+      comment: { value: this.comment.value }
     };
   }
 }

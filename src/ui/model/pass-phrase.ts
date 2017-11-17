@@ -3,6 +3,7 @@ import ObjectId from '../../model/object-id';
 import BooleanValue from '../../model/boolean-value';
 import Validatable from '../../model/validatable';
 import Warrents from '../../gpg/warrents';
+import Warrent from '../../gpg/warrent';
 // import Warrent from '../../gpg/warrent';
 import DoublePassword from './double-password';
 import DiceWare from '../../dice-ware/dice-ware';
@@ -16,7 +17,7 @@ export class PassPhrase extends ObjectId implements Validatable {
   public readonly warrents: Warrents;
   // public errorText: string;
   public readonly doublePasswords: DoublePassword[];
-  public readonly joiner: string;
+  public joiner: string;
 
   // two Object Graphs
   // First one DoublePassport Per Warrent
@@ -40,7 +41,7 @@ export class PassPhrase extends ObjectId implements Validatable {
   }
 
   /* pWarrents: ViewWarrents, reg: string, errText: string */
-  constructor(warrents: Warrents, dps: DoublePassword[], joiner: string) {
+  constructor(warrents: Warrents, dps: DoublePassword[], joiner = '') {
     super('PassPhrase');
     this.readOnly = new BooleanValue('readonly error');
     this.warrents = warrents;
@@ -67,7 +68,18 @@ export class PassPhrase extends ObjectId implements Validatable {
   }
 
   public fill(js: any): void {
-    throw 'need implementation';
+    // console.log(`[${JSON.stringify(js)}]`);
+    js['doublePasswords'].forEach((value: string, idx: number) => this.doublePasswords[idx].setPassword(value));
+    js['warrents'].forEach((warrent: string) => this.warrents.add(new Warrent(warrent)));
+    this.joiner = js['joiner'];
+    // {"approvedWarrents":["meno"],"value":"glare cubicle precise old backroom sandstone pentagon gag"}
+    // warrents: Warrents, dps: DoublePassword[], joiner: string
+    // public readonly readOnly: BooleanValue;
+    // public readonly warrents: Warrents;
+    // // public errorText: string;
+    // public readonly doublePasswords: DoublePassword[];
+    // public readonly joiner: string;
+    // throw 'need implementation';
     // this.partCount = js['partCount'];
     // this.partRegex = js['partRegex'];
     // this.readonly = js['readonly'];
@@ -83,8 +95,9 @@ export class PassPhrase extends ObjectId implements Validatable {
     const ret: string[] = [];
     this.doublePasswords.forEach(dp => ret.push.apply(ret, dp.warrents.toObj()));
     return {
-      approvedWarrents: [...new Set(ret)],
-      value: this.doublePasswords.map(dp => dp.first.password.value).join(this.joiner)
+      warrents: [...new Set(ret)],
+      joiner: this.joiner,
+      doublePasswords: this.doublePasswords.map(dp => dp.first.password.value)
     };
   }
 

@@ -66,6 +66,7 @@ describe('keygen', () => {
   it('serialization', () => {
     let sjs = JSON.stringify(makeKeyGen());
     let js = JSON.parse(sjs);
+    // console.log(sjs);
     let rkg = new KeyGen();
     KeyGen.fill(js, rkg);
 

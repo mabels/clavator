@@ -4,10 +4,11 @@ import StringValue from '../model/string-value';
 // import RegMinMaxWarrent from './reg-min-max-warrent';
 
 export class Warrent extends ObjectId implements Pallet {
-  public warrent: StringValue = new StringValue(/[a-zA-Z_\-0-9]{2,}/, 'comment error');
+  public warrent: StringValue;
 
-  constructor() {
+  constructor(name?: string) {
     super('Warrent');
+    this.warrent = new StringValue(/[a-zA-Z_\-0-9]{2,}/, 'comment error', name);
   }
 
   public value(): string {

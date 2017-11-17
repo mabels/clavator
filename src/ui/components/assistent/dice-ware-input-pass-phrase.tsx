@@ -91,8 +91,7 @@ export class DiceWareInputPassPhrase extends
                              dp.second.password.value.length == 0) ||
                             (dp.first.password.value == dp.first.prevPassword &&
                              dp.second.password.value == dp.second.prevPassword)) {
-                          dp.first.prevPassword = dp.first.password.value = dd.password;
-                          dp.second.prevPassword = dp.second.password.value = dd.password;
+                          dp.setPassword(dd.password);
                           dp.setReadableWithTimeout(true, 10000, (v) => {
                             if (!v) {
                               dp.diceValue.value = '';

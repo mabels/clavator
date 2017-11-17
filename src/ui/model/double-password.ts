@@ -18,7 +18,7 @@ export class DoublePassword extends ObjectId implements Validatable {
   @observable public first: PasswordControl;
   @observable public second: PasswordControl;
   @observable public diceValue: StringValue;
-  @observable public readonly: boolean;
+  @observable public readOnly: boolean;
   @observable public readable: boolean;
   // public passPhrase: PassPhrase;
   public readonly warrents: ViewWarrents;
@@ -35,7 +35,7 @@ export class DoublePassword extends ObjectId implements Validatable {
     // this.approved = new BooleanValue('').set(DoublePassword.approveIfJustOne(warrents));
     this.first = new PasswordControl(minmaxs, '');
     this.second = new PasswordControl(minmaxs, '');
-    if (diceWares) {
+    if (diceWares && diceWares.length) {
       this.diceWares = diceWares;
       this.currentDiceWare = this.diceWares[0];
       // console.log('DoublePassword', this.objectId(), this);
@@ -43,7 +43,7 @@ export class DoublePassword extends ObjectId implements Validatable {
             new RegExp(`^[1-6]{${this.diceWare().dicesCount()},${this.diceWare().dicesCount()}}$`),
             'dices should be between 1-6');
     }
-    this.readonly = false;
+    this.readOnly = false;
     this.readable = false;
     // this.passPhrase = passPhrase;
     this.warrents = new ViewWarrents();
@@ -93,6 +93,11 @@ export class DoublePassword extends ObjectId implements Validatable {
     }
   }
 
+  public setPassword(value: string): void {
+    this.first.prevPassword = this.first.password.value = value;
+    this.second.prevPassword = this.second.password.value = value;
+  }
+
   public generateRandom(): void {
     let cf = this.first.minMax.contReg;
     if (cf.dist() == 0) {
@@ -107,8 +112,7 @@ export class DoublePassword extends ObjectId implements Validatable {
          dp.second.password.value.length == 0) ||
         (dp.first.password.value == dp.first.prevPassword &&
          dp.second.password.value == dp.second.prevPassword)) {
-      dp.first.prevPassword = dp.first.password.value = random;
-      dp.second.prevPassword = dp.second.password.value = random;
+      dp.setPassword(random);
       dp.setReadableWithTimeout(true, 10000, (v) => { /* */ });
     }
   }
@@ -119,7 +123,7 @@ export class DoublePassword extends ObjectId implements Validatable {
   }
 
   public passwordInputType(): string {
-    if (this.readonly) {
+    if (this.readOnly) {
       return 'password';
     }
     return !this.readable ? 'password' : 'text';

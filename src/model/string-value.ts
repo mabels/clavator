@@ -9,12 +9,13 @@ export class StringValue extends ObjectId implements Validatable {
 
   public static fill(js: any, dv: StringValue): void {
     dv.value = js['value'] || dv.value;
+    // console.log(`StringValue:${dv.value}:${js['value']}`);
   }
 
-  public constructor(match: RegExp, e: string) {
+  public constructor(match: RegExp, e: string, value = '') {
     super('StringValue');
     this.match = match;
-    this.value = '';
+    this.value = value ? value : '';
     this.errorText = e;
   }
 
