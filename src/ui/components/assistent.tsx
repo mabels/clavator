@@ -26,7 +26,7 @@ import RandomInputPassPhrase from './assistent/random-input-pass-phrase';
 import DiceWare from '../../dice-ware/dice-ware';
 import * as Message from '../../model/message';
 
-class AssistentState {
+export class AssistentState {
   // public current: Actions.Steps;
   // public completed: Actions.Steps;
   // public secretKey: ListSecretKeys.SecretKey;
@@ -36,27 +36,32 @@ class AssistentState {
   public diceWareTransaction: Message.Transaction<DiceWare>;
   public simpleYubiKeyTransaction: Message.Transaction<SimpleYubiKey>;
   public diceWares: DiceWare[];
+
+  constructor() {
+    this.warrents = (new Warrents()).add(new Warrent());
+    this.simpleYubiKey = null;
+    this.diceWareTransaction = Message.newTransaction('DiceWares.Request');
+    this.simpleYubiKeyTransaction = Message.newTransaction<SimpleYubiKey>('SimpleYubiKey.run');
+    this.diceWares = [];
+  }
 }
 
 interface AssistentProps extends React.Props<Assistent> {
   channel: WsChannel.Dispatch;
   cardStatusListState: CardStatusListState;
+  assistentState: AssistentState;
 }
 
 @observer
-export class Assistent
-  extends React.Component<AssistentProps, AssistentState> {
+export class Assistent extends React.Component<AssistentProps> {
   constructor() {
     super();
     this.state = {
-      // current: Actions.Steps.CheckCard, // Actions.Steps.CreateKey,
-      // completed: Actions.Steps.None,
-      // secretKey: new ListSecretKeys.SecretKey(),
-      warrents: (new Warrents()).add(new Warrent()),
-      simpleYubiKey: null,
-      diceWareTransaction: Message.newTransaction('DiceWares.Request'),
-      simpleYubiKeyTransaction: Message.newTransaction<SimpleYubiKey>('SimpleYubiKey.run'),
-      diceWares: null
+      // warrents: (new Warrents()).add(new Warrent()),
+      // simpleYubiKey: null,
+      // diceWareTransaction: Message.newTransaction('DiceWares.Request'),
+      // simpleYubiKeyTransaction: Message.newTransaction<SimpleYubiKey>('SimpleYubiKey.run'),
+      // diceWares: null
     };
     this.handleReady = this.handleReady.bind(this);
   }
@@ -73,13 +78,13 @@ export class Assistent
         // console.log('DiceWares.Response', this.state);
       }
     });
-    this.props.channel.send(this.state.diceWareTransaction.asMsg());
+    this.props.channel.send(this.props.assistentState.diceWareTransaction.asMsg());
   }
 
   private handleReady(): void {
-    console.log('ready:', this.state.simpleYubiKey.toObj());
-    this.state.simpleYubiKeyTransaction.data = this.state.simpleYubiKey.toObj();
-    this.props.channel.send(this.state.simpleYubiKeyTransaction.asMsg());
+    console.log('ready:', this.props.assistentState.simpleYubiKey.toObj());
+    this.props.assistentState.simpleYubiKeyTransaction.data = this.props.assistentState.simpleYubiKey.toObj();
+    this.props.channel.send(this.props.assistentState.simpleYubiKeyTransaction.asMsg());
     /* */
   }
 
@@ -95,9 +100,9 @@ export class Assistent
     </div>;
   }
 
-  private renderSimpleCreateKey(): JSX.Element {
+  private renderSimpleCreateKey(assistentState: AssistentState): JSX.Element {
     // console.log(this.state.warrents.length(), this.state.warrents.valid());
-    if (!(this.state.simpleYubiKey && this.state.diceWares)) {
+    if (!(assistentState.simpleYubiKey && assistentState.diceWares)) {
       return;
     }
     // console.log('renderSimpleCreateKey', this.state.simpleYubiKey.common.approvableWarrents.non());
@@ -105,53 +110,51 @@ export class Assistent
     // this.state.simpleYubiKey.userKey.readonly.set(this.state.simpleYubiKey.common.viewWarrents.non());
     return <div className={classnames({
         SimpleCreateKey: true,
-        readOnly: this.state.simpleYubiKey.readOnly.is,
-        good: this.state.simpleYubiKey.valid(),
-        completed: this.state.simpleYubiKey.completed()
+        readOnly: assistentState.simpleYubiKey.readOnly.is,
+        good: assistentState.simpleYubiKey.valid(),
+        completed: assistentState.simpleYubiKey.completed()
     })}>
       <RcSimpleKeyCommon
-        readOnly={this.state.simpleYubiKey.readOnly}
-        simpleKeyCommon={this.state.simpleYubiKey.common} />
+        readOnly={assistentState.simpleYubiKey.readOnly}
+        simpleKeyCommon={assistentState.simpleYubiKey.common} />
       <div className={classnames({
           Passwords: true,
-          readonly: this.state.simpleYubiKey.readOnly.is
+          readonly: assistentState.simpleYubiKey.readOnly.is
         })}>
         <DiceWareInputPassPhrase label="PasswordPhase"
-          diceWares={this.state.diceWares}
-          readOnly={this.state.simpleYubiKey.readOnly}
-          approvedWarrents={this.state.simpleYubiKey.common.viewWarrents}
-          passPhrase={this.state.simpleYubiKey.passPhrase} />
+          diceWares={assistentState.diceWares}
+          readOnly={assistentState.simpleYubiKey.readOnly}
+          approvedWarrents={assistentState.simpleYubiKey.common.viewWarrents}
+          passPhrase={assistentState.simpleYubiKey.passPhrase} />
         <RandomInputPassPhrase label="Admin-Key"
-          readOnly={this.state.simpleYubiKey.readOnly}
-          approvedWarrents={this.state.simpleYubiKey.common.viewWarrents}
-          passPhrase={this.state.simpleYubiKey.adminKey} />
+          readOnly={assistentState.simpleYubiKey.readOnly}
+          approvedWarrents={assistentState.simpleYubiKey.common.viewWarrents}
+          passPhrase={assistentState.simpleYubiKey.adminKey} />
         <RandomInputPassPhrase label="User-Key"
-          readOnly={this.state.simpleYubiKey.readOnly}
-          approvedWarrents={this.state.simpleYubiKey.common.viewWarrents}
-          passPhrase={this.state.simpleYubiKey.userKey}/>
+          readOnly={assistentState.simpleYubiKey.readOnly}
+          approvedWarrents={assistentState.simpleYubiKey.common.viewWarrents}
+          passPhrase={assistentState.simpleYubiKey.userKey}/>
       </div>
       {this.renderReady()}
     </div>;
   }
 
-  private renderWarrents(): JSX.Element {
-    if (this.state.simpleYubiKey && this.state.diceWares) {
+  private renderWarrents(assistentState: AssistentState): JSX.Element {
+    if (assistentState.simpleYubiKey && assistentState.diceWares) {
       return;
     }
     return <div>
       <label>WarrentsList:</label>
       <RcWarrents
-        warrents={this.state.warrents}
+        warrents={assistentState.warrents}
         completed={() => {
-          this.setState(Object.assign(this.state, {
-            simpleYubiKey: new SimpleYubiKey(this.state.warrents, this.state.diceWares)
-          }));
+          assistentState.simpleYubiKey = new SimpleYubiKey(assistentState.warrents, assistentState.diceWares);
         }} />
         </div>;
   }
 
-  private renderLoadDiceWare(): JSX.Element {
-    if (this.state.diceWares) {
+  private renderLoadDiceWare(assistentState: AssistentState): JSX.Element {
+    if (assistentState.diceWares) {
       return;
     }
     return <div>
@@ -162,9 +165,9 @@ export class Assistent
   public render(): JSX.Element {
     return (
       <div>
-        {this.renderWarrents()}
-        {this.renderLoadDiceWare()}
-        {this.renderSimpleCreateKey()}
+        {this.renderWarrents(this.props.assistentState)}
+        {this.renderLoadDiceWare(this.props.assistentState)}
+        {this.renderSimpleCreateKey(this.props.assistentState)}
       </div>
     );
   }

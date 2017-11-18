@@ -14,6 +14,8 @@ import SimpleKeyCommon from './simple-key-common';
 import DiceWare from '../../dice-ware/dice-ware';
 import CharFormat from './char-format';
 import { Warrent } from '../../gpg/warrent';
+import { KeyGen } from '../../gpg/key-gen';
+
 // import { assignOnError } from '../../model/helper';
 
 export class SimpleYubikey {
@@ -81,6 +83,11 @@ export class SimpleYubikey {
            this.passPhrase.completed() &&
            this.adminKey.completed() &&
            this.userKey.completed();
+  }
+
+  public asKeyGen(): KeyGen {
+    const kg = new KeyGen();
+    return kg;
   }
 
   // public password: PwPair = new PwPair(/^.{14,1024}$/, 'Password Error');

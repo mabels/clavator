@@ -9,6 +9,7 @@ import KeyToYubiKey from '../../gpg/key-to-yubikey';
 
 import * as Progress from '../../model/progress';
 import { SimpleYubikey } from '../../ui/model/simple-yubikey';
+import CreateKeySetTask from '../tasks/create-key-set-task';
 
 export class SendKeyToYubiKey implements Dispatcher {
   private gpg: Gpg.Gpg;
@@ -27,12 +28,16 @@ export class SendKeyToYubiKey implements Dispatcher {
       return false;
     }
     let a = JSON.parse(m.data) || {};
-    let rcp = SimpleYubikey.fill(a);
+    let syk = SimpleYubikey.fill(a);
     let header = m.header.setAction('Progressor.Clavator');
 
-    ws.send(Message.prepare(header, Progress.ok(`SimpleYubiKey:${rcp} ...`)));
+    ws.send(Message.prepare(header, Progress.ok(`SimpleYubiKey:${syk} ...`)));
 
     console.log('Jojo', m.data);
+
+    CreateKeySetTask.run(this.gpg, ws, m, syk.asKeyGen())
+    .then(() => { /* */ })
+    .catch(() => { /* */ });
 
     // this.gpg.keyToYubiKey(rcp, (res: Gpg.Result) => {
     //   if (res.exitCode != 0) {
