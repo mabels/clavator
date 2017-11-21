@@ -26,7 +26,7 @@ function expireDate(): Date {
 function keyGen(): KeyGen {
   let keygen = new KeyGen();
   keygen.expireDate.value = expireDate();
-  keygen.password.password = 'Gpg Test Jojo Akzu Luso';
+  keygen.password.value = 'Gpg Test Jojo Akzu Luso';
   let keyInfo = new KeyInfo();
   keyInfo.type.value = 'RSA';
   keyInfo.usage.values = ['sign', 'encr', 'auth'];

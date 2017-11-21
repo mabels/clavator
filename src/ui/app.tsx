@@ -20,41 +20,38 @@ import { KeyChainListState } from './model/key-chain-list-state';
 import DialogCreateKey from './components/key-chain-list/dialog-create-key';
 import { Assistent, AssistentState } from './components/assistent';
 import * as ReactModal from 'react-modal';
-import Progressor from './components/controls/progressor';
+import { ProgressorState, Progressor } from './components/controls/progressor';
+import AppState from './model/app-state';
 
-const channel = WsChannel.Dispatch.create();
-const cardStatusListState = new CardStatusListState(channel);
-const keyChainListState = new KeyChainListState(channel);
+const appState = AppState.create();
 
-class AppState {
+class AppViewState {
   public createKeyDialog: boolean;
   public selectedTabIndex: number;
-  public assistentState: AssistentState;
   public openProgressor: boolean;
 }
 
 // @observer
-export class App extends React.Component<{}, AppState> {
+export class App extends React.Component<{}, AppViewState> {
 
   constructor() {
     super();
     this.state = {
       createKeyDialog: false,
       selectedTabIndex: 0,
-      assistentState: new AssistentState(),
       openProgressor: false
     };
   }
 
   public componentWillUnmount(): void {
-    channel.close();
+    appState.channel.close();
   }
 
   public render_createKey(): JSX.Element {
     if (!this.state.createKeyDialog) {
       return null;
     }
-    return <DialogCreateKey channel={channel}
+    return <DialogCreateKey appState={appState}
       onClose={() => this.setState({ createKeyDialog: false })} />;
   }
 
@@ -82,7 +79,7 @@ export class App extends React.Component<{}, AppState> {
         }}
         className="closeBox fa fa-close"></i>
       <Progressor
-        channel={channel}
+        progressor={appState.progressorState}
         msg={'Clavator'}
         controls={true} />
     </ReactModal>;
@@ -90,7 +87,7 @@ export class App extends React.Component<{}, AppState> {
 
   public render(): JSX.Element {
     return (
-      <ChannelStatus channel={channel}>
+      <ChannelStatus channel={appState.channel}>
         <img src={Clavator} className="logo" />
         {this.renderProgressor()}
         <Tabs
@@ -121,20 +118,14 @@ export class App extends React.Component<{}, AppState> {
               className="closeBox">
               <i className="fa fa-plus"></i>
             </a>
-            <KeyChainList
-              keyChainListState={keyChainListState}
-              cardStatusListState={cardStatusListState}
-              channel={channel} />
+            <KeyChainList appState={appState} />
             {this.render_createKey()}
           </TabPanel>
           <TabPanel>
-            <CardStatusList channel={channel} cardStatusListState={cardStatusListState} />
+            <CardStatusList appState={appState} />
           </TabPanel>
           <TabPanel>
-            <Assistent
-              assistentState={this.state.assistentState}
-              channel={channel}
-              cardStatusListState={cardStatusListState} />
+            <Assistent appState={appState} />
           </TabPanel>
         </Tabs>
       </ChannelStatus>

@@ -6,6 +6,8 @@ import { AskKeyToYubiKey } from '../card-status-list/ask-key-to-yubi-key';
 import * as ListSecretKeys from '../../../gpg/list-secret-keys';
 import * as WsChannel from '../../model/ws-channel';
 import { CardStatusListState } from '../../model/card-status-list-state';
+import { ProgressorState } from '../controls/progressor';
+import AppState from '../../model/app-state';
 
 interface DialogSendToCardState {
 }
@@ -14,8 +16,7 @@ interface DialogSendToCardProps extends React.Props<DialogSendToCard> {
   onClose: () => void;
   secKey: ListSecretKeys.Key;
   idx: number;
-  channel: WsChannel.Dispatch;
-  cardStatusListState: CardStatusListState;
+  appState: AppState;
 }
 
 export class DialogSendToCard extends React.Component<DialogSendToCardProps, DialogSendToCardState> {
@@ -40,8 +41,7 @@ export class DialogSendToCard extends React.Component<DialogSendToCardProps, Dia
         <AskKeyToYubiKey
           slot_id={this.props.idx + 1}
           fingerprint={this.props.secKey.fingerPrint.fpr}
-          channel={this.props.channel}
-          cardStatusListState={this.props.cardStatusListState}
+          appState={this.props.appState}
         />
       </ReactModal>
 

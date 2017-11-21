@@ -8,6 +8,7 @@ import ChangeCard from '../../../gpg/change-card';
 import * as classnames from 'classnames';
 import { observer } from 'mobx-react';
 import ButtonToProgressor from '../controls/button-to-progressor';
+import AppState from '../../model/app-state';
 
 interface DialogChangeAttributesState {
   changeCard: ChangeCard;
@@ -17,7 +18,7 @@ interface DialogChangeAttributesState {
 interface DialogChangeAttributesProps extends React.Props<DialogChangeAttributes> {
   onClose: () => void;
   cardStatus: CardStatus.Gpg2CardStatus;
-  channel: WsChannel.Dispatch;
+  appState: AppState;
 }
 
 @observer
@@ -34,7 +35,7 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
  public updateAttributes(): () => void {
     return (() => {
       this.state.transaction.data = this.state.changeCard;
-      this.props.channel.send(this.state.transaction.asMsg());
+      this.props.appState.channel.send(this.state.transaction.asMsg());
     }).bind(this);
   }
 
@@ -95,7 +96,7 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
           value={this.state.changeCard.url} />
         <br />
         <ButtonToProgressor
-          channel={this.props.channel}
+          appState={this.props.appState}
           onClick={this.updateAttributes()}
           transaction={this.state.transaction}
           >Update</ButtonToProgressor>

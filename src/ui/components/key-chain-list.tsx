@@ -20,6 +20,8 @@ import { observer } from 'mobx-react';
 import DialogSendToCard from './key-chain-list/dialog-send-to-card';
 import DialogRenderAscii from './key-chain-list/dialog-render-ascii';
 import DialogAskRenderAscii from './key-chain-list/dialog-ask-render-ascii';
+import { ProgressorState } from './controls/progressor';
+import AppState from '../model/app-state';
 
 enum Dialogs {
   closed, openAscii, askPassPhraseAscii, sendToCard
@@ -36,9 +38,7 @@ interface KeyChainListComponentState {
 }
 
 interface KeyChainListProps extends React.Props<KeyChainList> {
-  channel: WsChannel.Dispatch;
-  cardStatusListState: CardStatusListState;
-  keyChainListState: KeyChainListState;
+  appState: AppState;
 }
 
 @observer
@@ -74,7 +74,7 @@ export class KeyChainList
       action: action,
       key: key,
       respondAscii: null,
-      receiver: this.props.channel.onMessage((actionx: Message.Header, data: string) => {
+      receiver: this.props.appState.channel.onMessage((actionx: Message.Header, data: string) => {
         console.log('processAscii:', actionx);
         if (actionx.action != 'RespondAscii') {
           return;
@@ -89,7 +89,7 @@ export class KeyChainList
         }));
       })
     }));
-    this.props.channel.send(Message.newTransaction('RequestAscii', ra).asMsg());
+    this.props.appState.channel.send(Message.newTransaction('RequestAscii', ra).asMsg());
   }
 
   private requestAscii(key: ListSecretKeys.Key, action: string):
@@ -116,7 +116,7 @@ export class KeyChainList
     React.EventHandler<React.MouseEvent<HTMLAnchorElement>> {
     return (() => {
       if (confirm(`Really delete ${key.keyId} <${key.uids[0].email}>?`)) {
-        this.props.channel.send(Message.newTransaction('DeleteSecretKey', key.fingerPrint).asMsg());
+        this.props.appState.channel.send(Message.newTransaction('DeleteSecretKey', key.fingerPrint).asMsg());
       }
     }).bind(this);
   }
@@ -204,7 +204,7 @@ export class KeyChainList
   }
 
   public closeAsciiModal(): void {
-    this.props.channel.unMessage(this.state.receiver);
+    this.props.appState.channel.unMessage(this.state.receiver);
     this.setState(Object.assign({}, this.state, {
       dialog: Dialogs.closed,
       action: null,
@@ -221,19 +221,18 @@ export class KeyChainList
         return <DialogRenderAscii action={this.state.action}
           secKey={this.state.key}
           onClose={() => this.setState({ dialog: Dialogs.closed })}
-          channel={this.props.channel} />;
+          channel={this.props.appState.channel} />;
       case Dialogs.askPassPhraseAscii:
         return <DialogAskRenderAscii action={this.state.action}
           secKey={this.state.key}
           onClose={() => this.setState({ dialog: Dialogs.closed })}
-          channel={this.props.channel} />;
+          channel={this.props.appState.channel} />;
       case Dialogs.sendToCard:
         return <DialogSendToCard
           idx={this.state.idx}
           onClose={() => this.setState({ dialog: Dialogs.closed })}
-          cardStatusListState={this.props.cardStatusListState}
           secKey={this.state.key}
-          channel={this.props.channel} />;
+          appState={this.props.appState} />;
     }
     return null;
   }
@@ -245,7 +244,7 @@ export class KeyChainList
     return (
       <div className="KeyChainList">
         {this.render_modal()}
-        {this.props.keyChainListState.keyChainList.map((sk: ListSecretKeys.SecretKey, idx: number) => {
+        {this.props.appState.keyChainListState.keyChainList.map((sk: ListSecretKeys.SecretKey, idx: number) => {
           return (
             <div key={sk.key}>
               <table>

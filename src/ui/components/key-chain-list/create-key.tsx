@@ -14,6 +14,16 @@ import NestedFlag from '../../../model/nested-flag';
 import ButtonToProgressor from '../controls/button-to-progressor';
 import * as ListSecretKeys from '../../../gpg/list-secret-keys';
 import InputExpireDate from '../controls/input-expire-date';
+import { StringValue } from '../../../model/string-value';
+import RcDoublePassword from '../controls/rc-double-password';
+import DoublePassword from '../../model/double-password';
+import PassPhrase from '../../model/pass-phrase';
+import MinMax from '../../model/min-max';
+import CharFormat from '../../model/char-format';
+import { Warrents } from '../../../gpg/warrents';
+import { Warrent } from '../../../gpg/warrent';
+import { ProgressorState } from '../controls/progressor';
+import AppState from '../../model/app-state';
 
 interface CreateKeyState {
   createDialog: boolean;
@@ -21,10 +31,11 @@ interface CreateKeyState {
   keyGen: KeyGen.KeyGen;
   create_status: string;
   transaction: Message.Transaction<KeyGen.KeyGen>;
+  passPhrase: PassPhrase;
 }
 
 interface CreateKeyProps extends React.Props<CreateKey> {
-  channel: WsChannel.Dispatch;
+  appState: AppState;
   compact?: boolean;
   onComplete?: () => void;
   renderSubmit?: (ck: CreateKey) => JSX.Element;
@@ -44,6 +55,9 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
       keyGen: kg,
       create_status: 'create-key',
       transaction: null,
+      passPhrase: PassPhrase.createPerWarrent(
+        new Warrents([new Warrent('me')]), [], CharFormat.wildcard(),
+        'password error', '', 1)
     };
     this.create_key = this.create_key.bind(this);
   }
@@ -55,7 +69,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
       });
       console.log('CreateKey:componentWillMount', this.props.secretKey);
     }
-    this.props.channel.onMessage((h: Message.Header, data: string) => {
+    this.props.appState.channel.onMessage((h: Message.Header, data: string) => {
 // console.log('CreateKey:', h, this.state.transaction.header)
       if (this.state.transaction &&
           this.state.transaction.header.transaction == h.transaction &&
@@ -147,36 +161,36 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
       transaction: transaction,
       createDialog: true
     });
-    this.props.channel.send(transaction.asMsg());
+    this.props.appState.channel.send(transaction.asMsg());
   }
 
-  public render_password(label: string, key: string, pp: KeyGen.PwPair): JSX.Element {
-    return (
-      <div className={classnames({ six: true, columns: true })} >
-        <label>{label}:</label><input type="password"
-          name={key}
-          className={classnames({ 'u-full-width': true, good: pp.valid_password() })}
-          onChange={(e: any) => {
-            pp.password = e.target.value;
-            this.setState(this.state);
-          }}
-        />
-      </div>);
-  }
+  // public render_password(label: string, key: string, pp: StringValue): JSX.Element {
+  //   return (
+  //     <div className={classnames({ six: true, columns: true })} >
+  //       <label>{label}:</label><input type="password"
+  //         name={key}
+  //         className={classnames({ 'u-full-width': true, good: pp.valid() })}
+  //         onChange={(e: any) => {
+  //           pp.value = e.target.value;
+  //           this.setState(this.state);
+  //         }}
+  //       />
+  //     </div>);
+  // }
 
-  public render_verify_password(label: string, key: string, pp: KeyGen.PwPair): JSX.Element {
-    return (
-      <div className="six columns">
-        <label>{label}(verify):</label><input type="password"
-          name={key + '-verify'}
-          className={classnames({ 'u-full-width': true, good: pp.valid_verify() })}
-          onChange={(e: any) => {
-            pp.verify = e.target.value;
-            this.setState(this.state);
-          }}
-        />
-      </div>);
-  }
+  // public render_verify_password(label: string, key: string, pp: StringValue): JSX.Element {
+  //   return (
+  //     <div className="six columns">
+  //       <label>{label}(verify):</label><input type="password"
+  //         name={key + '-verify'}
+  //         className={classnames({ 'u-full-width': true, good: pp.valid_verify() })}
+  //         onChange={(e: any) => {
+  //           pp.verify = e.target.value;
+  //           this.setState(this.state);
+  //         }}
+  //       />
+  //     </div>);
+  // }
 
   public render_delete_button(idx: number): JSX.Element {
     if (this.state.keyGen.uids.length() > 1) {
@@ -189,7 +203,8 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
 
   public render_uid(idx: number, uid: KeyGenUid): JSX.Element {
     return (
-      <div className={classnames({ 'u-full-width': true, 'good': uid.valid() })} key={idx}>
+      // <div className={classnames({ 'u-full-width': true, 'good': uid.valid() })} key={idx}>
+      <div className={classnames({ 'good': uid.valid() })} key={idx}>
         <div className="row">
           <div className="five columns">
             <label>Name-Real:</label><input type="text"
@@ -294,7 +309,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
       return this.props.renderSubmit(this);
     }
     return <ButtonToProgressor
-            channel={this.props.channel}
+            appState={this.props.appState}
             onClick={this.create_key}
             transaction={this.state.transaction}
           >Create Key</ButtonToProgressor>;
@@ -303,7 +318,7 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
   public render_form(): JSX.Element {
     return (
       <form onSubmit={(e) => {
-        debugger;
+        // debugger;
         e.stopPropagation();
         e.preventDefault();
       }}>
@@ -318,11 +333,18 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
           }
         })}
 
+        <RcDoublePassword
+            readOnly={this.props.readOnly}
+            key={this.state.passPhrase.objectId()}
+            doublePassword={this.state.passPhrase.doublePasswords[0]}
+            idx={null} >
+        </RcDoublePassword>;
+        {/*
         <div className={classnames({ row: true, good: this.state.keyGen.password.valid() })}>
           {this.render_password('Password', 'cq-password', this.state.keyGen.password)}
           {this.render_verify_password('Password', 'cq-password', this.state.keyGen.password)}
         </div>
-
+        */}
         {this.render_long()}
         {this.render_compact()}
 

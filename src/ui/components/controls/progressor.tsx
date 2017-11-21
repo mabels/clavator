@@ -1,37 +1,22 @@
 import * as React from 'react';
+import { observer } from 'mobx-react';
+import { observable } from 'mobx';
 import * as Progress from '../../../model/progress';
 import * as Message from '../../../model/message';
-import * as WsChannel from '../../model/ws-channel';
+import { WsChannel, Dispatch  } from '../../model/ws-channel';
 
-interface ProgressorState {
-  progressList: Progress.Progress[];
-}
+export class ProgressorState {
+  @observable public progressList: Progress.Progress[];
+  private channel: Dispatch;
 
-interface ProgressorProps extends React.Props<Progressor> {
-  channel: WsChannel.Dispatch;
-  msg?: string;
-  transaction?: string;
-  controls?: boolean;
-}
-
-export class Progressor
-  extends React.Component<ProgressorProps, ProgressorState>
-  implements WsChannel.WsChannel {
-
-  constructor() {
-    super();
-    this.state = {
-      progressList: []
-    };
-  }
-
-  public componentWillMount(): void {
-    this.props.channel.register(this);
-  }
-
-  public componentWillUnmount(): void {
-    this.setState({ progressList: [] });
-    this.props.channel.unregister(this);
+  constructor(channel: Dispatch) {
+    this.channel = channel;
+    this.progressList = [];
+    this.channel.register({
+      onClose: this.onClose.bind(this),
+      onOpen: this.onOpen.bind(this),
+      onMessage: this.onMessage.bind(this)
+    });
   }
 
   public onOpen(): void {
@@ -39,21 +24,29 @@ export class Progressor
   }
 
   public onMessage(action: Message.Header, data: string): void {
-    if ((action.action == 'Progressor.' + this.props.msg)) {
-      if (!this.props.transaction || action.transaction == this.props.transaction) {
-        console.log('Progressor.', this.props, action, data);
-        let js = JSON.parse(data);
-        this.state.progressList.push(Progress.fill(js));
-        this.setState(Object.assign({}, this.state, {
-          progressList: this.state.progressList
-        }));
-      }
+    if (action.action.startsWith('Progressor.')) {
+      // if (!this.props.transaction || action.transaction == this.props.transaction) {
+        // console.log('Progressor.', this.props, action, data);
+        const js = JSON.parse(data);
+        this.progressList.push(Progress.fill(js));
+      // }
     }
   }
 
   public onClose(e: CloseEvent): void {
     return;
   }
+}
+
+interface ProgressorProps extends React.Props<Progressor> {
+  progressor: ProgressorState;
+  msg?: string;
+  transaction?: string;
+  controls?: boolean;
+}
+
+@observer
+export class Progressor extends React.Component<ProgressorProps> {
 
   private controls(): JSX.Element {
     if (!this.props.controls) {
@@ -76,7 +69,7 @@ export class Progressor
       <div className="Progressor">
         {this.controls()}
         <pre><code>
-          {this.state.progressList.map((ps: Progress.Progress, _: number) => {
+          {this.props.progressor.progressList.map((ps: Progress.Progress, _: number) => {
             return (ps.msgs.map((msg: string, idx: number) => {
               return (<div key={ps.id + ':' + idx}
                   className={ps.isOk ? 'ok' : 'fail'}>{msg}{ps.isEndOfMessages ? '<EOM>' : ''}</div>);

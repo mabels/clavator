@@ -4,6 +4,7 @@ import RequestChangePin from '../../../gpg/request-change-pin';
 import * as WsChannel from '../../model/ws-channel';
 import * as Message from '../../../model/message';
 import ButtonToProgressor from '../controls/button-to-progressor';
+import AppState from '../../model/app-state';
 
 interface ChangePinState {
   pin: RequestChangePin;
@@ -14,7 +15,7 @@ interface ChangePinProps extends React.Props<ChangePin> {
   completed?: () => {};
   type: string;
   app_id: string;
-  channel: WsChannel.Dispatch;
+  appState: AppState;
 }
 
 export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
@@ -41,7 +42,7 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
       pin: this.state.pin,
       transaction: this.state.transaction
     });
-    this.props.channel.send(this.state.transaction.asMsg());
+    this.props.appState.channel.send(this.state.transaction.asMsg());
   }
 
   public render(): JSX.Element {
@@ -83,7 +84,7 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
         </div>
 
         <ButtonToProgressor
-          channel={this.props.channel}
+          appState={this.props.appState}
           onClick={this.doPinChange}
           transaction={this.state.transaction}
         >Change</ButtonToProgressor>

@@ -28,6 +28,7 @@ import * as Message from '../../model/message';
 import Progressor from './controls/progressor';
 import { RcOption } from './controls/rc-option';
 import Option from '../../model/option';
+import AppState from '../model/app-state';
 
 export class AssistentState {
   // public current: Actions.Steps;
@@ -72,9 +73,7 @@ export class AssistentState {
 }
 
 interface AssistentProps extends React.Props<Assistent> {
-  channel: WsChannel.Dispatch;
-  cardStatusListState: CardStatusListState;
-  assistentState: AssistentState;
+  appState: AppState;
 }
 
 @observer
@@ -92,25 +91,26 @@ export class Assistent extends React.Component<AssistentProps> {
   }
 
   public componentDidMount(): void {
-    this.props.assistentState.load(this.props.channel);
+    this.props.appState.assistentState.load(this.props.appState.channel);
   }
 
   private handleReady(): void {
-    console.log('ready:', this.props.assistentState.simpleYubiKey.toObj());
-    this.props.assistentState.simpleYubiKeyTransaction.data = this.props.assistentState.simpleYubiKey.toObj();
-    this.props.channel.send(this.props.assistentState.simpleYubiKeyTransaction.asMsg());
+    console.log('ready:', this.props.appState.assistentState.simpleYubiKey.toObj());
+    this.props.appState.assistentState.simpleYubiKeyTransaction.data =
+      this.props.appState.assistentState.simpleYubiKey.toObj();
+    this.props.appState.channel.send(this.props.appState.assistentState.simpleYubiKeyTransaction.asMsg());
     /* */
   }
 
   private renderReady(): JSX.Element {
-    const ops = this.props.cardStatusListState.cardStatusList.map(cs => cs.reader.cardid);
+    const ops = this.props.appState.cardStatusListState.cardStatusList.map(cs => cs.reader.cardid);
     return <div className="row">
         <RcOption
-          readOnly={this.props.assistentState.simpleYubiKey.readOnly}
+          readOnly={this.props.appState.assistentState.simpleYubiKey.readOnly}
           name="SmartCards"
           label="SmartCards:"
           onChange={(value: string) => {
-            this.props.assistentState.simpleYubiKey.smartCardId = value;
+            this.props.appState.assistentState.simpleYubiKey.smartCardId = value;
           }}
           option={new Option<String>(ops[0], ops, 'unknown error')}/>
       <button onClick={this.handleReady}>testing</button>
@@ -166,7 +166,7 @@ export class Assistent extends React.Component<AssistentProps> {
         warrents={assistentState.warrents}
         completed={() => {
           assistentState.simpleYubiKey = new SimpleYubiKey(assistentState.warrents,
-            assistentState.diceWares, this.props.cardStatusListState.cardStatusList[0].reader.cardid);
+            assistentState.diceWares, this.props.appState.cardStatusListState.cardStatusList[0].reader.cardid);
         }} />
     </div>;
   }
@@ -183,9 +183,9 @@ export class Assistent extends React.Component<AssistentProps> {
   public render(): JSX.Element {
     return (
       <div>
-        {this.renderWarrents(this.props.assistentState)}
-        {this.renderLoadDiceWare(this.props.assistentState)}
-        {this.renderSimpleCreateKey(this.props.assistentState)}
+        {this.renderWarrents(this.props.appState.assistentState)}
+        {this.renderLoadDiceWare(this.props.appState.assistentState)}
+        {this.renderSimpleCreateKey(this.props.appState.assistentState)}
       </div>
     );
   }

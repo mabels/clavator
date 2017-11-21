@@ -6,8 +6,8 @@ import KeyGenUid from '../../src/gpg/key-gen-uid';
 
 function makeKeyGen(): KeyGen {
   let kg = new KeyGen();
-  kg.password.password = 'password';
-  kg.password.verify = 'v-password';
+  kg.password.value = 'password';
+  // kg.password.verify = 'v-password';
   // kg.adminPin.password = 'adminPin'
   // kg.adminPin.verify = 'v-adminPin'
   // kg.userPin.verify = 'v-userPin'
@@ -35,8 +35,8 @@ function makeKeyGen(): KeyGen {
 
 function makeValidKeyGen(): KeyGen {
   let kg = new KeyGen();
-  kg.password.password = 'password';
-  kg.password.verify = 'password';
+  kg.password.value = 'password';
+  // kg.password.verify = 'password';
   // kg.adminPin.password = 'adminPin'
   // kg.adminPin.verify = 'adminPin'
   // kg.userPin.verify = 'userPin'
@@ -70,8 +70,8 @@ describe('keygen', () => {
     let rkg = new KeyGen();
     KeyGen.fill(js, rkg);
 
-    assert.equal(rkg.password.password, 'password');
-    assert.equal(rkg.password.verify, 'v-password');
+    assert.equal(rkg.password.value, 'password');
+    // assert.equal(rkg.password.verify, 'v-password');
     // assert.equal(rkg.adminPin.password, 'adminPin');
     // assert.equal(rkg.adminPin.verify, 'v-adminPin');
     // assert.equal(rkg.userPin.verify, 'v-userPin');

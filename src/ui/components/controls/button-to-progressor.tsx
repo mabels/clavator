@@ -1,8 +1,9 @@
 import * as React from 'react';
 import * as Message from '../../../model/message';
 import * as WsChannel from '../../model/ws-channel';
-import { Progressor } from './progressor';
+import { Progressor, ProgressorState } from './progressor';
 import { observer } from 'mobx-react';
+import AppState from '../../model/app-state';
 
 interface ButtonToProgressorState {
   running: boolean;
@@ -10,7 +11,7 @@ interface ButtonToProgressorState {
 
 interface ButtonToProgressorProps extends React.Props<ButtonToProgressor> {
   onClick: () => void;
-  channel: WsChannel.Dispatch;
+  appState: AppState;
   transaction: Message.Transaction<any>;
   disabled?: boolean;
 }
@@ -28,7 +29,7 @@ export class ButtonToProgressor extends React.Component<ButtonToProgressorProps,
   public render(): JSX.Element {
     if (this.state.running) {
       return <Progressor
-        channel={this.props.channel}
+        progressor={this.props.appState.progressorState}
         msg={'Clavator'}
         transaction={this.props.transaction.header.transaction}
         controls={true} />;

@@ -359,11 +359,11 @@ export class Gpg {
       '--no-tty', '--pinentry-mode', 'loopback',
       '--passphrase-fd',
       () => {
-        return keyGen.password.password + '\n';
+        return keyGen.password.value + '\n';
       },
       '--passphrase-fd',
       () => {
-        return keyGen.password.password + '\n';
+        return keyGen.password.value + '\n';
       },
       '--full-gen-key',
       '--batch'
@@ -399,7 +399,7 @@ export class Gpg {
       '--no-tty', '--pinentry-mode', 'loopback',
       '--passphrase-fd',
       () => {
-        return kg.password.password;
+        return kg.password.value;
       },
       '--quick-adduid', fpr,
       uid.toString()
@@ -415,7 +415,7 @@ export class Gpg {
       '--no-tty', '--pinentry-mode', 'loopback',
       '--passphrase-fd',
       () => {
-        return kg.password.password + '\n';
+        return kg.password.value + '\n';
       },
       '--quick-addkey', fpr,
       ki.type.value.toLowerCase() + ki.length.value, ki.usage.values.join(','),

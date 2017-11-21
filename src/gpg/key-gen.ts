@@ -7,6 +7,7 @@ import Pallet from '../model/pallet';
 import ObjectId from '../model/object-id';
 
 import { assignOnError, format_date, expireDate  } from '../model/helper';
+import { StringValue } from '../model/string-value';
 
 // export class Uid extends KeyGenUid {
 
@@ -23,38 +24,38 @@ export class ValidatableString {
   }
 }
 
-export class PwPair {
-  public match: RegExp;
-  public password: string;
-  public verify: string;
-  public errText: string;
+// export class PwPair {
+//   public match: RegExp;
+//   public password: string;
+//   public verify: string;
+//   public errText: string;
 
-  public static fill(js: any, dv: PwPair): void {
-    dv.password = js['password'] || dv.password;
-    dv.verify = js['verify'] || dv.verify;
-  }
-  public constructor(match: RegExp, e: string) {
-    this.match = match;
-    this.password = '';
-    this.verify = '';
-    this.errText = e;
-  }
+//   public static fill(js: any, dv: PwPair): void {
+//     dv.password = js['password'] || dv.password;
+//     dv.verify = js['verify'] || dv.verify;
+//   }
+//   public constructor(match: RegExp, e: string) {
+//     this.match = match;
+//     this.password = '';
+//     this.verify = '';
+//     this.errText = e;
+//   }
 
-  public setPassword(pwd: string): void {
-    this.password = this.verify = pwd;
-  }
+//   public setPassword(pwd: string): void {
+//     this.password = this.verify = pwd;
+//   }
 
-  public valid_password(): boolean {
-    return this.match.test(this.password);
-  }
-  public valid_verify(): boolean {
-    return this.match.test(this.verify);
-  }
+//   public valid_password(): boolean {
+//     return this.match.test(this.password);
+//   }
+//   public valid_verify(): boolean {
+//     return this.match.test(this.verify);
+//   }
 
-  public valid(): boolean {
-    return this.password == this.verify && this.match.test(this.password);
-  }
-}
+//   public valid(): boolean {
+//     return this.password == this.verify && this.match.test(this.password);
+//   }
+// }
 
 export class KeyInfo extends ObjectId implements Pallet {
   public type: Option<string>;
@@ -126,7 +127,7 @@ export class KeyInfo extends ObjectId implements Pallet {
 // }
 
 export class KeyGen {
-  public password: PwPair = new PwPair(/^.{14,1024}$/, 'Password Error');
+  public password: StringValue = new StringValue(/^.{14,1024}$/, 'Password Error');
   public keyInfo: KeyInfo = new KeyInfo('RSA', 4096, ['cert']);
   public expireDate: DateValue = new DateValue(expireDate(), 'expireDate error');
   public uids: Container<KeyGenUid> = new Container<KeyGenUid>(() => { return new KeyGenUid(); });
@@ -140,7 +141,7 @@ export class KeyGen {
     return ret;
   }
   public static fill(js: any, kg: KeyGen): void {
-    PwPair.fill(js['password'] || {}, kg.password);
+    StringValue.fill(js['password'] || {}, kg.password);
     // PwPair.fill(js['adminPin']||{}, kg.adminPin);
     // PwPair.fill(js['userPin']||{}, kg.userPin);
     kg.keyInfo.fill(js['keyInfo']);
@@ -155,7 +156,7 @@ export class KeyGen {
 
   public errText(): string[] {
     let ret: string[] = [];
-    assignOnError(this.password.valid(), ret, this.password.errText);
+    assignOnError(this.password.valid(), ret, this.password.errText());
     // !this.adminPin.valid() && ret.push(this.adminPin.errText);
     // !this.userPin.valid() && ret.push(this.userPin.errText);
     assignOnError(this.keyInfo.valid(), ret,  this.keyInfo.errText());

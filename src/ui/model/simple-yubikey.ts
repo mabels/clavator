@@ -99,7 +99,7 @@ export class SimpleYubikey {
       ki.type.value = this.common.keyParams.type.value;
       ki.length.value = this.common.keyParams.subLen.value;
     });
-    kg.password.setPassword(this.passPhrase.getPassPhrase());
+    kg.password.value = this.passPhrase.getPassPhrase();
     return kg;
   }
 

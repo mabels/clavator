@@ -3,15 +3,12 @@ import { SimpleYubikey } from '../../src/ui/model/simple-yubikey';
 
 describe('SimpleYubiKey', () => {
 
-  const DATA = `{
-    "warrents": [
-      "meno"
-    ],
+  const SIMPLEYUBIKEY = `{
+    "smartCardId": "SmartCardId",
+    "warrents": [ "meno" ],
     "common": {
       "expireDate": "2022-11-17T15:25:28.586Z",
-      "approvedWarrents": [
-        "meno"
-      ],
+      "approvedWarrents": [ "meno" ],
       "keyParams": {
         "type": "RSA",
         "masterLen": 4096,
@@ -26,44 +23,28 @@ describe('SimpleYubiKey', () => {
       ]
     },
     "passPhrase": {
-      "warrents": [
-        "meno"
-      ],
+      "warrents": [ "meno" ],
       "joiner": " ",
-      "doublePasswords": [
-        "willfully",
-        "stainable",
-        "anew",
-        "cofounder",
-        "vividness",
-        "presuming",
-        "mulch",
-        "gem"
-      ]
+      "doublePasswords": [ "willfully", "stainable", "anew", "cofounder",
+        "vividness", "presuming", "mulch", "gem" ]
     },
     "adminKey": {
-      "warrents": [
-        "meno"
-      ],
+      "warrents": [ "meno" ],
       "joiner": "",
-      "doublePasswords": [
-        "54138926"
-      ]
+      "doublePasswords": [ "54138926" ]
     },
     "userKey": {
-      "warrents": [
-        "meno"
-      ],
+      "warrents": [ "meno" ],
       "joiner": "",
-      "doublePasswords": [
-        "84467679"
-      ]
+      "doublePasswords": [ "84467679" ]
     }
   }`;
 
   it('serialize', () => {
-    const inp = JSON.parse(DATA);
+    const inp = JSON.parse(SIMPLEYUBIKEY);
     const syk = SimpleYubikey.fill(inp);
+    // console.log(JSON.stringify(syk.toObj()));
+    // console.log(JSON.stringify(inp));
     assert.deepEqual(inp, syk.toObj());
   });
 

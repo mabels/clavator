@@ -16,6 +16,7 @@ import { CardStatusListState } from '../model/card-status-list-state';
 import DialogResetYubikey from './card-status-list/dialog-reset-yubikey';
 import DialogChangePin from './card-status-list/dialog-change-pin';
 import DialogChangeAttributes from './card-status-list/dialog-change-attributes';
+import AppState from '../model/app-state';
 
 enum Dialogs {
   closed, changeAttributes, changeAdminPin, changeUserPin, resetYubikey
@@ -28,8 +29,7 @@ interface CardStatusState {
 }
 
 interface CardStatusListProps extends React.Props<CardStatusList> {
-  channel: WsChannel.Dispatch;
-  cardStatusListState: CardStatusListState;
+  appState: AppState;
 }
 
 @observer
@@ -95,24 +95,24 @@ export class CardStatusList extends React.Component<CardStatusListProps, CardSta
     switch (this.state.dialog) {
       case Dialogs.changeAdminPin:
         return <DialogChangePin
-          channel={this.props.channel}
+          appState={this.props.appState}
           cardStatus={this.state.cardStatus}
           onClose={() => {this.setState({dialog: Dialogs.closed}); }}
           type={'admin'} />;
       case Dialogs.changeUserPin:
         return <DialogChangePin
-          channel={this.props.channel}
+          appState={this.props.appState}
           cardStatus={this.state.cardStatus}
           onClose={() => {this.setState({dialog: Dialogs.closed}); }}
           type={'unblock'} />;
       case Dialogs.changeAttributes:
         return <DialogChangeAttributes
-          channel={this.props.channel}
+          appState={this.props.appState}
           cardStatus={this.state.cardStatus}
           onClose={() => {this.setState({dialog: Dialogs.closed}); }} />;
       case Dialogs.resetYubikey:
         return <DialogResetYubikey
-          channel={this.props.channel}
+          appState={this.props.appState}
           cardStatus={this.state.cardStatus}
           onClose={() => {this.setState({dialog: Dialogs.closed}); }} />;
     }
@@ -123,7 +123,7 @@ export class CardStatusList extends React.Component<CardStatusListProps, CardSta
     console.log('card-status-list:render');
     return (
       <div className="CardStatusList">
-        {this.props.cardStatusListState.cardStatusList.map((cs: CardStatus.Gpg2CardStatus, idx: number) => {
+        {this.props.appState.cardStatusListState.cardStatusList.map((cs: CardStatus.Gpg2CardStatus, idx: number) => {
           console.log('card-status-list:map');
           return (<table key={cs.serial}>
             <tbody>

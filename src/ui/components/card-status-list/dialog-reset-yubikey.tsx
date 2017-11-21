@@ -3,6 +3,7 @@ import * as ReactModal from 'react-modal';
 import * as CardStatus from '../../../gpg/card-status';
 import * as Message from '../../../model/message';
 import * as WsChannel from '../../model/ws-channel';
+import AppState from '../../model/app-state';
 // import { Progressor } from './progressor';
 import ButtonToProgressor from '../controls/button-to-progressor';
 
@@ -13,7 +14,7 @@ interface DialogResetYubiKeyState {
 interface DialogResetYubiKeyProps extends React.Props<DialogResetYubiKey> {
   onClose: () => void;
   cardStatus: CardStatus.Gpg2CardStatus;
-  channel: WsChannel.Dispatch;
+  appState: AppState;
 }
 
 export class DialogResetYubiKey extends React.Component<DialogResetYubiKeyProps, DialogResetYubiKeyState> {
@@ -27,7 +28,7 @@ export class DialogResetYubiKey extends React.Component<DialogResetYubiKeyProps,
   }
 
   private resetYubikey(): void {
-    this.props.channel.send(this.state.transaction.asMsg());
+    this.props.appState.channel.send(this.state.transaction.asMsg());
   }
 
   public render(): JSX.Element {
@@ -45,7 +46,7 @@ export class DialogResetYubiKey extends React.Component<DialogResetYubiKeyProps,
       <h5>{this.props.cardStatus.name}({this.props.cardStatus.reader.cardid})</h5>
 
       <ButtonToProgressor
-        channel={this.props.channel}
+        appState={this.props.appState}
         onClick={this.resetYubikey}
         transaction={this.state.transaction}
       >REALY WIPE YUBIKEY</ButtonToProgressor>
