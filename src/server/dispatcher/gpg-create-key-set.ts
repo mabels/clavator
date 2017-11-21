@@ -7,6 +7,7 @@ import * as KeyGen from '../../gpg/key-gen';
 import * as ListSecretKeys from '../../gpg/list-secret-keys';
 import * as Gpg from '../../gpg/gpg';
 import CreateKeySetTask from '../tasks/create-key-set-task';
+import { Observer } from '../observer';
 
 import * as Progress from '../../model/progress';
 
@@ -21,7 +22,7 @@ export class GpgCreateKeySet implements Dispatcher {
     this.gpg = gpg;
   }
 
-  public run(ws: WebSocket, m: Message.Message): boolean {
+  public run(observer: Observer, ws: WebSocket, m: Message.Message): boolean {
     console.log('CreateKeySet.Request', m.header);
     if (m.header.action != 'CreateKeySet.Request') {
       // ws.send(Message.prepare('Progressor.Clavator', Progress.fail('Ohh')))

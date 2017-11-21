@@ -19,6 +19,16 @@ export class Observer {
     return obs;
   }
 
+  public suspend(): void {
+    this.gpgListSecretKeysObserver.suspend();
+    this.gpgCardStatusObserver.suspend();
+  }
+
+  public resume(): void {
+    this.gpgListSecretKeysObserver.resume();
+    this.gpgCardStatusObserver.resume();
+  }
+
   public register(ws: WebSocket): void {
     this.wss.push(ws);
     this.gpgListSecretKeysObserver.register(ws);

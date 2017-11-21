@@ -126,7 +126,7 @@ wss.on('connection', (sock) => {
   sock.on('message', (payload) => {
     let msg = Message.fromData(payload.toString());
     // console.log('onMessage')
-    dispatch.run(sock, msg);
+    dispatch.run(observer, sock, msg);
   });
 });
 

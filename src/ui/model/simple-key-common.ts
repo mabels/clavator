@@ -23,7 +23,11 @@ export class SimpleKeyCommon {
     this.expireDate = new DateValue(expireDate(), 'expireDate error');
     this.keyParams = new KeyParams();
     this.uids = new Container<KeyGenUid>(() => { return new KeyGenUid(); });
-    this.uids.add(new KeyGenUid());
+    const kgu = new KeyGenUid();
+    if (warrents.length() > 1) {
+      kgu.comment.value = `Warrents ${warrents.tail().map(i => `[${i.warrent.value}]`).join(',')}`;
+    }
+    this.uids.add(kgu);
   }
 
   public showWarrents(): boolean {

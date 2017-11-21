@@ -40,6 +40,10 @@ export class PwPair {
     this.errText = e;
   }
 
+  public setPassword(pwd: string): void {
+    this.password = this.verify = pwd;
+  }
+
   public valid_password(): boolean {
     return this.match.test(this.password);
   }
@@ -123,8 +127,6 @@ export class KeyInfo extends ObjectId implements Pallet {
 
 export class KeyGen {
   public password: PwPair = new PwPair(/^.{14,1024}$/, 'Password Error');
-  // adminPin: PwPair = new PwPair(/^[0-9]{8}$/, "adminPin Error");
-  // userPin: PwPair = new PwPair(/^[0-9]{6,8}$/, "userPin Error");
   public keyInfo: KeyInfo = new KeyInfo('RSA', 4096, ['cert']);
   public expireDate: DateValue = new DateValue(expireDate(), 'expireDate error');
   public uids: Container<KeyGenUid> = new Container<KeyGenUid>(() => { return new KeyGenUid(); });

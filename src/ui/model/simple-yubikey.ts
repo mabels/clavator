@@ -14,7 +14,9 @@ import SimpleKeyCommon from './simple-key-common';
 import DiceWare from '../../dice-ware/dice-ware';
 import CharFormat from './char-format';
 import { Warrent } from '../../gpg/warrent';
-import { KeyGen } from '../../gpg/key-gen';
+import { KeyGen, KeyInfo } from '../../gpg/key-gen';
+import KeyGenUid from '../../gpg/key-gen-uid';
+import { KeyToYubiKey } from '../../gpg/key-to-yubikey';
 
 // import { assignOnError } from '../../model/helper';
 
@@ -22,7 +24,7 @@ export class SimpleYubikey {
   public readonly warrents: Warrents;
 
   public readonly common: SimpleKeyCommon;
-
+  public smartCardId: string;
   public readonly passPhrase: PassPhrase;
   public readonly adminKey: PassPhrase;
   public readonly userKey: PassPhrase;
@@ -39,7 +41,7 @@ export class SimpleYubikey {
   public static fill(obj: any): SimpleYubikey {
     const warrents = new Warrents();
     obj['warrents'].forEach((warrent: string) => warrents.add(new Warrent(warrent)));
-    const syk = new SimpleYubikey(warrents, []);
+    const syk = new SimpleYubikey(warrents, [], obj['smartCardId']);
     syk.common.fill(syk.warrents, obj['common']);
     syk.passPhrase.fill(obj['passPhrase']);
     syk.adminKey.fill(obj['adminKey']);
@@ -47,8 +49,9 @@ export class SimpleYubikey {
     return syk;
   }
 
-  constructor(warrents: Warrents, diceWares: DiceWare[]) {
+  constructor(warrents: Warrents, diceWares: DiceWare[], smartCardId: string) {
     this.warrents = warrents;
+    this.smartCardId = smartCardId;
     this.readOnly = new NestedFlag(false);
     this.common = new SimpleKeyCommon(warrents, this.readOnly);
     this.passPhrase = PassPhrase.createDoublePasswords(8, new Warrents(this.warrents.map(w => w)), diceWares,
@@ -86,8 +89,28 @@ export class SimpleYubikey {
   }
 
   public asKeyGen(): KeyGen {
-    const kg = new KeyGen();
+    const kg = KeyGen.withSubKeys(3);
+    this.common.uids.forEach(k => kg.uids.add(k));
+    kg.expireDate.value = this.common.expireDate.value;
+    kg.keyInfo = new KeyInfo(this.common.keyParams.type.value,
+                             this.common.keyParams.masterLen.value,
+                             ['cert']);
+    kg.subKeys.forEach(ki => {
+      ki.type.value = this.common.keyParams.type.value;
+      ki.length.value = this.common.keyParams.subLen.value;
+    });
+    kg.password.setPassword(this.passPhrase.getPassPhrase());
     return kg;
+  }
+
+  public asKeyToYubiKey(fpr: string, slot_id: number): KeyToYubiKey {
+    const ktyk = new KeyToYubiKey();
+    ktyk.card_id = this.smartCardId;
+    ktyk.admin_pin.pin = '12345678';
+    ktyk.fingerprint = fpr;
+    ktyk.slot_id = slot_id;
+    ktyk.passphrase.value = this.passPhrase.getPassPhrase();
+    return ktyk;
   }
 
   // public password: PwPair = new PwPair(/^.{14,1024}$/, 'Password Error');
@@ -100,6 +123,7 @@ export class SimpleYubikey {
 
   public toObj(): any {
     return {
+      smartCardId: this.smartCardId,
       warrents: this.warrents.toObj(),
       common: this.common.toObj(),
       passPhrase: this.passPhrase.toObj(),

@@ -5,6 +5,7 @@ import * as Message from '../model/message';
 
 import * as Gpg from '../gpg/gpg';
 import Dispatcher from './dispatcher';
+import { Observer } from './observer';
 import GpgCreateKeySet from './dispatcher/gpg-create-key-set';
 import GpgResetYubikey from './dispatcher/gpg-reset-yubikey';
 import GpgChangePinYubikey from './dispatcher/gpg-change-pin-yubikey';
@@ -17,9 +18,9 @@ import DiceWareDispatcher from './dispatcher/dice-ware-dispatcher';
 export class Dispatch {
     public dispatcher: Dispatcher[] = [];
 
-    public run(ws: WebSocket, m: Message.Message): boolean {
+    public run(observer: Observer, ws: WebSocket, m: Message.Message): boolean {
         console.log('Dispatch.run', m.header);
-        return !!(this.dispatcher.find((dispatch: Dispatcher) => dispatch.run(ws, m)));
+        return !!(this.dispatcher.find((dispatch: Dispatcher) => dispatch.run(observer, ws, m)));
     }
 
 }

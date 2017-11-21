@@ -25,6 +25,9 @@ import DiceWareInputPassPhrase from './assistent/dice-ware-input-pass-phrase';
 import RandomInputPassPhrase from './assistent/random-input-pass-phrase';
 import DiceWare from '../../dice-ware/dice-ware';
 import * as Message from '../../model/message';
+import Progressor from './controls/progressor';
+import { RcOption } from './controls/rc-option';
+import Option from '../../model/option';
 
 export class AssistentState {
   // public current: Actions.Steps;
@@ -35,7 +38,8 @@ export class AssistentState {
   @observable public simpleYubiKey: SimpleYubiKey;
   public diceWareTransaction: Message.Transaction<DiceWare>;
   public simpleYubiKeyTransaction: Message.Transaction<SimpleYubiKey>;
-  public diceWares: DiceWare[];
+  @observable public diceWares: DiceWare[];
+  public diceWareLoading: boolean;
 
   constructor() {
     this.warrents = (new Warrents()).add(new Warrent());
@@ -43,7 +47,28 @@ export class AssistentState {
     this.diceWareTransaction = Message.newTransaction('DiceWares.Request');
     this.simpleYubiKeyTransaction = Message.newTransaction<SimpleYubiKey>('SimpleYubiKey.run');
     this.diceWares = [];
+    this.diceWareLoading = false;
   }
+
+  public load(channel: WsChannel.Dispatch): void {
+    if (this.diceWares.length || this.diceWareLoading) {
+      return;
+    }
+    this.diceWareLoading = true;
+    channel.onMessage((cb, data) => {
+      // debugger;
+      // console.log('DiceWare:', cb.action);
+      if (cb.action == 'DiceWares.Response') {
+        const diceWares = JSON.parse(data);
+        this.diceWares.push.apply(
+          this.diceWares, diceWares.map((dw: any) => (DiceWare.fill(dw))));
+        console.log('DiceWares.Response', this.diceWares);
+        this.diceWareLoading = false;
+      }
+    });
+    channel.send(this.diceWareTransaction.asMsg());
+  }
+
 }
 
 interface AssistentProps extends React.Props<Assistent> {
@@ -67,18 +92,7 @@ export class Assistent extends React.Component<AssistentProps> {
   }
 
   public componentDidMount(): void {
-    this.props.channel.onMessage((cb, data) => {
-      // debugger;
-      // console.log('DiceWare:', cb.action);
-      if (cb.action == 'DiceWares.Response') {
-        const diceWares = JSON.parse(data);
-        this.setState(Object.assign(this.state, {
-            diceWares: diceWares.map((dw: any) => DiceWare.fill(dw))
-        }));
-        // console.log('DiceWares.Response', this.state);
-      }
-    });
-    this.props.channel.send(this.props.assistentState.diceWareTransaction.asMsg());
+    this.props.assistentState.load(this.props.channel);
   }
 
   private handleReady(): void {
@@ -89,14 +103,17 @@ export class Assistent extends React.Component<AssistentProps> {
   }
 
   private renderReady(): JSX.Element {
+    const ops = this.props.cardStatusListState.cardStatusList.map(cs => cs.reader.cardid);
     return <div className="row">
-      {/* <ButtonToProgressor
-          disabled={!this.state.simpleYubiKey.completed()}
-          channel={this.props.channel}
-          onClick={this.handleReady}
-          transaction={this.state.simpleYubiKeyTransaction}
-          >ready</ButtonToProgressor> */}
-          <button onClick={this.handleReady}>testing</button>
+        <RcOption
+          readOnly={this.props.assistentState.simpleYubiKey.readOnly}
+          name="SmartCards"
+          label="SmartCards:"
+          onChange={(value: string) => {
+            this.props.assistentState.simpleYubiKey.smartCardId = value;
+          }}
+          option={new Option<String>(ops[0], ops, 'unknown error')}/>
+      <button onClick={this.handleReady}>testing</button>
     </div>;
   }
 
@@ -109,18 +126,18 @@ export class Assistent extends React.Component<AssistentProps> {
     // this.state.simpleYubiKey.adminKey.readonly.set(this.state.simpleYubiKey.common.viewWarrents.non());
     // this.state.simpleYubiKey.userKey.readonly.set(this.state.simpleYubiKey.common.viewWarrents.non());
     return <div className={classnames({
-        SimpleCreateKey: true,
-        readOnly: assistentState.simpleYubiKey.readOnly.is,
-        good: assistentState.simpleYubiKey.valid(),
-        completed: assistentState.simpleYubiKey.completed()
+      SimpleCreateKey: true,
+      readOnly: assistentState.simpleYubiKey.readOnly.is,
+      good: assistentState.simpleYubiKey.valid(),
+      completed: assistentState.simpleYubiKey.completed()
     })}>
       <RcSimpleKeyCommon
         readOnly={assistentState.simpleYubiKey.readOnly}
         simpleKeyCommon={assistentState.simpleYubiKey.common} />
       <div className={classnames({
-          Passwords: true,
-          readonly: assistentState.simpleYubiKey.readOnly.is
-        })}>
+        Passwords: true,
+        readonly: assistentState.simpleYubiKey.readOnly.is
+      })}>
         <DiceWareInputPassPhrase label="PasswordPhase"
           diceWares={assistentState.diceWares}
           readOnly={assistentState.simpleYubiKey.readOnly}
@@ -133,7 +150,7 @@ export class Assistent extends React.Component<AssistentProps> {
         <RandomInputPassPhrase label="User-Key"
           readOnly={assistentState.simpleYubiKey.readOnly}
           approvedWarrents={assistentState.simpleYubiKey.common.viewWarrents}
-          passPhrase={assistentState.simpleYubiKey.userKey}/>
+          passPhrase={assistentState.simpleYubiKey.userKey} />
       </div>
       {this.renderReady()}
     </div>;
@@ -148,18 +165,19 @@ export class Assistent extends React.Component<AssistentProps> {
       <RcWarrents
         warrents={assistentState.warrents}
         completed={() => {
-          assistentState.simpleYubiKey = new SimpleYubiKey(assistentState.warrents, assistentState.diceWares);
+          assistentState.simpleYubiKey = new SimpleYubiKey(assistentState.warrents,
+            assistentState.diceWares, this.props.cardStatusListState.cardStatusList[0].reader.cardid);
         }} />
-        </div>;
+    </div>;
   }
 
   private renderLoadDiceWare(assistentState: AssistentState): JSX.Element {
-    if (assistentState.diceWares) {
+    if (assistentState.diceWares && assistentState.diceWares.length) {
       return;
     }
     return <div>
-        <label>Loading DiceWare....</label>
-      </div>;
+      <label>Loading DiceWare....</label>
+    </div>;
   }
 
   public render(): JSX.Element {

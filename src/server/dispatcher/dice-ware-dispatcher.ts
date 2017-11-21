@@ -8,6 +8,7 @@ import { DiceWare, Diced } from '../../dice-ware/dice-ware';
 // import * as CardStatus from './gpg/card_status';
 
 import * as Progress from '../../model/progress';
+import { Observer } from '../observer';
 // import * as path from 'path';
 
 export class DiceWareDispatcher implements Dispatcher {
@@ -50,7 +51,7 @@ export class DiceWareDispatcher implements Dispatcher {
     //   });
     // }
 
-    public run(ws: WebSocket, m: Message.Message): boolean {
+    public run(observer: Observer, ws: WebSocket, m: Message.Message): boolean {
         console.log('DiceWareDispatcher.run', m.header);
         if (m.header.action != 'DiceWares.Request') {
             // ws.send(Message.prepare('Progressor.Clavator', Progress.fail('Ohh')))

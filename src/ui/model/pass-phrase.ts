@@ -67,28 +67,17 @@ export class PassPhrase extends ObjectId implements Validatable {
     return ret;
   }
 
+  public getPassPhrase(): string {
+    if (!this.valid()) {
+      throw 'getPassPhrase only allowed on valid objects';
+    }
+    return this.doublePasswords.map(dp => dp.first.password.value).join(this.joiner);
+  }
+
   public fill(js: any): void {
-    // console.log(`[${JSON.stringify(js)}]`);
     js['doublePasswords'].forEach((value: string, idx: number) => this.doublePasswords[idx].setPassword(value));
     js['warrents'].forEach((warrent: string) => this.warrents.add(new Warrent(warrent)));
     this.joiner = js['joiner'];
-    // {"approvedWarrents":["meno"],"value":"glare cubicle precise old backroom sandstone pentagon gag"}
-    // warrents: Warrents, dps: DoublePassword[], joiner: string
-    // public readonly readOnly: BooleanValue;
-    // public readonly warrents: Warrents;
-    // // public errorText: string;
-    // public readonly doublePasswords: DoublePassword[];
-    // public readonly joiner: string;
-    // throw 'need implementation';
-    // this.partCount = js['partCount'];
-    // this.partRegex = js['partRegex'];
-    // this.readonly = js['readonly'];
-    // this.errorText = js['errorText'];
-    // this.parts = [];
-    // js['parts'].forEach((i: any) => {
-    //   new DoublePassword(this,
-    //    RegMinMaxWarrent.fill(i), this.parts).fill(i));
-    //   });
   }
 
   public toObj(): any {

@@ -33,7 +33,7 @@ export class DialogCreateKey extends React.Component<DialogCreateKeyProps, Dialo
       >
         <i onClick={
             (() => {
-              this.setState(Object.assign(this.state, {createDialog: false}));
+              // this.setState(Object.assign(this.state, {createDialog: false}));
               this.props.onClose();
             }).bind(this)
           }

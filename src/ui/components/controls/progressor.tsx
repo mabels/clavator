@@ -89,3 +89,5 @@ export class Progressor
   }
 
 }
+
+export default Progressor;

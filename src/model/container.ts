@@ -52,6 +52,10 @@ export class Container<T extends Pallet> {
     return this.pallets.find(i => !!i);
   }
 
+  public tail(): T[] {
+    return this.pallets.filter(i => !!i).slice(1);
+  }
+
   public last(): T {
     // uncool
     return this.pallets.reverse().find(i => !!i);

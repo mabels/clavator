@@ -7,13 +7,14 @@ import * as ListSecretKeys from '../../gpg/list-secret-keys';
 
 export default class CreateKeySetTask {
 
-  public static run(gpg: Gpg.Gpg, ws: WebSocket, m: Message.Message, kg: KeyGen.KeyGen): Promise<any> {
+  public static run(gpg: Gpg.Gpg, ws: WebSocket, m: Message.Message, kg: KeyGen.KeyGen):
+    Promise<ListSecretKeys.SecretKey> {
     return new Promise((resolve, reject) => {
       let header = Message.toHeader(m, 'Progressor.Clavator');
       if (!kg.valid()) {
         const err = `Failed send KeyGen is not valid ${kg.errText().join('\n')}`;
         ws.send(Message.prepare(header, Progress.fail(err)));
-        reject(err);
+        return reject(err);
       }
       // console.log('>>>', kg.masterCommand())
       ws.send(Message.prepare(header, Progress.info(kg.masterCommand())));
@@ -34,14 +35,17 @@ export default class CreateKeySetTask {
                     gpg.getSecretKey(key.fingerPrint.fpr, (_key: ListSecretKeys.SecretKey) => {
                       if (_key) {
                         const msg = 'CreateKeySet.Completed';
-                        ws.send(Message.prepare(header, Progress.ok('KeysetCreated', true)));
-                        console.log(msg, header.setAction(msg));
+                        ws.send(Message.prepare(header, Progress.ok('KeysetCreated')));
                         ws.send(Message.prepare(header.setAction(msg), _key));
-                        resolve();
+                        console.log('Done:Resolve:', msg, header.setAction(msg));
+                        resolve(_key);
+                        return;
                       } else {
-                        ws.send(Message.prepare(header, Progress.error('KeysetFailed', true)));
+                        ws.send(Message.prepare(header, Progress.error('KeysetFailed')));
                         ws.send(Message.prepare(header.setAction('CreateKeySet.Failed')));
+                        console.log('Done:Error:');
                         reject('CreateKeySet.Failed');
+                        return;
                       }
                     });
                   });

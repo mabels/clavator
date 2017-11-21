@@ -29,6 +29,14 @@ class GpgListSecretKeysObserver {
     this.action([ws]);
   }
 
+  public suspend(): void {
+    clearTimeout(this.timeoutId);
+  }
+
+  public resume(): void {
+    this.timeoutId = setTimeout(this.action, 5000);
+  }
+
   public action(wss = this.observer.wss): void {
     this.actionCount++;
     // console.log('actionCount:', this.actionCount, this.observer.wss.length, this.gpg);

@@ -565,6 +565,7 @@ export class Gpg {
       console.log('keyToYubiKey', args);
       gpgYubiKey.run(args, null, (resx: Result) => {
         if (resx.exitCode == 0) {
+          console.error('keyToYubiKey:error:', resx);
           rimraf.sync(gpgYubiKey.homeDir);
         }
         cb(resx);
