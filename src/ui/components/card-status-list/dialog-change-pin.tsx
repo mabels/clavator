@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as ReactModal from 'react-modal';
 import * as CardStatus from '../../../gpg/card-status';
 import * as Message from '../../../model/message';
-import * as WsChannel from '../../model/ws-channel';
+// import * as WsChannel from '../../model/ws-channel';
 // import { Progressor } from './progressor';
 import { ChangePin } from './change-pin';
 import { observer } from 'mobx-react';

@@ -2,7 +2,7 @@
 import * as React from 'react';
 import * as classnames from 'classnames';
 import * as Message from '../../../model/message';
-import * as WsChannel from '../../model/ws-channel';
+// import * as WsChannel from '../../model/ws-channel';
 import * as KeyGen from '../../../gpg/key-gen';
 import KeyGenUid from '../../../gpg/key-gen-uid';
 import Option from '../../../model/option';
@@ -14,15 +14,15 @@ import NestedFlag from '../../../model/nested-flag';
 import ButtonToProgressor from '../controls/button-to-progressor';
 import * as ListSecretKeys from '../../../gpg/list-secret-keys';
 import InputExpireDate from '../controls/input-expire-date';
-import { StringValue } from '../../../model/string-value';
+// import { StringValue } from '../../../model/string-value';
 import RcDoublePassword from '../controls/rc-double-password';
-import DoublePassword from '../../model/double-password';
+// import DoublePassword from '../../model/double-password';
 import PassPhrase from '../../model/pass-phrase';
-import MinMax from '../../model/min-max';
+// import MinMax from '../../model/min-max';
 import CharFormat from '../../model/char-format';
 import { Warrents } from '../../../gpg/warrents';
 import { Warrent } from '../../../gpg/warrent';
-import { ProgressorState } from '../controls/progressor';
+// import { ProgressorState } from '../controls/progressor';
 import AppState from '../../model/app-state';
 
 interface CreateKeyState {

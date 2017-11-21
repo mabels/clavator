@@ -11,8 +11,8 @@ import RespondAscii from '../../model/respond-ascii';
 import * as WsChannel from '../model/ws-channel';
 import FormatDate from './controls/format-date';
 // import * as classnames from 'classnames';
-import { KeyChainListState } from '../model/key-chain-list-state';
-import { CardStatusListState } from '../model/card-status-list-state';
+// import { KeyChainListState } from '../model/key-chain-list-state';
+// import { CardStatusListState } from '../model/card-status-list-state';
 // import * as CopyToClipboard from 'react-copy-to-clipboard';
 import MutableString from '../../model/mutable-string';
 // import * as ReactModal from 'react-modal';
@@ -20,7 +20,7 @@ import { observer } from 'mobx-react';
 import DialogSendToCard from './key-chain-list/dialog-send-to-card';
 import DialogRenderAscii from './key-chain-list/dialog-render-ascii';
 import DialogAskRenderAscii from './key-chain-list/dialog-ask-render-ascii';
-import { ProgressorState } from './controls/progressor';
+// import { ProgressorState } from './controls/progressor';
 import AppState from '../model/app-state';
 
 enum Dialogs {

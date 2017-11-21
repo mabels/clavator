@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactModal from 'react-modal';
 import * as CardStatus from '../../../gpg/card-status';
 import * as Message from '../../../model/message';
-import * as WsChannel from '../../model/ws-channel';
+// import * as WsChannel from '../../model/ws-channel';
 import AppState from '../../model/app-state';
 // import { Progressor } from './progressor';
 import ButtonToProgressor from '../controls/button-to-progressor';

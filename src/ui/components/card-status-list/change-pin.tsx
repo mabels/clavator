@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as classnames from 'classnames';
 import RequestChangePin from '../../../gpg/request-change-pin';
-import * as WsChannel from '../../model/ws-channel';
+// import * as WsChannel from '../../model/ws-channel';
 import * as Message from '../../../model/message';
 import ButtonToProgressor from '../controls/button-to-progressor';
 import AppState from '../../model/app-state';

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as Message from '../../../model/message';
-import * as WsChannel from '../../model/ws-channel';
-import { Progressor, ProgressorState } from './progressor';
+// import * as WsChannel from '../../model/ws-channel';
+import { Progressor } from './progressor';
 import { observer } from 'mobx-react';
 import AppState from '../../model/app-state';
 

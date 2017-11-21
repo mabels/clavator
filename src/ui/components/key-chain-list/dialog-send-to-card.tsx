@@ -4,9 +4,9 @@ import * as ReactModal from 'react-modal';
 // import * as CopyToClipboard from 'react-copy-to-clipboard';
 import { AskKeyToYubiKey } from '../card-status-list/ask-key-to-yubi-key';
 import * as ListSecretKeys from '../../../gpg/list-secret-keys';
-import * as WsChannel from '../../model/ws-channel';
-import { CardStatusListState } from '../../model/card-status-list-state';
-import { ProgressorState } from '../controls/progressor';
+// import * as WsChannel from '../../model/ws-channel';
+// import { CardStatusListState } from '../../model/card-status-list-state';
+// import { ProgressorState } from '../controls/progressor';
 import AppState from '../../model/app-state';
 
 interface DialogSendToCardState {

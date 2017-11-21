@@ -14,13 +14,13 @@ import { CardStatusList } from './components/card-status-list';
 // import { CreateKey } from './create-key';
 // import { Progressor } from './progressor';
 import ChannelStatus from './components/controls/channel-status';
-import * as WsChannel from './model/ws-channel';
-import { CardStatusListState } from './model/card-status-list-state';
-import { KeyChainListState } from './model/key-chain-list-state';
+// import * as WsChannel from './model/ws-channel';
+// import { CardStatusListState } from './model/card-status-list-state';
+// import { KeyChainListState } from './model/key-chain-list-state';
 import DialogCreateKey from './components/key-chain-list/dialog-create-key';
-import { Assistent, AssistentState } from './components/assistent';
+import { Assistent } from './components/assistent';
 import * as ReactModal from 'react-modal';
-import { ProgressorState, Progressor } from './components/controls/progressor';
+import { Progressor } from './components/controls/progressor';
 import AppState from './model/app-state';
 
 const appState = AppState.create();

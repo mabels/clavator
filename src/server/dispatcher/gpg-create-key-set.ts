@@ -4,12 +4,12 @@ import * as Message from '../../model/message';
 import Dispatcher from '../dispatcher';
 
 import * as KeyGen from '../../gpg/key-gen';
-import * as ListSecretKeys from '../../gpg/list-secret-keys';
+// import * as ListSecretKeys from '../../gpg/list-secret-keys';
 import * as Gpg from '../../gpg/gpg';
 import CreateKeySetTask from '../tasks/create-key-set-task';
 import { Observer } from '../observer';
 
-import * as Progress from '../../model/progress';
+// import * as Progress from '../../model/progress';
 
 export class GpgCreateKeySet implements Dispatcher {
   public gpg: Gpg.Gpg;

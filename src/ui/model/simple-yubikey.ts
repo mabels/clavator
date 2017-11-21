@@ -15,7 +15,7 @@ import DiceWare from '../../dice-ware/dice-ware';
 import CharFormat from './char-format';
 import { Warrent } from '../../gpg/warrent';
 import { KeyGen, KeyInfo } from '../../gpg/key-gen';
-import KeyGenUid from '../../gpg/key-gen-uid';
+// import KeyGenUid from '../../gpg/key-gen-uid';
 import { KeyToYubiKey } from '../../gpg/key-to-yubikey';
 
 // import { assignOnError } from '../../model/helper';

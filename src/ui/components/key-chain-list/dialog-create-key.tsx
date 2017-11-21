@@ -1,8 +1,8 @@
 import * as React from 'react';
-import * as WsChannel from '../../model/ws-channel';
+// import * as WsChannel from '../../model/ws-channel';
 import NestedFlag from '../../../model/nested-flag';
 import * as ReactModal from 'react-modal';
-import { ProgressorState } from '../controls/progressor';
+// import { ProgressorState } from '../controls/progressor';
 import CreateKey from './create-key';
 import AppState from '../../model/app-state';
 

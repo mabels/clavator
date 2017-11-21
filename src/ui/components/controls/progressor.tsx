@@ -3,7 +3,7 @@ import { observer } from 'mobx-react';
 import { observable } from 'mobx';
 import * as Progress from '../../../model/progress';
 import * as Message from '../../../model/message';
-import { WsChannel, Dispatch  } from '../../model/ws-channel';
+import { Dispatch  } from '../../model/ws-channel';
 
 export class ProgressorState {
   @observable public progressList: Progress.Progress[];

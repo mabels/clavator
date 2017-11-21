@@ -5,7 +5,7 @@ import Dispatcher from '../dispatcher';
 
 import * as Gpg from '../../gpg/gpg';
 // import RequestChangePin from './gpg/request_change_pin';
-import KeyToYubiKey from '../../gpg/key-to-yubikey';
+// import KeyToYubiKey from '../../gpg/key-to-yubikey';
 
 import * as Progress from '../../model/progress';
 import { SimpleYubikey } from '../../ui/model/simple-yubikey';
