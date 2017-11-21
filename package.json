@@ -13,7 +13,7 @@
     "build:watch": "webpack --watch --debug --output-pathinfo --progress",
     "start": "nodemon ./dist/server.js",
     "pretest": "npm run build",
-    "test": "mocha --require ./test/setup dist/test",
+    "test": "find . && mocha --require ./test/setup ./dist/test",
     "lint": "tslint --project .",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -w",
     "preversion": "npm test",
