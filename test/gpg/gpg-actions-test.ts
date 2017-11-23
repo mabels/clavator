@@ -16,6 +16,8 @@ import * as Rimraf from 'rimraf';
 
 import { RequestAscii } from '../../src/model/request-ascii';
 import KeyToYubiKey from '../../src/gpg/key-to-yubikey';
+import { findDOMNode } from 'react-dom';
+// import { dirname } from 'path';
 
 function expireDate(): Date {
   let now = new Date();
@@ -45,13 +47,27 @@ function createMasterKey(gpg: Gpg.Gpg, cb: (res: Gpg.Result) => void): void {
 describe('Gpg', () => {
   let gpg: Gpg.Gpg;
   let key: ListSecretKeys.SecretKey;
+  let gpgMock: string[];
+
+  function findGpgMock(): string[] {
+    let dirname = process.argv[process.argv.length - 1];
+    let gm = '';
+    let prevDirname = '';
+    do {
+      prevDirname = dirname;
+      dirname = path.dirname(dirname);
+      gm = path.join(dirname, 'gpg-mock.js');
+      console.log(gm);
+    } while (prevDirname != dirname && !fs.existsSync(gm));
+    return [process.execPath, gm];
+  }
 
   before(function (done: any): void {
     gpg = new Gpg.Gpg();
     // console.log('>>>>>', process.argv, process.execPath);
-    let cmd = [process.execPath, path.join(
-       path.dirname(process.argv[process.argv.length - 1]), 'gpg-mock.js')];
-    let cmdAgent = cmd.concat(['AGENT']);
+    let cmd = findGpgMock();
+    gpgMock = cmd;
+    let cmdAgent = cmd.concat(['connect-agent']);
     if (fs.existsSync('/usr/local/bin/gpg2')) {
       cmd = ['/usr/local/bin/gpg2'];
       cmdAgent = ['/usr/local/bin/gpg-connect-agent'];
@@ -155,6 +171,25 @@ describe('Gpg', () => {
         Rimraf.sync(mygpg.homeDir);
         done();
       });
+    });
+  });
+
+  it('keyToSmartCard with Mock', function(done: any): void {
+    this.timeout(100000);
+    const mygpg = gpg.clone();
+    mygpg.setGpgCmd(gpgMock);
+    let kytk = new KeyToYubiKey();
+    kytk.fingerprint = key.keyId;
+    kytk.passphrase.value = 'Gpg Test Jojo Akzu Luso';
+    kytk.admin_pin.pin = '12345678';
+    kytk.card_id = 'Smarte-Karte';
+    kytk.slot_id = 4711;
+    mygpg.keyToYubiKey(kytk, (res) => {
+      assert.equal(0, res.exitCode, `unknown exit code ${res.stdErr}`);
+      assert.equal(res.execTransaction.data.readFds[0].value, `${kytk.passphrase.value}\n`);
+      assert.equal(res.execTransaction.data.readFds[1].value, `${kytk.admin_pin.pin}\n`);
+      // console.log(res.execTransaction.data);
+      done();
     });
   });
 

@@ -59,7 +59,7 @@ app.use(express.static(join(process.cwd(), 'dist')));
 let gpg = new Gpg.Gpg();
 let cmd = [process.execPath, path.join(
   path.dirname(process.argv[process.argv.length - 1]), 'gpg-mock.js')];
-let cmdAgent = cmd.concat(['AGENT']);
+let cmdAgent = cmd.concat(['connect-agent']);
 if (fs.existsSync('/usr/bin/gpg')) {
   cmd = ['/usr/bin/gpg'];
   cmdAgent = ['/usr/bin/gpg-connect-agent'];

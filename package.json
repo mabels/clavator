@@ -13,7 +13,7 @@
     "build:watch": "webpack --watch --debug --output-pathinfo --progress",
     "start": "nodemon ./dist/server.js",
     "pretest": "npm run build",
-    "test": "find . && mocha --require ./test/setup ./dist/test",
+    "test": "mocha --require ./test/setup ./dist/test",
     "lint": "tslint --project .",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -w",
     "preversion": "npm test",
@@ -76,6 +76,7 @@
     "@types/sinon": "2.3.6",
     "@types/winston": "2.3.6",
     "@types/ws": "3.0.2",
+    "@types/yargs": "8.0.2",
     "cached-request": "1.1.2",
     "classnames": "2.2.5",
     "enzyme-adapter-react-16": "1.0.4",
@@ -95,7 +96,8 @@
     "request": "^2.83.0",
     "rimraf": "2.6.2",
     "winston": "2.4.0",
-    "ws": "3.2.0"
+    "ws": "3.2.0",
+    "yargs": "^8.0.2"
   },
   "publishConfig": {
     "tag": "next"

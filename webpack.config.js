@@ -61,7 +61,7 @@ module.exports = [{
   ]
 },{
   target: 'node',
-  entry: './src/server/gpg-mock',
+  entry: './src/gpg-mock/gpg-mock',
   output: {
     path: __dirname + '/dist',
     filename: 'gpg-mock.js',

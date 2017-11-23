@@ -21,6 +21,7 @@ import KeyGenUid from './key-gen-uid';
 import { format_date } from '../model/helper';
 
 import * as rimraf from 'rimraf';
+import * as uuid from 'node-uuid';
 
 interface StringFunc {
   (): string;
@@ -34,16 +35,25 @@ class ResultQueue {
   public cb: (res: Result) => void;
 }
 
+interface ExecTransaction {
+  transaction: string;
+  dumpFname?: string;
+  data?: any;
+}
+
 export class Result {
   public stdOut: string;
   public stdErr: string;
   public stdIn: string;
+  public execTransaction: ExecTransaction;
   public env: { [id: string]: string; } = {};
   public exitCode: number;
   public runQueue: ResultQueue[] = [];
+  public readonly gpg: Gpg;
 
-  constructor() {
+  constructor(gpg: Gpg) {
     (<any>Object).assign(this.env, process.env);
+    this.gpg = gpg;
     this.stdIn = '';
     this.stdOut = '';
     this.stdErr = '';
@@ -61,7 +71,7 @@ export class Result {
 
   public run(cmd: string, cmdArgs: Mixed[], attributes: Mixed[], cb: (res: Result) => void): void {
     let args = cmdArgs.concat(attributes);
-    this.runQueue.push({cmd: cmd, attributes: args, cb: cb});
+    this.runQueue.push({ cmd: cmd, attributes: args, cb: cb });
     if (this.runQueue.length == 1) {
       this._run(cmd, args, cb);
     }
@@ -90,9 +100,12 @@ export class Result {
 
     let stdio: any[] = ['pipe', 'pipe', 'pipe'];
     stdio = stdio.concat(writables);
+    this.execTransaction = { transaction: uuid.v4() };
     // console.log("run=",cmd, attrs);
     const c = spawn(cmd, attrs, {
-      env: this.env,
+      env: Object.assign({
+        NODEEXECTRANSACTION: this.execTransaction.transaction
+      }, this.env),
       stdio: stdio
     });
     c.on('error', (e: Event) => {
@@ -136,8 +149,26 @@ export class Result {
     c.stderr.on('data', (data: string) => { this.stdErr += data; });
     c.on('close', (code: number) => {
       this.exitCode = code;
-      cb(this);
+      this.readExectransactionDump(cb);
       this.processQueue();
+    });
+  }
+
+  private readExectransactionDump(cb: (res: Result) => void): void {
+    this.execTransaction.dumpFname = path.join(this.gpg.homeDir || '', `${this.execTransaction.transaction}.dump`);
+    fsPromise.readFile(this.execTransaction.dumpFname).then(data => {
+      try {
+        this.execTransaction.data = JSON.parse(data.toString());
+      } catch (_) {
+        /* */
+      }
+      fsPromise.unlink(this.execTransaction.dumpFname).then(_ => {
+        cb(this);
+      }).catch(err => {
+        cb(this);
+      });
+    }).catch(err => {
+      cb(this);
     });
   }
 }
@@ -171,6 +202,10 @@ export class Gpg {
   public setHomeDir(fname: string): Gpg {
     this.homeDir = fname;
     return this;
+  }
+
+  public getGpgCmd(): string[] {
+    return [this.gpgCmd].concat(this.gpgCmdArgs);
   }
 
   public setGpgCmd(cmd: string[]): Gpg {
@@ -212,7 +247,7 @@ export class Gpg {
       attributes.splice(0, 0, '--homedir');
     }
     // console.log(attributes);
-    let result = (new Result()).setStdIn(stdIn);
+    let result = (new Result(this)).setStdIn(stdIn);
     // if (this.pinEntryServer) {
     //     result.addEnv('F_MOD_HOME', "xxx");
     //     result.addEnv('S_PINENTRY_SOCKET', this.pinEntryServer.socketFile);
@@ -227,9 +262,9 @@ export class Gpg {
       attributes.splice(0, 0, '--homedir');
     }
     // console.log(attributes);
-    let result = (new Result()).setStdIn(stdIn);
+    let result = (new Result(this)).setStdIn(stdIn);
 
-    console.log(this.gpgAgentCmd, attributes, stdIn);
+    // console.log(this.gpgAgentCmd, attributes, stdIn);
     result.run(this.gpgAgentCmd, this.gpgAgentCmdArgs, attributes, cb);
   }
 
@@ -307,7 +342,7 @@ export class Gpg {
   // }
 
   public deleteSecretKey(fingerPrint: string, cb: (res: Result) => void): void {
-    let args: Mixed[] = [ '--no-tty' ];
+    let args: Mixed[] = ['--no-tty'];
     this.getSecretKey(fingerPrint, (key) => {
       if (!key) {
         cb(null);
@@ -446,7 +481,7 @@ export class Gpg {
   private getSocketNames(g1: Gpg, g2: Gpg, cb: (res: Result, s1?: string, s2?: string) => void): void {
     g1.getSocketName((sName1) => {
       if (sName1 == null) {
-        let res = new Result();
+        let res = new Result(this);
         res.exitCode = 47;
         res.stdErr = `can't retrieve socketName:${sName1}`;
         cb(res);
@@ -454,7 +489,7 @@ export class Gpg {
       }
       g2.getSocketName((sName2) => {
         if (sName2 == null) {
-          let res = new Result();
+          let res = new Result(this);
           res.exitCode = 48;
           res.stdErr = `can't retrieve socketName:${sName2}`;
           cb(res);
@@ -552,22 +587,23 @@ export class Gpg {
         '--pinentry-mode', 'loopback',
         '--passphrase-fd', () => {
           // console.log(">>keyToYubiKey:passphrase[", ktyk.passphrase.value, "]")
-          return ktyk.passphrase.value; // + "\n"
+          return ktyk.passphrase.value + '\n';
         },
         '--passphrase-fd', () => {
           // console.log(">>keyToYubiKey:admin[", ktyk.admin_pin.pin, "]")
-          return ktyk.admin_pin.pin; // + "\n"
+          return ktyk.admin_pin.pin + '\n';
         },
         '--quick-keytocard',
         ktyk.fingerprint,
         '' + ktyk.slot_id, ktyk.card_id
       ];
-      console.log('keyToYubiKey', args);
+      // console.log('keyToYubiKey', args);
       gpgYubiKey.run(args, null, (resx: Result) => {
         if (resx.exitCode == 0) {
-          console.error('keyToYubiKey:error:', resx);
+          // console.error('keyToYubiKey:error:', resx);
           rimraf.sync(gpgYubiKey.homeDir);
         }
+        // console.log('keyToYubikey:transaction', resx.execTransaction);
         cb(resx);
       });
     });
@@ -576,17 +612,17 @@ export class Gpg {
   public changeCard(cc: ChangeCard, cb: (res: Result) => void): void {
     let sname = cc.name.split(/\s+/);
     let actions = [
-      [ 'name', [ sname.slice(1).join(' '), sname[0] ] ],
-      [ 'language', [cc.lang] ],
-      [ 'sex', [ cc.sex[0] == 'f' ? 2 : 1 ] ],
-      [ 'login', [cc.login] ],
-      [ 'url', [cc.url] ]
+      ['name', [sname.slice(1).join(' '), sname[0]]],
+      ['language', [cc.lang]],
+      ['sex', [cc.sex[0] == 'f' ? 2 : 1]],
+      ['login', [cc.login]],
+      ['url', [cc.url]]
     ];
     this._changeCard(cc, actions, cb, []);
   }
   private _changeCard(cc: ChangeCard, actions: any[], cb: (res: Result) => void, results: Result[]): void {
     if (actions.length == 0) {
-      let res = new Result();
+      let res = new Result(this);
       results.forEach((r) => {
         res.exitCode += r.exitCode;
         res.stdErr += r.stdErr;

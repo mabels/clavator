@@ -1,0 +1,31 @@
+import * as fs from 'fs';
+import * as path from 'path';
+import { Buffer } from 'buffer';
+import * as yargs from 'yargs';
+import GpgMockState from './gpg-mock-state';
+import * as ListSecretKeys from './list-secret-keys';
+import * as FullGenKey from './full-gen-key';
+import * as SimpleActions from './simple-actions';
+import * as Agent from './agent';
+
+function cli(args: string[]): void {
+  const state = GpgMockState.create();
+  let y = yargs.usage('$0 <cmd> [args]');
+  y = y.options({
+     'with-colons': { describe: 'output in colons format', boolean: true },
+     'batch': { describe: 'no interactive processing' , boolean: true },
+     'import': { describe: 'import key from stdin' , boolean: true },
+     'homedir': { describe: 'the gpg database base directory', type: 'string' },
+     'passphrase-fd': { describe: 'positional fd inputs', type: 'array' }
+  });
+  y = ListSecretKeys.cli(y, state);
+  y = FullGenKey.cli(y, state);
+  y = SimpleActions.cli(y, state);
+  y = Agent.cli(y, state);
+  state.parsed(y.help().parse(args.slice(2),
+    (err: any, argv: yargs.Arguments, output: any) => {
+    // console.log('WTF', err, argv);
+  }));
+}
+
+cli(process.argv);
