@@ -60,7 +60,7 @@ export default class GpgMockState {
     }
     if (process.env['NODEEXECTRANSACTION'] && y.homedir && fs.existsSync(y.homedir)) {
       const dump = path.join(y.homedir || '', `${process.env['NODEEXECTRANSACTION']}.dump`);
-      const readFds = y.passphraseFd.map((fd: any) => { return {
+      const readFds = (y.passphraseFd || []).map((fd: any) => { return {
         'fd': fd,
         'value': fs.readFileSync(fd, 'utf-8').toString()
       }; });

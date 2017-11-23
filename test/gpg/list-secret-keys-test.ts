@@ -64,10 +64,11 @@ grp:::::::::2DC62D282D308E58A8C7C4F7652955AC146860D2:
 
   }
 
-  it('externListSecretKeys', () => {
-    (new gpg.Gpg()).list_secret_keys((err: string, keys: lsk.SecretKey[]) => {
+  it('externListSecretKeys', (done) => {
+    gpg.createMock().list_secret_keys((err: string, keys: lsk.SecretKey[]) => {
       assert.equal(err, null);
       testListSecretKeys(keys);
+      done();
     });
   });
 

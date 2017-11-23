@@ -3,6 +3,7 @@ import * as WebSocket from 'ws';
 import * as Message from '../../model/message';
 import Dispatcher from '../dispatcher';
 import * as Gpg from '../../gpg/gpg';
+import Result from '../../gpg/result';
 import * as Progress from '../../model/progress';
 import { Observer } from '../observer';
 
@@ -27,7 +28,7 @@ export class GpgResetYubikey implements Dispatcher {
     ws.send(Message.prepare(header,
        Progress.ok('Resetting your Yubikey now. This will take a couple of seconds. ...')));
 
-    this.gpg.resetYubikey((res: Gpg.Result) => {
+    this.gpg.resetYubikey((res: Result) => {
       // ws.send(Message.prepare(header, res));
       if (res.stdOut.split('\n').find((i: string) => { return i.startsWith('ERR '); })) {
         res.stdOut.split('\n').forEach((s: string) => {

@@ -2,10 +2,7 @@
 import { assert } from 'chai';
 
 import * as Gpg from '../../src/gpg/gpg';
-import * as fs from 'fs';
-import * as uuid from 'node-uuid';
-
-import * as path from 'path';
+import { Result } from '../../src/gpg/result';
 
 import * as ListSecretKeys from '../../src/gpg/list-secret-keys';
 
@@ -16,7 +13,7 @@ import * as Rimraf from 'rimraf';
 
 import { RequestAscii } from '../../src/model/request-ascii';
 import KeyToYubiKey from '../../src/gpg/key-to-yubikey';
-import { findDOMNode } from 'react-dom';
+// import { findDOMNode } from 'react-dom';
 // import { dirname } from 'path';
 
 function expireDate(): Date {
@@ -40,56 +37,19 @@ function keyGen(): KeyGen {
   return keygen;
 }
 
-function createMasterKey(gpg: Gpg.Gpg, cb: (res: Gpg.Result) => void): void {
+function createMasterKey(gpg: Gpg.Gpg, cb: (res: Result) => void): void {
   gpg.createMasterKey(keyGen(), cb);
 }
 
 describe('Gpg', () => {
   let gpg: Gpg.Gpg;
   let key: ListSecretKeys.SecretKey;
-  let gpgMock: string[];
-
-  function findGpgMock(): string[] {
-    let dirname = process.argv[process.argv.length - 1];
-    let gm = '';
-    let prevDirname = '';
-    do {
-      prevDirname = dirname;
-      dirname = path.dirname(dirname);
-      gm = path.join(dirname, 'gpg-mock.js');
-      console.log(gm);
-    } while (prevDirname != dirname && !fs.existsSync(gm));
-    return [process.execPath, gm];
-  }
 
   before(function (done: any): void {
-    gpg = new Gpg.Gpg();
-    // console.log('>>>>>', process.argv, process.execPath);
-    let cmd = findGpgMock();
-    gpgMock = cmd;
-    let cmdAgent = cmd.concat(['connect-agent']);
-    if (fs.existsSync('/usr/local/bin/gpg2')) {
-      cmd = ['/usr/local/bin/gpg2'];
-      cmdAgent = ['/usr/local/bin/gpg-connect-agent'];
-    }
-    if (fs.existsSync('../gpg/gnupg/g10/gpg')) {
-      cmd = ['../gpg/gnupg/g10/gpg'];
-      cmdAgent = ['../gpg/gnupg/tools/gpg-connect-agent'];
-    }
-    if (fs.existsSync('/gnupg/g10/gpg')) {
-      cmd = ['/gnupg/g10/gpg'];
-      cmdAgent = ['/gnupg/tools/gpg-connect-agent'];
-    }
-    gpg.setGpgCmd(cmd);
-    gpg.setGpgAgentCmd(cmdAgent);
-
-    let homedir = path.join(process.cwd(), `${uuid.v4().toString().slice(0, 16)}.tdir`);
-    gpg.setHomeDir(homedir);
-    fs.mkdirSync(homedir);
-
     this.timeout(100000);
+    gpg = Gpg.create();
     // console.log('============');
-    createMasterKey(gpg, (res: Gpg.Result) => {
+    createMasterKey(gpg, (res: Result) => {
       assert.equal(0, res.exitCode);
       // console.log('------------', res);
       gpg.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
@@ -100,8 +60,8 @@ describe('Gpg', () => {
         key = keys[0];
         // console.log('=========', keyGen().subKeys.pallets[0]);
         gpg.createSubkey(key.fingerPrint.fpr, keyGen(),
-          keyGen().subKeys.first(), (_res: Gpg.Result) => {
-            console.log(`Use GPG ${cmd}:${homedir}:${key.keyId}`);
+          keyGen().subKeys.first(), (_res: Result) => {
+            console.log(`Use GPG ${_res.gpg.getGpgCmd()}:${_res.gpg.homeDir}:${key.keyId}`);
             assert.equal(0, _res.exitCode);
             done();
           });
@@ -110,13 +70,13 @@ describe('Gpg', () => {
   });
 
   after((done) => {
-    gpg.deleteSecretKey(key.fingerPrint.fpr, (res: Gpg.Result) => {
+    gpg.deleteSecretKey(key.fingerPrint.fpr, (res: Result) => {
       assert.equal(res.exitCode, 0, 'delete secret key');
-      gpg.deletePublicKey(key.fingerPrint.fpr, (_res: Gpg.Result) => {
+      gpg.deletePublicKey(key.fingerPrint.fpr, (_res: Result) => {
         assert.equal(_res.exitCode, 0, 'delete pub key');
         gpg.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
           assert.equal(keys.length, 0);
-          gpg.runAgent(['killagent', '/bye'], null, (__res: Gpg.Result) => {
+          gpg.runAgent(['killagent', '/bye'], null, (__res: Result) => {
             Rimraf.sync(gpg.homeDir);
             done();
           });
@@ -144,12 +104,12 @@ describe('Gpg', () => {
   // })
 
   // it('deleteSecretKey', () => {
-  //   gpg.deleteSecretKey(fingerPrint, (res: Gpg.Result) => {
+  //   gpg.deleteSecretKey(fingerPrint, (res: Result) => {
   //   })
   // })
 
   // it('deletePublicKey', () => {
-  //   gpg.deletePublicKey(fingerPrint, (res: Gpg.Result) => {
+  //   gpg.deletePublicKey(fingerPrint, (res: Result) => {
   //     this.run(['--batch', '--yes', '--delete-key', fingerPrint], null, cb);
   //   })
   // })
@@ -159,13 +119,13 @@ describe('Gpg', () => {
     let kytk = new KeyToYubiKey();
     kytk.fingerprint = key.keyId;
     kytk.passphrase.value = 'Gpg Test Jojo Akzu Luso';
-    gpg.prepareKeyToYubiKey(kytk, (mygpg: Gpg.Gpg, res: Gpg.Result) => {
+    gpg.prepareKeyToYubiKey(kytk, (mygpg: Gpg.Gpg, res: Result) => {
       assert.equal(0, res.exitCode, `unknown exit code ${res.stdErr}`);
       assert.isNotNull(mygpg, 'Gpg should be set');
       mygpg.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
         assert.equal(1, keys.length, 'len should be one');
         assert.equal('gpg.sock@lodke.gpg', keys[0].uids[0].email);
-        // mygpg.runAgent(['killagent', '/bye'], null, (res: Gpg.Result) => {
+        // mygpg.runAgent(['killagent', '/bye'], null, (res: Result) => {
         //   done()
         // })
         Rimraf.sync(mygpg.homeDir);
@@ -176,15 +136,14 @@ describe('Gpg', () => {
 
   it('keyToSmartCard with Mock', function(done: any): void {
     this.timeout(100000);
-    const mygpg = gpg.clone();
-    mygpg.setGpgCmd(gpgMock);
+    const mygpg = gpg.useMock();
     let kytk = new KeyToYubiKey();
     kytk.fingerprint = key.keyId;
     kytk.passphrase.value = 'Gpg Test Jojo Akzu Luso';
     kytk.admin_pin.pin = '12345678';
     kytk.card_id = 'Smarte-Karte';
     kytk.slot_id = 4711;
-    mygpg.keyToYubiKey(kytk, (res) => {
+    mygpg.keyToYubiKey(kytk, (res: Result) => {
       assert.equal(0, res.exitCode, `unknown exit code ${res.stdErr}`);
       assert.equal(res.execTransaction.data.readFds[0].value, `${kytk.passphrase.value}\n`);
       assert.equal(res.execTransaction.data.readFds[1].value, `${kytk.admin_pin.pin}\n`);
@@ -194,7 +153,7 @@ describe('Gpg', () => {
   });
 
   it('getSocketName', (done) => {
-    gpg.getSocketName((s) => {
+    gpg.useMock().getSocketName((s: string) => {
       assert.isNotNull(s);
       assert.ok(s.length > 0);
       // console.log('getSocketName:', s);
@@ -207,7 +166,7 @@ describe('Gpg', () => {
     let rqa: RequestAscii = new RequestAscii();
     rqa.fingerprint = key.keyId;
     rqa.passphrase.value = 'Gpg Test Jojo Akzu Luso';
-    gpg.pemPrivateKey(rqa, (res: Gpg.Result) => {
+    gpg.useMock().pemPrivateKey(rqa, (res: Result) => {
       assert.equal(true, res.stdOut.startsWith('-----BEGIN PGP PRIVATE KEY BLOCK-----'), res.stdOut);
       done();
     });
@@ -216,7 +175,7 @@ describe('Gpg', () => {
   it('pemPublicKey', (done) => {
     let rqa: RequestAscii = new RequestAscii();
     rqa.fingerprint = key.keyId;
-    gpg.pemPublicKey(rqa, (res: Gpg.Result) => {
+    gpg.useMock().pemPublicKey(rqa, (res: Result) => {
       assert.equal(true, res.stdOut.startsWith('-----BEGIN PGP PUBLIC KEY BLOCK-----'), res.stdOut);
       done();
     });
@@ -225,7 +184,7 @@ describe('Gpg', () => {
   // it('pemRevocation', (done) => {
   //   let rqa : RequestAscii = new RequestAscii();
   //   rqa.fingerprint = key.keyId;
-  //   gpg.pemRevocation(rqa, (res: Gpg.Result) => {
+  //   gpg.pemRevocation(rqa, (res: Result) => {
   //     assert.equal(true, res.stdOut.startsWith('-----BEGIN PGP PUBLIC KEY BLOCK-----'), res.stdOut)
   //     done();
   //   })
@@ -234,7 +193,7 @@ describe('Gpg', () => {
   it('sshPublic', (done) => {
     let rqa: RequestAscii = new RequestAscii();
     rqa.fingerprint = key.keyId;
-    gpg.sshPublic(rqa, (res: Gpg.Result) => {
+    gpg.useMock().sshPublic(rqa, (res: Result) => {
       // console.log(res);
       assert.equal(true, res.stdOut.startsWith('ssh-rsa '), res.stdOut);
       done();

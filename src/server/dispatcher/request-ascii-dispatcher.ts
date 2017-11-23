@@ -4,6 +4,7 @@ import * as Message from '../../model/message';
 import Dispatcher from '../dispatcher';
 
 import * as Gpg from '../../gpg/gpg';
+import Result from '../../gpg/result';
 
 import * as Progress from '../../model/progress';
 
@@ -22,8 +23,8 @@ export class RequestAsciiDispatcher implements Dispatcher {
     this.gpg = g;
   }
 
-  public processResult(header: Message.Header, ws: WebSocket, req: RequestAscii): (res: Gpg.Result) => void {
-    return (res: Gpg.Result) => {
+  public processResult(header: Message.Header, ws: WebSocket, req: RequestAscii): (res: Result) => void {
+    return (res: Result) => {
       // ws.send(Message.prepare('Progressor.Clavator', Progress.ok(res.stdOut)));
       console.log('send:RespondAscii');
       ws.send(Message.prepare(header.setAction('RespondAscii'),

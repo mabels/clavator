@@ -43,9 +43,12 @@ describe('SimpleYubiKey', () => {
   it('serialize', () => {
     const inp = JSON.parse(SIMPLEYUBIKEY);
     const syk = SimpleYubikey.fill(inp);
+    // const obj = syk.toObj();
     // console.log(JSON.stringify(syk.toObj()));
     // console.log(JSON.stringify(inp));
-    assert.deepEqual(inp, syk.toObj());
+    // the chai thing believes there is a dom running
+    // and behaves like shit
+    assert.equal(JSON.stringify(inp), JSON.stringify(syk.toObj()));
   });
 
 });

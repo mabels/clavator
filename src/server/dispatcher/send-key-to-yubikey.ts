@@ -4,6 +4,7 @@ import * as Message from '../../model/message';
 import Dispatcher from '../dispatcher';
 
 import * as Gpg from '../../gpg/gpg';
+import Result from '../../gpg/result';
 // import RequestChangePin from './gpg/request_change_pin';
 // import KeyToYubiKey from '../../gpg/key-to-yubikey';
 
@@ -39,7 +40,7 @@ export class SendKeyToYubiKey implements Dispatcher {
     const subkey = ksk.subKeys[idx];
     ws.send(Message.prepare(header,
         Progress.ok(`start keyToYubiKey for ${subkey.fingerPrint.fpr}:${idx}`)));
-    this.gpg.keyToYubiKey(syk.asKeyToYubiKey(subkey.fingerPrint.fpr, idx + 1), (res: Gpg.Result) => {
+    this.gpg.keyToYubiKey(syk.asKeyToYubiKey(subkey.fingerPrint.fpr, idx + 1), (res: Result) => {
       if (res.exitCode != 0) {
         console.error('error-resume observer', res, res.runQueue[0]);
         // observer.resume();

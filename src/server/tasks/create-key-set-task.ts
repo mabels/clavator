@@ -2,6 +2,7 @@ import * as WebSocket from 'ws';
 import * as Message from '../../model/message';
 import * as KeyGen from '../../gpg/key-gen';
 import * as Gpg from '../../gpg/gpg';
+import Result from '../../gpg/result';
 import * as Progress from '../../model/progress';
 import * as ListSecretKeys from '../../gpg/list-secret-keys';
 
@@ -18,7 +19,7 @@ export default class CreateKeySetTask {
       }
       // console.log('>>>', kg.masterCommand())
       ws.send(Message.prepare(header, Progress.info(kg.masterCommand())));
-      gpg.createMasterKey(kg, (res: Gpg.Result) => {
+      gpg.createMasterKey(kg, (res: Result) => {
         ws.send(Message.prepare(header, Progress.info(res.stdOut)));
         ws.send(Message.prepare(header, Progress.error(res.stdErr)));
         gpg.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
@@ -68,7 +69,7 @@ export default class CreateKeySetTask {
     }
     ws.send(Message.prepare(header, Progress.info('create subKey:' + cnt)));
     // console.log('createSubKeys:3');
-    gpg.createSubkey(fpr, ki, ki.subKeys.get(cnt), (res: Gpg.Result) => {
+    gpg.createSubkey(fpr, ki, ki.subKeys.get(cnt), (res: Result) => {
       // console.log('createSubKeys:4');
       ws.send(Message.prepare(header, Progress.info(res.stdOut)));
       ws.send(Message.prepare(header, Progress.error(res.stdErr)));
@@ -86,7 +87,7 @@ export default class CreateKeySetTask {
       return;
     }
     ws.send(Message.prepare(header, Progress.info('create Uids:' + cnt)));
-    gpg.addUid(fpr, ki, ki.uids.get(cnt), (res: Gpg.Result) => {
+    gpg.addUid(fpr, ki, ki.uids.get(cnt), (res: Result) => {
       ws.send(Message.prepare(header, Progress.info(res.stdOut)));
       ws.send(Message.prepare(header, Progress.error(res.stdErr)));
       // console.log('createSubKeys:5');

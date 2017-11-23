@@ -7,9 +7,15 @@ import DiceWare from '../../src/dice-ware/dice-ware';
 import CharFormat from '../../src/ui/model/char-format';
 import DiceWareDispatcher from '../../src/server/dispatcher/dice-ware-dispatcher';
 
-describe('PassPhrase', async () => {
+describe('PassPhrase', () => {
 
-  const diceWares: DiceWare[] = await DiceWareDispatcher.get();
+  let diceWares: DiceWare[];
+
+  before((done: any): void => {
+    DiceWareDispatcher.get()
+      .then(dws => { diceWares = dws; console.log('diceWares loaded'); done(); })
+      .catch(err => { console.error(err); done(); });
+  });
 
   function warrents(i: number): Warrents {
     const wts = new Warrents();

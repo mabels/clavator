@@ -1,15 +1,13 @@
 
-import { spawn } from 'child_process';
 import * as ListSecretKeys from './list-secret-keys';
 import * as CardStatus from './card-status';
 import * as path from 'path';
-// import * as fs from 'fs';
+import * as fs from 'fs';
 // import * as fsPromise from "fs-promise";
 import * as fsPromise from 'fs-extra';
 // import * as pse from "../pinentry/server";
 import * as Ac from './agent-conf';
-import * as stream from 'stream';
-import * as Uuid from 'node-uuid';
+import * as uuid from 'node-uuid';
 
 import KeyToYubiKey from './key-to-yubikey';
 
@@ -19,157 +17,53 @@ import RequestAscii from '../model/request-ascii';
 import RequestChangePin from './request-change-pin';
 import KeyGenUid from './key-gen-uid';
 import { format_date } from '../model/helper';
-
 import * as rimraf from 'rimraf';
-import * as uuid from 'node-uuid';
+import { Result, Mixed } from './result';
 
-interface StringFunc {
-  (): string;
+// export const Result = Result.Result;
+
+function findGpgMock(): string[] {
+  let dirname = process.argv[process.argv.length - 1];
+  let gm = '';
+  let prevDirname = '';
+  do {
+    prevDirname = dirname;
+    dirname = path.dirname(dirname);
+    gm = path.join(dirname, 'gpg-mock.js');
+    // console.log(gm);
+  } while (prevDirname != dirname && !fs.existsSync(gm));
+  return [process.execPath, gm];
 }
 
-type Mixed = string | StringFunc;
-
-class ResultQueue {
-  public cmd: string;
-  public attributes: Mixed[];
-  public cb: (res: Result) => void;
+interface GpgCmd {
+  cmd: string[];
+  cmdAgent: string[];
 }
 
-interface ExecTransaction {
-  transaction: string;
-  dumpFname?: string;
-  data?: any;
-}
-
-export class Result {
-  public stdOut: string;
-  public stdErr: string;
-  public stdIn: string;
-  public execTransaction: ExecTransaction;
-  public env: { [id: string]: string; } = {};
-  public exitCode: number;
-  public runQueue: ResultQueue[] = [];
-  public readonly gpg: Gpg;
-
-  constructor(gpg: Gpg) {
-    (<any>Object).assign(this.env, process.env);
-    this.gpg = gpg;
-    this.stdIn = '';
-    this.stdOut = '';
-    this.stdErr = '';
+function gpgCmd(gc: GpgCmd): void {
+  if (fs.existsSync('/usr/bin/gpg')) {
+    gc.cmd = ['/usr/bin/gpg'];
+    gc.cmdAgent = ['/usr/bin/gpg-connect-agent'];
   }
-
-  public setStdIn(stdIn: string): Result {
-    this.stdIn = stdIn;
-    return this;
+  if (fs.existsSync('/usr/bin/gpg2')) {
+    gc.cmd = ['/usr/bin/gpg2'];
+    gc.cmdAgent = ['/usr/bin/gpg-connect-agent'];
   }
-
-  public addEnv(key: string, value: string): Result {
-    this.env[key] = value;
-    return this;
+  if (fs.existsSync('/usr/local/bin/gpg')) {
+    gc.cmd = ['/usr/local/bin/gpg'];
+    gc.cmdAgent = ['/usr/local/bin/gpg-connect-agent'];
   }
-
-  public run(cmd: string, cmdArgs: Mixed[], attributes: Mixed[], cb: (res: Result) => void): void {
-    let args = cmdArgs.concat(attributes);
-    this.runQueue.push({ cmd: cmd, attributes: args, cb: cb });
-    if (this.runQueue.length == 1) {
-      this._run(cmd, args, cb);
-    }
+  if (fs.existsSync('/usr/local/bin/gpg2')) {
+    gc.cmd = ['/usr/local/bin/gpg2'];
+    gc.cmdAgent = ['/usr/local/bin/gpg-connect-agent'];
   }
-  public processQueue(): void {
-    this.runQueue.shift();
-    if (this.runQueue.length > 0) {
-      let head = this.runQueue[0];
-      this._run(head.cmd, head.attributes, head.cb);
-    }
+  if (fs.existsSync('../gpg/gnupg/g10/gpg')) {
+    gc.cmd = ['../gpg/gnupg/g10/gpg'];
+    gc.cmdAgent = ['../gpg/gnupg/tools/gpg-connect-agent'];
   }
-  private _run(cmd: string, attributes: Mixed[], cb: (res: Result) => void): void {
-    // console.log("run=["+cmd+"]", attributes);
-    let fds: (() => string)[] = [];
-    let freeFd = 3;
-    let attrs = attributes.map((i) => {
-      if (typeof (i) == 'function') {
-        fds.push(i);
-        return '' + freeFd++;
-      }
-      return i;
-    });
-    let writables: string[] = fds.map((func) => {
-      return 'pipe';
-    });
-
-    let stdio: any[] = ['pipe', 'pipe', 'pipe'];
-    stdio = stdio.concat(writables);
-    this.execTransaction = { transaction: uuid.v4() };
-    // console.log("run=",cmd, attrs);
-    const c = spawn(cmd, attrs, {
-      env: Object.assign({
-        NODEEXECTRANSACTION: this.execTransaction.transaction
-      }, this.env),
-      stdio: stdio
-    });
-    c.on('error', (e: Event) => {
-      console.log(e);
-      cb(this);
-      this.processQueue();
-    });
-    if (this.stdIn && this.stdIn.length > 0) {
-      let s = new stream.Readable();
-      s.push(this.stdIn);
-      s.push(null);
-      s.pipe(c.stdin);
-    }
-
-    // console.log(">>>>>>", stdio.length);
-    for (let j = 3; j < stdio.length; ++j) {
-      ((i) => {
-        let s_closed = false;
-        c.stdio[i].on('error', (e: any) => {
-          if (!s_closed) {
-            console.error('stdio->' + i + '->error', e);
-          }
-        });
-        c.stdio[i].on('end', (e: any) => { /*console.log("stdio->"+i+"->end", e) */ });
-        let s = new stream.Readable();
-        // console.log(">>>>>>", stdio.length, 1, fds[i-3]());
-        s.push(fds[i - 3]());
-        // console.log(">>>>>>", stdio.length, 2);
-        s.push(null);
-        // console.log(">>>>>>", stdio.length, 3);
-        s.pipe(c.stdio[i] as stream.Writable, { end: true });
-        // console.log(">>>>>>", stdio.length, 4);
-        s.on('end', () => {
-          s_closed = true;
-          // console.log("s.end:", i);
-        });
-      })(j);
-    }
-
-    c.stdout.on('data', (data: string) => { this.stdOut += data; });
-    c.stderr.on('data', (data: string) => { this.stdErr += data; });
-    c.on('close', (code: number) => {
-      this.exitCode = code;
-      this.readExectransactionDump(cb);
-      this.processQueue();
-    });
-  }
-
-  private readExectransactionDump(cb: (res: Result) => void): void {
-    this.execTransaction.dumpFname = path.join(this.gpg.homeDir || '', `${this.execTransaction.transaction}.dump`);
-    fsPromise.readFile(this.execTransaction.dumpFname).then(data => {
-      try {
-        this.execTransaction.data = JSON.parse(data.toString());
-      } catch (_) {
-        /* */
-      }
-      fsPromise.unlink(this.execTransaction.dumpFname).then(_ => {
-        cb(this);
-      }).catch(err => {
-        cb(this);
-      });
-    }).catch(err => {
-      cb(this);
-    });
+  if (fs.existsSync('/gnupg/g10/gpg')) {
+    gc.cmd = ['/gnupg/g10/gpg'];
+    gc.cmdAgent = ['/gnupg/tools/gpg-connect-agent'];
   }
 }
 
@@ -180,20 +74,33 @@ export class Gpg {
   public gpgCmdArgs: string[] = [];
   public gpgAgentCmd: string;
   public gpgAgentCmdArgs: string[] = [];
+  public readonly mockCmd: string[];
 
-  constructor() {
+  public static _create(mockCmd: string[]): Gpg {
+    return new Gpg(mockCmd);
+  }
+
+  private constructor(mockCmd: string[]) {
     this.gpgCmd = 'gpg2';
     this.gpgAgentCmd = 'gpg-connect-agent';
+    this.mockCmd = mockCmd;
   }
 
   public clone(): Gpg {
-    let ret = new Gpg();
+    let ret = new Gpg(this.mockCmd);
     ret.homeDir = this.homeDir;
     ret.gpgCmd = this.gpgCmd;
     ret.gpgCmdArgs = this.gpgCmdArgs;
     ret.gpgAgentCmd = this.gpgAgentCmd;
     ret.gpgAgentCmdArgs = this.gpgAgentCmdArgs;
     return ret;
+  }
+
+  public useMock(): Gpg {
+    const mock = this.clone();
+    mock.setGpgCmd(mock.mockCmd);
+    mock.setGpgAgentCmd(mock.mockCmd.concat(['connect-agent']));
+    return mock;
   }
 
   public setPinentryUrl(url: string): Gpg {
@@ -225,6 +132,7 @@ export class Gpg {
   }
 
   public getSocketName(cb: (sname: string) => void): void {
+    console.log('getSocketName', this);
     this.runAgent(['GETINFO socket_name', '/bye'], null, (res: Result) => {
       if (res.exitCode != 0) {
         // console.log("getSocketName-1:", res);
@@ -523,7 +431,7 @@ export class Gpg {
         return;
       }
       let gpgSmartCard = this.clone();
-      let homedir = path.join(process.cwd(), `${Uuid.v4().toString().slice(0, 16)}.ctr`);
+      let homedir = path.join(process.cwd(), `${uuid.v4().toString().slice(0, 16)}.ctr`);
       console.log('keyToYubiKey:', homedir);
       gpgSmartCard.setHomeDir(homedir);
       try {
@@ -659,4 +567,26 @@ export class Gpg {
     this.run(args, null, cb);
   }
 
+}
+
+export function create(selectGpgCmd = gpgCmd): Gpg {
+  const mockCmd = findGpgMock();
+  const gpgcmd = {
+    cmd: mockCmd,
+    cmdAgent: mockCmd.concat(['connect-agent'])
+  };
+  selectGpgCmd(gpgcmd);
+
+  const gpg = Gpg._create(mockCmd);
+  gpg.setGpgCmd(gpgcmd.cmd);
+  gpg.setGpgAgentCmd(gpgcmd.cmdAgent);
+
+  let homedir = path.join(process.cwd(), `${uuid.v4().toString().slice(0, 16)}.tdir`);
+  gpg.setHomeDir(homedir);
+  fs.mkdirSync(homedir);
+  return gpg;
+}
+
+export function createMock(): Gpg {
+  return create(() => { /* */ });
 }

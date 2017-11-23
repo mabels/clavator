@@ -56,34 +56,11 @@ const app = express();
 
 app.use(express.static(join(process.cwd(), 'dist')));
 
-let gpg = new Gpg.Gpg();
+let gpg = Gpg.create();
 let cmd = [process.execPath, path.join(
   path.dirname(process.argv[process.argv.length - 1]), 'gpg-mock.js')];
 let cmdAgent = cmd.concat(['connect-agent']);
-if (fs.existsSync('/usr/bin/gpg')) {
-  cmd = ['/usr/bin/gpg'];
-  cmdAgent = ['/usr/bin/gpg-connect-agent'];
-}
-if (fs.existsSync('/usr/bin/gpg2')) {
-  cmd = ['/usr/bin/gpg2'];
-  cmdAgent = ['/usr/bin/gpg-connect-agent'];
-}
-if (fs.existsSync('/usr/local/bin/gpg')) {
-  cmd = ['/usr/local/bin/gpg'];
-  cmdAgent = ['/usr/local/bin/gpg-connect-agent'];
-}
-if (fs.existsSync('/usr/local/bin/gpg2')) {
-  cmd = ['/usr/local/bin/gpg2'];
-  cmdAgent = ['/usr/local/bin/gpg-connect-agent'];
-}
-if (fs.existsSync('../gpg/gnupg/g10/gpg')) {
-  cmd = ['../gpg/gnupg/g10/gpg'];
-  cmdAgent = ['../gpg/gnupg/tools/gpg-connect-agent'];
-}
-if (fs.existsSync('/gnupg/g10/gpg')) {
-  cmd = ['/gnupg/g10/gpg'];
-  cmdAgent = ['/gnupg/tools/gpg-connect-agent'];
-}
+
 gpg.setGpgCmd(cmd);
 gpg.setGpgAgentCmd(cmdAgent);
 

@@ -1,6 +1,3 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import { Buffer } from 'buffer';
 import * as yargs from 'yargs';
 import GpgMockState from './gpg-mock-state';
 import * as ListSecretKeys from './list-secret-keys';
@@ -22,10 +19,10 @@ function cli(args: string[]): void {
   y = FullGenKey.cli(y, state);
   y = SimpleActions.cli(y, state);
   y = Agent.cli(y, state);
-  state.parsed(y.help().parse(args.slice(2),
-    (err: any, argv: yargs.Arguments, output: any) => {
-    // console.log('WTF', err, argv);
-  }));
+  y = y.help().showHelpOnFail(true);
+  y.parse(args.slice(2), (err: any, argv: yargs.Arguments, output: any) => {
+    state.parsed(argv);
+  });
 }
 
 cli(process.argv);

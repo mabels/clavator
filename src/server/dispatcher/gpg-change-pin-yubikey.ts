@@ -4,6 +4,7 @@ import * as Message from '../../model/message';
 import Dispatcher from '../dispatcher';
 
 import * as Gpg from '../../gpg/gpg';
+import Result from '../../gpg/result';
 import RequestChangePin from '../../gpg/request-change-pin';
 import { Observer } from '../observer';
 
@@ -30,7 +31,7 @@ export class GpgChangePinYubikey implements Dispatcher {
     let header = Message.toHeader(m, 'Progressor.Clavator');
     ws.send(Message.prepare(header, Progress.ok(`ChangePin your Yubikey now:${rcp.action} ...`)));
 
-    this.gpg.changePin(rcp.action, rcp,  (res: Gpg.Result) => {
+    this.gpg.changePin(rcp.action, rcp,  (res: Result) => {
       if (res.exitCode != 0) {
         ws.send(Message.prepare(header, Progress.fail(res.stdOut + '\n' + res.stdErr)));
       } else {
