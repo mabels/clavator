@@ -64,11 +64,18 @@ grp:::::::::2DC62D282D308E58A8C7C4F7652955AC146860D2:
 
   }
 
-  it('externListSecretKeys', (done) => {
-    gpg.createMock().list_secret_keys((err: string, keys: lsk.SecretKey[]) => {
-      assert.equal(err, null);
-      testListSecretKeys(keys);
-      done();
+  it('externListSecretKeys', async () => {
+    return new Promise<void>(async (res, rej) => {
+      try {
+        const mock = await gpg.createMock();
+        mock.list_secret_keys((err: string, keys: lsk.SecretKey[]) => {
+          assert.equal(err, null);
+          testListSecretKeys(keys);
+          res();
+        });
+      } catch (e) {
+        rej(e);
+      }
     });
   });
 
@@ -84,7 +91,7 @@ grp:::::::::2DC62D282D308E58A8C7C4F7652955AC146860D2:
     });
   });
 
-   it('keyGen.not eq', () => {
+  it('keyGen.not eq', () => {
     let keys1 = createKeyFromString();
     let keys2 = createKeyFromString();
     keys1.forEach((key, idx) => {

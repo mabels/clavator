@@ -45,27 +45,33 @@ describe('Gpg', () => {
   let gpg: Gpg.Gpg;
   let key: ListSecretKeys.SecretKey;
 
-  before(function (done: any): void {
+  before(async function (): Promise<void> {
     this.timeout(100000);
-    gpg = Gpg.create();
-    // console.log('============');
-    createMasterKey(gpg, (res: Result) => {
-      assert.equal(0, res.exitCode);
-      // console.log('------------', res);
-      gpg.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
-        assert.isNull(err);
-        let uid = keys[0].uids[0];
-        assert.equal(uid.name, 'Gpg Test Master');
-        assert.equal(uid.email, 'gpg.sock@lodke.gpg');
-        key = keys[0];
-        // console.log('=========', keyGen().subKeys.pallets[0]);
-        gpg.createSubkey(key.fingerPrint.fpr, keyGen(),
-          keyGen().subKeys.first(), (_res: Result) => {
-            console.log(`Use GPG ${_res.gpg.getGpgCmd()}:${_res.gpg.homeDir}:${key.keyId}`);
-            assert.equal(0, _res.exitCode);
-            done();
+    return new Promise<void>(async (resolve, rej) => {
+      try {
+        gpg = await Gpg.createTest();
+        // console.log('============');
+        createMasterKey(gpg, (res: Result) => {
+          assert.equal(0, res.exitCode);
+          // console.log('------------', res);
+          gpg.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
+            assert.isNull(err);
+            let uid = keys[0].uids[0];
+            assert.equal(uid.name, 'Gpg Test Master');
+            assert.equal(uid.email, 'gpg.sock@lodke.gpg');
+            key = keys[0];
+            // console.log('=========', keyGen().subKeys.pallets[0]);
+            gpg.createSubkey(key.fingerPrint.fpr, keyGen(),
+              keyGen().subKeys.first(), (_res: Result) => {
+                console.log(`Use GPG ${_res.gpg.getGpgCmd()}:${_res.gpg.homeDir}:${key.keyId}`);
+                assert.equal(0, _res.exitCode);
+                resolve();
+              });
           });
-      });
+        });
+      } catch (e) {
+        rej(e);
+      }
     });
   });
 
@@ -134,7 +140,7 @@ describe('Gpg', () => {
     });
   });
 
-  it('keyToSmartCard with Mock', function(done: any): void {
+  it('keyToSmartCard with Mock', function (done: any): void {
     this.timeout(100000);
     const mygpg = gpg.useMock();
     let kytk = new KeyToYubiKey();

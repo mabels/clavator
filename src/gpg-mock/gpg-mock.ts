@@ -4,6 +4,7 @@ import * as ListSecretKeys from './list-secret-keys';
 import * as FullGenKey from './full-gen-key';
 import * as SimpleActions from './simple-actions';
 import * as Agent from './agent';
+import * as fs from 'fs';
 
 function cli(args: string[]): void {
   const state = GpgMockState.create();
@@ -13,7 +14,16 @@ function cli(args: string[]): void {
      'batch': { describe: 'no interactive processing' , boolean: true },
      'import': { describe: 'import key from stdin' , boolean: true },
      'homedir': { describe: 'the gpg database base directory', type: 'string' },
-     'passphrase-fd': { describe: 'positional fd inputs', type: 'array' }
+     'passphrase-fd': { describe: 'positional fd inputs', type: 'array' },
+     'version': { describe: 'prints version', boolean: true}
+  });
+  state.onParsed((_y: yargs.Arguments, _state: GpgMockState): boolean => {
+    if (_y.version) {
+      // const version = fs.readFileSync('./')
+      _state.stdout('gpg-mock (2.1.14)');
+      return true;
+    }
+    return false;
   });
   y = ListSecretKeys.cli(y, state);
   y = FullGenKey.cli(y, state);

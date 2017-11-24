@@ -27,85 +27,89 @@ import * as Gpg from '../gpg/gpg';
 
 import * as Message from '../model/message';
 
-let redirectPort = 8080;
-let applicationPort = process.env.PORT || 8443;
-if (process.getuid() == 0) {
-  redirectPort = 80;
-  applicationPort = process.env.PORT || 443;
-}
+async function starter(): Promise<void> {
+  let redirectPort = 8080;
+  let applicationPort = process.env.PORT || 8443;
+  if (process.getuid() == 0) {
+    redirectPort = 80;
+    applicationPort = process.env.PORT || 443;
+  }
 
-const redirectHttp = express();
-redirectHttp.get('/*', (req, res, next) => {
-  res.location('https://clavator.com');
-  res.sendStatus(302);
-  res.end('<a href="https://clavator.com">https://clavator.com</a>');
-});
-redirectHttp.listen(redirectPort);
-console.log(`Started redirectPort on ${redirectPort}`);
+  const redirectHttp = express();
+  redirectHttp.get('/*', (req, res, next) => {
+    res.location('https://clavator.com');
+    res.sendStatus(302);
+    res.end('<a href="https://clavator.com">https://clavator.com</a>');
+  });
+  redirectHttp.listen(redirectPort);
+  console.log(`Started redirectPort on ${redirectPort}`);
 
-let httpServer: https.Server | http.Server;
-if (privateKey) {
-  httpServer = https.createServer(credentials);
-  console.log(`Listen on: https ${applicationPort} ${process.env.PORT}`);
-} else {
-  httpServer = http.createServer();
-  console.log(`Listen on: http ${applicationPort} ${process.env.PORT}`);
-}
-
-const app = express();
-
-app.use(express.static(join(process.cwd(), 'dist')));
-
-let gpg = Gpg.create();
-let cmd = [process.execPath, path.join(
-  path.dirname(process.argv[process.argv.length - 1]), 'gpg-mock.js')];
-let cmdAgent = cmd.concat(['connect-agent']);
-
-gpg.setGpgCmd(cmd);
-gpg.setGpgAgentCmd(cmdAgent);
-
-console.log(`Use GPG ${cmd}`);
-gpg.setGpgCmd(cmd);
-
-let observer = Observer.start(gpg);
-let dispatch = Dispatch.start(gpg);
-
-app.get('/', (req: express.Request, res: express.Response) => res.redirect('/index.html'));
-
-app.get('/privkey.pem', (req: express.Request, res: express.Response) => {
+  let httpServer: https.Server | http.Server;
   if (privateKey) {
-    res.send(privateKey);
+    httpServer = https.createServer(credentials);
+    console.log(`Listen on: https ${applicationPort} ${process.env.PORT}`);
   } else {
-    res.sendStatus(404);
+    httpServer = http.createServer();
+    console.log(`Listen on: http ${applicationPort} ${process.env.PORT}`);
   }
-});
-app.get('/fullchain.pem', (req: express.Request, res: express.Response) => {
-  if (certificate) {
-    res.send(certificate);
-  } else {
-    res.sendStatus(404);
-  }
-});
 
-let wss = new ws.Server({ server: httpServer });
-wss.on('connection', (sock) => {
-  // var location = url.parse(ws.upgradeReq.url, true);
-  // you might use location.query.access_token to authenticate or share sessions
-  // or ws.upgradeReq.headers.cookie (see http://stackoverflow.com/a/16395220/151312)
-  // ws.send('something');
-  console.log('WS-Connect');
-  observer.register(sock);
-  sock.on('close', () => {
-    console.log('close');
-    observer.unregister(sock);
-  });
-  // ws.on('data', msg:any => console.log(msg));
-  sock.on('message', (payload) => {
-    let msg = Message.fromData(payload.toString());
-    // console.log('onMessage')
-    dispatch.run(observer, sock, msg);
-  });
-});
+  const app = express();
 
-httpServer.on('request', app);
-httpServer.listen(applicationPort);
+  app.use(express.static(join(process.cwd(), 'dist')));
+
+  let gpg = await Gpg.create();
+  let cmd = [process.execPath, path.join(
+    path.dirname(process.argv[process.argv.length - 1]), 'gpg-mock.js')];
+  let cmdAgent = cmd.concat(['connect-agent']);
+
+  gpg.setGpgCmd(cmd);
+  gpg.setGpgAgentCmd(cmdAgent);
+
+  console.log(`Use GPG ${cmd}`);
+  gpg.setGpgCmd(cmd);
+
+  let observer = Observer.start(gpg);
+  let dispatch = Dispatch.start(gpg);
+
+  app.get('/', (req: express.Request, res: express.Response) => res.redirect('/index.html'));
+
+  app.get('/privkey.pem', (req: express.Request, res: express.Response) => {
+    if (privateKey) {
+      res.send(privateKey);
+    } else {
+      res.sendStatus(404);
+    }
+  });
+  app.get('/fullchain.pem', (req: express.Request, res: express.Response) => {
+    if (certificate) {
+      res.send(certificate);
+    } else {
+      res.sendStatus(404);
+    }
+  });
+
+  let wss = new ws.Server({ server: httpServer });
+  wss.on('connection', (sock) => {
+    // var location = url.parse(ws.upgradeReq.url, true);
+    // you might use location.query.access_token to authenticate or share sessions
+    // or ws.upgradeReq.headers.cookie (see http://stackoverflow.com/a/16395220/151312)
+    // ws.send('something');
+    console.log('WS-Connect');
+    observer.register(sock);
+    sock.on('close', () => {
+      console.log('close');
+      observer.unregister(sock);
+    });
+    // ws.on('data', msg:any => console.log(msg));
+    sock.on('message', (payload) => {
+      let msg = Message.fromData(payload.toString());
+      // console.log('onMessage')
+      dispatch.run(observer, sock, msg);
+    });
+  });
+
+  httpServer.on('request', app);
+  httpServer.listen(applicationPort);
+}
+
+starter();

@@ -19,21 +19,11 @@ import KeyGenUid from './key-gen-uid';
 import { format_date } from '../model/helper';
 import * as rimraf from 'rimraf';
 import { Result, Mixed } from './result';
+import { exists } from 'fs-extra';
 
 // export const Result = Result.Result;
 
-function findGpgMock(): string[] {
-  let dirname = process.argv[process.argv.length - 1];
-  let gm = '';
-  let prevDirname = '';
-  do {
-    prevDirname = dirname;
-    dirname = path.dirname(dirname);
-    gm = path.join(dirname, 'gpg-mock.js');
-    // console.log(gm);
-  } while (prevDirname != dirname && !fs.existsSync(gm));
-  return [process.execPath, gm];
-}
+
 
 interface GpgCmd {
   cmd: string[];
@@ -75,6 +65,7 @@ export class Gpg {
   public gpgAgentCmd: string;
   public gpgAgentCmdArgs: string[] = [];
   public readonly mockCmd: string[];
+  public version: string;
 
   public static _create(mockCmd: string[]): Gpg {
     return new Gpg(mockCmd);
@@ -101,6 +92,27 @@ export class Gpg {
     mock.setGpgCmd(mock.mockCmd);
     mock.setGpgAgentCmd(mock.mockCmd.concat(['connect-agent']));
     return mock;
+  }
+
+  public getVersion(): Promise<string> {
+    return new Promise<string>((res, rej) => {
+      this.run(['--version'], '', (_res: Result) => {
+        const lines = _res.stdOut.split(/[\n\r]+/);
+        res(lines[0]);
+      });
+    });
+  }
+
+  public info(): Promise<string> {
+    return new Promise<string>(async (res, rej) => {
+      if (!this.version) {
+        this.version = await this.getVersion();
+      }
+      res([`GpgVersion:[${this.version}]`,
+           `Exec:[${[this.gpgCmd].concat(this.gpgCmdArgs).join('][')}]`,
+           `Agent:[${[this.gpgAgentCmd].concat(this.gpgAgentCmdArgs).join('][')}]`,
+           `HomeDir:[${this.homeDir}]`].join(`\n`));
+    });
   }
 
   public setPinentryUrl(url: string): Gpg {
@@ -569,24 +581,59 @@ export class Gpg {
 
 }
 
-export function create(selectGpgCmd = gpgCmd): Gpg {
-  const mockCmd = findGpgMock();
-  const gpgcmd = {
-    cmd: mockCmd,
-    cmdAgent: mockCmd.concat(['connect-agent'])
-  };
-  selectGpgCmd(gpgcmd);
-
-  const gpg = Gpg._create(mockCmd);
-  gpg.setGpgCmd(gpgcmd.cmd);
-  gpg.setGpgAgentCmd(gpgcmd.cmdAgent);
-
-  let homedir = path.join(process.cwd(), `${uuid.v4().toString().slice(0, 16)}.tdir`);
-  gpg.setHomeDir(homedir);
-  fs.mkdirSync(homedir);
-  return gpg;
+function findGpgMock(): Promise<string[]> {
+  let dirname = process.argv[process.argv.length - 1];
+  let gm = '';
+  let prevDirname = '';
+  return new Promise<string[]>(async (res, rej) => {
+    let gmExists = false;
+    do {
+      prevDirname = dirname;
+      dirname = path.dirname(dirname);
+      gm = path.join(dirname, 'gpg-mock.js');
+      // console.log(gm);
+      gmExists = await fsPromise.pathExists(gm);
+    } while (prevDirname != dirname && !gmExists);
+    res([process.execPath, gm]);
+  });
 }
 
-export function createMock(): Gpg {
-  return create(() => { /* */ });
+export async function internalCreate(selectGpgCmd: (gc: GpgCmd) => void): Promise<Gpg> {
+  return new Promise<Gpg>(async (res, rej) => {
+    const mockCmd = await findGpgMock();
+    const gpgcmd = {
+      cmd: mockCmd,
+      cmdAgent: mockCmd.concat(['connect-agent'])
+    };
+    selectGpgCmd(gpgcmd);
+    const gpg = Gpg._create(mockCmd);
+    gpg.setGpgCmd(gpgcmd.cmd);
+    gpg.setGpgAgentCmd(gpgcmd.cmdAgent);
+    res(gpg);
+  });
+}
+
+export function create(selectGpgCmd = gpgCmd): Promise<Gpg> {
+  return new Promise<Gpg>(async (res, rej) => {
+    const gpg = await internalCreate(selectGpgCmd);
+    const gi = await gpg.info();
+    console.log('Created Gpg:', gi);
+    return gpg;
+  });
+}
+
+export function createTest(selectGpgCmd = gpgCmd, title = 'Test'): Promise<Gpg> {
+  return new Promise<Gpg>(async (res, rej) => {
+    const gpg = await internalCreate(selectGpgCmd);
+    const homedir = path.join(process.cwd(), `${uuid.v4().toString().slice(0, 16)}.tdir`);
+    gpg.setHomeDir(homedir);
+    await fsPromise.mkdirSync(homedir);
+    const gi = await gpg.info();
+    console.log(`Created ${title} Gpg:`, gi);
+    res(gpg);
+  });
+}
+
+export function createMock(): Promise<Gpg> {
+  return createTest(() => { /* */ }, 'Mock');
 }
