@@ -19,11 +19,6 @@ import KeyGenUid from './key-gen-uid';
 import { format_date } from '../model/helper';
 import * as rimraf from 'rimraf';
 import { Result, Mixed } from './result';
-import { exists } from 'fs-extra';
-
-// export const Result = Result.Result;
-
-
 
 interface GpgCmd {
   cmd: string[];

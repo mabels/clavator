@@ -4,7 +4,6 @@ import * as ListSecretKeys from './list-secret-keys';
 import * as FullGenKey from './full-gen-key';
 import * as SimpleActions from './simple-actions';
 import * as Agent from './agent';
-import * as fs from 'fs';
 
 function cli(args: string[]): void {
   const state = GpgMockState.create();
