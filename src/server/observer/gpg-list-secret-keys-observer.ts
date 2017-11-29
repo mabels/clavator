@@ -43,11 +43,12 @@ class GpgListSecretKeysObserver {
     if (!wss.length) {
       return;
     }
-    this.gpg.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
-      if (err) {
-        console.error(err);
-        keys = [];
-      }
+    const keys: ListSecretKeys.SecretKey[] = [];
+    this.gpg.list_secret_keys().subscribe(key => {
+      if (key.doProgress()) { return; }
+      if (key.doError()) { return; }
+      keys.push(key.data);
+    }, null, () => {
       this.prev.run('KeyChainList', wss, keys, () => {
         this.timeoutId = setTimeout(this.action, 5000);
       });

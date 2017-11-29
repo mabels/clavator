@@ -4,7 +4,7 @@ import * as Message from '../../model/message';
 import Dispatcher from '../dispatcher';
 
 import * as Gpg from '../../gpg/gpg';
-import Result from '../../gpg/result';
+// import Result from '../../gpg/result';
 // import RequestChangePin from './gpg/request_change_pin';
 // import KeyToYubiKey from '../../gpg/key-to-yubikey';
 
@@ -40,11 +40,11 @@ export class SendKeyToYubiKey implements Dispatcher {
     const subkey = ksk.subKeys[idx];
     ws.send(Message.prepare(header,
         Progress.ok(`start keyToYubiKey for ${subkey.fingerPrint.fpr}:${idx}`)));
-    this.gpg.keyToYubiKey(syk.asKeyToYubiKey(subkey.fingerPrint.fpr, idx + 1), (res: Result) => {
-      if (res.exitCode != 0) {
-        console.error('error-resume observer', res, res.runQueue[0]);
+    this.gpg.keyToYubiKey(syk.asKeyToYubiKey(subkey.fingerPrint.fpr, idx + 1)).subscribe(res => {
+      if (res.isError()) {
+        console.error('error-resume observer', res);
         // observer.resume();
-        ws.send(Message.prepare(header, Progress.fail(res.stdOut + '\n' + res.stdErr)));
+        ws.send(Message.prepare(header, Progress.fail(`${res.exec.stdOut}\n${res.exec.stdErr}`)));
       } else {
         ws.send(Message.prepare(header,
           Progress.ok(`keyToYubiKey for ${subkey.fingerPrint.fpr}:${idx} changed`, true)));
@@ -64,16 +64,11 @@ export class SendKeyToYubiKey implements Dispatcher {
 
     console.log('SimpleYubiKey', syk.toObj(), syk.asKeyGen().password, syk.asKeyGen().password.valid());
     ws.send(Message.prepare(header, Progress.ok(`SimpleYubiKey:${syk} ...`)));
-    CreateKeySetTask.run(this.gpg, ws, m, syk.asKeyGen())
-      .then((ksk: ListSecretKeys.SecretKey) => {
+    CreateKeySetTask.run(this.gpg, ws, m, syk.asKeyGen()).subscribe(ksk => {
         console.log('then:CreateKeySetTask:');
         ws.send(Message.prepare(header, Progress.ok(`SimpleYubiKey:completed:create-key-gpg`)));
-        this.sendKeysToCard(observer, ws, header, ksk, syk);
-      })
-      .catch((err) => {
-        console.log('catch:CreateKeySetTask:', err);
-        ws.send(Message.prepare(header, Progress.fail(`SimpleYubiKey:fail:create-key-gpg`)));
-      });
+        this.sendKeysToCard(observer, ws, header, ksk.data, syk);
+    });
 
     // this.gpg.keyToYubiKey(rcp, (res: Gpg.Result) => {
     //   if (res.exitCode != 0) {

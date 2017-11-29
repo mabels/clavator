@@ -48,13 +48,12 @@ class GpgCardStatusObserver {
     if (!wss.length) {
       return;
     }
-    this.gpg.card_status((err: string, keys: CardStatus.Gpg2CardStatus[]) => {
-      if (err) {
-        if (!err.includes('OpenPGP card not available')) {
-          console.error(err);
-        }
-        keys = [];
-      }
+    const keys: CardStatus.Gpg2CardStatus[] = [];
+    this.gpg.card_status().subscribe(key => {
+      if (key.doProgress()) { return; }
+      if (key.doError()) { return; }
+      keys.push(key.data);
+    }, null, () => {
       this.prev.run('CardStatusList', wss, keys, () => {
         // console.log('CardStatusList:setTimeout');
         this.timeoutId = setTimeout(this.action, 5000);

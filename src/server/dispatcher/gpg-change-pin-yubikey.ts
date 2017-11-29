@@ -31,9 +31,9 @@ export class GpgChangePinYubikey implements Dispatcher {
     let header = Message.toHeader(m, 'Progressor.Clavator');
     ws.send(Message.prepare(header, Progress.ok(`ChangePin your Yubikey now:${rcp.action} ...`)));
 
-    this.gpg.changePin(rcp.action, rcp,  (res: Result) => {
-      if (res.exitCode != 0) {
-        ws.send(Message.prepare(header, Progress.fail(res.stdOut + '\n' + res.stdErr)));
+    this.gpg.changePin(rcp.action, rcp).subscribe(res => {
+      if (res.isError()) {
+        ws.send(Message.prepare(header, Progress.fail(`${res.exec.stdOut}\n${res.exec.stdErr}`)));
       } else {
         ws.send(Message.prepare(header, Progress.ok(`pin for ${rcp.action} changed`, true)));
       }

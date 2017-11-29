@@ -6,7 +6,6 @@ export class RequestChangePin {
   public app_id: string;
   public admin_pin: Pin = new Pin();
   public new_pin: Pin = new Pin();
-  public new_pin_verify: Pin = new Pin();
 
   public static fill(js: any): RequestChangePin {
     let ra = new RequestChangePin();
@@ -14,7 +13,6 @@ export class RequestChangePin {
     ra.app_id = js['app_id'];
     ra.admin_pin.pin = js['admin_pin']['pin'];
     ra.new_pin.pin = js['new_pin']['pin'];
-    ra.new_pin_verify.pin = js['new_pin_verify']['pin'];
     return ra;
   }
 
@@ -27,7 +25,6 @@ export class RequestChangePin {
     }
     let match = new RegExp(`^[0-9]{${lenRange}}$`);
     this.new_pin.match = match;
-    this.new_pin_verify.match = match;
     return this;
   }
 
@@ -39,10 +36,6 @@ export class RequestChangePin {
     let ret: string[] = [];
     ret = ret.concat(this.admin_pin.verifyText());
     ret = ret.concat(this.new_pin.verifyText());
-    ret = ret.concat(this.new_pin_verify.verifyText());
-    if (this.new_pin.pin != this.new_pin_verify.pin) {
-      ret.push('new_pin does not match');
-    }
     return ret;
   }
 }

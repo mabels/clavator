@@ -28,7 +28,7 @@ export class RequestAsciiDispatcher implements Dispatcher {
       // ws.send(Message.prepare('Progressor.Clavator', Progress.ok(res.stdOut)));
       console.log('send:RespondAscii');
       ws.send(Message.prepare(header.setAction('RespondAscii'),
-        new RespondAscii(req.action, req.fingerprint, res.stdOut)));
+        new RespondAscii(req.action, req.fingerprint, res.exec.stdOut)));
     };
   }
 
@@ -43,16 +43,16 @@ export class RequestAsciiDispatcher implements Dispatcher {
     //   Progress.ok('RequestAscii='+m.data)))
     switch (payload.action) {
       case 'pem-private':
-        this.gpg.pemPrivateKey(payload, this.processResult(m.header, ws, payload));
+        this.gpg.pemPrivateKey(payload).subscribe(this.processResult(m.header, ws, payload));
         break;
       case 'pem-public':
-        this.gpg.pemPublicKey(payload, this.processResult(m.header, ws, payload));
+        this.gpg.pemPublicKey(payload).subscribe(this.processResult(m.header, ws, payload));
         break;
       case 'pem-revoke':
-        this.gpg.pemRevocation(payload, this.processResult(m.header, ws, payload));
+        this.gpg.pemRevocation(payload).subscribe(this.processResult(m.header, ws, payload));
         break;
       case 'ssh-public':
-        this.gpg.sshPublic(payload, this.processResult(m.header, ws, payload));
+        this.gpg.sshPublic(payload).subscribe(this.processResult(m.header, ws, payload));
         break;
       default:
         ws.send(Message.prepare(m.header.setAction('Progressor.Clavator'),

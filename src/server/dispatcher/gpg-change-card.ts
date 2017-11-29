@@ -4,7 +4,7 @@ import * as Message from '../../model/message';
 import Dispatcher from '../dispatcher';
 
 import * as Gpg from '../../gpg/gpg';
-import Result from '../../gpg/result';
+// import Result from '../../gpg/result';
 import ChangeCard from '../../gpg/change-card';
 // import * as CardStatus from './gpg/card_status';
 
@@ -39,9 +39,9 @@ export class GpgChangeCard implements Dispatcher {
     }
     // console.log('>>>', kg.masterCommand())
     ws.send(Message.prepare(header, Progress.info(`ChangeCard Action`)));
-    this.gpg.changeCard(cc, (res: Result) => {
-      ws.send(Message.prepare(header, Progress.info(res.stdOut)));
-      ws.send(Message.prepare(header, Progress.error(res.stdErr)));
+    this.gpg.changeCard(cc).subscribe(res => {
+      ws.send(Message.prepare(header, Progress.info(res.exec.stdOut)));
+      ws.send(Message.prepare(header, Progress.error(res.exec.stdErr)));
       ws.send(Message.prepare(header.setAction('ChangeCard.Completed')));
       // send cardlist
     });

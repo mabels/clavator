@@ -1,3 +1,4 @@
+import { Result, ResultContainer } from '../gpg/result';
 
 export class Progress {
   public id: number;
@@ -23,6 +24,15 @@ export function fail(msg: string): Progress {
   p.isOk = false;
   p.isEndOfMessages = true;
   p.msgs = [msg];
+  return p;
+}
+
+export function result(res: ResultContainer<any>): Progress {
+  let p = new Progress();
+  p.id = id++;
+  p.isOk = res.isOk();
+  p.isEndOfMessages = false;
+  p.msgs = res.asMsg();
   return p;
 }
 

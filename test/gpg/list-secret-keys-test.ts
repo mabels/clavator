@@ -2,6 +2,7 @@ import { assert } from 'chai';
 
 import * as gpg from '../../src/gpg/gpg';
 import * as lsk from '../../src/gpg/list-secret-keys';
+import { ResultQueue } from '../../src/gpg/result';
 
 describe('ListSecretKeys', () => {
 
@@ -64,18 +65,45 @@ grp:::::::::2DC62D282D308E58A8C7C4F7652955AC146860D2:
 
   }
 
+  let rq: ResultQueue = null;
+  before((done) => {
+    rq = ResultQueue.create();
+    done();
+  });
+
+  after((done) => {
+    rq.stop().subscribe(done);
+  });
+
   it('externListSecretKeys', async () => {
-    return new Promise<void>(async (res, rej) => {
-      try {
-        const mock = await gpg.createMock();
-        mock.list_secret_keys((err: string, keys: lsk.SecretKey[]) => {
-          assert.equal(err, null);
-          testListSecretKeys(keys);
-          res();
+    return new Promise<void>((res, rej) => {
+      // console.log('Xxx-1:');
+      gpg.createMock(rq).subscribe(rcmock => {
+        if (rcmock.isProgress()) {
+          // console.log('externListSecretKeys:Progress:', rcmock.progress.text);
+          return;
+        }
+        if (rcmock.isError()) {
+          // console.log('externListSecretKeys:Error:', rcmock.nodeError, rcmock.exec.exitCode);
+          rej(rcmock);
+          return;
+        }
+        const keys: lsk.SecretKey[] = [];
+        rcmock.data.list_secret_keys().subscribe(rskey => {
+          // console.log('externListSecretKeys:Keys:', rskey.isProgress(), rskey.isError());
+          if (rskey.doProgress()) { return; }
+          if (rskey.doError()) { return; }
+          keys.push(rskey.data);
+        }, null, () => {
+          // console.log('Xxx-3:');
+          try {
+            testListSecretKeys(keys);
+            res();
+          } catch (e) {
+            rej(e);
+          }
         });
-      } catch (e) {
-        rej(e);
-      }
+      });
     });
   });
 

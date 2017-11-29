@@ -9,7 +9,7 @@ import * as Gpg from '../../gpg/gpg';
 import CreateKeySetTask from '../tasks/create-key-set-task';
 import { Observer } from '../observer';
 
-// import * as Progress from '../../model/progress';
+import * as Progress from '../../model/progress';
 
 export class GpgCreateKeySet implements Dispatcher {
   public gpg: Gpg.Gpg;
@@ -31,15 +31,14 @@ export class GpgCreateKeySet implements Dispatcher {
     const kg = new KeyGen.KeyGen();
     KeyGen.KeyGen.fill(JSON.parse(m.data) || {}, kg);
     // console.log(m, a, kg)
-    CreateKeySetTask.run(this.gpg, ws, m, kg)
-      .then(() => { /* */ })
-      .catch(() => { /* */ });
+    CreateKeySetTask.run(this.gpg, ws, m, kg).subscribe(rc => {
+      // ws.send(Message.prepare(m.header.setAction('Progressor.Clavator'), Progress.result(rc)));
+    });
     // create master gpg --expert --gen-key
     // not here gpg --gen-revoke B8EFD59D
     // create subkey --edit-key ...
     // create subkey --edit-key ...
     // create subkey --edit-key ...
-    // ws.send(Message.prepare('Progressor.Clavator', Progress.fail('Mhhh')))
     return true;
   }
 

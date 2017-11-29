@@ -21,9 +21,12 @@ export function cli(y: yargs.Argv, state: GpgMockState): yargs.Argv {
   return y.command({
     command: 'connect-agent [gpg-connect..]',
     describe: 'connect agent mode',
+    builder: { 'version': { describe: 'prints version', boolean: true} },
     handler: (argv) => {
-      // console.log(argv);
-      if (argv.gpgConnect[0] == 'GETINFO socket_name' && argv.gpgConnect[1] == '/bye') {
+      if (argv.version) {
+        state.stdout('gpg-mock-connect-agent (GpgMock/Connect-Agent) 2.1.14');
+        state.processed();
+      } else if (argv.gpgConnect[0] == 'GETINFO socket_name' && argv.gpgConnect[1] == '/bye') {
         state.stdout(`D ${path.join(argv.homedir || '', 'S.gpg-agent-' + Math.random())}`);
         state.stdout('OK');
         state.processed();

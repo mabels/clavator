@@ -4,7 +4,7 @@ import * as CardStatus from './card-status';
 import * as path from 'path';
 import * as fs from 'fs';
 // import * as fsPromise from "fs-promise";
-import * as fsPromise from 'fs-extra';
+// import * as fsPromise from 'fs-extra';
 // import * as pse from "../pinentry/server";
 import * as Ac from './agent-conf';
 import * as uuid from 'node-uuid';
@@ -18,173 +18,166 @@ import RequestChangePin from './request-change-pin';
 import KeyGenUid from './key-gen-uid';
 import { format_date } from '../model/helper';
 import * as rimraf from 'rimraf';
-import { Result, Mixed } from './result';
+import { Result, Mixed, ResultContainer, ResultObservable, ResultObserver, ResultQueue } from './result';
+import GpgVersion from './gpg-version';
+import * as rx from 'rxjs';
+import { Observer } from '../server/observer';
+import { Observable } from 'rxjs/Observable';
+import { observer } from 'mobx-react';
+import GpgCmds from './gpg-cmds';
+import { Socket } from 'net';
 
-interface GpgCmd {
-  cmd: string[];
-  cmdAgent: string[];
+interface SocketNames {
+  s1: string;
+  s2: string;
 }
 
-function gpgCmd(gc: GpgCmd): void {
-  if (fs.existsSync('/usr/bin/gpg')) {
-    gc.cmd = ['/usr/bin/gpg'];
-    gc.cmdAgent = ['/usr/bin/gpg-connect-agent'];
-  }
-  if (fs.existsSync('/usr/bin/gpg2')) {
-    gc.cmd = ['/usr/bin/gpg2'];
-    gc.cmdAgent = ['/usr/bin/gpg-connect-agent'];
-  }
-  if (fs.existsSync('/usr/local/bin/gpg')) {
-    gc.cmd = ['/usr/local/bin/gpg'];
-    gc.cmdAgent = ['/usr/local/bin/gpg-connect-agent'];
-  }
-  if (fs.existsSync('/usr/local/bin/gpg2')) {
-    gc.cmd = ['/usr/local/bin/gpg2'];
-    gc.cmdAgent = ['/usr/local/bin/gpg-connect-agent'];
-  }
-  if (fs.existsSync('../gpg/gnupg/g10/gpg')) {
-    gc.cmd = ['../gpg/gnupg/g10/gpg'];
-    gc.cmdAgent = ['../gpg/gnupg/tools/gpg-connect-agent'];
-  }
-  if (fs.existsSync('/gnupg/g10/gpg')) {
-    gc.cmd = ['/gnupg/g10/gpg'];
-    gc.cmdAgent = ['/gnupg/tools/gpg-connect-agent'];
-  }
+interface ChangeCardAttribute {
+  name: string;
+  value: string[];
+}
+
+function createTempDir(rq: ResultQueue, baseDir: string, dirName: string): ResultObservable<string> {
+  return rx.Observable.create((obs: ResultObserver<string>) => {
+    const result = ResultContainer.builder<string>(rq);
+    result.data = path.join(baseDir, dirName);
+    fs.mkdir(result.data, (mkdirErr) => {
+      if (mkdirErr) {
+        obs.next(result.setNodeError(mkdirErr));
+        obs.complete();
+        return;
+      }
+      fs.chmod(result.data, 0o700, (chmodErr) => {
+        if (chmodErr) {
+          obs.next(result.setNodeError(chmodErr));
+          obs.complete();
+          return;
+        }
+        obs.next(result);
+        obs.complete();
+      });
+    });
+  });
 }
 
 export class Gpg {
   public homeDir: string = path.join(process.env.HOME, '.gnupg');
-  // pinEntryServer: pse.PinEntryServer;
-  public gpgCmd: string;
-  public gpgCmdArgs: string[] = [];
-  public gpgAgentCmd: string;
-  public gpgAgentCmdArgs: string[] = [];
-  public readonly mockCmd: string[];
-  public version: string;
+  public workDir: string = process.cwd();
+  public gpgCmds: GpgCmds;
+  public readonly mockCmd: GpgCmds;
 
-  public static _create(mockCmd: string[]): Gpg {
+  public static _create(mockCmd: GpgCmds): Gpg {
     return new Gpg(mockCmd);
   }
 
-  private constructor(mockCmd: string[]) {
-    this.gpgCmd = 'gpg2';
-    this.gpgAgentCmd = 'gpg-connect-agent';
+  private constructor(mockCmd: GpgCmds) {
+    // this.gpgCmd = 'gpg2';
+    // this.gpgAgentCmd = 'gpg-connect-agent';
     this.mockCmd = mockCmd;
+  }
+
+  public run<A = void>(initiator: string, attributes: Mixed[], stdIn: string): rx.Observable<ResultContainer<A>> {
+    return this.gpgCmds.gpg.data.run<A>(initiator, this.homeDir, attributes, stdIn);
+  }
+
+  public runAgent<A = void>(initiator: string, attributes: Mixed[], stdIn: string): rx.Observable<ResultContainer<A>> {
+    return this.gpgCmds.agent.data.run<A>(initiator, this.homeDir, attributes, stdIn);
   }
 
   public clone(): Gpg {
     let ret = new Gpg(this.mockCmd);
     ret.homeDir = this.homeDir;
-    ret.gpgCmd = this.gpgCmd;
-    ret.gpgCmdArgs = this.gpgCmdArgs;
-    ret.gpgAgentCmd = this.gpgAgentCmd;
-    ret.gpgAgentCmdArgs = this.gpgAgentCmdArgs;
+    ret.workDir = this.workDir;
+    ret.gpgCmds = this.gpgCmds;
     return ret;
   }
 
   public useMock(): Gpg {
     const mock = this.clone();
-    mock.setGpgCmd(mock.mockCmd);
-    mock.setGpgAgentCmd(mock.mockCmd.concat(['connect-agent']));
+    mock.setGpgCmds(mock.mockCmd);
     return mock;
   }
 
-  public getVersion(): Promise<string> {
-    return new Promise<string>((res, rej) => {
-      this.run(['--version'], '', (_res: Result) => {
-        const lines = _res.stdOut.split(/[\n\r]+/);
-        res(lines[0]);
-      });
-    });
+  public info(title: string): string {
+    if (title.length) {
+      title = `${title}-`;
+    }
+    // console.log('INFO:', this.gpgCmds);
+    return [
+      `${title}Exec:${this.gpgCmds.gpg.data.info()}`,
+      `${title}Agent:${this.gpgCmds.agent.data.info()}`,
+      `${title}HomeDir:[${this.homeDir}]`].join(`\n`);
   }
+  // public write_pinentry_sh(fname: string, cb: (err: any) => void) {
+  //   fs.writeFile(fname, [
+  //     '#!' + process.argv[0],
+  //     "let pinentry = require(path.join(process.env.F_MOD_HOME), 'pinentry', 'client'));",
+  //     "pinentry.client(process.env.S_PINENTRY_SOCKET);"
+  //   ].join("\n"), (err) => {
+  //     fs.chmod(fname, 0o755, cb);
+  //   });
+  // }
 
-  public info(): Promise<string> {
-    return new Promise<string>(async (res, rej) => {
-      if (!this.version) {
-        this.version = await this.getVersion();
-      }
-      res([`GpgVersion:[${this.version}]`,
-           `Exec:[${[this.gpgCmd].concat(this.gpgCmdArgs).join('][')}]`,
-           `Agent:[${[this.gpgAgentCmd].concat(this.gpgAgentCmdArgs).join('][')}]`,
-           `HomeDir:[${this.homeDir}]`].join(`\n`));
-    });
-  }
+  // public write_agent_conf(pinentryPath: string, cb: (err: any) => void): void {
+  //   let gpgAgentFname = path.join(this.homeDir, 'gpg-agent.conf');
+  //   Ac.AgentConf.read_file(gpgAgentFname, (err: any, ag: Ac.AgentConf) => {
+  //     if (err) {
+  //       cb(err);
+  //       return;
+  //     }
+  //     let pp = 'pinentry-program';
+  //     let pv = pinentryPath;
+  //     let als = ag.find(pp);
+  //     if (!als) {
+  //       als = [new Ac.AgentLine([pp, pv].join(' '))];
+  //     }
+  //     als.forEach((al: Ac.AgentLine) => { al.value = pv; });
+  //     ag.write_file(gpgAgentFname, (errx: string) => {
+  //       if (errx) {
+  //         cb(errx);
+  //         return;
+  //       }
+  //       cb(null);
+  //     });
+  //   });
+  // }
 
   public setPinentryUrl(url: string): Gpg {
     return this;
   }
+
   public setHomeDir(fname: string): Gpg {
+    console.log('setHomeDir:', fname);
     this.homeDir = fname;
     return this;
   }
 
-  public getGpgCmd(): string[] {
-    return [this.gpgCmd].concat(this.gpgCmdArgs);
-  }
-
-  public setGpgCmd(cmd: string[]): Gpg {
-    this.gpgCmd = cmd[0];
-    this.gpgCmdArgs = cmd.slice(1);
+  public setGpgCmds(cmd: GpgCmds): Gpg {
+    this.gpgCmds = cmd;
     return this;
   }
 
-  public setGpgAgentCmd(cmd: string[]): Gpg {
-    this.gpgAgentCmd = cmd[0];
-    this.gpgAgentCmdArgs = cmd.slice(1);
-    return this;
+  public started(): rx.Observable<Result> {
+    return this.run('started', ['--print-md', 'md5'], 'test');
   }
 
-  public started(cb: (s: Result) => void): void {
-    this.run(['--print-md', 'md5'], 'test', cb);
-  }
-
-  public getSocketName(cb: (sname: string) => void): void {
-    console.log('getSocketName', this);
-    this.runAgent(['GETINFO socket_name', '/bye'], null, (res: Result) => {
-      if (res.exitCode != 0) {
-        // console.log("getSocketName-1:", res);
-        cb(null);
-        return;
-      }
-      let line = res.stdOut.split(/[\n\r]+/).find((linex) => linex.startsWith('D '));
-      if (!line) {
-        // console.log("getSocketName-2:", line);
-        cb(null);
-        return;
-      }
-      cb(line.slice('D '.length));
+  public getSocketName(): ResultObservable<string> {
+    return rx.Observable.create((obs: ResultObserver<string>) => {
+      // console.log('gsn--1');
+      this.runAgent<string>('getSocketName', ['GETINFO socket_name', '/bye'], null).subscribe(res => {
+        // console.log('gsn--2');
+        if (res.doProgress(obs)) { return; }
+        if (res.doError(obs)) { return; }
+        // console.log('gsn--3');
+        const line = res.exec.stdOut.split(/[\n\r]+/).find((linex) => linex.startsWith('D '));
+        if (!line) {
+          res.data = null;
+        } else {
+          res.data = line.slice('D '.length);
+        }
+        res.doComplete(obs);
+      });
     });
-  }
-
-  public run(attributes: Mixed[], stdIn: string, cb: (res: Result) => void): void {
-    if (this.homeDir) {
-      attributes.splice(0, 0, this.homeDir);
-      attributes.splice(0, 0, '--homedir');
-    }
-    // console.log(attributes);
-    let result = (new Result(this)).setStdIn(stdIn);
-    // if (this.pinEntryServer) {
-    //     result.addEnv('F_MOD_HOME', "xxx");
-    //     result.addEnv('S_PINENTRY_SOCKET', this.pinEntryServer.socketFile);
-    // }
-    result.run(this.gpgCmd, this.gpgCmdArgs, attributes, cb);
-  }
-
-  public runAgent(attributes: string[], stdIn: string, cb: (res: Result) => void): void {
-    // console.log(stdIn);
-    if (this.homeDir) {
-      attributes.splice(0, 0, this.homeDir);
-      attributes.splice(0, 0, '--homedir');
-    }
-    // console.log(attributes);
-    let result = (new Result(this)).setStdIn(stdIn);
-
-    // console.log(this.gpgAgentCmd, attributes, stdIn);
-    result.run(this.gpgAgentCmd, this.gpgAgentCmdArgs, attributes, cb);
-  }
-
-  public resetYubikey(cb: (res: Result) => void): void {
-    this.runAgent([], this.resetCommand(), cb);
   }
 
   private resetCommand(): string {
@@ -200,151 +193,116 @@ export class Gpg {
       'scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40',
       'scd apdu 00 20 00 83 08 40 40 40 40 40 40 40 40',
       'scd apdu 00 e6 00 00',
-      'scd apdu 00 44 00 00', ''].join('\n');
+      'scd apdu 00 44 00 00', ''].join(`\n`);
   }
 
-  public getSecretKey(fpr: string, cb: (key: ListSecretKeys.SecretKey) => void): void {
-    this.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
-      if (err) {
-        cb(null);
-        return;
-      }
-      let found = false;
-      for (let key of keys) {
-        if (key.fingerPrint.fpr == fpr) {
-          cb(key);
-          return;
+  public resetYubikey(): rx.Observable<Result> {
+    return this.runAgent('resetYubikey', [], this.resetCommand());
+  }
+
+  public getSecretKey(fpr: string): ResultObservable<ListSecretKeys.SecretKey> {
+    return rx.Observable.create((obs: ResultObserver<ListSecretKeys.SecretKey>) => {
+      this.list_secret_keys().subscribe(result => {
+        if (result.doProgress(obs)) { return; }
+        if (result.doError(obs)) { return; }
+        if (result.data.fingerPrint.fpr == fpr) {
+          obs.next(result);
         }
-      }
-      if (!found) {
-        cb(null);
-      }
-    });
-  }
-
-  public list_secret_keys(cb: (err: string, keys: ListSecretKeys.SecretKey[]) => void): void {
-    this.run(['--list-secret-keys', '--with-colons'], null, (result: Result) => {
-      if (result.exitCode != 0) {
-        cb('gpg exit with a error code:' + result.exitCode +
-          '\n' + result.stdErr +
-          '\n' + result.stdOut, null);
-        return;
-      }
-      cb(null, ListSecretKeys.run(result.stdOut));
-    });
-  }
-
-  public card_status(cb: (err: string, keys: CardStatus.Gpg2CardStatus[]) => void): void {
-    this.run(['--card-status', '--with-colons'], null, (result: Result) => {
-      if (result.exitCode != 0) {
-        cb('gpg exit with a error code:' + result.exitCode +
-          '\n' + result.stdErr +
-          '\n' + result.stdOut, null);
-        return;
-      }
-      cb(null, CardStatus.run(result.stdOut));
-    });
-  }
-
-  // public write_pinentry_sh(fname: string, cb: (err: any) => void) {
-  //   fs.writeFile(fname, [
-  //     '#!' + process.argv[0],
-  //     "let pinentry = require(path.join(process.env.F_MOD_HOME), 'pinentry', 'client'));",
-  //     "pinentry.client(process.env.S_PINENTRY_SOCKET);"
-  //   ].join("\n"), (err) => {
-  //     fs.chmod(fname, 0o755, cb);
-  //   });
-  // }
-
-  public deleteSecretKey(fingerPrint: string, cb: (res: Result) => void): void {
-    let args: Mixed[] = ['--no-tty'];
-    this.getSecretKey(fingerPrint, (key) => {
-      if (!key) {
-        cb(null);
-        return;
-      }
-      // for (let i = 0; i < 1 + key.subKeys.length; ++i) {
-      //   args.push('--passphrase-fd', () => {
-      //     console.log("--passphrase-fd y");
-      //     return "j\n";
-      //   });
-      // }
-      args.push('--expert', '--batch', '--yes', '--delete-secret-key', fingerPrint);
-      console.log('deleteSecretKey:', args);
-      this.run(args, null, cb);
-    });
-  }
-
-  public deletePublicKey(fingerPrint: string, cb: (res: Result) => void): void {
-    this.run(['--batch', '--delete-key', fingerPrint], null, cb);
-  }
-
-  public write_agent_conf(pinentryPath: string, cb: (err: any) => void): void {
-    let gpgAgentFname = path.join(this.homeDir, 'gpg-agent.conf');
-    Ac.AgentConf.read_file(gpgAgentFname, (err: any, ag: Ac.AgentConf) => {
-      if (err) {
-        cb(err);
-        return;
-      }
-      let pp = 'pinentry-program';
-      let pv = pinentryPath;
-      let als = ag.find(pp);
-      if (!als) {
-        als = [new Ac.AgentLine([pp, pv].join(' '))];
-      }
-      als.forEach((al: Ac.AgentLine) => { al.value = pv; });
-      ag.write_file(gpgAgentFname, (errx: string) => {
-        if (errx) {
-          cb(errx);
-          return;
-        }
-        cb(null);
+      }, null, () => {
+        obs.complete();
       });
     });
   }
 
-  public createMasterKey(keyGen: KeyGen.KeyGen, cb: (res: Result) => void): void {
+  public list_secret_keys(): ResultObservable<ListSecretKeys.SecretKey> {
+    return rx.Observable.create((obs: ResultObserver<ListSecretKeys.SecretKey>) => {
+      this.run<ListSecretKeys.SecretKey>('list_secret_keys',
+        ['--list-secret-keys', '--with-colons'], null).subscribe(result => {
+          if (result.doProgress(obs)) { return; }
+          if (result.doError(obs)) { return; }
+          ListSecretKeys.run(result.exec.stdOut).forEach(lsk => obs.next(result.clone(lsk)));
+          obs.complete();
+        });
+    });
+  }
+
+  public card_status(): ResultObservable<CardStatus.Gpg2CardStatus> {
+    return rx.Observable.create((obs: ResultObserver<CardStatus.Gpg2CardStatus>) => {
+      this.run<CardStatus.Gpg2CardStatus>('card_status', ['--card-status', '--with-colons'], null)
+        .subscribe(result => {
+          if (result.doProgress(obs)) { return; }
+          if (result.doError(obs)) { return; }
+          CardStatus.run(result.exec.stdOut).forEach(cs => obs.next(result.clone(cs)));
+          obs.complete();
+        });
+    });
+  }
+
+  public deleteSecretKey(fingerPrint: string): ResultObservable {
+    return rx.Observable.create((obs: ResultObserver) => {
+      this.getSecretKey(fingerPrint).subscribe(key => {
+        if (key.doProgress(obs)) { return; }
+        if (key.doError(obs)) { return; }
+        const args: Mixed[] = ['--no-tty'];
+        args.push('--expert', '--batch', '--yes', '--delete-secret-key', fingerPrint);
+        this.run('deleteSecretKey', args, null).subscribe(result => {
+          if (result.doProgress(obs)) { return; }
+          if (result.doError(obs)) { return; }
+          key.doComplete(obs);
+        });
+      });
+    });
+  }
+
+  public deletePublicKey(fingerPrint: string): ResultObservable {
+    return this.run('deletePublicKey', ['--batch', '--delete-key', fingerPrint], null);
+  }
+
+  public createMasterKey(keyGen: KeyGen.KeyGen): ResultObservable {
     //  '--enable-large-rsa',
     let args: Mixed[] = [
       '--no-tty', '--pinentry-mode', 'loopback',
       '--passphrase-fd',
       () => {
-        return keyGen.password.value + '\n';
+        return `${keyGen.password.value}\n`;
       },
       '--passphrase-fd',
       () => {
-        return keyGen.password.value + '\n';
+        return `${keyGen.password.value}\n`;
       },
       '--full-gen-key',
       '--batch'
     ];
-    console.log('createMasterKey:', this.gpgCmd, this.gpgCmdArgs, args);
-    this.run(args, keyGen.masterCommand(), cb);
+    // console.log('createMasterKey:', this.gpgCmd, this.gpgCmdArgs, args);
+    return this.run('createMasterKey', args, keyGen.masterCommand());
   }
 
-  public pemPrivateKey(rqa: RequestAscii, cb: (res: Result) => void): void {
+  public pemPrivateKey(rqa: RequestAscii): ResultObservable {
     let args = [
       '--no-tty', '--pinentry-mode', 'loopback',
       '--passphrase-fd',
       () => {
-        return rqa.passphrase.value + '\n';
+        return `${rqa.passphrase.value}\n`;
       },
       '-a', '--export-secret-key', rqa.fingerprint
     ];
-    console.log('pemPrivateKey:', this.homeDir);
-    this.run(args, null, cb);
-  }
-  public pemPublicKey(rqa: RequestAscii, cb: (res: Result) => void): void {
-    this.run(['-a', '--export', rqa.fingerprint], null, cb);
-  }
-  public pemRevocation(rqa: RequestAscii, cb: (res: Result) => void): void {
-    this.run(['-a', '--gen-revoke', rqa.fingerprint], null, cb);
-  }
-  public sshPublic(rqa: RequestAscii, cb: (res: Result) => void): void {
-    this.run(['--export-ssh-key', rqa.fingerprint], null, cb);
+    // console.log('pemPrivateKey:', this.homeDir);
+    return this.run('pemPrivateKey', args, null);
   }
 
-  public addUid(fpr: string, kg: KeyGen.KeyGen, uid: KeyGenUid, cb: (res: Result) => void): void {
+  public pemPublicKey(rqa: RequestAscii): ResultObservable {
+    return this.run('pemPublicKey', ['-a', '--export', rqa.fingerprint], null);
+  }
+
+  public pemRevocation(rqa: RequestAscii): ResultObservable {
+    return this.run('pemRevocation', ['-a', '--gen-revoke', rqa.fingerprint], null);
+  }
+
+  public sshPublic(rqa: RequestAscii): ResultObservable {
+    return this.run('sshPublic', ['--export-ssh-key', rqa.fingerprint], null);
+  }
+
+  public addUid(fpr: string, kg: KeyGen.KeyGen, uid: KeyGenUid): ResultObservable {
     let args = [
       '--no-tty', '--pinentry-mode', 'loopback',
       '--passphrase-fd',
@@ -354,212 +312,201 @@ export class Gpg {
       '--quick-adduid', fpr,
       uid.toString()
     ];
-    console.log('addUid', args);
-    this.run(args, null, cb);
+    // console.log('addUid', args);
+    return this.run('addUid', args, null);
   }
 
-  public createSubkey(fpr: string, kg: KeyGen.KeyGen, ki: KeyGen.KeyInfo, cb: (res: Result) => void): void {
+  public createSubkey(fpr: string, kg: KeyGen.KeyGen, ki: KeyGen.KeyInfo): ResultObservable {
     // gpg2  --quick-addkey  FDCF2566BA8134E3BAD15B7DDDC4941118503075 rsa2048 sign,auth,encr
     // '--enable-large-rsa'
-    let args = [
+    const args = [
       '--no-tty', '--pinentry-mode', 'loopback',
       '--passphrase-fd',
       () => {
-        return kg.password.value + '\n';
+        return `${kg.password.value}\n`;
       },
       '--quick-addkey', fpr,
       ki.type.value.toLowerCase() + ki.length.value, ki.usage.values.join(','),
       format_date(kg.expireDate.value)
     ];
-    console.log('createSubkey', args);
-    this.run(args, null, cb);
+    // console.log('createSubkey', args);
+    return this.run('createSubKey', args, null);
   }
 
-  public changePin(type: string, rcp: RequestChangePin, cb: (res: Result) => void): void {
-    let args = [
+  public changePin(type: string, rcp: RequestChangePin): ResultObservable {
+    const args = [
       '--no-tty', '--pinentry-mode', 'loopback',
       '--passphrase-fd', () => {
-        return rcp.admin_pin.pin + '\n';
+        return `${rcp.admin_pin.pin}\n`;
       },
       '--passphrase-fd', () => {
-        return rcp.new_pin.pin + '\n';
+        return `${rcp.new_pin.pin}\n`;
       },
       '--passphrase-fd', () => {
-        return rcp.new_pin_verify.pin + '\n';
+        return `${rcp.new_pin.pin}\n`;
       },
       '--change-pin', type, rcp.app_id
     ];
-    console.log('changePin:', args);
-    this.run(args, null, cb);
+    // console.log('changePin:', args);
+    return this.run('changePin', args, null);
   }
 
-  private getSocketNames(g1: Gpg, g2: Gpg, cb: (res: Result, s1?: string, s2?: string) => void): void {
-    g1.getSocketName((sName1) => {
-      if (sName1 == null) {
-        let res = new Result(this);
-        res.exitCode = 47;
-        res.stdErr = `can't retrieve socketName:${sName1}`;
-        cb(res);
-        return;
-      }
-      g2.getSocketName((sName2) => {
-        if (sName2 == null) {
-          let res = new Result(this);
-          res.exitCode = 48;
-          res.stdErr = `can't retrieve socketName:${sName2}`;
-          cb(res);
-          return;
-        }
-        cb(null, sName1, sName2);
-      });
-    });
-  }
-
-  public importSecretKey(ktyk: KeyToYubiKey, pem: string, cb: (res: Result) => void): void {
-    let args = [
-      '--pinentry-mode', 'loopback',
-      '--passphrase-fd', () => {
-        return ktyk.passphrase.value + '\n';
-      },
-      '--import'
-    ];
-    this.run(args, pem, (pre: Result) => {
-      cb(pre);
-    });
-  }
-
-  public prepareKeyToYubiKey(ktyk: KeyToYubiKey, cb: (gpgYubiKey: Gpg, res: Result) => void): void {
-    let rqa = new RequestAscii();
-    rqa.fingerprint = ktyk.fingerprint;
-    rqa.passphrase = ktyk.passphrase;
-    this.pemPrivateKey(rqa, async (res: Result) => {
-      if (res.exitCode != 0) {
-        cb(null, res);
-        return;
-      }
-      let gpgSmartCard = this.clone();
-      let homedir = path.join(process.cwd(), `${uuid.v4().toString().slice(0, 16)}.ctr`);
-      console.log('keyToYubiKey:', homedir);
-      gpgSmartCard.setHomeDir(homedir);
-      try {
-        await fsPromise.mkdir(homedir);
-        await fsPromise.chmod(homedir, 0o700);
-      } catch (e) {
-        res.exitCode = 42;
-        res.stdErr = e;
-        cb(null, res);
-        return;
-      }
-      gpgSmartCard.importSecretKey(ktyk, res.stdOut, (ires: Result) => {
-        if (ires.exitCode != 0) {
-          cb(null, ires);
-        }
-        this.getSocketNames(this, gpgSmartCard, (sres: Result, s1: string, s2: string) => {
-          if (sres) {
-            cb(null, sres);
-            return;
-          }
-          gpgSmartCard.runAgent(['killagent', '/bye'], null, async (ares: Result) => {
-            if (ares.exitCode != 0) {
-              cb(null, ares);
-              return;
-            }
-            try {
-              if (s1 != s2) {
-                try {
-                  await fsPromise.ensureFile(s2);
-                  await fsPromise.unlink(s2);
-                  await fsPromise.symlink(s1, s2);
-                } catch (e) {
-                  // nothing
-                }
-              }
-              console.log('killed:', s1, s2);
-              cb(gpgSmartCard, ares);
-            } catch (e) {
-              console.log(e);
-              ares.exitCode = 43;
-              ares.stdErr = e;
-              cb(null, ares);
-              return;
-            }
-          });
+  private getSocketNames(g1: Gpg, g2: Gpg): ResultObservable<SocketNames> {
+    return rx.Observable.create((obs: ResultObserver<SocketNames>) => {
+      g1.getSocketName().subscribe(rs1 => {
+        if (rs1.doProgress(obs)) { return; }
+        if (rs1.doError(obs)) { return; }
+        g2.getSocketName().subscribe(rs2 => {
+          if (rs2.doProgress(obs)) { return; }
+          if (rs2.doError(obs)) { return; }
+          rs2.clone<SocketNames>().setData({ s1: rs1.data, s2: rs2.data }).doComplete(obs);
         });
       });
     });
   }
 
-  public keyToYubiKey(ktyk: KeyToYubiKey, cb: (res: Result) => void): void {
-    // create copy of the selected key to avoid
-    // that this key will removed from the current
-    // key database
-    this.prepareKeyToYubiKey(ktyk, (gpgYubiKey: Gpg, res: Result) => {
-      if (res.exitCode != 0) {
-        cb(res);
-        return;
-      }
-      let args = [
-        '--pinentry-mode', 'loopback',
-        '--passphrase-fd', () => {
-          // console.log(">>keyToYubiKey:passphrase[", ktyk.passphrase.value, "]")
-          return ktyk.passphrase.value + '\n';
-        },
-        '--passphrase-fd', () => {
-          // console.log(">>keyToYubiKey:admin[", ktyk.admin_pin.pin, "]")
-          return ktyk.admin_pin.pin + '\n';
-        },
-        '--quick-keytocard',
-        ktyk.fingerprint,
-        '' + ktyk.slot_id, ktyk.card_id
-      ];
-      // console.log('keyToYubiKey', args);
-      gpgYubiKey.run(args, null, (resx: Result) => {
-        if (resx.exitCode == 0) {
-          // console.error('keyToYubiKey:error:', resx);
-          rimraf.sync(gpgYubiKey.homeDir);
-        }
-        // console.log('keyToYubikey:transaction', resx.execTransaction);
-        cb(resx);
+  public importSecretKey(ktyk: KeyToYubiKey, pem: string): ResultObservable {
+    const args = [
+      '--pinentry-mode', 'loopback',
+      '--passphrase-fd', () => {
+        return `${ktyk.passphrase.value}\n`;
+      },
+      '--import'
+    ];
+    return this.run('importSecretKey', args, pem);
+  }
+
+  private handleImportedSecretedKey(inititator: string, srcGpg: Gpg, dstGpg: Gpg): ResultObservable<void> {
+    return rx.Observable.create((obs: ResultObserver) => {
+      this.getSocketNames(srcGpg, dstGpg).subscribe(sockNamesRes => {
+        if (sockNamesRes.doProgress(obs)) { return; }
+        if (sockNamesRes.doError(obs)) { return; }
+        dstGpg.runAgent(inititator, ['killagent', '/bye'], null).subscribe(ares => {
+          if (ares.doProgress(obs)) { return; }
+          if (ares.doError(obs)) { return; }
+          if (sockNamesRes.data.s1 != sockNamesRes.data.s2) {
+            fs.exists(sockNamesRes.data.s2, exist => {
+              if (!exist) {
+                ares.doComplete(obs);
+                return;
+              }
+              fs.unlink(sockNamesRes.data.s2, err => {
+                if (!err) {
+                  ares.clone().setNodeError(err).doComplete(obs);
+                  return;
+                }
+                fs.symlink(sockNamesRes.data.s1, sockNamesRes.data.s2, symerr => {
+                  if (!symerr) {
+                    ares.clone().setNodeError(err).doComplete(obs);
+                    return;
+                  }
+                  console.log('agent symlink created');
+                  ares.doComplete(obs);
+                });
+              });
+            });
+          } else {
+            console.log('agent killed');
+            ares.doComplete(obs);
+          }
+        });
       });
     });
   }
 
-  public changeCard(cc: ChangeCard, cb: (res: Result) => void): void {
-    let sname = cc.name.split(/\s+/);
-    let actions = [
-      ['name', [sname.slice(1).join(' '), sname[0]]],
-      ['language', [cc.lang]],
-      ['sex', [cc.sex[0] == 'f' ? 2 : 1]],
-      ['login', [cc.login]],
-      ['url', [cc.url]]
-    ];
-    this._changeCard(cc, actions, cb, []);
-  }
-  private _changeCard(cc: ChangeCard, actions: any[], cb: (res: Result) => void, results: Result[]): void {
-    if (actions.length == 0) {
-      let res = new Result(this);
-      results.forEach((r) => {
-        res.exitCode += r.exitCode;
-        res.stdErr += r.stdErr;
-        res.stdOut += r.stdOut;
+  public prepareKeyToYubiKey(inititator: string, ktyk: KeyToYubiKey): ResultObservable<Gpg> {
+    return rx.Observable.create((obs: ResultObserver<Gpg>) => {
+      const rqa = new RequestAscii();
+      rqa.fingerprint = ktyk.fingerprint;
+      rqa.passphrase = ktyk.passphrase;
+      this.pemPrivateKey(rqa).subscribe(pkres => {
+        if (pkres.doProgress(obs)) { return; }
+        if (pkres.doError(obs)) { return; }
+        createTempDir(this.gpgCmds.gpg.resultQueue, this.homeDir,
+          `${uuid.v4().toString().slice(0, 16)}.${inititator}.tdir`).subscribe(createdDir => {
+          if (createdDir.doProgress(obs)) { return; }
+          if (createdDir.doError(obs)) { return; }
+          const gpgSmartCard = this.clone();
+          gpgSmartCard.setHomeDir(createdDir.data);
+          gpgSmartCard.importSecretKey(ktyk, pkres.exec.stdOut).subscribe(iskres => {
+            if (iskres.doProgress(obs)) { return; }
+            if (iskres.doError(obs)) { return; }
+            this.handleImportedSecretedKey(inititator, this, gpgSmartCard).subscribe(hres => {
+              if (hres.doProgress(obs)) { return; }
+              if (hres.doError(obs)) { return; }
+              ResultContainer.builder(gpgSmartCard.gpgCmds.gpg.resultQueue)
+                .setData(gpgSmartCard)
+                .doComplete(obs);
+            });
+          });
+        }
+        );
       });
-      cb(res);
+    });
+  }
+
+  public keyToYubiKey(ktyk: KeyToYubiKey): ResultObservable<Gpg> {
+    // create copy of the selected key to avoid
+    // that this key will removed from the current
+    // key database
+    return rx.Observable.create((obs: ResultObserver) => {
+      this.prepareKeyToYubiKey('keyToYubiKey', ktyk).subscribe(rsgpg => {
+        if (rsgpg.doProgress(obs)) { return; }
+        if (rsgpg.doError(obs)) { return; }
+        const args = [
+          '--pinentry-mode', 'loopback',
+          '--passphrase-fd', () => {
+            return `${ktyk.passphrase.value}\n`;
+          },
+          '--passphrase-fd', () => {
+            return `${ktyk.admin_pin.pin}\n`;
+          },
+          '--quick-keytocard', ktyk.fingerprint, `${ktyk.slot_id}`, ktyk.card_id
+        ];
+        rsgpg.data.run('keyToYubiKey', args, null).subscribe(resx => {
+          if (resx.doProgress(obs)) { return; }
+          if (resx.doError(obs)) { return; }
+          rsgpg.doComplete(obs);
+        });
+      });
+    });
+  }
+
+  public changeCard(cc: ChangeCard): ResultObservable<void> {
+    const sname = cc.name.split(/\s+/);
+    const actions: ChangeCardAttribute[] = [
+      { name: 'name', value: [sname.slice(1).join(' '), sname[0]] },
+      { name: 'language', value: [cc.lang] },
+      { name: 'sex', value: [cc.sex[0] == 'f' ? '2' : '1'] },
+      { name: 'login', value: [cc.login] },
+      { name: 'url', value: [cc.url] }
+    ];
+    return rx.Observable.create((obs: ResultObserver) => {
+      this._changeCard(obs, cc, actions);
+    });
+  }
+
+  private _changeCard(obs: ResultObserver, cc: ChangeCard, actions: ChangeCardAttribute[]): void {
+    if (actions.length == 0) {
+      obs.complete();
       return;
     }
-    let current = actions.shift();
-    console.log('current:', current);
-    this.changeAttribute(cc.adminPin.pin, current[0], current[1], cc.serialNo, (res) => {
-      results.push(res);
-      this._changeCard(cc, actions, cb, results);
-    });
+    const current = actions.shift();
+    this.changeAttribute(cc.adminPin.pin, current.name, current.value, cc.serialNo)
+      .subscribe(res => {
+        if (res.doProgress(obs)) { return; }
+        if (res.doError(obs)) { return; }
+        obs.next(res);
+        this._changeCard(obs, cc, actions);
+      });
   }
 
   private changeAttribute(adminPin: string, attrName: string,
-    value: string[], serialNo: string, cb: (res: Result) => void): void {
+    value: string[], serialNo: string): ResultObservable {
     // create copy of the selected key to avoid
     // that this key will removed from the current
     // key database
-    let args = [
+    const args = [
       '--pinentry-mode', 'loopback',
       '--passphrase-fd', () => {
         // console.log(">>keyToYubiKey:passphrase[", ktyk.passphrase.value, "]")
@@ -567,68 +514,173 @@ export class Gpg {
       },
       '--change-card',
       attrName
-    ];
-    args = args.concat(value);
+    ].concat(value);
     args.push(serialNo);
-    console.log('changeCard', args);
-    this.run(args, null, cb);
+    // console.log('changeCard', args);
+    return this.run('changeAttribute', args, null);
   }
-
 }
 
-function findGpgMock(): Promise<string[]> {
+function findMock(rq: ResultQueue, obs: ResultObserver<string>, dirname: string): void {
+  let gmExists = false;
+  let prevDirname = dirname;
+  dirname = path.dirname(dirname);
+  const gm = path.join(dirname, 'gpg-mock.js');
+  const rc = ResultContainer.builder<string>(rq);
+  rc.log(obs, `findMock:${gm}`);
+  // console.log('Zzz-1:', gm);
+  fs.exists(gm, (exist: boolean) => {
+    // console.log('Zzz-2:', gm, exist);
+    if (exist) {
+      rc.setData(gm).doComplete(obs);
+    } else {
+      if (prevDirname != dirname) {
+        findMock(rq, obs, dirname);
+      } else {
+        rc.doComplete(obs);
+      }
+    }
+  });
+}
+
+function gpgCmdMock(rq: ResultQueue): rx.Observable<ResultContainer<GpgCmds>> {
   let dirname = process.argv[process.argv.length - 1];
-  let gm = '';
-  let prevDirname = '';
-  return new Promise<string[]>(async (res, rej) => {
-    let gmExists = false;
-    do {
-      prevDirname = dirname;
-      dirname = path.dirname(dirname);
-      gm = path.join(dirname, 'gpg-mock.js');
-      // console.log(gm);
-      gmExists = await fsPromise.pathExists(gm);
-    } while (prevDirname != dirname && !gmExists);
-    res([process.execPath, gm]);
+  return rx.Observable.create((gcobs: ResultObserver<GpgCmds>) => {
+    // console.log('Yyz-1:', dirname);
+    rx.Observable.create((obs: ResultObserver<string>) => {
+      // console.log('Yyz-2:', dirname);
+      findMock(rq, obs, dirname);
+    }).subscribe((rcgm: ResultContainer<string>) => {
+      // console.log('Yyz-3:', process.execPath, rcgm.data, rcgm.isOk(), rcgm.progress);
+      if (rcgm.doProgress(gcobs)) { return; }
+      if (rcgm.doError(gcobs)) { return; }
+      // console.log('Yyz-3.1:', process.execPath, rcgm.data);
+      GpgCmds.create(rq, [process.execPath, rcgm.data], [process.execPath, rcgm.data, 'connect-agent'],
+        0, true).subscribe(a => {
+          // console.log('Yyz-4:', a.isError(), a.progress);
+          if (a.doProgress(gcobs)) { return; }
+          if (a.doError(gcobs)) { return; }
+          // console.log('Yyz-4.1:', a.data);
+          a.doComplete(gcobs);
+        });
+    });
   });
 }
 
-export async function internalCreate(selectGpgCmd: (gc: GpgCmd) => void): Promise<Gpg> {
-  return new Promise<Gpg>(async (res, rej) => {
-    const mockCmd = await findGpgMock();
-    const gpgcmd = {
-      cmd: mockCmd,
-      cmdAgent: mockCmd.concat(['connect-agent'])
-    };
-    selectGpgCmd(gpgcmd);
-    const gpg = Gpg._create(mockCmd);
-    gpg.setGpgCmd(gpgcmd.cmd);
-    gpg.setGpgAgentCmd(gpgcmd.cmdAgent);
-    res(gpg);
+const GPGMINVERSION = 2001018;
+
+function possibleGpgCmds(rq: ResultQueue): ResultObservable<GpgCmds>[] {
+  return [
+    GpgCmds.create(rq, ['/usr/bin/gpg'], ['/usr/bin/gpg-connect-agent'], 0),
+    GpgCmds.create(rq, ['/usr/bin/gpg2'], ['/usr/bin/gpg-connect-agent'], 1),
+    GpgCmds.create(rq, ['/usr/local/bin/gpg'], ['/usr/local/bin/gpg-connect-agent'], 2),
+    GpgCmds.create(rq, ['/usr/local/bin/gpg2'], ['/usr/local/bin/gpg-connect-agent'], 3),
+    GpgCmds.create(rq, ['../gpg/gnupg/g10/gpg'], ['../gpg/gnupg/tools/gpg-connect-agent'], 4),
+    GpgCmds.create(rq, ['/gnupg/g10/gpg'], ['/gnupg/tools/gpg-connect-agent'], 5)
+  ];
+}
+
+function resolveCmds(obs: rx.Observer<ResultContainer<GpgCmds[]>>, gpgCmds: ResultObservable<GpgCmds>[],
+  ret: ResultContainer<GpgCmds[]>): void {
+  // console.log('Yyy-4:');
+  if (gpgCmds.length == 0) {
+    obs.next(ret);
+    obs.complete();
+    return;
+  }
+  const work = gpgCmds.shift();
+  work.subscribe(gpgcmds => {
+    if (gpgcmds.doProgress(obs)) { return; }
+    if (gpgcmds.isOk()) {
+      ret.data.push(gpgcmds.data); // only add valid cmds
+    }
+    resolveCmds(obs, gpgCmds, ret);
+  });
+  return;
+}
+
+export function internalCreate(rq: ResultQueue, gpgCmds: ResultObservable<GpgCmds>[]): ResultObservable<GpgCmds[]> {
+  return rx.Observable.create((obs: rx.Observer<ResultContainer<GpgCmds[]>>) => {
+    gpgCmdMock(rq).subscribe(mock => {
+      // console.log('Yyx-3:');
+      if (mock.doProgress(obs)) { return; }
+      if (mock.doError(obs)) { return; }
+      resolveCmds(obs, gpgCmds, ResultContainer.builder<GpgCmds[]>(rq).setData([mock.data]));
+    });
   });
 }
 
-export function create(selectGpgCmd = gpgCmd): Promise<Gpg> {
-  return new Promise<Gpg>(async (res, rej) => {
-    const gpg = await internalCreate(selectGpgCmd);
-    const gi = await gpg.info();
-    console.log('Created Gpg:', gi);
-    return gpg;
+function _silentCreate(rq: ResultQueue, gpgCmds: ResultObservable<GpgCmds>[], title: string): ResultObservable<Gpg> {
+  return rx.Observable.create((obs: ResultObserver<Gpg>) => {
+    // console.log('Yyx-1:');
+    internalCreate(rq, gpgCmds).subscribe((rc: ResultContainer<GpgCmds[]>) => {
+      // console.log('Yyx-2:');
+      if (rc.doProgress(obs)) { return; }
+      const rcgpg = rc.clone<Gpg>();
+      if (!rc.isError() && rc.data.length > 0) {
+        const mock = rc.data.find(a => a.mock);
+        const gcmds = rc.data.filter(a => !a.mock)
+          .sort((a, b) => b.order - a.order)
+          .find(a => a.gpg.data.version.data.versionNumber() >= GPGMINVERSION) || mock;
+        rcgpg.data = Gpg._create(mock);
+        rcgpg.data.setGpgCmds(gcmds);
+      }
+      rcgpg.doComplete(obs);
+    });
   });
 }
 
-export function createTest(selectGpgCmd = gpgCmd, title = 'Test'): Promise<Gpg> {
-  return new Promise<Gpg>(async (res, rej) => {
-    const gpg = await internalCreate(selectGpgCmd);
-    const homedir = path.join(process.cwd(), `${uuid.v4().toString().slice(0, 16)}.tdir`);
-    gpg.setHomeDir(homedir);
-    await fsPromise.mkdirSync(homedir);
-    const gi = await gpg.info();
-    console.log(`Created ${title} Gpg:`, gi);
-    res(gpg);
+export function create(rq: ResultQueue, gpgCmds: ResultObservable<GpgCmds>[] = null,
+  title = ''): ResultObservable<Gpg> {
+  if (!gpgCmds) {
+    gpgCmds = possibleGpgCmds(rq);
+  }
+  return rx.Observable.create((obs: ResultObserver<Gpg>) => {
+    _silentCreate(rq, gpgCmds, title).subscribe(rsgpg => {
+      if (rsgpg.doProgress(obs)) { return; }
+      if (rsgpg.isError()) {
+        console.log(`Failed to Create GPG:${title}`);
+      } else {
+        console.log(rsgpg.data.info(title));
+      }
+      rsgpg.doComplete(obs);
+    });
   });
 }
 
-export function createMock(): Promise<Gpg> {
-  return createTest(() => { /* */ }, 'Mock');
+export function createTest(rq: ResultQueue, gpgCmds: ResultObservable<GpgCmds>[] = null,
+  title = 'Test'): ResultObservable<Gpg> {
+  if (!gpgCmds) {
+    gpgCmds = possibleGpgCmds(rq);
+  }
+  // console.log('Yxx-2:');
+  return rx.Observable.create((obs: ResultObserver<Gpg>) => {
+    // console.log('Yxx-3:');
+    _silentCreate(rq, gpgCmds, title).subscribe(rcgpg => {
+      // console.log('Yxx-4:');
+      if (rcgpg.doProgress(obs)) { return; }
+      if (rcgpg.doError(obs)) {
+        console.log(`Failed to Create GPG:${title}`);
+        return;
+      }
+      createTempDir(rq, process.cwd(), `${uuid.v4().toString().slice(0, 16)}.tdir`).subscribe(rcs => {
+        // console.log('Yxx-5:');
+        if (rcs.doProgress(obs)) { return; }
+        if (rcs.doError(obs)) {
+          console.log(`Failed to Create GPG:${title}`);
+          return;
+        }
+        rcgpg.data.setHomeDir(rcs.data);
+        console.log(rcgpg.data.info(title));
+        rcgpg.doComplete(obs);
+      });
+    });
+  });
 }
+
+export function createMock(rq: ResultQueue): ResultObservable<Gpg> {
+  // console.log('Yxx-1:');
+  return createTest(rq, [], 'Mock');
+}
+
+export default Gpg;

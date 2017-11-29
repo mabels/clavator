@@ -9,14 +9,18 @@ import { DiceWare, Diced } from '../../dice-ware/dice-ware';
 
 import * as Progress from '../../model/progress';
 import { Observer } from '../observer';
+import * as rx from 'rxjs';
+import { ResultContainer, ResultObservable, ResultObserver, ResultQueue } from '../../gpg/result';
 // import * as path from 'path';
 
 export class DiceWareDispatcher implements Dispatcher {
 
     private static diceWares: DiceWare[];
 
-    public static create(): DiceWareDispatcher {
-        return new DiceWareDispatcher();
+    private readonly resultQueue: ResultQueue;
+
+    public static create(rq: ResultQueue): DiceWareDispatcher {
+        return new DiceWareDispatcher(rq);
     }
 
     private static listToDiceWare(fname: string, body: string): DiceWare {
@@ -37,8 +41,15 @@ export class DiceWareDispatcher implements Dispatcher {
         return DiceWareDispatcher.diceWares;
     }
 
-    public static get(): Promise<DiceWare[]> {
-     return new Promise((resolv, reject) => { resolv(DiceWareDispatcher.moduleToDiceWare()); });
+    public static get(rq: ResultQueue): ResultObservable<DiceWare[]> {
+     return rx.Observable.create((obs: ResultObserver<DiceWare[]>) => {
+        obs.next(ResultContainer.builder<DiceWare[]>(rq).setData(DiceWareDispatcher.moduleToDiceWare()));
+        obs.complete();
+     });
+    }
+
+    constructor(rq: ResultQueue) {
+        this.resultQueue = rq;
     }
 
     // public static read(fname: string): Promise<DiceWare> {
@@ -58,13 +69,17 @@ export class DiceWareDispatcher implements Dispatcher {
             return false;
         }
         let header = Message.toHeader(m, 'Progressor.Clavator');
-        DiceWareDispatcher.get().then(diceWares => {
+        DiceWareDispatcher.get(this.resultQueue).subscribe(rcdw => {
+            if (rcdw.isError()) {
+                return;
+            }
+            const diceWares = rcdw.data;
             console.log(JSON.stringify(diceWares[0]));
             ws.send(Message.prepare(header, Progress.info(`DiceWareRequest Action`)));
             // console.log('DiceWares.Response:', JSON.stringify(diceWares[0]));
             ws.send(Message.prepare(header.setAction('DiceWares.Response'),
                 diceWares.map(dw => dw.toObj())));
-        }).catch(_ => {
+        }, _ => {
             console.log('error:', _);
             ws.send(Message.prepare(header, Progress.fail('can not read diceware file')));
         });

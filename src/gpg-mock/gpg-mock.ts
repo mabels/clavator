@@ -19,7 +19,7 @@ function cli(args: string[]): void {
   state.onParsed((_y: yargs.Arguments, _state: GpgMockState): boolean => {
     if (_y.version) {
       // const version = fs.readFileSync('./')
-      _state.stdout('gpg-mock (2.1.14)');
+      _state.stdout('gpg-mock (GpgMock) 2.1.14');
       return true;
     }
     return false;

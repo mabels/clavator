@@ -6,15 +6,24 @@ import Warrent from '../../src/gpg/warrent';
 import DiceWare from '../../src/dice-ware/dice-ware';
 import CharFormat from '../../src/ui/model/char-format';
 import DiceWareDispatcher from '../../src/server/dispatcher/dice-ware-dispatcher';
+import { ResultQueue } from '../../src/gpg/result';
 
 describe('PassPhrase', () => {
 
   let diceWares: DiceWare[];
+  let rq: ResultQueue = null;
 
   before((done: any): void => {
-    DiceWareDispatcher.get()
-      .then(dws => { diceWares = dws; console.log('diceWares loaded'); done(); })
-      .catch(err => { console.error(err); done(); });
+    rq = ResultQueue.create();
+    DiceWareDispatcher.get(rq).subscribe(rcdws => {
+      diceWares = rcdws.data;
+      console.log('diceWares loaded');
+      done();
+    });
+  });
+
+  after((done) => {
+    rq.stop().subscribe(done);
   });
 
   function warrents(i: number): Warrents {

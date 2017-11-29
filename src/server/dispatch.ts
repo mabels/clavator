@@ -35,6 +35,6 @@ export function start(gpg: Gpg.Gpg): Dispatch {
     dispatch.dispatcher.push(RequestAsciiDispatcher.create(gpg));
     dispatch.dispatcher.push(SendKeyToYubiKey.create(gpg));
     dispatch.dispatcher.push(GpgChangeCard.create(gpg));
-    dispatch.dispatcher.push(DiceWareDispatcher.create());
+    dispatch.dispatcher.push(DiceWareDispatcher.create(gpg.gpgCmds.gpg.resultQueue));
     return dispatch;
 }

@@ -72,6 +72,8 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
                 pin: this.state.pin
               }));
             }} />
+            ACHTUNG VERIFY PIN FEHLT!!!!!
+            {/*
           <input type="password"
             name="verify-new-pin"
             className={classnames({ good: this.state.pin.new_pin_verify.verify() })}
@@ -81,6 +83,7 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
                 pin: this.state.pin
               }));
             }} />
+            */}
         </div>
 
         <ButtonToProgressor
