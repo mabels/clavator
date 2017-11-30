@@ -1,4 +1,4 @@
-import { Result, ResultContainer } from '../gpg/result';
+import { ResultContainer } from '../gpg/result';
 
 export class Progress {
   public id: number;

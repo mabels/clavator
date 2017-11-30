@@ -2,7 +2,7 @@
 import { assert } from 'chai';
 
 import * as Gpg from '../../src/gpg/gpg';
-import { ResultObservable, ResultContainer, ResultObserver, ResultExec } from '../../src/gpg/result';
+import { ResultObservable, ResultExec } from '../../src/gpg/result';
 
 import * as ListSecretKeys from '../../src/gpg/list-secret-keys';
 
@@ -13,7 +13,7 @@ import { ResultQueue } from '../../src/gpg/result';
 import { RequestAscii } from '../../src/model/request-ascii';
 import KeyToYubiKey from '../../src/gpg/key-to-yubikey';
 import safeRaf from '../safe-raf';
-import * as rx from 'rxjs';
+// import * as rx from 'rxjs';
 // import { findDOMNode } from 'react-dom';
 // import { dirname } from 'path';
 

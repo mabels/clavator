@@ -1,7 +1,6 @@
 import * as Rimraf from 'rimraf';
 import * as fs from 'fs';
 import * as rx from 'rxjs';
-import { dirname } from 'path';
 
 export function safeRaf(dir: string): rx.Observable<void> {
   return rx.Observable.create((obs: rx.Observer<void>) => {

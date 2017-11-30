@@ -9,7 +9,7 @@ import * as Gpg from '../../gpg/gpg';
 import CreateKeySetTask from '../tasks/create-key-set-task';
 import { Observer } from '../observer';
 
-import * as Progress from '../../model/progress';
+// import * as Progress from '../../model/progress';
 
 export class GpgCreateKeySet implements Dispatcher {
   public gpg: Gpg.Gpg;

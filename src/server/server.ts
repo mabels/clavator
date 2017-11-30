@@ -2,7 +2,7 @@
 import * as fs from 'fs';
 import * as http from 'http';
 import * as https from 'https';
-import * as path from 'path';
+// import * as path from 'path';
 
 let privateKey: string = null;
 let certificate: string = null;

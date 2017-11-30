@@ -4,7 +4,7 @@ import * as Message from '../../model/message';
 import Dispatcher from '../dispatcher';
 
 import * as Gpg from '../../gpg/gpg';
-import Result from '../../gpg/result';
+// import Result from '../../gpg/result';
 import RequestChangePin from '../../gpg/request-change-pin';
 import { Observer } from '../observer';
 

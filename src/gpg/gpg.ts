@@ -6,7 +6,7 @@ import * as fs from 'fs';
 // import * as fsPromise from "fs-promise";
 // import * as fsPromise from 'fs-extra';
 // import * as pse from "../pinentry/server";
-import * as Ac from './agent-conf';
+// import * as Ac from './agent-conf';
 import * as uuid from 'node-uuid';
 
 import KeyToYubiKey from './key-to-yubikey';
@@ -17,15 +17,15 @@ import RequestAscii from '../model/request-ascii';
 import RequestChangePin from './request-change-pin';
 import KeyGenUid from './key-gen-uid';
 import { format_date } from '../model/helper';
-import * as rimraf from 'rimraf';
+// import * as rimraf from 'rimraf';
 import { Result, Mixed, ResultContainer, ResultObservable, ResultObserver, ResultQueue } from './result';
-import GpgVersion from './gpg-version';
+// import GpgVersion from './gpg-version';
 import * as rx from 'rxjs';
-import { Observer } from '../server/observer';
-import { Observable } from 'rxjs/Observable';
-import { observer } from 'mobx-react';
+// import { Observer } from '../server/observer';
+// import { Observable } from 'rxjs/Observable';
+// import { observer } from 'mobx-react';
 import GpgCmds from './gpg-cmds';
-import { Socket } from 'net';
+// import { Socket } from 'net';
 
 interface SocketNames {
   s1: string;
@@ -522,7 +522,7 @@ export class Gpg {
 }
 
 function findMock(rq: ResultQueue, obs: ResultObserver<string>, dirname: string): void {
-  let gmExists = false;
+  // let gmExists = false;
   let prevDirname = dirname;
   dirname = path.dirname(dirname);
   const gm = path.join(dirname, 'gpg-mock.js');
