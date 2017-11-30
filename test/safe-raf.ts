@@ -4,14 +4,14 @@ import * as rx from 'rxjs';
 
 export function safeRaf(dir: string): rx.Observable<void> {
   return rx.Observable.create((obs: rx.Observer<void>) => {
-    console.log(`safeRaf:start:${dir}`);
+    // console.log(`safeRaf:start:${dir}`);
     fs.stat(dir, (err, dirStat) => {
       if (!err && dir.endsWith('.tdir') && dirStat.isDirectory()) {
         Rimraf(dir, {}, (_err) => {
           if (_err) {
             console.error(`safeRaf failed for:[${dir}]`);
           } else {
-            console.log(`safeRaf:[${dir}]`);
+            // console.log(`safeRaf:[${dir}]`);
           }
           obs.complete();
         });
