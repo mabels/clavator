@@ -98,6 +98,10 @@ export class Gpg {
     return mock;
   }
 
+  public resultQueue(): ResultQueue {
+    return this.gpgCmds.gpg.resultQueue;
+  }
+
   public info(title: string): string {
     if (title.length) {
       title = `${title}-`;

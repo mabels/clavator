@@ -3,6 +3,8 @@ import * as fs from 'fs';
 import * as http from 'http';
 import * as https from 'https';
 // import * as path from 'path';
+import * as ListSecretKeys from '../gpg/list-secret-keys';
+import * as CardStatus from '../gpg/card-status';
 
 let privateKey: string = null;
 let certificate: string = null;
@@ -21,16 +23,51 @@ import * as ws from 'ws';
 // import * as WebSocket from 'ws';
 // const expressWs: typeof expressWsTs = expressWsTs;
 
-import * as Observer from './observer';
+import * as Monitor from './monitor';
 import * as Dispatch from './dispatch';
 import * as Gpg from '../gpg/gpg';
 
 import * as Message from '../model/message';
 import * as rx from 'rxjs';
-import { ResultQueue } from '../gpg/result';
+import { ResultQueue, ResultObservable, ResultObserver, ResultExec, ResultContainer } from '../gpg/result';
+// import { WsChannel } from '../ui/model/ws-channel';
+// import { CardStatusList } from '../ui/components/card-status-list';
+// import { observe } from 'mobx/lib/api/observe';
 
-function starter(): rx.Observable<void> {
-  return rx.Observable.create((obs: rx.Observer<void>) => {
+function handleMonitor(sock: ws): (r: ResultContainer<any>) => void {
+  return (result: ResultContainer<any>) => {
+    if (result.isProgress()) {
+      const header = Message.broadcast('Progressor.Clavator');
+      if (result.progress instanceof ResultExec) {
+        if (result.progress.exitCode) {
+          sock.send(Message.prepare(header, result.progress));
+        }
+      } else {
+        sock.send(Message.prepare(header, result.progress));
+      }
+      return;
+    }
+    if (result.isError()) {
+      const header = Message.broadcast('Progressor.Clavator');
+      sock.send(Message.prepare(header, result.nodeError));
+      return;
+    }
+    if (result.data instanceof Array && result.data.length) {
+      if (result.data[0] instanceof ListSecretKeys.SecretKey) {
+        console.log('Monitor:message:ListSecretKeys.SecretKey', result.data);
+        const header = Message.broadcast('KeyChainList');
+        sock.send(Message.prepare(header, result.data));
+      } else if (result.data[0] instanceof CardStatus.Gpg2CardStatus) {
+        console.log('Monitor:message:CardStatus.Gpg2CardStatus', result.data);
+        const header = Message.broadcast('CardStatusList');
+        sock.send(Message.prepare(header, result.data));
+      }
+    }
+  };
+}
+
+function starter(): ResultObservable<void> {
+  return rx.Observable.create((obs: ResultObserver<void>) => {
     let redirectPort = 8080;
     let applicationPort = process.env.PORT || 8443;
     if (process.getuid() == 0) {
@@ -62,10 +99,9 @@ function starter(): rx.Observable<void> {
 
     const rq = ResultQueue.create();
     Gpg.create(rq).subscribe(rcgpg => {
-      if (rcgpg.isError()) {
-        return;
-      }
-      const observer = Observer.start(rcgpg.data);
+      if (rcgpg.doProgress(obs)) { return; }
+      if (rcgpg.isError()) { return; }
+      const monitor = Monitor.start(rcgpg.data);
       const dispatch = Dispatch.start(rcgpg.data);
 
       app.get('/', (req: express.Request, res: express.Response) => res.redirect('/index.html'));
@@ -92,16 +128,18 @@ function starter(): rx.Observable<void> {
         // or ws.upgradeReq.headers.cookie (see http://stackoverflow.com/a/16395220/151312)
         // ws.send('something');
         console.log('WS-Connect');
-        observer.register(sock);
+        const subMonitor = monitor.subscribe(handleMonitor(sock));
+        // observer.register(sock);
         sock.on('close', () => {
           console.log('close');
-          observer.unregister(sock);
+          subMonitor.unsubscribe();
+          // observer.unregister(sock);
         });
         // ws.on('data', msg:any => console.log(msg));
         sock.on('message', (payload) => {
-          let msg = Message.fromData(payload.toString());
+          const msg = Message.fromData(payload.toString());
           // console.log('onMessage')
-          dispatch.run(observer, sock, msg);
+          dispatch.run(sock, msg);
         });
       });
 

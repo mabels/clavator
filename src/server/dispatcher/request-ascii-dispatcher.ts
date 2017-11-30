@@ -10,7 +10,7 @@ import * as Progress from '../../model/progress';
 
 import RequestAscii from '../../model/request-ascii';
 import RespondAscii from '../../model/respond-ascii';
-import { Observer } from '../observer';
+// import { Observer } from '../observer';
 
 export class RequestAsciiDispatcher implements Dispatcher {
   private gpg: Gpg.Gpg;
@@ -32,7 +32,7 @@ export class RequestAsciiDispatcher implements Dispatcher {
     };
   }
 
-  public run(observer: Observer, ws: WebSocket, m: Message.Message): boolean {
+  public run(ws: WebSocket, m: Message.Message): boolean {
     if (m.header.action != 'RequestAscii') {
       // ws.send(Message.prepare('Progressor.Clavator', Progress.fail('Ohh')))
       return false;

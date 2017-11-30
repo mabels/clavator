@@ -6,7 +6,7 @@ import Dispatcher from '../dispatcher';
 import * as Gpg from '../../gpg/gpg';
 // import Result from '../../gpg/result';
 import RequestChangePin from '../../gpg/request-change-pin';
-import { Observer } from '../observer';
+// import { Observer } from '../observer';
 
 import * as Progress from '../../model/progress';
 
@@ -21,7 +21,7 @@ export class GpgChangePinYubikey implements Dispatcher {
     this.gpg = g;
   }
 
-  public run(observer: Observer, ws: WebSocket, m: Message.Message): boolean {
+  public run(ws: WebSocket, m: Message.Message): boolean {
     console.log('GpgChangePinYubikey.run', m.header);
     if (m.header.action != 'GpgChangePinYubikey.run') {
       return false;

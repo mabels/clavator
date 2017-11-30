@@ -5,7 +5,7 @@ import Dispatcher from '../dispatcher';
 import * as Gpg from '../../gpg/gpg';
 // import Result from '../../gpg/result';
 import * as Progress from '../../model/progress';
-import { Observer } from '../observer';
+// import { Observer } from '../observer';
 
 export class GpgResetYubikey implements Dispatcher {
   public gpg: Gpg.Gpg;
@@ -18,7 +18,7 @@ export class GpgResetYubikey implements Dispatcher {
     this.gpg = g;
   }
 
-  public run(observer: Observer, ws: WebSocket, m: Message.Message): boolean {
+  public run(ws: WebSocket, m: Message.Message): boolean {
     console.log('GpgResetYubikey.run', m.header);
     if (m.header.action != 'ResetYubikey') {
       // ws.send(Message.prepare('Progressor.Clavator', Progress.fail('Ohh')))

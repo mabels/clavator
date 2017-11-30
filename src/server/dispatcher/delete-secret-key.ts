@@ -6,7 +6,7 @@ import * as Gpg from '../../gpg/gpg';
 // import { Result } from '../../gpg/result';
 
 import * as Progress from '../../model/progress';
-import { Observer } from '../observer';
+// import { Observer } from '../observer';
 
 export class DeleteSecretKey implements Dispatcher {
   private gpg: Gpg.Gpg;
@@ -19,7 +19,7 @@ export class DeleteSecretKey implements Dispatcher {
     this.gpg = g;
   }
 
-  public run(observer: Observer, myws: ws, m: Message.Message): boolean {
+  public run(myws: ws, m: Message.Message): boolean {
     console.log('DeleteSecretKey.run', m.header);
     if (m.header.action != 'DeleteSecretKey') {
       // ws.send(Message.prepare('Progressor.Clavator', Progress.fail('Ohh')))

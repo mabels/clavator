@@ -233,11 +233,26 @@ export class ResultContainer<T> {
     return ret;
   }
 
-  public doError(obs: ResultObserver<any> = null): boolean {
+  private each(obss: ResultObserver<any>|ResultObserver<any>[], fn: (obs: ResultObserver<any>) => void): void {
+    if (!obss) {
+      return;
+    }
+    let my: ResultObserver<any>[];
+    if (obss instanceof Array) {
+      my = obss;
+    } else {
+      my = [obss];
+    }
+    my.forEach(fn);
+  }
+
+  public doError(obss: ResultObserver<any>|ResultObserver<any>[] = null): boolean {
     const err = this.isError();
-    if (err && obs) {
-      obs.next(this);
-      obs.complete();
+    if (err) {
+      this.each(obss, obs => {
+        obs.next(this);
+        obs.complete();
+      });
     }
     return err;
   }
@@ -270,17 +285,21 @@ export class ResultContainer<T> {
     return !!this.progress;
   }
 
-  public doProgress(obs: ResultObserver<any> = null): boolean {
+  public doProgress(obss: ResultObserver<any>|ResultObserver<any>[] = null): boolean {
     const isp = this.isProgress();
-    if (isp && obs) {
-      obs.next(this);
+    if (isp) {
+      this.each(obss, obs => {
+        obs.next(this);
+      });
     }
     return isp;
   }
 
-  public doComplete(obs: ResultObserver<any>): void {
-    obs.next(this);
-    obs.complete();
+  public doComplete(obss: ResultObserver<any>|ResultObserver<any>[]): void {
+    this.each(obss, obs => {
+      obs.next(this);
+      obs.complete();
+    });
   }
 
   // public attachNext(oth: ResultContainer<any>): ResultContainer<T> {
