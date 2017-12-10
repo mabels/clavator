@@ -42,7 +42,7 @@ for i in $ARCHS
 do
   echo "Run: /builder/create-os-image-$i $VERSION"
   docker ps -qa -f "name=$i-create-os-image" | xargs docker rm -f
-  docker run -d --privileged \
+  docker run -ti --privileged \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /var/cache/docker/clavator:/clavator \
     -v $IMAGES:$IMAGES \

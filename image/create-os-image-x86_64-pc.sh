@@ -26,11 +26,12 @@ mkdir /arch
 mount $part1 /arch
 
 
-[ -f /clavator/archlinux-bootstrap-2017.04.01-x86_64.tar.gz ] ||
+version=$(date +'%Y.%m')
+[ -f /clavator/archlinux-bootstrap-$version.01-x86_64.tar.gz ] ||
   wget --directory-prefix=/clavator \
-    $ARCHLINUX/iso/2017.04.01/archlinux-bootstrap-2017.04.01-x86_64.tar.gz
+    $ARCHLINUX/iso/$version.01/archlinux-bootstrap-$version.01-x86_64.tar.gz
 
-tar xzf /clavator/archlinux-bootstrap-2017.04.01-x86_64.tar.gz -C /arch
+tar xzf /clavator/archlinux-bootstrap-$version.01-x86_64.tar.gz -C /arch
 mv /arch/root.x86_64/* /arch/
 
 mkdir -p /arch/etc/pacman.d/
@@ -45,7 +46,9 @@ cp /etc/hosts /arch/etc/hosts
 
 
 
-/bin/sh /builder/create-os-image-updater.sh
+/bin/sh /builder/create-os-image-updater.sh \
+     xorg lxde xf86-video-fbdev lightdm lightdm-gtk-greeter lightdm-gtk-greeter-settings \
+     midori dwm
 cat <<MMC > /arch/create-mmcblk0.sh
 MMC
 

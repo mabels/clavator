@@ -8,7 +8,7 @@ do
   e=$?
   if [ $e != 0 ]
   then
-    echo "($i of $c) => $0 $@"
+    >&2 echo "($i of $c) => $0 $@"
     sleep 1
   fi
   i=$(expr $i + 1)
