@@ -7,41 +7,30 @@ import * as Gpg from '../../gpg/gpg';
 import * as Progress from '../../model/progress';
 // import { Observer } from '../observer';
 
-export class GpgResetYubikey implements Dispatcher {
-  public gpg: Gpg.Gpg;
-
-  public static create(g: Gpg.Gpg): GpgResetYubikey {
-    return new GpgResetYubikey(g);
-  }
-
-  constructor(g: Gpg.Gpg) {
-    this.gpg = g;
-  }
-
-  public run(ws: WebSocket, m: Message.Message): boolean {
-    console.log('GpgResetYubikey.run', m.header);
-    if (m.header.action != 'ResetYubikey') {
-      // ws.send(Message.prepare('Progressor.Clavator', Progress.fail('Ohh')))
+export function create(gpg: Gpg.Gpg): Dispatcher {
+  const ret = new Dispatcher();
+  ret.recv.match((_, req) => {
+    // console.log('GpgResetYubikey.run', req.header);
+    if (req.header.action != 'ResetYubikey') {
       return false;
     }
-    let header = Message.toHeader(m, 'Progressor.Clavator');
-    ws.send(Message.prepare(header,
-       Progress.ok('Resetting your Yubikey now. This will take a couple of seconds. ...')));
+    const reply = req.reply('Progressor.Clavator');
+    reply.progressOk('Resetting your Yubikey now. This will take a couple of seconds. ...').send(ret.send);
 
-    this.gpg.resetYubikey().subscribe(res => {
+    gpg.resetYubikey().match((__, res) => {
       // ws.send(Message.prepare(header, res));
-      if (res.exec.stdOut.split(`\n`).find((i: string) => { return i.startsWith('ERR '); })) {
-        res.exec.stdOut.split(`\n`).forEach((s: string) => {
-          ws.send(Message.prepare(header, Progress.fail(s)));
+      if (res.stdOut.split(`\n`).find((i: string) => i.startsWith('ERR '))) {
+        res.stdOut.split(`\n`).forEach((s: string) => {
+          reply.progressFail(s).send(ret.send);
         });
       } else {
-        ws.send(Message.prepare(header,
-          Progress.ok('Almost done. Remove your Yubikey now and plug it in again.', true)));
+        reply.progressOk('Almost done. Remove your Yubikey now and plug it in again.').send(ret.send);
         // res.stdOut.split('\n').forEach((s: string) => {
         //   ws.send(Message.prepare('Progressor.Clavator', Progress.ok(s)))
         // })
       }
-      ws.send(Message.prepare(header.setAction('GpgResetYubikey.Completed'), null));
+      req.reply('GpgResetYubikey.Completed').send(ret.send);
+      return true;
     });
 
     // attributes: string[], stdIn: string, cb: (res: Result) => void)
@@ -59,8 +48,8 @@ export class GpgResetYubikey implements Dispatcher {
     // console.log('ok:', a);
     // ws.send(Message.prepare('Progressor.Clavator', Progress.fail('Mhhh')))
     return true;
-  }
-
+  });
+  return ret;
 }
 
-export default GpgResetYubikey;
+export default { create: create };

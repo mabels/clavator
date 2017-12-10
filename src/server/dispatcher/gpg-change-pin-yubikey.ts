@@ -10,38 +10,29 @@ import RequestChangePin from '../../gpg/request-change-pin';
 
 import * as Progress from '../../model/progress';
 
-export class GpgChangePinYubikey implements Dispatcher {
-
-  public gpg: Gpg.Gpg;
-
-  public static create(g: Gpg.Gpg): GpgChangePinYubikey {
-    return new GpgChangePinYubikey(g);
-  }
-  constructor(g: Gpg.Gpg) {
-    this.gpg = g;
-  }
-
-  public run(ws: WebSocket, m: Message.Message): boolean {
-    console.log('GpgChangePinYubikey.run', m.header);
-    if (m.header.action != 'GpgChangePinYubikey.run') {
+export function create(gpg: Gpg.Gpg): Dispatcher {
+  const ret = new Dispatcher();
+  ret.recv.match((_, req) => {
+    // console.log('GpgChangePinYubikey.run', req.header);
+    if (req.header.action != 'GpgChangePinYubikey.run') {
       return false;
     }
-    let a = JSON.parse(m.data) || {};
-    let rcp = RequestChangePin.fill(a);
-    let header = Message.toHeader(m, 'Progressor.Clavator');
-    ws.send(Message.prepare(header, Progress.ok(`ChangePin your Yubikey now:${rcp.action} ...`)));
+    const a = JSON.parse(req.data) || {};
+    const rcp = RequestChangePin.fill(a);
+    const reply = req.reply('Progressor.Clavator');
+    reply.progressOk(`ChangePin your Yubikey now:${rcp.action} ...`).send(ret.send);
 
-    this.gpg.changePin(rcp.action, rcp).subscribe(res => {
+    gpg.changePin(rcp.action, rcp).match((_, res) => {
       if (res.isError()) {
-        ws.send(Message.prepare(header, Progress.fail(`${res.exec.stdOut}\n${res.exec.stdErr}`)));
+        reply.progressFail(`${res.exec.stdOut}\n${res.exec.stdErr}`).send(ret.send);
       } else {
-        ws.send(Message.prepare(header, Progress.ok(`pin for ${rcp.action} changed`, true)));
+        reply.progressOk(`pin for ${rcp.action} changed`).send(ret.send);
       }
-      ws.send(Message.prepare(header.setAction('GpgChangePinYubikey.Completed'), null));
-    });
+      req.reply('GpgChangePinYubikey.Completed').send(ret.send);
+    }).passTo();
     return true;
-  }
-
+  });
+  return ret;
 }
 
-export default GpgChangePinYubikey;
+export default { create: create };

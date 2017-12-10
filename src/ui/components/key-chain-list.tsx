@@ -31,9 +31,9 @@ interface KeyChainListComponentState {
   dialog: Dialogs;
   action: string;
   key: ListSecretKeys.Key;
-  receiver: WsChannel.WsMessage;
-  respondAscii: RespondAscii;
-  passPhrase: MutableString;
+  // receiver: WsChannel.WsMessage;
+  // respondAscii: RespondAscii;
+  // passPhrase: MutableString;
   idx: number;
 }
 
@@ -55,41 +55,42 @@ export class KeyChainList
       dialog: Dialogs.closed,
       action: null,
       key: null,
-      receiver: null,
-      respondAscii: null,
-      passPhrase: null,
+      // receiver: null,
+      // respondAscii: null,
+      // passPhrase: null,
       idx: null
     };
     this.closeAsciiModal = this.closeAsciiModal.bind(this);
   }
 
   private processAscii(key: ListSecretKeys.Key, action: string, dialog: Dialogs, pp: string = null): void {
-    let ra = new RequestAscii();
-    ra.action = action;
-    ra.fingerprint = key.fingerPrint.fpr;
-    ra.passphrase = new MutableString();
-    ra.passphrase.value = pp;
-    this.setState(Object.assign({}, this.state, {
+    // let ra = new RequestAscii();
+    // ra.action = action;
+    // ra.fingerprint = key.fingerPrint.fpr;
+    // ra.passphrase = new MutableString();
+    // ra.passphrase.value = pp;
+    this.setState(Object.assign(this.state, {
       dialog: dialog,
       action: action,
-      key: key,
-      respondAscii: null,
-      receiver: this.props.appState.channel.onMessage((actionx: Message.Header, data: string) => {
-        console.log('processAscii:', actionx);
-        if (actionx.action != 'RespondAscii') {
-          return;
-        }
-        let pem = RespondAscii.fill(JSON.parse(data));
-        if (key.fingerPrint.fpr != pem.fingerprint) {
-          return;
-        }
-        console.log('Got: Respond:', pem);
-        this.setState(Object.assign({}, this.state, {
-          respondAscii: pem
-        }));
-      })
+      key: key
     }));
-    this.props.appState.channel.send(Message.newTransaction('RequestAscii', ra).asMsg());
+    //   respondAscii: null,
+    //   receiver: this.props.appState.channel.onMessage((actionx: Message.Header, data: string) => {
+    //     // console.log('processAscii:', actionx);
+    //     if (actionx.action != 'RespondAscii') {
+    //       return;
+    //     }
+    //     let pem = RespondAscii.fill(JSON.parse(data));
+    //     if (key.fingerPrint.fpr != pem.fingerprint) {
+    //       return;
+    //     }
+    //     console.log('Got: Respond:', pem);
+    //     this.setState(Object.assign({}, this.state, {
+    //       respondAscii: pem
+    //     }));
+    //   })
+    // }));
+    // this.props.appState.channel.send(Message.newTransaction('RequestAscii', ra).asMsg());
   }
 
   private requestAscii(key: ListSecretKeys.Key, action: string):
@@ -204,7 +205,7 @@ export class KeyChainList
   }
 
   public closeAsciiModal(): void {
-    this.props.appState.channel.unMessage(this.state.receiver);
+    // this.props.appState.channel.unMessage(this.state.receiver);
     this.setState(Object.assign({}, this.state, {
       dialog: Dialogs.closed,
       action: null,
@@ -244,22 +245,23 @@ export class KeyChainList
     return (
       <div className="KeyChainList">
         {this.render_modal()}
-        {this.props.appState.keyChainListState.keyChainList.map((sk: ListSecretKeys.SecretKey, idx: number) => {
-          return (
-            <div key={sk.key}>
-              <table>
-                {sk.uids.map((uid) => this.render_uid(sk, uid))}
-              </table>
-              <table >
-                <tbody>
-                  {this.render_key('sec', sk, sk, -1)}
-                  {sk.subKeys.map((ssb, idxx) => {
-                    return this.render_key('ssb', sk, ssb, idxx);
-                  })}
-                </tbody>
-              </table>
-            </div>);
-        })}
+        {this.props.appState.keyChainListState.keyChainList
+          .map((sk: ListSecretKeys.SecretKey, idx: number) => {
+            return (
+              <div key={sk.key}>
+                <table>
+                  {sk.uids.map((uid) => this.render_uid(sk, uid))}
+                </table>
+                <table >
+                  <tbody>
+                    {this.render_key('sec', sk, sk, -1)}
+                    {sk.subKeys.map((ssb, idxx) => {
+                      return this.render_key('ssb', sk, ssb, idxx);
+                    })}
+                  </tbody>
+                </table>
+              </div>);
+          })}
       </div>
     );
   }

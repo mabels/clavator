@@ -16,6 +16,12 @@ export class KeyGenUid extends ObjectId implements Pallet {
     super('KeyGenUid');
   }
 
+  public eq(oth: KeyGenUid): boolean {
+    return this.name.value == oth.name.value &&
+           this.email.value == oth.email.value &&
+           this.comment.value == oth.comment.value;
+  }
+
   public fill(js: any): void {
     StringValue.fill(js['name'] || {}, this.name);
     StringValue.fill(js['email'] || {}, this.email);

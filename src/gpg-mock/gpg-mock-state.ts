@@ -1,9 +1,10 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import * as yargs from 'yargs';
+import * as rxme from 'rxme';
 
 export interface ParsedAction {
-  (y: yargs.Arguments, state: GpgMockState): boolean; // returns true stopped
+  (y: yargs.Arguments, state: GpgMockState): rxme.Observable<boolean>; // returns true stopped
 }
 
 interface StdOut {
@@ -12,7 +13,7 @@ interface StdOut {
 }
 
 export default class GpgMockState {
-  public action: ParsedAction[];
+  public actions: ParsedAction[];
   public _exitCode: number;
   public stdOut: StdOut[];
   public _processed: boolean;
@@ -23,7 +24,7 @@ export default class GpgMockState {
   }
 
   constructor() {
-    this.action = [];
+    this.actions = [];
     this._exitCode = 0;
     this.stdOut = [];
   }
@@ -33,11 +34,15 @@ export default class GpgMockState {
   }
 
   public stdout(str: string): void {
-    this.stdOut.push({fname: '', value: str});
+    this.stdOut.push({ fname: '', value: str });
+  }
+
+  public writeJson(y: yargs.Arguments, fname: string, obj: any): void {
+    fs.writeFileSync(path.join(y.homedir, fname), JSON.stringify(obj));
   }
 
   public stdoutMock(mockFname: string, str: string): void {
-    this.stdOut.push({fname: mockFname, value: str});
+    this.stdOut.push({ fname: mockFname, value: str });
   }
 
   public exitCode(code: number): void {
@@ -45,25 +50,39 @@ export default class GpgMockState {
   }
 
   public onParsed(action: ParsedAction): void {
-    this.action.push(action);
+    this.actions.push(action);
   }
 
-  public parsed(y: yargs.Arguments): void {
-    if (!this._processed) {
-      this._processed = !!this.action.find(action => {
-        const ret = action(y, this);
-        return ret;
-      });
+  private processAction(y: yargs.Arguments, obs: rxme.Observer<void>, idx: number): void {
+    if (idx >= this.actions.length) {
+      obs.complete();
+      return;
     }
+    // console.log('processAction', idx, this.actions[idx]);
+    this.actions[idx](y, this).match((_, res) => {
+      // console.log('processAction', idx, res);
+      if (res) {
+        this._processed = true;
+      } else {
+        this.processAction(y, obs, idx + 1);
+      }
+      return true;
+    });
+  }
+
+  private processParsed(y: yargs.Arguments): void {
+    // console.log('processParsed');
     if (this._processed) {
       this.stdOut.forEach(i => console.log(i.value));
     }
     if (process.env['NODEEXECTRANSACTION'] && y.homedir && fs.existsSync(y.homedir)) {
       const dump = path.join(y.homedir || '', `${process.env['NODEEXECTRANSACTION']}.dump`);
-      const readFds = (y.passphraseFd || []).map((fd: any) => { return {
-        'fd': fd,
-        'value': fs.readFileSync(fd, 'utf-8').toString()
-      }; });
+      const readFds = (y.passphraseFd || []).map((fd: any) => {
+        return {
+          'fd': fd,
+          'value': fs.readFileSync(fd, 'utf-8').toString()
+        };
+      });
       fs.writeFileSync(dump, JSON.stringify({
         'args': {
           process: process.argv,
@@ -76,4 +95,13 @@ export default class GpgMockState {
     process.exit(this._exitCode);
   }
 
+  public parsed(y: yargs.Arguments): void {
+    if (!this._processed) {
+      rxme.Observable.create(null, (obs: rxme.Observer<void>) => {
+        this.processAction(y, obs, 0);
+      }).matchComplete(() => { this.processParsed(y); return true; });
+    } else {
+      this.processParsed(y);
+    }
+  }
 }

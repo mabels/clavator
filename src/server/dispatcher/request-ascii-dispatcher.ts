@@ -1,66 +1,60 @@
 
 import * as WebSocket from 'ws';
 import * as Message from '../../model/message';
-import Dispatcher from '../dispatcher';
+import Dispatcher, { MessageSubject } from '../dispatcher';
 
 import * as Gpg from '../../gpg/gpg';
-import Result from '../../gpg/result';
+import { } from '../../gpg/result';
 
 import * as Progress from '../../model/progress';
 
 import RequestAscii from '../../model/request-ascii';
 import RespondAscii from '../../model/respond-ascii';
+import * as rxme from 'rxme';
 // import { Observer } from '../observer';
 
-export class RequestAsciiDispatcher implements Dispatcher {
-  private gpg: Gpg.Gpg;
-
-  public static create(g: Gpg.Gpg): RequestAsciiDispatcher {
-    return new RequestAsciiDispatcher(g);
-  }
-
-  constructor(g: Gpg.Gpg) {
-    this.gpg = g;
-  }
-
-  public processResult(header: Message.Header, ws: WebSocket, req: RequestAscii): (res: Result) => void {
-    return (res: Result) => {
-      // ws.send(Message.prepare('Progressor.Clavator', Progress.ok(res.stdOut)));
-      console.log('send:RespondAscii');
-      ws.send(Message.prepare(header.setAction('RespondAscii'),
-        new RespondAscii(req.action, req.fingerprint, res.exec.stdOut)));
-    };
-  }
-
-  public run(ws: WebSocket, m: Message.Message): boolean {
-    if (m.header.action != 'RequestAscii') {
-      // ws.send(Message.prepare('Progressor.Clavator', Progress.fail('Ohh')))
-      return false;
+function processResult(m: Message.Message, req: RequestAscii, send: MessageSubject):
+  (res: ResultContainer<any>) => void {
+  return (res: ResultContainer<string>) => {
+    if (res.isProgress()) {
+      m.reply('Progressor.Clavator').progressInfo(JSON.stringify(res.progress)).send(send);
+      return;
     }
-    console.log('RequestAscii.run', m);
-    let payload = RequestAscii.fill(JSON.parse(m.data));
-    // ws.send(Message.prepare('Progressor.Clavator',
-    //   Progress.ok('RequestAscii='+m.data)))
-    switch (payload.action) {
-      case 'pem-private':
-        this.gpg.pemPrivateKey(payload).subscribe(this.processResult(m.header, ws, payload));
-        break;
-      case 'pem-public':
-        this.gpg.pemPublicKey(payload).subscribe(this.processResult(m.header, ws, payload));
-        break;
-      case 'pem-revoke':
-        this.gpg.pemRevocation(payload).subscribe(this.processResult(m.header, ws, payload));
-        break;
-      case 'ssh-public':
-        this.gpg.sshPublic(payload).subscribe(this.processResult(m.header, ws, payload));
-        break;
-      default:
-        ws.send(Message.prepare(m.header.setAction('Progressor.Clavator'),
-          Progress.fail('RequestAscii unhandled:' + payload.action)));
+    if (res.isError()) {
+      m.reply('Progressor.Clavator').progressError(JSON.stringify(res)).send(send);
+      return;
     }
-    return true;
-  }
-
+    m.reply('RespondAscii')
+        .dataToJson(new RespondAscii(req.action, req.fingerprint, res.exec.stdOut)).send(send);
+  };
 }
 
-export default RequestAsciiDispatcher;
+export function create(gpg: Gpg.Gpg): Dispatcher {
+  const ret = new Dispatcher();
+  ret.recv.subscribe(req => {
+    if (req.header.action != 'RequestAscii') {
+      return;
+    }
+    // console.log('RequestAscii.run', m);
+    const payload = RequestAscii.fill(JSON.parse(req.data));
+    switch (payload.action) {
+      case 'pem-private':
+        gpg.pemPrivateKey(payload).subscribe(processResult(req, payload, ret.send));
+        break;
+      case 'pem-public':
+        gpg.pemPublicKey(payload).subscribe(processResult(req, payload, ret.send));
+        break;
+      case 'pem-revoke':
+        gpg.pemRevocation(payload).subscribe(processResult(req, payload, ret.send));
+        break;
+      case 'ssh-public':
+        gpg.sshPublic(payload).subscribe(processResult(req, payload, ret.send));
+        break;
+      default:
+        req.reply('Progressor.Clavator').progressFail('RequestAscii unhandled:' + payload.action).send(ret.send);
+    }
+  });
+  return ret;
+}
+
+export default { create: create };

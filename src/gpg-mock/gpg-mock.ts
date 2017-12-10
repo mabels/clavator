@@ -4,25 +4,29 @@ import * as ListSecretKeys from './list-secret-keys';
 import * as FullGenKey from './full-gen-key';
 import * as SimpleActions from './simple-actions';
 import * as Agent from './agent';
+import * as rxme from 'rxme';
 
 function cli(args: string[]): void {
   const state = GpgMockState.create();
   let y = yargs.usage('$0 <cmd> [args]');
   y = y.options({
-     'with-colons': { describe: 'output in colons format', boolean: true },
-     'batch': { describe: 'no interactive processing' , boolean: true },
-     'import': { describe: 'import key from stdin' , boolean: true },
-     'homedir': { describe: 'the gpg database base directory', type: 'string' },
-     'passphrase-fd': { describe: 'positional fd inputs', type: 'array' },
-     'version': { describe: 'prints version', boolean: true}
+    'with-colons': { describe: 'output in colons format', boolean: true },
+    'batch': { describe: 'no interactive processing', boolean: true },
+    'homedir': { describe: 'the gpg database base directory', type: 'string' },
+    'passphrase-fd': { describe: 'positional fd inputs', type: 'array' },
+    'version': { describe: 'prints version', boolean: true }
   });
-  state.onParsed((_y: yargs.Arguments, _state: GpgMockState): boolean => {
-    if (_y.version) {
-      // const version = fs.readFileSync('./')
-      _state.stdout('gpg-mock (GpgMock) 2.1.14');
-      return true;
-    }
-    return false;
+  state.onParsed((_y: yargs.Arguments, _state: GpgMockState): rxme.Observable<boolean> => {
+    return rxme.Observable.create(rxme.Match.BOOLEAN, (obs: rxme.Observer<boolean>) => {
+      if (_y.version) {
+        // const version = fs.readFileSync('./')
+        _state.stdout('gpg-mock (GpgMock) 2.1.14');
+        obs.next(true);
+      } else {
+        obs.next(false);
+      }
+      obs.complete();
+    });
   });
   y = ListSecretKeys.cli(y, state);
   y = FullGenKey.cli(y, state);

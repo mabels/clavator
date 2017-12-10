@@ -2,7 +2,11 @@ import { assert } from 'chai';
 
 import * as gpg from '../../src/gpg/gpg';
 import * as lsk from '../../src/gpg/list-secret-keys';
-import { ResultQueue } from '../../src/gpg/result';
+import { ResultQueue, ResultObservable, ResultObserver, ResultContainer } from '../../src/gpg/result';
+import * as rx from 'rxjs';
+import { SecretKey } from '../../src/gpg/list-secret-keys';
+import { isComputingDerivation } from 'mobx/lib/core/derivation';
+import { KeyToYubiKey } from '../../src/gpg/key-to-yubikey';
 
 describe('ListSecretKeys', () => {
 
@@ -40,6 +44,12 @@ grp:::::::::2DC62D282D308E58A8C7C4F7652955AC146860D2:
 
   function testListSecretKeys(s: lsk.SecretKey[]): void {
     assert.equal(s.length, 3);
+    const myorder: { [key: string]: number } = {
+      '1A5D93796CF70ADF': 1,
+      '23C4790FEF6E173F': 2,
+      '19B013CF06A4BEEF': 3
+    };
+    s = s.sort((a, b) => (myorder[a.keyId] - myorder[b.keyId]));
     assert.equal(s[0].keyId, '1A5D93796CF70ADF');
     assert.equal(s[1].keyId, '23C4790FEF6E173F');
     assert.equal(s[2].keyId, '19B013CF06A4BEEF');
@@ -67,41 +77,62 @@ grp:::::::::2DC62D282D308E58A8C7C4F7652955AC146860D2:
 
   let rq: ResultQueue = null;
   before((done) => {
-    rq = ResultQueue.create();
-    done();
+    ResultQueue.create().match((_, _rq) => {
+      rq = _rq;
+      done();
+      return true;
+    }).passTo();
   });
 
   after((done) => {
-    rq.stop().subscribe(done);
+    rq.stop().matchComplete(() => done()).passTo();
   });
 
-  it('externListSecretKeys', async () => {
+  function importKey(mock: gpg.Gpg, obs: ResultObserver, sks: SecretKey[], idx: number): void {
+    if (idx >= sks.length) {
+      obs.next(ResultContainer.builder(rq));
+      obs.complete();
+      return;
+    }
+    const kyto = new KeyToYubiKey();
+    kyto.passphrase.value = 'fake';
+    mock.importSecretKey(kyto, sks[idx].asPem()).match((_, res) => {
+      importKey(mock, obs, sks, idx + 1);
+      return true;
+    }).passTo(obs);
+  }
+
+  function importKeys(mock: gpg.Gpg): ResultObservable {
+    return rx.Observable.create((obs: ResultObserver) => {
+      importKey(mock, obs, createKeyFromString(), 0);
+    });
+  }
+
+  it('externListSecretKeys', async function(): Promise<void> {
+    this.timeout(5000);
     return new Promise<void>((res, rej) => {
       // console.log('Xxx-1:');
-      gpg.createMock(rq).subscribe(rcmock => {
-        if (rcmock.isProgress()) {
-          // console.log('externListSecretKeys:Progress:', rcmock.progress.text);
-          return;
-        }
-        if (rcmock.isError()) {
-          // console.log('externListSecretKeys:Error:', rcmock.nodeError, rcmock.exec.exitCode);
-          rej(rcmock);
-          return;
-        }
-        const keys: lsk.SecretKey[] = [];
-        rcmock.data.list_secret_keys().subscribe(rskey => {
-          // console.log('externListSecretKeys:Keys:', rskey.isProgress(), rskey.isError());
-          if (rskey.doProgress()) { return; }
-          if (rskey.doError()) { return; }
-          keys.push(rskey.data);
-        }, null, () => {
-          // console.log('Xxx-3:');
-          try {
-            testListSecretKeys(keys);
-            res();
-          } catch (e) {
-            rej(e);
-          }
+      gpg.createMock(rq).match((_, rcmock) => {
+        if (rcmock.doProgress()) { return; }
+        if (rcmock.doError()) { rej(rcmock); return; }
+        importKeys(rcmock.data).match((_, rciks) => {
+          if (rciks.doProgress()) { return; }
+          if (rciks.doError()) { rej(rcmock); return; }
+          const keys: lsk.SecretKey[] = [];
+          rcmock.data.list_secret_keys().subscribe(rskey => {
+            // console.log('externListSecretKeys:Keys:', rskey.isProgress(), rskey.isError());
+            if (rskey.doProgress()) { return; }
+            if (rskey.doError()) { return; }
+            keys.push(rskey.data);
+          }, null, () => {
+            // console.log('Xxx-3:');
+            try {
+              testListSecretKeys(keys);
+              res();
+            } catch (e) {
+              rej(e);
+            }
+          });
         });
       });
     });

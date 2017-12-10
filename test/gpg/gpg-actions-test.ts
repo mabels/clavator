@@ -2,7 +2,7 @@
 import { assert } from 'chai';
 
 import * as Gpg from '../../src/gpg/gpg';
-import { ResultObservable, ResultExec } from '../../src/gpg/result';
+import { ResultExec } from '../../src/gpg/result';
 
 import * as ListSecretKeys from '../../src/gpg/list-secret-keys';
 
@@ -13,15 +13,17 @@ import { ResultQueue } from '../../src/gpg/result';
 import { RequestAscii } from '../../src/model/request-ascii';
 import KeyToYubiKey from '../../src/gpg/key-to-yubikey';
 import safeRaf from '../safe-raf';
+import * as rxme from 'rxme';
+import { expireDate } from '../../src/model/helper';
 // import * as rx from 'rxjs';
 // import { findDOMNode } from 'react-dom';
 // import { dirname } from 'path';
 
-function expireDate(): Date {
-  let now = new Date();
-  now.setFullYear(now.getFullYear() + 5);
-  return now;
-}
+// function expireDate(): Date {
+//   let now = new Date();
+//   now.setFullYear(now.getFullYear() + 5);
+//   return now;
+// }
 
 function keyGen(): KeyGen {
   let keygen = new KeyGen();
@@ -38,8 +40,20 @@ function keyGen(): KeyGen {
   return keygen;
 }
 
-function createMasterKey(gpg: Gpg.Gpg): ResultObservable {
-  return gpg.createMasterKey(keyGen());
+function createMasterKey(gpg: Gpg.Gpg): rxme.Observable<ListSecretKeys.SecretKey> {
+  // console.log('--A');
+  return rxme.Observable.create(ListSecretKeys.SecretKey, (obs: rxme.Observer<ListSecretKeys.SecretKey>) => {
+    // console.log('--B');
+    gpg.createMasterKey(keyGen()).match((_, res) => {
+      // console.log('--C');
+      gpg.createSubkey(res.fingerPrint.fpr, keyGen(), keyGen().subKeys.first()).match((__, resssb) => {
+        // console.log('--E');
+        obs.next(rxme.data(resssb));
+        return true;
+      }).passTo(obs);
+      return true;
+    }).passTo(obs);
+  });
 }
 
 describe('Gpg', () => {
@@ -49,62 +63,70 @@ describe('Gpg', () => {
 
   before(async function (): Promise<void> {
     this.timeout(100000);
-    rq = ResultQueue.create();
     return new Promise<void>(async (resolve, rej) => {
-      Gpg.createTest(rq).subscribe(gpgres => {
-        if (gpgres.doProgress()) { return; }
-        if (gpgres.isError()) {
-          rej(gpgres);
-          return;
-        }
-        gpg = gpgres.data;
-        // console.log('============');
-        createMasterKey(gpg).subscribe((res) => {
-          if (res.doProgress()) { return; }
-          assert.equal(false, res.isError());
-          // console.log('------------', res);
-          gpg.list_secret_keys().subscribe(_key => {
-            if (_key.doProgress()) { return; }
-            assert.equal(false, _key.isError());
-            let uid = _key.data.uids[0];
-            assert.equal(uid.name, 'Gpg Test Master');
-            assert.equal(uid.email, 'gpg.sock@lodke.gpg');
-            key = _key.data;
-            // console.log('=========', keyGen().subKeys.pallets[0]);
-            gpg.createSubkey(key.fingerPrint.fpr, keyGen(), keyGen().subKeys.first()).subscribe(_res => {
-              if (_res.doProgress()) { return; }
-              // console.log(_res);
-              assert.equal(true, _res.isOk());
+      ResultQueue.create().match((_, _rq) => {
+        rq = _rq;
+        Gpg.createTest(rq).match((__, gpgres) => {
+          gpg = gpgres;
+          // console.log('============');
+          // console.log('--0');
+          createMasterKey(gpg).match((___, res) => {
+            // console.log('--1');
+            // if (res.doProgress()) { return; }
+            try {
+              // assert.equal(false, res.isError());
+              let uid = res.uids[0];
+              assert.equal(uid.name, 'Gpg Test Master');
+              assert.equal(uid.email, 'gpg.sock@lodke.gpg');
+              assert.equal(res.subKeys.length, 1);
+              key = res;
               resolve();
-            });
-          });
-        });
+              // console.log('--2');
+            } catch (e) {
+              rej(e);
+            }
+            return true;
+          }).passTo();
+          return true;
+        }).passTo();
+        return true;
       });
     });
   });
 
-  after((done) => {
-    console.log(`After:${gpg.homeDir}`);
-    gpg.deleteSecretKey(key.fingerPrint.fpr).subscribe(res => {
-      if (res.doProgress()) { return; }
+  after(function (done): void {
+    this.timeout(5000);
+    // console.log(`After:${gpg.homeDir}`);
+    gpg.deleteSecretKey(key.fingerPrint.fpr).match((_, res) => {
+      // if (res.doProgress()) { return; }
+      // console.log(`After:1:${gpg.homeDir}`);
       assert.equal(res.isOk(), true, 'delete secret key');
-      gpg.deletePublicKey(key.fingerPrint.fpr).subscribe(_res => {
-        if (_res.doProgress()) { return; }
+      gpg.deletePublicKey(key.fingerPrint.fpr).match((_, _res) => {
+        // console.log(`After:2:${gpg.homeDir}`);
+        // if (_res.doProgress()) { return; }
         assert.equal(_res.isOk(), true, 'delete pub key');
-        gpg.list_secret_keys().filter(i => i.isOk()).toArray().subscribe(data => {
+        gpg.list_secret_keys().filter(i => i.isOk()).toArray().match((_, data) => {
+          // console.log(`After:3:${gpg.homeDir}`);
           assert.equal(data.length, 0);
-          gpg.runAgent('after', ['killagent', '/bye'], null).subscribe(__res => {
-            if (__res.doProgress()) { return; }
-            gpg.runAgent('cleanupYubiKey', ['killagent', '/bye'], null).subscribe(cyres => {
-              if (cyres.doProgress()) { return; }
-              if (cyres.doError()) { return; }
-              safeRaf(gpg.homeDir).subscribe(null, null, () => {
-                rq.stop().subscribe(() => done());
-              });
-            });
-          });
-        });
-      });
+          gpg.runAgent('after', ['killagent', '/bye'], null).match((__, __res) => {
+            // console.log(`After:4:${gpg.homeDir}`);
+            // if (__res.doProgress()) { return; }
+            gpg.runAgent('cleanupYubiKey', ['killagent', '/bye'], null).match((___, cyres) => {
+              // console.log(`After:5:${gpg.homeDir}`, cyres.isError(), cyres.isOk(),
+              // cyres.isProgress());
+              safeRaf(gpg.homeDir).matchComplete(() => {
+                // console.log(`After:6:${gpg.homeDir}`);
+                rq.stop().matchComplete(() => done()).passTo();
+                return true;
+              }).passTo();
+              return true;
+            }).passTo();
+            return true;
+          }).passTo();
+        }).passTo();
+        return true;
+      }).passTo();
+      return true;
     });
   });
 
@@ -142,53 +164,64 @@ describe('Gpg', () => {
     let kytk = new KeyToYubiKey();
     kytk.fingerprint = key.keyId;
     kytk.passphrase.value = 'Gpg Test Jojo Akzu Luso';
-    gpg.prepareKeyToYubiKey('test', kytk).subscribe(res => {
-      if (res.doProgress()) { return; }
-      assert.equal(true, res.isOk(), `unknown exit code ${res.exec.stdErr}`);
+    gpg.prepareKeyToYubiKey('test', kytk).match((_, res) => {
+      // if (res.doProgress()) { return; }
+      assert.equal(true, res.isOk(), `unknown exit code ${res.stdErr}`);
       assert.isNotNull(res.data, 'Gpg should be set');
-      res.data.list_secret_keys().filter(i => i.isOk()).toArray().subscribe(keys => {
+      res.data.list_secret_keys().filter(i => i.isOk()).toArray().match(keys => {
         assert.equal(1, keys.length, 'len should be one');
         assert.equal('gpg.sock@lodke.gpg', keys[0].data.uids[0].email);
-        safeRaf(res.data.homeDir).subscribe(null, null, () => done());
+        safeRaf(res.homeDir).matchComplete(() => done()).passTo();
         // console.log(`prepareToYubiKey:${res.data && res.data.homeDir}:${gpg.homeDir}`);
         // done();
-      });
-    });
+        return true;
+      }).passTo();
+      return true;
+    }).passTo();
   });
 
   it('keyToSmartCard with Mock', function (done: any): void {
     this.timeout(100000);
-    const mygpg = gpg.useMock();
-    let kytk = new KeyToYubiKey();
-    kytk.fingerprint = key.keyId;
-    kytk.passphrase.value = 'Gpg Test Jojo Akzu Luso';
-    kytk.admin_pin.pin = '12345678';
-    kytk.card_id = 'Smarte-Karte';
-    kytk.slot_id = 4711;
-    mygpg.keyToYubiKey(kytk).subscribe(res => {
-      if (res.isProgress()) {
-        if (res.progress instanceof ResultExec &&
-          res.progress.execTransaction.data.args.yargs.quickKeytocard) {
-          assert.equal(res.progress.execTransaction.data.readFds[0].value, `${kytk.passphrase.value}\n`);
-          assert.equal(res.progress.execTransaction.data.readFds[1].value, `${kytk.admin_pin.pin}\n`);
-        }
-      }
-      if (res.doProgress()) { return; }
-      assert.equal(true, res.isOk(), `unknown exit code ${res.exec.stdErr}`);
-      safeRaf(res.data.homeDir).subscribe(null, null, () => done());
-      // console.log(`keyToSmartCard:${res.data && res.data.homeDir}:${gpg.homeDir}`);
-    });
+    Gpg.createMock(rq).match((_, rsmygpg) => {
+      // if (rsmygpg.doProgress()) { return; }
+      createMasterKey(rsmygpg).match((__, reskey) => {
+        // if (reskey.doProgress()) { return; }
+        const kytk = new KeyToYubiKey();
+        kytk.fingerprint = reskey.keyId;
+        kytk.passphrase.value = 'Gpg Test Jojo Akzu Luso';
+        kytk.admin_pin.pin = '12345678';
+        kytk.card_id = 'Smarte-Karte';
+        kytk.slot_id = 4711;
+        rsmygpg.keyToYubiKey(kytk).match((___, res) => {
+          if (res.isProgress()) {
+            if (res.progress instanceof ResultExec &&
+              res.progress.execTransaction.data.args.yargs.quickKeytocard) {
+              assert.equal(res.progress.execTransaction.data.readFds[0].value, `${kytk.passphrase.value}\n`);
+              assert.equal(res.progress.execTransaction.data.readFds[1].value, `${kytk.admin_pin.pin}\n`);
+            }
+          }
+          // console.log('XXXXX', res.progress);
+          if (res.doProgress()) { return; }
+          assert.equal(true, res.isOk(), `unknown exit code ${res.exec.stdErr}`);
+          safeRaf(res.data.homeDir).matchComplete(() => done()).passTo();
+          // console.log(`keyToSmartCard:${res.data && res.data.homeDir}:${gpg.homeDir}`);
+          return true;
+        }).passTo();
+        return true;
+      }).passTo();
+      return true;
+    }).passTo();
   });
 
   it('getSocketName', (done) => {
-    gpg.useMock().getSocketName().subscribe(rcs => {
-      if (rcs.doProgress()) { return; }
+    gpg.getSocketName().match((_, rcs) => {
       assert.isTrue(rcs.isOk());
       assert.isNotNull(rcs.data);
       assert.ok(rcs.data.length > 0);
       // console.log('getSocketName:', rcs.data);
       done();
-    });
+      return true;
+    }).passTo();
   });
 
   it('pemPrivateKey', function (done: any): void {
@@ -196,21 +229,23 @@ describe('Gpg', () => {
     let rqa: RequestAscii = new RequestAscii();
     rqa.fingerprint = key.keyId;
     rqa.passphrase.value = 'Gpg Test Jojo Akzu Luso';
-    gpg.useMock().pemPrivateKey(rqa).subscribe(res => {
-      if (res.doProgress()) { return; }
-      assert.equal(true, res.exec.stdOut.startsWith('-----BEGIN PGP PRIVATE KEY BLOCK-----'), res.exec.stdOut);
+    gpg.pemPrivateKey(rqa).match((_, res) => {
+      // if (res.doProgress()) { return; }
+      assert.equal(true, res.stdOut.startsWith('-----BEGIN PGP PRIVATE KEY BLOCK-----'), res.exec.stdOut);
       done();
-    });
+      return true;
+    }).passTo();
   });
 
   it('pemPublicKey', (done) => {
     let rqa: RequestAscii = new RequestAscii();
     rqa.fingerprint = key.keyId;
-    gpg.useMock().pemPublicKey(rqa).subscribe(res => {
-      if (res.doProgress()) { return; }
-      assert.equal(true, res.exec.stdOut.startsWith('-----BEGIN PGP PUBLIC KEY BLOCK-----'), res.exec.stdOut);
+    gpg.pemPublicKey(rqa).match((_, res) => {
+      // if (res.doProgress()) { return; }
+      assert.equal(true, res.stdOut.startsWith('-----BEGIN PGP PUBLIC KEY BLOCK-----'), res.exec.stdOut);
       done();
-    });
+      return true;
+    }).passTo();
   });
 
   // it('pemRevocation', (done) => {
@@ -225,12 +260,13 @@ describe('Gpg', () => {
   it('sshPublic', (done) => {
     let rqa: RequestAscii = new RequestAscii();
     rqa.fingerprint = key.keyId;
-    gpg.useMock().sshPublic(rqa).subscribe(res => {
-      if (res.doProgress()) { return; }
+    gpg.sshPublic(rqa).match((_, res) => {
+      // if (res.doProgress()) { return; }
       // console.log(res);
-      assert.equal(true, res.exec.stdOut.startsWith('ssh-rsa '), res.exec.stdOut);
+      assert.equal(true, res.stdOut.startsWith('ssh-rsa '), res.stdOut);
       done();
-    });
+      return true;
+    }).passTo();
   });
 
 });

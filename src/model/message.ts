@@ -1,4 +1,6 @@
 import * as uuid from 'node-uuid';
+import * as Progress from './progress';
+import * as rxme from 'rxme';
 
 export class Header {
   public action: string;
@@ -19,9 +21,50 @@ export class Header {
   }
 
 }
-export interface Message {
-  header: Header;
-  data: string;
+export class Message {
+  public header: Header;
+  public data: string;
+
+  constructor(header?: Header, data?: string) {
+    this.header = header;
+    this.data = data;
+  }
+
+  public reply(action: string): Message {
+    const ret = new Message();
+    ret.header = this.header.setAction(action);
+    return ret;
+  }
+
+  public send(sub: rxme.Subject<Message>): Message {
+    sub.next(rxme.data(this));
+    return this;
+  }
+  public dataToJson(a: any): Message {
+    this.data = JSON.stringify(a);
+    return this;
+  }
+  public progressFail(str: string): Message {
+    return this.dataToJson(Progress.fail(str));
+  }
+
+  public progressOk(str: string): Message {
+    return this.dataToJson(Progress.ok(str));
+  }
+
+  public progressInfo(str: string): Message {
+    return this.dataToJson(Progress.info(str));
+  }
+
+  public progressError(str: string): Message {
+    return this.dataToJson(Progress.error(str));
+  }
+
+  public prepare(): string {
+    const header = JSON.stringify(this.header);
+    const payload = this.data || '{}';
+    return fixlength(header.length, 8) + header + payload;
+  }
 }
 
 function fixlength(i: number, l: number): string {
@@ -44,10 +87,7 @@ function fixlength(i: number, l: number): string {
 export function fromData(data: string): Message {
   let hlen = parseInt(data.slice(0, 8), 16);
   let header = JSON.parse(data.slice(8, 8 + hlen));
-  return {
-    header: Header.fill(header),
-    data: data.slice(8 + hlen)
-  };
+  return new Message(Header.fill(header), data.slice(8 + hlen));
 }
 
 export function prepare<T>(action: Header, data: T = null): string {
@@ -61,8 +101,9 @@ export class Transaction<T> {
   public data: T;
 
   public asMsg(data?: T): string {
+    this.data = data || this.data;
     console.log('Transaction:asMsg:', this);
-    return prepare(this.header, data || this.data);
+    return prepare(this.header, this.data);
   }
 }
 

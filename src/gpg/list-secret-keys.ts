@@ -46,9 +46,9 @@ export class Uid {
 
   public toKeyGenUid(): KeyGenUid {
     let ret = new KeyGenUid();
-    ret.comment.value = this.comment;
-    ret.email.value = this.email;
-    ret.name.value = this.name;
+    ret.comment.value = this.comment || '';
+    ret.email.value = this.email || '';
+    ret.name.value = this.name || '';
     return ret;
   }
 
@@ -71,9 +71,24 @@ export class Uid {
     // this.comment = match[5];
     return this;
   }
+
+  public identity(): string {
+    let spcComment = '';
+    if (this.comment && this.comment.length) {
+      spcComment = ` ${this.comment}`;
+    }
+    return `${this.name} <${this.email}>${spcComment}`;
+  }
+
+  public asGpgWithColons(): string {
+    return [
+      'uid', this.trust, '', '', '', this.id, '', this.key, '', this.identity(),
+      '', '', '', '', '', '', '', '', '', '0', ''
+    ].join(':');
+  }
 }
 
-class FingerPrint {
+export class FingerPrint {
   public fpr: string;
 
   public static jsfill(js: any): FingerPrint {
@@ -92,9 +107,16 @@ class FingerPrint {
     return this;
   }
 
+  public asGpgWithColons(): string {
+    return [
+      // fpr:::::::::547484819BCCDBDA0E73858F1A5D93796CF70ADF:
+      'fpr', '', '', '', '', '', '', '', '', this.fpr, ''
+    ].join(':');
+  }
+
 }
 
-class Group {
+export class Group {
   public grp: string;
 
   public static jsfill(js: any): Group {
@@ -113,6 +135,12 @@ class Group {
     return this;
   }
 
+  public asGpgWithColons(): string {
+    return [
+      // fpr:::::::::547484819BCCDBDA0E73858F1A5D93796CF70ADF:
+      'grp', '', '', '', '', '', '', '', '', this.grp, ''
+    ].join(':');
+  }
 }
 
 const Ciphers: { [id: string]: string; } = {
@@ -213,6 +241,18 @@ export class Key {
     this.uses = match[11].split('').sort();
     return this;
   }
+
+  public asGpgWithColons(): string {
+    return [
+      [
+        // ssb:-:2048:1:0212004AF9FC8C5A:1333149072:1493647841:::::esa:::+:::
+        'ssb', this.trust, this.bits, '1', this.key, this.created, this.expires,
+        '', '', '', '', 'esa', '', '', '+', '', '', ''
+      ].join(':'),
+      this.fingerPrint.asGpgWithColons(),
+      this.group.asGpgWithColons(),
+    ].join('\n');
+  }
 }
 
 export class SecretKey extends Key {
@@ -266,6 +306,30 @@ export class SecretKey extends Key {
       ret.uids.add(new KeyGenUid());
     }
     return ret;
+  }
+
+  public asPem(): string {
+    return [
+      '-----BEGIN PGP PRIVATE KEY BLOCK-----',
+      JSON.stringify(this),
+      '-----END PGP PRIVATE KEY BLOCK-----', ''
+    ].join('\n');
+  }
+
+  public asGpgWithColons(): string {
+    // sec:-:2048:1:1A5D93796CF70ADF:1333149072:1493647783::-:::escaESCA:::+::::
+    const sec = [
+      this.type, this.trust, this.bits, 1, this.key,
+      this.created, this.expires, '', '-', '', '', this.uses.join(''),
+      '', '', this.funky, '', '', '', ''
+    ].join(':');
+    return [
+      sec,
+      this.fingerPrint.asGpgWithColons(),
+      this.group.asGpgWithColons(),
+    ]
+      .concat(this.uids.map(uid => uid.asGpgWithColons()))
+      .concat(this.subKeys.map(ssb => ssb.asGpgWithColons())).join(`\n`);
   }
 
   public eq(o: SecretKey): boolean {

@@ -1,9 +1,13 @@
 import * as Rimraf from 'rimraf';
 import * as fs from 'fs';
-import * as rx from 'rxjs';
+import * as rxme from 'rxme';
 
-export function safeRaf(dir: string): rx.Observable<void> {
-  return rx.Observable.create((obs: rx.Observer<void>) => {
+export function safeRaf(dir: string): rxme.Observable<rxme.Done> {
+  return rxme.Observable.create(rxme.Done, (obs: rxme.Observer<rxme.Done>) => {
+    if (process.env.SKIP_RAF) {
+      obs.complete();
+      return;
+    }
     // console.log(`safeRaf:start:${dir}`);
     fs.stat(dir, (err, dirStat) => {
       if (!err && dir.endsWith('.tdir') && dirStat.isDirectory()) {

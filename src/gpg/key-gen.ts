@@ -6,7 +6,7 @@ import Container from '../model/container';
 import Pallet from '../model/pallet';
 import ObjectId from '../model/object-id';
 
-import { assignOnError, format_date, expireDate  } from '../model/helper';
+import { assignOnError, format_date, expireDate } from '../model/helper';
 import { StringValue } from '../model/string-value';
 
 // export class Uid extends KeyGenUid {
@@ -159,16 +159,16 @@ export class KeyGen {
     assignOnError(this.password.valid(), ret, this.password.errText());
     // !this.adminPin.valid() && ret.push(this.adminPin.errText);
     // !this.userPin.valid() && ret.push(this.userPin.errText);
-    assignOnError(this.keyInfo.valid(), ret,  this.keyInfo.errText());
-    assignOnError(this.subKeys.valid(), ret,  this.subKeys.errText());
-    assignOnError(this.uids.valid(), ret,  this.uids.errText());
+    assignOnError(this.keyInfo.valid(), ret, this.keyInfo.errText());
+    assignOnError(this.subKeys.valid(), ret, this.subKeys.errText());
+    assignOnError(this.uids.valid(), ret, this.uids.errText());
     assignOnError(this.expireDate.valid(), ret, this.expireDate.errText);
     return ret;
   }
 
   public valid(): boolean {
     // console.log(this.errText());
-    let ret = this.password.valid() &&
+    const ret = this.password.valid() &&
       //  this.adminPin.valid() && this.userPin.valid() &&
       this.keyInfo.valid() &&
       this.uids.valid() &&
@@ -181,7 +181,7 @@ export class KeyGen {
   }
 
   public masterCommand(): string {
-    let ret = [
+    const ret = [
       'Key-Type: ' + this.keyInfo.type.value,
       'Key-Length: ' + this.keyInfo.length.value,
       'Key-Usage: ' + this.keyInfo.usage.values,

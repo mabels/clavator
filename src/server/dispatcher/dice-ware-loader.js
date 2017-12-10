@@ -7,7 +7,7 @@ function resolveUrls(urls, callback) {
     return new Promise((resolve, reject) => {
       const options = {
         url: url,
-        ttl: 3600000 //3 seconds
+        ttl: 7*24*36000000 //one week
       };
       cachedRequest(options, (error, response, body) => {
         if (error) {
@@ -26,10 +26,9 @@ function resolveUrls(urls, callback) {
     .catch((error) => callback(error, null));
 }
 
-module.exports = function(content) {
-  // console.log(path.resolve(__dirname, 'dist'));
+module.exports = function(content, x) {
   cachedRequest.setCacheDirectory(
-    path.join(path.resolve(__dirname), '.dice-req-cache')
+    path.join(path.resolve(this.options.output.path), '.dice-req-cache')
   );
   const callback = this.async();
   if (!callback) {
@@ -40,7 +39,7 @@ module.exports = function(content) {
     map(i => i.replace(/^\s+|\s+$/g, '')).
     filter(i => i.length)
   resolveUrls(urls, (err, resolved) => {
-    callback(err, resolved.join('\n'))
+    callback(err, (resolved || []).join('\n'))
   });
 }
 

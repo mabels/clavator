@@ -1,7 +1,7 @@
 
 import * as WebSocket from 'ws';
 import * as Message from '../../model/message';
-import Dispatcher from '../dispatcher';
+import { Dispatcher } from '../dispatcher';
 
 import * as Gpg from '../../gpg/gpg';
 // import Result from '../../gpg/result';
@@ -11,43 +11,33 @@ import ChangeCard from '../../gpg/change-card';
 import * as Progress from '../../model/progress';
 // import { Observer } from '../observer';
 
-export class GpgChangeCard implements Dispatcher {
-  public gpg: Gpg.Gpg;
-
-  public static create(g: Gpg.Gpg): GpgChangeCard {
-    return new GpgChangeCard(g);
-  }
-
-  constructor(g: Gpg.Gpg) {
-    this.gpg = g;
-  }
-
-  public run(ws: WebSocket, m: Message.Message): boolean {
-    console.log('GpgChangeCard.run', m.header);
-    if (m.header.action != 'ChangeCard.Request') {
+export function create(gpg: Gpg.Gpg): Dispatcher {
+  const ret = new Dispatcher();
+  ret.recv.match(req => {
+    // console.log('GpgChangeCard.run', req.header);
+    if (req.action != 'ChangeCard.Request') {
       // ws.send(Message.prepare('Progressor.Clavator', Progress.fail('Ohh')))
       return false;
     }
-    let a = JSON.parse(m.data) || {};
-    let cc = ChangeCard.fill(a);
+    const a = JSON.parse(req.data) || {};
+    const cc = ChangeCard.fill(a);
     // console.log(m, a, kg)
     // console.log(kg.valid(), kg.errText())
-    let header = Message.toHeader(m, 'Progressor.Clavator');
+    const reply = req.reply('Progressor.Clavator');
     if (!cc.valid()) {
-      ws.send(Message.prepare(header, Progress.fail('Failed received ChangeCard is not valid')));
+      reply.progressFail('Failed received ChangeCard is not valid').send(ret.send);
       return;
     }
     // console.log('>>>', kg.masterCommand())
-    ws.send(Message.prepare(header, Progress.info(`ChangeCard Action`)));
-    this.gpg.changeCard(cc).subscribe(res => {
-      ws.send(Message.prepare(header, Progress.info(res.exec.stdOut)));
-      ws.send(Message.prepare(header, Progress.error(res.exec.stdErr)));
-      ws.send(Message.prepare(header.setAction('ChangeCard.Completed')));
+    reply.progressInfo(`ChangeCard Action`);
+    gpg.changeCard(cc).subscribe(res => {
+      reply.progressInfo(res.exec.stdOut).send(ret.send);
+      reply.progressError(res.exec.stdErr).send(ret.send);
+      req.reply('ChangeCard.Completed').send(ret.send);
       // send cardlist
     });
-    return true;
-  }
-
+  });
+  return ret;
 }
 
-export default GpgChangeCard;
+export default { create: create };

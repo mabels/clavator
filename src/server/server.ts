@@ -28,14 +28,14 @@ import * as Dispatch from './dispatch';
 import * as Gpg from '../gpg/gpg';
 
 import * as Message from '../model/message';
-import * as rx from 'rxjs';
-import { ResultQueue, ResultObservable, ResultObserver, ResultExec, ResultContainer } from '../gpg/result';
+import * as rxme from 'rxme';
+import { ResultQueue, ResultExec } from '../gpg/result';
 // import { WsChannel } from '../ui/model/ws-channel';
 // import { CardStatusList } from '../ui/components/card-status-list';
 // import { observe } from 'mobx/lib/api/observe';
 
-function handleMonitor(sock: ws): (r: ResultContainer<any>) => void {
-  return (result: ResultContainer<any>) => {
+function handleMonitor(sock: ws): (r: rxme.Container<any>) => void {
+  return (result: rxme.Container<any>) => {
     if (result.isProgress()) {
       const header = Message.broadcast('Progressor.Clavator');
       if (result.progress instanceof ResultExec) {
@@ -66,8 +66,8 @@ function handleMonitor(sock: ws): (r: ResultContainer<any>) => void {
   };
 }
 
-function starter(): ResultObservable<void> {
-  return rx.Observable.create((obs: ResultObserver<void>) => {
+function starter(rq: ResultQueue): rxme.Observable<void> {
+  return rxme.Observable.create(null, (obs: rxme.Observer<void>) => {
     let redirectPort = 8080;
     let applicationPort = process.env.PORT || 8443;
     if (process.getuid() == 0) {
@@ -97,12 +97,11 @@ function starter(): ResultObservable<void> {
 
     app.use(express.static(join(process.cwd(), 'dist')));
 
-    const rq = ResultQueue.create();
-    Gpg.create(rq).subscribe(rcgpg => {
-      if (rcgpg.doProgress(obs)) { return; }
-      if (rcgpg.isError()) { return; }
-      const monitor = Monitor.start(rcgpg.data);
-      const dispatch = Dispatch.start(rcgpg.data);
+    Gpg.create(rq).match((_, rcgpg) => {
+      // if (rcgpg.doProgress(obs)) { return; }
+      // if (rcgpg.isError()) { return; }
+      const monitor = Monitor.start(rcgpg);
+      const dispatch = Dispatch.start(rcgpg);
 
       app.get('/', (req: express.Request, res: express.Response) => res.redirect('/index.html'));
 
@@ -130,23 +129,32 @@ function starter(): ResultObservable<void> {
         console.log('WS-Connect');
         const subMonitor = monitor.subscribe(handleMonitor(sock));
         // observer.register(sock);
+        const recvSubject = dispatch.recv.subscribe(msg => {
+          console.log('to-WS-recv:', msg.header);
+          sock.send(msg.prepare());
+        });
         sock.on('close', () => {
           console.log('close');
           subMonitor.unsubscribe();
+          recvSubject.unsubscribe();
           // observer.unregister(sock);
         });
         // ws.on('data', msg:any => console.log(msg));
         sock.on('message', (payload) => {
           const msg = Message.fromData(payload.toString());
-          // console.log('onMessage')
-          dispatch.run(sock, msg);
+          console.log('from-WS-send:', msg.header);
+          dispatch.send.next(msg);
         });
       });
 
       httpServer.on('request', app);
       httpServer.listen(applicationPort);
-    });
+      return true;
+    }).passTo();
   });
 }
 
-starter().subscribe(() => { /* */ });
+ResultQueue.create().match((_, rq) => {
+  starter(rq).passTo();
+  return true;
+}).passTo();

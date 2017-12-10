@@ -6,9 +6,9 @@ export function format_date(date: Date): string {
 }
 
 export function expireDate(): Date {
-  let now = new Date();
+  const now = new Date();
   now.setFullYear(now.getFullYear() + 5);
-  return now;
+  return new Date(format_date(now));
 }
 
 export function assignOnError(valid: boolean, ret: string[], errText: string | string[]): void {

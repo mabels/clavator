@@ -33,20 +33,23 @@ export class ReadAsciiRespond extends React.Component<ReadAsciiRespondProps, Rea
   }
 
   public componentWillMount(): void {
-    let ra = new RequestAscii();
+    const ra = new RequestAscii();
     ra.action = this.props.action;
     ra.fingerprint = this.props.secKey.fingerPrint.fpr;
     ra.passphrase = this.props.passPhrase;
-    let transaction = Message.newTransaction<RequestAscii>('RequestAscii');
+    const transaction = Message.newTransaction<RequestAscii>('RequestAscii');
     this.setState({
       transaction: transaction,
       receiver: this.props.channel.onMessage((action: Message.Header, data: string) => {
-        console.log('processAscii:', action, this.state.transaction);
+        // console.log('processAscii:', action, this.state.transaction);
         if (!(action.action == 'RespondAscii' &&
               action.transaction == this.state.transaction.header.transaction)) {
           return;
         }
-        let pem = RespondAscii.fill(JSON.parse(data));
+        const jsonPem = JSON.parse(data);
+        const pem = RespondAscii.fill(jsonPem);
+        console.log('lala:', action, this.state.transaction,
+          this.props.secKey.fingerPrint.fpr, pem, jsonPem);
         if (this.props.secKey.fingerPrint.fpr != pem.fingerprint) {
           return;
         }
@@ -54,7 +57,9 @@ export class ReadAsciiRespond extends React.Component<ReadAsciiRespondProps, Rea
         this.setState( { data: pem.data });
       })
     });
+    // console.log('--1');
     this.props.channel.send(transaction.asMsg(ra));
+    // console.log('--2');
   }
 
   public componentWillUnmount(): void {
