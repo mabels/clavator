@@ -25,14 +25,23 @@ docker run -ti --rm --privileged multiarch/qemu-user-static:register --reset
 
 docker build -f Dockerfile-create-os-images -t clavator-create-os-images .
 
+
 for i in aarch64 x86_64 arm 
 do
-  echo "Run: /builder/create-docker-archlinux-$i $VERSION"
-  docker ps -qa -f "name=$i-create-docker-archlinux" | xargs docker rm -f
+  archdir=/var/cache/docker/clavator/arch/$i/$(uuidgen)
+  echo "Run: /builder/create-docker-archlinux-$i $VERSION $archdir"
+  docker ps -qa -f "name=$i-create-docker-archlinux" | xargs -r docker rm -f
+  VIMAGES="$IMAGES:$IMAGES"
+  IFS='^' read -r access_key secret_key endpoint bucket <<< "$IMAGES"
+  if [ -n $access_key -a -n $secret_key ]
+  then
+    VIMAGES=""
+  fi
   docker run -d --privileged \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v /var/cache/docker/clavator:/clavator \
-    -v $IMAGES:$IMAGES \
+    -v $archdir:/arch \
+    $VIMAGES \
     --env "IMAGES=$IMAGES" \
     --env "DOCKER_CONFIG_JSON=$DOCKER_CONFIG_JSON" \
     --env "DOCKER_REGISTRY=$DOCKER_REGISTRY" \

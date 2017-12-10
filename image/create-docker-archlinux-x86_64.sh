@@ -7,12 +7,14 @@ echo VERSION=$VERSION
 #echo DOCKER_AUTH=$DOCKER_AUTH
 arch=x86_64
 
-mkdir /arch
-[ -f /clavator/archlinux-bootstrap-2017.04.01-x86_64.tar.gz ] ||
-  wget --directory-prefix=/clavator \
-    $ARCHLINUX/iso/2017.04.01/archlinux-bootstrap-2017.04.01-x86_64.tar.gz
+version=$(date +'%Y.%m')
 
-tar xzf /clavator/archlinux-bootstrap-2017.04.01-x86_64.tar.gz -C /arch
+mkdir -p /arch
+[ -f /clavator/archlinux-bootstrap-$version.01-x86_64.tar.gz ] ||
+  wget --directory-prefix=/clavator \
+    $ARCHLINUX/iso/latest/archlinux-bootstrap-$version.01-x86_64.tar.gz
+
+tar xzf /clavator/archlinux-bootstrap-$version.01-x86_64.tar.gz -C /arch
 mv /arch/root.x86_64/* /arch/
 
 mkdir -p /arch/etc/pacman.d/
@@ -41,3 +43,4 @@ RUNNER
 
 . /builder/docker-push.sh clavator-docker-archlinux-x86_64-$VERSION /arch
 
+(cd /arch && rm -rf .)

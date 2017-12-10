@@ -3,7 +3,8 @@ cat <<UPDATER > /arch/updater.sh
 pacman-key --init
 pacman-key --populate archlinux
 echo "n" | \
-  pacman -Syyu --noconfirm base openssh openssl git docker pcsclite e2fsprogs
+  pacman -Syyu --noconfirm base openssh openssl git docker pcsclite e2fsprogs \
+    $@
 pacman -Scc --noconfirm ; rm -f /var/cache/pacman/pkg/*
 systemctl enable sshd.service
 systemctl start sshd.service

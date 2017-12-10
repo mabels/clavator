@@ -5,6 +5,7 @@ RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf
 COPY mirrorlist.x86_64 /etc/pacman.d/mirrorlist
 RUN pacman-key --init
 RUN pacman-key --populate archlinux
+RUN pacman-key --lsign-key B81B051F2D7FC867AAFF35A58DBD63B82072D77A
 RUN pacman --noconfirm -Sy archlinux-keyring 
 RUN pacman --noconfirm -Sy ca-certificates
 RUN update-ca-trust 
@@ -15,12 +16,12 @@ RUN pacman-db-upgrade
 #RUN pacman --noconfirm -Syyu openssh openssl git npm gcc autoconf make wget base-devel docker arch-install-scripts dosfstools nodejs git npm gcc autoconf make libpng automake python2 pcsclite imagemagick mesa-libgl librsvg fig2dev ghostscript texinfo ruby 
 
 
-RUN pacman --noconfirm -Syyu openssh openssl git make wget base-devel \
+RUN pacman --noconfirm --force -Syyu openssh openssl git make wget base-devel \
  docker arch-install-scripts dosfstools ruby nodejs bash bzip2 coreutils \
  diffutils e2fsprogs file filesystem findutils gawk gcc-libs gettext glibc \
  grep gzip inetutils iproute2 iputils less libutil-linux licenses logrotate \
  lvm2 netctl pacman perl procps-ng psmisc sed shadow sysfsutils tar \
- texinfo util-linux vi which qemu rsync s3cmd
+ texinfo util-linux vi which qemu rsync aws-cli
 
 RUN pacman-db-upgrade
 #RUN pacman --noconfirm -Sy git npm gcc autoconf make wget 

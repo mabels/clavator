@@ -7,7 +7,7 @@ echo VERSION=$VERSION
 arch=armhf
 
 
-mkdir /arch
+mkdir -p /arch
 [ -f /clavator/ArchLinuxARM-armv7-latest.tar.gz ] ||
   wget --directory-prefix=/clavator \
     $ARCHLINUXARM/os/ArchLinuxARM-armv7-latest.tar.gz
@@ -51,3 +51,4 @@ RUNNER
 
 . /builder/docker-push.sh clavator-docker-archlinux-arm-$VERSION /arch
 
+(cd /arch && rm -rf .)

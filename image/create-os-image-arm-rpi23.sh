@@ -23,6 +23,7 @@ echo -e "n\np\n1\n$sfat\n$efat\nn\np\n2\n$sext4\n$eext4\nt\n1\n6\nt\n2\n83\nw" |
 
 . /builder/map-os-image-arm-rpi23.sh
 
+echo "PARTS: $part1 $part2"
 mkfs.vfat $part1
 mkfs.ext4 -O '^metadata_csum,^64bit' $part2 || mkfs.ext4 $part2
 mkdir arch
@@ -55,7 +56,10 @@ echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x2
 
 #/bin/sh /builder/run-construqt.sh eth0
 
-/bin/sh /builder/create-os-image-updater.sh
+/bin/sh /builder/create-os-image-updater.sh \
+     xorg lxde xf86-video-fbdev lightdm lightdm-gtk-greeter lightdm-gtk-greeter-settings \
+     midori dwm
+ pacman -Scc --noconfir
 
 cat <<MMC > /arch/create-mmcblk0.sh
 ln $hole_disk /dev/mmcblk0
