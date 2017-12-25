@@ -16,8 +16,8 @@ interface RcKeyParamsProps extends React.Props<RcKeyParams> {
 export class RcKeyParams extends
   React.Component<RcKeyParamsProps, RcKeyParamsState> {
 
-  constructor() {
-    super();
+  constructor(props: RcKeyParamsProps) {
+    super(props);
     this.state = {};
   }
 

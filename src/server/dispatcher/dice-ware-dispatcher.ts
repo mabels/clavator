@@ -32,8 +32,8 @@ function moduleToDiceWare(): DiceWare[] {
     return diceWares;
 }
 
-export function get(rq: ResultQueue): ResultObservable<DiceWare[]> {
- return rxme.Observable.create((obs: ResultObserver<DiceWare[]>) => {
+export function get(rq: ResultQueue): ResultObservable {
+ return rxme.Observable.create(obs => {
     obs.next(ResultContainer.builder<DiceWare[]>(rq).setData(moduleToDiceWare()));
     obs.complete();
  });
@@ -41,7 +41,7 @@ export function get(rq: ResultQueue): ResultObservable<DiceWare[]> {
 
 export function create(rq: ResultQueue): Dispatcher {
     const ret = new Dispatcher();
-    ret.recv.subscribe(req => {
+    ret.recv.match(req => {
         // console.log('DiceWareDispatcher.run', req.header);
         if (req.header.action != 'DiceWares.Request') {
             // ws.send(Message.prepare('Progressor.Clavator', Progress.fail('Ohh')))

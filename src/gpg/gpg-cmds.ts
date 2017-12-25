@@ -13,13 +13,13 @@ export type Mixed = string | StringFunc;
 
 class GpgCmd {
   private readonly cmd: string[];
-  public version: rxme.RxMe<GpgVersion>;
+  public version: rxme.RxMe;
   public readonly resultQueue: ResultQueue;
 
-  public static create(rq: ResultQueue, cmd: string[]): rxme.Observable<GpgCmd> {
-    return rxme.Observable.create(GpgCmd, (obs: rxme.Observer<GpgCmd>) => {
+  public static create(rq: ResultQueue, cmd: string[]): rxme.Observable {
+    return rxme.Observable.create(obs => {
       const gpgCmd = new GpgCmd(rq, cmd);
-      const rxmeGpgCmd = rxme.data(gpgCmd);
+      const rxmeGpgCmd = rxme.Msg.Type(gpgCmd);
       gpgCmd.resolveVersion().match((_, res) => {
         obs.next(rxmeGpgCmd);
         // ResultContainer.builder(rq).setData(gpgCmd).doComplete(obs);
@@ -45,8 +45,8 @@ class GpgCmd {
   //   return new GpgCmd(this.cmd.map(i => i), this.gpg);
   // }
 
-  public resolveVersion(): rxme.Observable<GpgVersion> {
-    return rxme.Observable.create(GpgVersion, (obs: rxme.Observer<GpgVersion>) => {
+  public resolveVersion(): rxme.Observable {
+    return rxme.Observable.create(obs => {
       this.run('getVersion', '', ['--version'], '').match((_, res) => {
         this.version = res;
         const lines = res.stdOut.split(/[\n\r]+/);
@@ -62,7 +62,7 @@ class GpgCmd {
     });
   }
 
-  public run(initiator: string, homeDir: string, attributes: Mixed[], stdIn: string): rxme.Observable<ResultExec> {
+  public run(initiator: string, homeDir: string, attributes: Mixed[], stdIn: string): rxme.Observable {
     if (homeDir) {
       attributes.splice(0, 0, homeDir);
       attributes.splice(0, 0, '--homedir');
@@ -82,13 +82,13 @@ export class GpgCmds {
   public readonly mock: boolean;
 
   public static create(rq: ResultQueue, gpgcmdStr: string[], agentStr: string[], order: number, mock = false):
-    rxme.Observable<GpgCmds> {
-    return rxme.Observable.create(GpgCmds, (obs: rxme.Observer<GpgCmds>) => {
+    rxme.Observable {
+    return rxme.Observable.create(obs => {
       GpgCmd.create(rq, gpgcmdStr).match((_, gpgres) => {
         // console.log('GpgRes.create-1:', gpgres.data, gpgres.progress);
         GpgCmd.create(rq, agentStr).match((__, agentres) => {
           // console.log('AgentRes.create-1:', agentres.data, agentres.progress);
-          obs.next(rxme.data(new GpgCmds(gpgres, agentres, order, mock)));
+          obs.next(rxme.Msg.Type(new GpgCmds(gpgres, agentres, order, mock)));
           return false;
         }).passTo(obs);
         return false;

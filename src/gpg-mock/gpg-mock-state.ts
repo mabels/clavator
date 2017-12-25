@@ -4,7 +4,7 @@ import * as yargs from 'yargs';
 import * as rxme from 'rxme';
 
 export interface ParsedAction {
-  (y: yargs.Arguments, state: GpgMockState): rxme.Observable<boolean>; // returns true stopped
+  (y: yargs.Arguments, state: GpgMockState): rxme.Observable; // returns true stopped
 }
 
 interface StdOut {
@@ -53,7 +53,7 @@ export default class GpgMockState {
     this.actions.push(action);
   }
 
-  private processAction(y: yargs.Arguments, obs: rxme.Observer<void>, idx: number): void {
+  private processAction(y: yargs.Arguments, obs: rxme.Observer, idx: number): void {
     if (idx >= this.actions.length) {
       obs.complete();
       return;
@@ -97,9 +97,9 @@ export default class GpgMockState {
 
   public parsed(y: yargs.Arguments): void {
     if (!this._processed) {
-      rxme.Observable.create(null, (obs: rxme.Observer<void>) => {
+      rxme.Observable.create(obs => {
         this.processAction(y, obs, 0);
-      }).matchComplete(() => { this.processParsed(y); return true; });
+      }).match(rxme.Matcher.Complete(() => { this.processParsed(y); return true; }));
     } else {
       this.processParsed(y);
     }

@@ -35,8 +35,8 @@ interface CardStatusListProps extends React.Props<CardStatusList> {
 @observer
 export class CardStatusList extends React.Component<CardStatusListProps, CardStatusState> {
 
-  constructor() {
-    super();
+  constructor(props: CardStatusListProps) {
+    super(props);
     this.state = {
       dialog: Dialogs.closed,
       cardStatus: null,

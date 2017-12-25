@@ -16,8 +16,8 @@ interface AskAdminPinProps extends React.Props<AskAdminPin> {
 
 export class AskAdminPin extends React.Component<AskAdminPinProps, AskAdminPinState> {
 
-  constructor() {
-    super();
+  constructor(props: AskAdminPinProps) {
+    super(props);
     this.state = {
     };
     this.handleChange = this.handleChange.bind(this);

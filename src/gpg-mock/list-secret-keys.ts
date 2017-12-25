@@ -1,15 +1,15 @@
 import GpgMockState from './gpg-mock-state';
 import * as yargs from 'yargs';
-import * as rx from 'rxjs';
+import * as rxme from 'rxme';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as glob from 'glob';
 import { SecretKey, Group, FingerPrint, Uid } from '../gpg/list-secret-keys';
 
-function listSecretKeys(state: GpgMockState, obs: rx.Observer<boolean>, matches: string[], idx: number): void {
+function listSecretKeys(state: GpgMockState, obs: rxme.Observer, matches: string[], idx: number): void {
   if (idx >= matches.length) {
     state.exitCode(0);
-    obs.next(true);
+    obs.next(rxme.Msg.True());
     obs.complete();
   }
   // console.log(matches[idx]);
@@ -20,8 +20,8 @@ function listSecretKeys(state: GpgMockState, obs: rx.Observer<boolean>, matches:
   });
 }
 
-function action(y: yargs.Arguments, state: GpgMockState): rx.Observable<boolean> {
-  return rx.Observable.create((obs: rx.Observer<boolean>) => {
+function action(y: yargs.Arguments, state: GpgMockState): rxme.Observable {
+  return rxme.Observable.create(obs => {
     if (y.listSecretKeys && y.withColons) {
       // console.log('dxxx', y, y.listSecretKeys, y.withColons);
       glob(path.join(y.homedir, '*.keyStore.json'), {}, (err, matches) => {
@@ -57,7 +57,7 @@ function action(y: yargs.Arguments, state: GpgMockState): rx.Observable<boolean>
       // fpr:::::::::B3B94966DF73077EFA734EC83D851A5DF09DEB9C:
       // grp:::::::::2DC62D282D308E58A8C7C4F7652955AC146860D2:`);
     } else {
-      obs.next(false);
+      obs.next(rxme.Msg.False());
       obs.complete();
     }
   });

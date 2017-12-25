@@ -49,8 +49,8 @@ class FullGenKeyBatch {
 
 // ;
 
-function action(y: yargs.Arguments, state: GpgMockState): rxme.Observable<boolean> {
-  return rxme.Observable.create(rxme.Match.BOOLEAN, (obs: rxme.Observer<boolean>) => {
+function action(y: yargs.Arguments, state: GpgMockState): rxme.Observable {
+  return rxme.Observable.create(obs => {
     let match: string = null;
     if (y.fullGenKey && y.batch) {
       match = 'full-gen-key';
@@ -59,7 +59,7 @@ function action(y: yargs.Arguments, state: GpgMockState): rxme.Observable<boolea
       process.stdin.on('close', () => {
         const sk = FullGenKeyBatch.from(stdin.join(''));
         state.writeJson(y, `${sk.keyId}.keyStore.json`, sk);
-        obs.next(true);
+        obs.next(rxme.Msg.True());
         obs.complete();
       });
       return;
@@ -85,7 +85,7 @@ function action(y: yargs.Arguments, state: GpgMockState): rxme.Observable<boolea
 //       state.exitCode(0);
 //       obs.next(true);
     } else {
-      obs.next(false);
+      obs.next(rxme.Msg.Boolean(false));
       obs.complete();
     }
   });

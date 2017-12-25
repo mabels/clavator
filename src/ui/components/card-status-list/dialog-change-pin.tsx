@@ -23,8 +23,8 @@ interface DialogChangePinProps extends React.Props<DialogChangePin> {
 @observer
 export class DialogChangePin extends React.Component<DialogChangePinProps, DialogChangePinState> {
 
-  constructor() {
-    super();
+  constructor(props: DialogChangePinProps) {
+    super(props);
     this.state = {
       transaction: null
     };

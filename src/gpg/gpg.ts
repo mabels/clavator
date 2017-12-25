@@ -43,8 +43,8 @@ interface ChangeCardAttribute {
   value: string[];
 }
 
-function createTempDir(rq: ResultQueue, baseDir: string, dirName: string): rxme.Observable<string> {
-  return rxme.Observable.create(rxme.Match.STRING, (obs: rxme.Observer<string>) => {
+function createTempDir(rq: ResultQueue, baseDir: string, dirName: string): rxme.Observable {
+  return rxme.Observable.create(obs => {
     const result = ResultContainer.builder<string>(rq);
     result.data = path.join(baseDir, dirName);
     fs.mkdir(result.data, (mkdirErr) => {
@@ -82,11 +82,11 @@ export class Gpg {
     // this.mockCmd = mockCmd;
   }
 
-  public run(initiator: string, attributes: Mixed[], stdIn: string): rxme.Observable<ResultExec> {
+  public run(initiator: string, attributes: Mixed[], stdIn: string): rxme.Observable {
     return this.gpgCmds.gpg.run(initiator, this.homeDir, attributes, stdIn);
   }
 
-  public runAgent(initiator: string, attributes: Mixed[], stdIn: string): rxme.Observable<ResultExec> {
+  public runAgent(initiator: string, attributes: Mixed[], stdIn: string): rxme.Observable {
     return this.gpgCmds.agent.run(initiator, this.homeDir, attributes, stdIn);
   }
 
@@ -167,26 +167,21 @@ export class Gpg {
     return this;
   }
 
-  public started(): rxme.Observable<ResultExec> {
+  public started(): rxme.Observable {
     return this.run('started', ['--print-md', 'md5'], 'test');
   }
 
-  public getSocketName(): rxme.Observable<string> {
-    return rxme.Observable.create(rxme.Match.STRING, (obs: rxme.Observer<string>) => {
+  public getSocketName(): rxme.Observable {
+    return rxme.Observable.create(obs => {
       // console.log('gsn--1');
-      this.runAgent<string>('getSocketName', ['GETINFO socket_name', '/bye'], null).subscribe(res => {
-        // console.log('gsn--2');
-        if (res.doProgress(obs)) { return; }
-        if (res.doError(obs)) { return; }
+      this.runAgent('getSocketName', ['GETINFO socket_name', '/bye'], null).match(ResultExec.match(res => {
         // console.log('gsn--3');
-        const line = res.exec.stdOut.split(/[\n\r]+/).find((linex) => linex.startsWith('D '));
-        if (!line) {
-          res.data = null;
-        } else {
-          res.data = line.slice('D '.length);
+        const line = res.stdOut.split(/[\n\r]+/).find((linex) => linex.startsWith('D '));
+        if (line) {
+          obs.next(rxme.Msg.String(line.slice('D '.length)));
         }
         res.doComplete(obs);
-      });
+      })).passTo(obs);
     });
   }
 
@@ -206,82 +201,88 @@ export class Gpg {
       'scd apdu 00 44 00 00', ''].join(`\n`);
   }
 
-  public resetYubikey(): rxme.Observable<ResultExec> {
+  public resetYubikey(): rxme.Observable {
     return this.runAgent('resetYubikey', [], this.resetCommand());
   }
 
-  public getSecretKey(fpr: string): rxme.Observable<ListSecretKeys.SecretKey> {
-    return rxme.Observable.create(ListSecretKeys.SecretKey, (obs: rxme.Observer<ListSecretKeys.SecretKey>) => {
-      this.list_secret_keys().match((_, result) => {
+  public matchSecretKey(cb: rxme.MatcherCallback<ListSecretKeys.SecretKey>): rxme.MatcherCallback {
+    return rxme.Matcher.Type<ListSecretKeys.SecretKey>(ListSecretKeys.SecretKey, cb);
+  }
+  public getSecretKey(fpr: string): rxme.Observable {
+    return rxme.Observable.create(obs => {
+      this.list_secret_keys().match(this.matchSecretKey(result => {
         if (result.fingerPrint.fpr == fpr) {
-          obs.next(result);
+          obs.next(rxme.Msg.Type(result));
         }
         return true;
-      }).passTo(obs);
+      })).passTo(obs);
     });
   }
 
-  public list_secret_keys(): rxme.Observable<ListSecretKeys.SecretKey> {
-    return rxme.Observable.create(ListSecretKeys.SecretKey, (obs: rxme.Observer<ListSecretKeys.SecretKey>) => {
+  public list_secret_keys(): rxme.Observable {
+    return rxme.Observable.create(obs => {
       this.run('list_secret_keys',
-        ['--list-secret-keys', '--with-colons'], null).match((_, result) => {
+        ['--list-secret-keys', '--with-colons'], null).match(ResultExec.match(result => {
           ListSecretKeys.run(result.stdOut).forEach(lsk => obs.next(result.clone(lsk)));
           obs.complete();
           return true;
-        }).passTo(obs);
+        })).passTo(obs);
     });
   }
 
-  public card_status(): rxme.Observable<CardStatus.Gpg2CardStatus> {
-    return rxme.Observable.create(CardStatus.Gpg2CardStatus, (obs: rxme.Observer<CardStatus.Gpg2CardStatus>) => {
+  public matchCardStatus(cb: rxme.MatcherCallback<CardStatus.Gpg2CardStatus>): rxme.MatcherCallback {
+    return rxme.Matcher.Type<CardStatus.Gpg2CardStatus>(CardStatus.Gpg2CardStatus, cb);
+  }
+  public card_status(): rxme.Observable {
+    return rxme.Observable.create(obs => {
       this.run('card_status', ['--card-status', '--with-colons'], null)
-        .match(result => {
+        .match(ResultExec.match(result => {
           CardStatus.run(result.stdOut).forEach(cs => obs.next(result.clone(cs)));
           obs.complete();
-        }).passTo(obs);
+        })).passTo(obs);
     });
   }
 
-  public deleteSecretKey(fingerPrint: string): rxme.Observable<ListSecretKeys.SecretKey> {
-    return rxme.Observable.create(ListSecretKeys.SecretKey, (obs: rxme.Observer<ListSecretKeys.SecretKey>) => {
+  public deleteSecretKey(fingerPrint: string): rxme.Observable {
+    return rxme.Observable.create(obs => {
       this.getSecretKey(fingerPrint).match((_, key) => {
         const args: Mixed[] = ['--no-tty'];
         args.push('--expert', '--batch', '--yes', '--delete-secret-key', fingerPrint);
-        this.run('deleteSecretKey', args, null).subscribe(result => {
+        this.run('deleteSecretKey', args, null).match(ResultExec.match(result => {
           key.doComplete(obs);
           return true;
-        }).passTo(obs);
+        })).passTo(obs);
         return true;
       }).passTo(obs);
     });
   }
 
-  public deletePublicKey(fingerPrint: string): rxme.Observable<ResultExec> {
+  public deletePublicKey(fingerPrint: string): rxme.Observable {
     return this.run('deletePublicKey', ['--batch', '--delete-key', fingerPrint], null);
   }
 
-  public findKey(cmp: (sk: ListSecretKeys.SecretKey) => void): rxme.Observable<ListSecretKeys.SecretKey> {
-    return rxme.Observable.create(ListSecretKeys.SecretKey, (obs: rxme.Observer<ListSecretKeys.SecretKey>) => {
+  public findKey(cmp: (sk: ListSecretKeys.SecretKey) => void): rxme.Observable {
+    return rxme.Observable.create(obs => {
       let found = false;
-      this.list_secret_keys().match((_, ressk) => {
-        if (cmp(ressk.data)) {
+      this.list_secret_keys().match(this.matchSecretKey(ressk => {
+        if (cmp(ressk)) {
           found = true;
-          obs.next(ressk);
+          obs.next(rxme.Msg.Type(ressk));
           obs.complete();
         }
         return true;
-      }).matchComplete(() => {
+      })).match(rxme.Matcher.Complete(() => {
         if (!found) {
           obs.next(ResultContainer.builder<ListSecretKeys.SecretKey>(this.resultQueue())
             .setNodeError(new Error('key not found')));
           obs.complete();
         }
         return true;
-      });
+      }));
     });
   }
 
-  public createMasterKey(keyGen: KeyGen.KeyGen): rxme.Observable<ListSecretKeys.SecretKey> {
+  public createMasterKey(keyGen: KeyGen.KeyGen): rxme.Observable {
     //  '--enable-large-rsa',
     let args: Mixed[] = [
       '--no-tty', '--pinentry-mode', 'loopback',
@@ -296,9 +297,9 @@ export class Gpg {
       '--full-gen-key',
       '--batch'
     ];
-    return rxme.Observable.create(ListSecretKeys.SecretKey, (obs: rxme.Observer<ListSecretKeys.SecretKey>) => {
+    return rxme.Observable.create(obs => {
       // console.log('--X');
-      this.run('createMasterKey', args, keyGen.masterCommand()).match((_, rescmk) => {
+      this.run('createMasterKey', args, keyGen.masterCommand()).match(ResultExec.match(rescmk => {
         // console.log('--Y');
         const expireDateNumber = ~~(keyGen.expireDate.value.getTime() / 1000);
         this.findKey((sk): boolean => {
@@ -314,12 +315,12 @@ export class Gpg {
           // console.log('--O');
           resfind.doComplete(obs);
         }).passTo(obs);
-      }).passTo(obs);
+      })).passTo(obs);
     });
     // console.log('createMasterKey:', this.gpgCmd, this.gpgCmdArgs, args);
   }
 
-  public createSubkey(fpr: string, kg: KeyGen.KeyGen, ki: KeyGen.KeyInfo): rxme.Observable<ListSecretKeys.SecretKey> {
+  public createSubkey(fpr: string, kg: KeyGen.KeyGen, ki: KeyGen.KeyInfo): rxme.Observable {
     // gpg2  --quick-addkey  FDCF2566BA8134E3BAD15B7DDDC4941118503075 rsa2048 sign,auth,encr
     // '--enable-large-rsa'
     const args = [
@@ -333,19 +334,19 @@ export class Gpg {
       format_date(kg.expireDate.value)
     ];
     // console.log('createSubkey', args);
-    return rxme.Observable.create(ListSecretKeys.SecretKey, (obs: rxme.Observer<ListSecretKeys.SecretKey>) => {
-      this.run('createSubKey', args, null).match(rescmk => {
+    return rxme.Observable.create(obs => {
+      this.run('createSubKey', args, null).match(ResultExec.match(rescmk => {
         this.findKey((sk): boolean => {
           // console.log('---', sk.fingerPrint.fpr, fpr);
           return sk.fingerPrint.fpr == fpr;
-        }).match(resfind => {
+        }).match(this.matchSecretKey(resfind => {
           resfind.doComplete(obs);
-        }).passTo(obs);
-      }).passTo(obs);
+        })).passTo(obs);
+      })).passTo(obs);
     });
   }
 
-  public pemPrivateKey(rqa: RequestAscii): rxme.Observable<ResultExec> {
+  public pemPrivateKey(rqa: RequestAscii): rxme.Observable {
     let args = [
       '--no-tty', '--pinentry-mode', 'loopback',
       '--passphrase-fd',
@@ -358,19 +359,19 @@ export class Gpg {
     return this.run('pemPrivateKey', args, null);
   }
 
-  public pemPublicKey(rqa: RequestAscii): rxme.Observable<ResultExec> {
+  public pemPublicKey(rqa: RequestAscii): rxme.Observable {
     return this.run('pemPublicKey', ['-a', '--export', rqa.fingerprint], null);
   }
 
-  public pemRevocation(rqa: RequestAscii): rxme.Observable<ResultExec> {
+  public pemRevocation(rqa: RequestAscii): rxme.Observable {
     return this.run('pemRevocation', ['-a', '--gen-revoke', rqa.fingerprint], null);
   }
 
-  public sshPublic(rqa: RequestAscii): rxme.Observable<ResultExec> {
+  public sshPublic(rqa: RequestAscii): rxme.Observable {
     return this.run('sshPublic', ['--export-ssh-key', rqa.fingerprint], null);
   }
 
-  public addUid(fpr: string, kg: KeyGen.KeyGen, uid: KeyGenUid): rxme.Observable<ResultExec> {
+  public addUid(fpr: string, kg: KeyGen.KeyGen, uid: KeyGenUid): rxme.Observable {
     let args = [
       '--no-tty', '--pinentry-mode', 'loopback',
       '--passphrase-fd',
@@ -384,7 +385,7 @@ export class Gpg {
     return this.run('addUid', args, null);
   }
 
-  public changePin(type: string, rcp: RequestChangePin): rxme.Observable<ResultExec> {
+  public changePin(type: string, rcp: RequestChangePin): rxme.Observable {
     const args = [
       '--no-tty', '--pinentry-mode', 'loopback',
       '--passphrase-fd', () => {
@@ -402,19 +403,22 @@ export class Gpg {
     return this.run('changePin', args, null);
   }
 
-  private getSocketNames(g1: Gpg, g2: Gpg): rxme.Observable<SocketNames> {
-    return rxme.Observable.create(SocketNames, (obs: rxme.Observer<SocketNames>) => {
-      g1.getSocketName().match((_, rs1) => {
-        g2.getSocketName().match((_, rs2) => {
-          rs2.clone<SocketNames>().setData({ s1: rs1.data, s2: rs2.data }).doComplete(obs);
+  private matchSocketNames(cb: rxme.MatcherCallback<SocketNames>): rxme.MatcherCallback {
+    return rxme.Matcher.Type<SocketNames>(SocketNames, cb);
+  }
+  private getSocketNames(g1: Gpg, g2: Gpg): rxme.Observable {
+    return rxme.Observable.create(obs => {
+      g1.getSocketName().match(rxme.Matcher.String(rs1 => {
+        g2.getSocketName().match(rxme.Matcher.String(rs2 => {
+          rs2.clone<SocketNames>().setData({ s1: rs1, s2: rs2 }).doComplete(obs);
           return true;
-        }).passTo(obs);
+        })).passTo(obs);
         return true;
-      }).passTo(obs);
+      })).passTo(obs);
     });
   }
 
-  public importSecretKey(ktyk: KeyToYubiKey, pem: string): rxme.Observable<ResultExec> {
+  public importSecretKey(ktyk: KeyToYubiKey, pem: string): rxme.Observable {
     const args = [
       '--pinentry-mode', 'loopback',
       '--passphrase-fd', () => {
@@ -425,12 +429,12 @@ export class Gpg {
     return this.run('importSecretKey', args, pem);
   }
 
-  private handleImportedSecretedKey(inititator: string, srcGpg: Gpg, dstGpg: Gpg): rxme.Observable<void> {
-    return rxme.Observable.create(null, (obs: rxme.Observer) => {
-      this.getSocketNames(srcGpg, dstGpg).subscribe(sockNamesRes => {
+  private handleImportedSecretedKey(inititator: string, srcGpg: Gpg, dstGpg: Gpg): rxme.Observable {
+    return rxme.Observable.create(obs => {
+      this.getSocketNames(srcGpg, dstGpg).match(this.matchSocketNames(sockNamesRes => {
         if (sockNamesRes.doProgress(obs)) { return; }
         if (sockNamesRes.doError(obs)) { return; }
-        dstGpg.runAgent(inititator, ['killagent', '/bye'], null).subscribe(ares => {
+        dstGpg.runAgent(inititator, ['killagent', '/bye'], null).match(ResultExec.match(ares => {
           if (ares.doProgress(obs)) { return; }
           if (ares.doError(obs)) { return; }
           if (sockNamesRes.data.s1 != sockNamesRes.data.s2) {
@@ -458,17 +462,17 @@ export class Gpg {
             console.log('agent killed');
             ares.doComplete(obs);
           }
-        });
-      });
+        }));
+      }));
     });
   }
 
-  public prepareKeyToYubiKey(inititator: string, ktyk: KeyToYubiKey): rxme.Observable<Gpg> {
-    return rxme.Observable.create(Gpg, (obs: rxme.Observer<Gpg>) => {
+  public prepareKeyToYubiKey(inititator: string, ktyk: KeyToYubiKey): rxme.Observable {
+    return rxme.Observable.create(obs => {
       const rqa = new RequestAscii();
       rqa.fingerprint = ktyk.fingerprint;
       rqa.passphrase = ktyk.passphrase;
-      this.pemPrivateKey(rqa).subscribe(pkres => {
+      this.pemPrivateKey(rqa).match(ResultExec.match(pkres => {
         if (pkres.doProgress(obs)) { return; }
         if (pkres.doError(obs)) { return; }
         // console.log('XXXXX', pkres.exec.stdOut, ktyk.fingerprint, 'YYYYY');
@@ -494,15 +498,15 @@ export class Gpg {
             });
           }
           );
-      });
+      }));
     });
   }
 
-  public keyToYubiKey(ktyk: KeyToYubiKey): rxme.Observable<Gpg> {
+  public keyToYubiKey(ktyk: KeyToYubiKey): rxme.Observable {
     // create copy of the selected key to avoid
     // that this key will removed from the current
     // key database
-    return rxme.Observable.create(Gpg, (obs: rxme.Observer) => {
+    return rxme.Observable.create(obs => {
       this.prepareKeyToYubiKey('keyToYubiKey', ktyk).match((_, rsgpg) => {
         if (rsgpg.doProgress(obs)) { return; }
         if (rsgpg.doError(obs)) { return; }
@@ -516,7 +520,7 @@ export class Gpg {
           },
           '--quick-keytocard', ktyk.fingerprint, `${ktyk.slot_id}`, ktyk.card_id
         ];
-        rsgpg.data.run('keyToYubiKey', args, null).subscribe(resx => {
+        rsgpg.data.run('keyToYubiKey', args, null).match(resx => {
           if (resx.doProgress(obs)) { return; }
           if (resx.doError(obs)) { return; }
           rsgpg.doComplete(obs);
@@ -525,7 +529,7 @@ export class Gpg {
     });
   }
 
-  public changeCard(cc: ChangeCard): rxme.Observable<void> {
+  public changeCard(cc: ChangeCard): rxme.Observable {
     const sname = cc.name.split(/\s+/);
     const actions: ChangeCardAttribute[] = [
       { name: 'name', value: [sname.slice(1).join(' '), sname[0]] },
@@ -534,7 +538,7 @@ export class Gpg {
       { name: 'login', value: [cc.login] },
       { name: 'url', value: [cc.url] }
     ];
-    return rxme.Observable.create((obs: rxme.Observer) => {
+    return rxme.Observable.create(obs => {
       this._changeCard(obs, cc, actions);
     });
   }
@@ -546,16 +550,14 @@ export class Gpg {
     }
     const current = actions.shift();
     this.changeAttribute(cc.adminPin.pin, current.name, current.value, cc.serialNo)
-      .match((_, res) => {
-        if (res.doProgress(obs)) { return; }
-        if (res.doError(obs)) { return; }
+      .match(ResultExec.match(res => {
         obs.next(res);
         this._changeCard(obs, cc, actions);
-      }).passTo(obs);
+      })).passTo(obs);
   }
 
   private changeAttribute(adminPin: string, attrName: string,
-    value: string[], serialNo: string): rxme.Observable<ResultExec> {
+    value: string[], serialNo: string): rxme.Observable {
     // create copy of the selected key to avoid
     // that this key will removed from the current
     // key database
@@ -574,7 +576,7 @@ export class Gpg {
   }
 }
 
-function findMock(rq: ResultQueue, obs: rxme.Observer<string>, dirname: string): void {
+function findMock(rq: ResultQueue, obs: rxme.Observer, dirname: string): void {
   // let gmExists = false;
   let prevDirname = dirname;
   dirname = path.dirname(dirname);
@@ -596,35 +598,31 @@ function findMock(rq: ResultQueue, obs: rxme.Observer<string>, dirname: string):
   });
 }
 
-function gpgCmdMock(rq: ResultQueue): rxme.Observable<GpgCmds> {
+function gpgCmdMock(rq: ResultQueue): rxme.Observable {
   const dirname = process.argv[process.argv.length - 1];
-  return rxme.Observable.create(GpgCmds, (gcobs: rxme.Observer<GpgCmds>) => {
+  return rxme.Observable.create(gcobs => {
     // console.log('Yyz-1:', dirname);
-    rxme.Observable.create(rxme.Match.STRING, (obs: rxme.Observer<string>) => {
+    rxme.Observable.create(obs => {
       // console.log('Yyz-2:', dirname);
       findMock(rq, obs, dirname);
-    }).match((_, rcgm: string) => {
+    }).match(rxme.Matcher.String(rcgm => {
       // console.log('Yyz-3:', process.execPath, rcgm.data, rcgm.isOk(), rcgm.progress);
-      if (rcgm.doProgress(gcobs)) { return; }
-      if (rcgm.doError(gcobs)) { return; }
       // console.log('Yyz-3.1:', process.execPath, rcgm.data);
-      GpgCmds.create(rq, [process.execPath, rcgm.data], [process.execPath, rcgm.data, 'connect-agent'],
+      GpgCmds.create(rq, [process.execPath, rcgm], [process.execPath, rcgm, 'connect-agent'],
         0, true).match((_, a) => {
           // console.log('Yyz-4:', a.isError(), a.progress);
-          if (a.doProgress(gcobs)) { return; }
-          if (a.doError(gcobs)) { return; }
           // console.log('Yyz-4.1:', a.data);
           a.doComplete(gcobs);
           return true;
         }).passTo(gcobs);
         return true;
-    }).passTo(gcobs);
+    })).passTo(gcobs);
   });
 }
 
 const GPGMINVERSION = 2001018;
 
-function possibleGpgCmds(rq: ResultQueue): rxme.Observable<GpgCmds>[] {
+function possibleGpgCmds(rq: ResultQueue): rxme.Observable[] {
   return [
     GpgCmds.create(rq, ['/usr/bin/gpg'], ['/usr/bin/gpg-connect-agent'], 0),
     GpgCmds.create(rq, ['/usr/bin/gpg2'], ['/usr/bin/gpg-connect-agent'], 1),
@@ -635,7 +633,7 @@ function possibleGpgCmds(rq: ResultQueue): rxme.Observable<GpgCmds>[] {
   ];
 }
 
-function resolveCmds(obs: rxme.Observer<GpgCmds[]>, gpgCmds: rxme.Observable<GpgCmds>[], ret: GpgCmds[]): void {
+function resolveCmds(obs: rxme.Observer, gpgCmds: rxme.Observable[], ret: GpgCmds[]): void {
   // console.log('Yyy-4:');
   if (gpgCmds.length == 0) {
     obs.next(ret);
@@ -654,8 +652,8 @@ function resolveCmds(obs: rxme.Observer<GpgCmds[]>, gpgCmds: rxme.Observable<Gpg
   return;
 }
 
-export function internalCreate(rq: ResultQueue, gpgCmds: rxme.Observable<GpgCmds>[]): rxme.Observable<GpgCmds[]> {
-  return rxme.Observable.create(GpgCmds, (obs: rxme.Observer<GpgCmds[]>) => {
+export function internalCreate(rq: ResultQueue, gpgCmds: rxme.Observable[]): rxme.Observable {
+  return rxme.Observable.create(obs => {
     gpgCmdMock(rq).match((_, mock) => {
       // console.log('Yyx-3:');
       if (mock.doProgress(obs)) { return; }
@@ -665,8 +663,8 @@ export function internalCreate(rq: ResultQueue, gpgCmds: rxme.Observable<GpgCmds
   });
 }
 
-function _silentCreate(rq: ResultQueue, gpgCmds: rxme.Observable<GpgCmds>[], title: string): ResultObservable<Gpg> {
-  return rxme.Observable.create(Gpg, (obs: rxme.Observer<Gpg>) => {
+function _silentCreate(rq: ResultQueue, gpgCmds: rxme.Observable[], title: string): ResultObservable {
+  return rxme.Observable.create(obs => {
     // console.log('Yyx-1:');
     internalCreate(rq, gpgCmds).match((_, rc: GpgCmds[]) => {
       // console.log('Yyx-2:');
@@ -685,12 +683,12 @@ function _silentCreate(rq: ResultQueue, gpgCmds: rxme.Observable<GpgCmds>[], tit
   });
 }
 
-export function create(rq: ResultQueue, gpgCmds: rxme.Observable<GpgCmds>[] = null,
-  title = ''): rxme.Observable<Gpg> {
+export function create(rq: ResultQueue, gpgCmds: rxme.Observable[] = null,
+  title = ''): rxme.Observable {
   if (!gpgCmds) {
     gpgCmds = possibleGpgCmds(rq);
   }
-  return rxme.Observable.create(Gpg, (obs: rxme.Observer<Gpg>) => {
+  return rxme.Observable.create(obs => {
     _silentCreate(rq, gpgCmds, title).match((_, rsgpg) => {
       if (rsgpg.doProgress(obs)) { return; }
       if (rsgpg.isError()) {
@@ -703,8 +701,8 @@ export function create(rq: ResultQueue, gpgCmds: rxme.Observable<GpgCmds>[] = nu
   });
 }
 
-export function createTest(rq: ResultQueue, gpgCmds: rxme.Observable<GpgCmds>[] = null,
-  title = 'Test'): rxme.Observable<Gpg> {
+export function createTest(rq: ResultQueue, gpgCmds: rxme.Observable[] = null,
+  title = 'Test'): rxme.Observable {
   if (!gpgCmds) {
     gpgCmds = possibleGpgCmds(rq);
   }
@@ -712,7 +710,7 @@ export function createTest(rq: ResultQueue, gpgCmds: rxme.Observable<GpgCmds>[] 
     gpgCmds = [];
   }
   // console.log('Yxx-2:');
-  return rxme.Observable.create(Gpg, (obs: rxme.Observer<Gpg>) => {
+  return rxme.Observable.create(obs => {
     // console.log('Yxx-3:');
     _silentCreate(rq, gpgCmds, title).match((_, rcgpg) => {
       // console.log('Yxx-4:');
@@ -721,7 +719,7 @@ export function createTest(rq: ResultQueue, gpgCmds: rxme.Observable<GpgCmds>[] 
         console.log(`Failed to Create GPG:${title}`);
         return;
       }
-      createTempDir(rq, process.cwd(), `${uuid.v4().toString().slice(0, 16)}.tdir`).subscribe(rcs => {
+      createTempDir(rq, process.cwd(), `${uuid.v4().toString().slice(0, 16)}.tdir`).match(rcs => {
         // console.log('Yxx-5:');
         if (rcs.doProgress(obs)) { return; }
         if (rcs.doError(obs)) {
@@ -736,7 +734,7 @@ export function createTest(rq: ResultQueue, gpgCmds: rxme.Observable<GpgCmds>[] 
   });
 }
 
-export function createMock(rq: ResultQueue): rxme.Observable<Gpg> {
+export function createMock(rq: ResultQueue): rxme.Observable {
   // console.log('Yxx-1:');
   return createTest(rq, [], 'Mock');
 }

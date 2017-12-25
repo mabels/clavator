@@ -12,21 +12,21 @@ class Monitor<T> {
   public timeoutId: any;
   public readonly gpg: Gpg.Gpg;
   public actionCount: number;
-  public ros: rxme.Observer<T>[];
+  public ros: rxme.Observer[];
   public prev: T;
-  public readonly _action: (this: Monitor<T>, ros: rxme.Observer<T>[], force: boolean) => void;
+  public readonly _action: (this: Monitor<T>, ros: rxme.Observer[], force: boolean) => void;
 
   public static create<T>(gpg: Gpg.Gpg,
-    _action: (this: Monitor<T>, ros: rxme.Observer<T>[], force: boolean) => void): rxme.Observable<T> {
+    _action: (this: Monitor<T>, ros: rxme.Observer[], force: boolean) => void): rxme.Observable {
     const monitor = new Monitor<T>(gpg, _action);
-    return rxme.Observable.create(T, (obs: rxme.Observer<T>) => {
+    return rxme.Observable.create(obs => {
       monitor.register(obs);
       return () => monitor.unregister(obs);
     });
   }
 
   private constructor(gpg: Gpg.Gpg, _action: (this: Monitor<T>,
-    ros: rxme.Observer<T>[], force: boolean) => void) {
+    ros: rxme.Observer[], force: boolean) => void) {
     this._action = _action;
     this.action = this.action.bind(this);
     this.gpg = gpg;
@@ -34,13 +34,13 @@ class Monitor<T> {
     this.ros = [];
   }
 
-  public register(obs: rxme.Observer<T>): void {
+  public register(obs: rxme.Observer): void {
     clearTimeout(this.timeoutId);
     this.ros.push(obs);
     this.action(obs);
   }
 
-  public unregister(obs: rxme.Observer<T>): void {
+  public unregister(obs: rxme.Observer): void {
     console.log('unregister');
     this.ros = this.ros.filter(o => o !== obs);
     if (!this.ros.length) {
@@ -52,7 +52,7 @@ class Monitor<T> {
     this.timeoutId = setTimeout(this.action, 5000);
   }
 
-  public action(newros: rxme.Observer<T>): void {
+  public action(newros: rxme.Observer): void {
     let ros = this.ros;
     if (newros) {
       ros = [newros];
@@ -79,10 +79,10 @@ function equals(a: any, b: any): boolean {
 }
 
 function gpgListSecretKeysMonitor(this: Monitor<ListSecretKeys.SecretKey[]>,
-  ros: rxme.Observer<ListSecretKeys.SecretKey[]>[], force: boolean): void {
+  ros: rxme.Observer[], force: boolean): void {
   // console.log('y', ros.length, force);
   const keys: ListSecretKeys.SecretKey[] = [];
-  this.gpg.list_secret_keys().subscribe(key => {
+  this.gpg.list_secret_keys().match(key => {
     if (key.doProgress(ros)) { return; }
     if (key.doError(ros)) { return; }
     keys.push(key.data);
@@ -99,10 +99,10 @@ function gpgListSecretKeysMonitor(this: Monitor<ListSecretKeys.SecretKey[]>,
   });
 }
 function gpgCardStatusMonitor(this: Monitor<CardStatus.Gpg2CardStatus[]>,
-  ros: rxme.Observer<CardStatus.Gpg2CardStatus[]>[], force: boolean): void {
+  ros: rxme.Observer[], force: boolean): void {
   // console.log(ros.length, force);
   const keys: CardStatus.Gpg2CardStatus[] = [];
-  this.gpg.card_status().subscribe(key => {
+  this.gpg.card_status().match(key => {
     if (key.doProgress(ros)) { return; }
     if (key.doError(ros)) { return; }
     keys.push(key.data);
@@ -117,15 +117,15 @@ function gpgCardStatusMonitor(this: Monitor<CardStatus.Gpg2CardStatus[]>,
   });
 }
 
-export function start(gpg: Gpg.Gpg): rxme.Observable<any> {
+export function start(gpg: Gpg.Gpg): rxme.Observable {
   console.log('Monitor.start');
   const glskm = Monitor.create(gpg, gpgListSecretKeysMonitor);
   const gcsm = Monitor.create(gpg, gpgCardStatusMonitor);
-  return rxme.Observable.create((obs: rxme.Observer<any>) => {
-    const sglskm = glskm.subscribe(globs => {
+  return rxme.Observable.create((obs: rxme.Observer) => {
+    const sglskm = glskm.match(globs => {
       obs.next(globs);
     });
-    const sgcsm = gcsm.subscribe(globs => {
+    const sgcsm = gcsm.match(globs => {
       obs.next(globs);
     });
     return () => {

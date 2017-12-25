@@ -49,8 +49,8 @@ export class KeyChainList
   //   socket: PropTypes.object
   // };
 
-  constructor() {
-    super();
+  constructor(props: KeyChainListProps) {
+    super(props);
     this.state = {
       dialog: Dialogs.closed,
       action: null,

@@ -16,14 +16,14 @@ function cli(args: string[]): void {
     'passphrase-fd': { describe: 'positional fd inputs', type: 'array' },
     'version': { describe: 'prints version', boolean: true }
   });
-  state.onParsed((_y: yargs.Arguments, _state: GpgMockState): rxme.Observable<boolean> => {
-    return rxme.Observable.create(rxme.Match.BOOLEAN, (obs: rxme.Observer<boolean>) => {
+  state.onParsed((_y: yargs.Arguments, _state: GpgMockState): rxme.Observable => {
+    return rxme.Observable.create(obs => {
       if (_y.version) {
         // const version = fs.readFileSync('./')
         _state.stdout('gpg-mock (GpgMock) 2.1.14');
-        obs.next(true);
+        obs.next(rxme.Msg.True());
       } else {
-        obs.next(false);
+        obs.next(rxme.Msg.False());
       }
       obs.complete();
     });

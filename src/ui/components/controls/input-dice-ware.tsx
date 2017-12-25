@@ -56,8 +56,8 @@ export class InputDiceWare extends
   React.Component<InputDiceWareProps, InputDiceWareState> {
   private readonly key: string;
 
-  constructor() {
-    super();
+  constructor(props: InputDiceWareProps) {
+    super(props);
     this.state = {
       diceValue: null
     };

@@ -7,6 +7,7 @@ import * as WsChannel from '../../model/ws-channel';
 // import { CardStatusListState } from './card-status-list-state';
 import MutableString from '../../../model/mutable-string';
 import ReadAsciiResponse from '../controls/read-ascii-respond';
+import dialogSendToCard from './dialog-send-to-card';
 
 interface DialogAskRenderAsciiState {
   passPhrase: MutableString;
@@ -22,8 +23,8 @@ interface DialogAskRenderAsciiProps extends React.Props<DialogAskRenderAscii> {
 
 export class DialogAskRenderAscii extends React.Component<DialogAskRenderAsciiProps, DialogAskRenderAsciiState> {
 
-  constructor() {
-    super();
+  constructor(props: DialogAskRenderAsciiProps) {
+    super(props);
     this.state = {
       passPhrase: new MutableString(),
       doRead: false

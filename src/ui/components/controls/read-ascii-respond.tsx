@@ -23,8 +23,8 @@ interface ReadAsciiRespondProps extends React.Props<ReadAsciiRespond> {
 
 export class ReadAsciiRespond extends React.Component<ReadAsciiRespondProps, ReadAsciiRespondState> {
 
-  constructor() {
-    super();
+  constructor(props: ReadAsciiRespondProps) {
+    super(props);
     this.state = {
       data: null,
       receiver: null,

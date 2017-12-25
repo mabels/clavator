@@ -19,8 +19,8 @@ interface ButtonToProgressorProps extends React.Props<ButtonToProgressor> {
 @observer
 export class ButtonToProgressor extends React.Component<ButtonToProgressorProps, ButtonToProgressorState> {
 
-  constructor() {
-    super();
+  constructor(props: ButtonToProgressorProps) {
+    super(props);
     this.state = {
       running: false,
     };

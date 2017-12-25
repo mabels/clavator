@@ -4,10 +4,10 @@ import * as Message from '../model/message';
 import * as rxme from 'rxme';
 // import { Observer } from './observer';
 
-export class MessageSubject extends rxme.Subject<Message.Message> {
+export class MessageSubject extends rxme.Subject {
 
 }
-export class MessageObservable extends rxme.Observable<Message.Message> {
+export class MessageObservable extends rxme.Observable {
   // public static create(cb: (obs: rxme.Observer<Message.Message>) => void): MessageObservable {
   //   return rxme.Observable.create(Message.Message, cb);
   // }
@@ -17,8 +17,8 @@ export class Dispatcher {
   public readonly recv: MessageSubject;
   public readonly send: MessageSubject;
   constructor() {
-    this.recv = new MessageSubject(Message.Message);
-    this.send = new MessageSubject(Message.Message);
+    this.recv = new MessageSubject();
+    this.send = new MessageSubject();
   }
 }
 

@@ -34,8 +34,8 @@ class AppViewState {
 // @observer
 export class App extends React.Component<{}, AppViewState> {
 
-  constructor() {
-    super();
+  constructor(props: any) {
+    super(props);
     this.state = {
       createKeyDialog: false,
       selectedTabIndex: 0,

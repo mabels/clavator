@@ -33,18 +33,18 @@ interface ExecTransaction {
 
 export class ResultQueue {
   // public readonly logger: rx.Subject<simqle.LogMsg>;
-  public readonly runQueue: simqle.Queue<ResultExec>;
+  public readonly runQueue: simqle.Queue;
 
-  public static create(): rxme.Observable<ResultQueue> {
-    return rxme.Observable.create(ResultQueue, (obs: rxme.Observer<ResultQueue>) => {
-      simqle.start<ResultExec>({ taskTimer: 250 }).match((_obs, res) => {
-        _obs.next(rxme.data(new ResultQueue(res)));
+  public static create(): rxme.Observable {
+    return rxme.Observable.create(obs => {
+      simqle.start({ taskTimer: 250 }).match(simqle.MatchQ(res => {
+        obs.next(new rxme.RxMe(new ResultQueue(res)));
         return true;
-      }).passTo(obs);
+      })).passTo(obs);
     });
   }
 
-  private constructor(runQueue: simqle.Queue<ResultExec>) {
+  private constructor(runQueue: simqle.Queue) {
     this.action = this.action.bind(this);
     this.runQueue = runQueue;
 
@@ -55,7 +55,7 @@ export class ResultQueue {
     // });
   }
 
-  public stop(): rxme.Observable<void> {
+  public stop(): rxme.Observable {
     return this.runQueue.stop();
   }
 
@@ -73,23 +73,22 @@ export class ResultQueue {
     return { attrs: attrs, writables: writables, fds: fds };
   }
 
-  public action(input: rxme.Observable<ResultExec>, output: rxme.Subject<ResultExec>): void {
-    input.match((_, rc) => {
+  public action(input: rxme.Observable, output: rxme.Subject): void {
+    input.match(ResultExec.match(rc => {
       // console.log('Worker.action:');
       const aaw = this.createAttrsAndWritablesAndFds(rc.cmdArgs.concat(rc.attributes));
       const stdio: string[] = ['pipe', 'pipe', 'pipe'].concat(aaw.writables);
       rc.execTransaction = { transaction: uuid.v4() };
-      output.nextLog.info([
+      output.next(rxme.LogInfo(
         `Pre-Spawn:[${rc.initiator}:${rc.execTransaction.transaction}]`,
-        `[${rc.cmd} ${aaw.attrs.join(' ')}]`
-      ].join(''));
+        `[${rc.cmd} ${aaw.attrs.join(' ')}]`));
       const c = spawn(rc.cmd, aaw.attrs, {
         env: rc.addEnv('NODEEXECTRANSACTION', rc.execTransaction.transaction).env,
         stdio: stdio
       });
       c.on('error', (e: Error) => {
-        output.nextLog.info(
-          `Error:[${rc.execTransaction.transaction}][${rc.cmd} ${aaw.attrs.join(' ')}][${e}]`);
+        output.next(rxme.LogInfo(
+          `Error:[${rc.execTransaction.transaction}][${rc.cmd} ${aaw.attrs.join(' ')}][${e}]`));
         rc.nodeError = e;
         rc.doComplete(output);
       });
@@ -132,18 +131,18 @@ export class ResultQueue {
         rc.exitCode = code;
         this.readExectransactionDump(rc).match((__, rexec) => {
           // console.log('logExec: ok');
-          output.nextLog.info(rc.toString());
-          output.next(rxme.data(rc));
+          output.next(rxme.LogInfo(rc.toString()));
+          output.next(new rxme.RxMe(rc));
           output.complete();
           return true;
         }).passTo(output);
       });
       return true;
-    }).passTo(output);
+    })).passTo(output);
   }
 
-  private readExectransactionDump(rc: ResultExec): rxme.Observable<ResultExec> {
-    return rxme.Observable.create(null, (obs: rxme.Observer<ResultExec>) => {
+  private readExectransactionDump(rc: ResultExec): rxme.Observable {
+    return rxme.Observable.create(obs => {
       rc.execTransaction.dumpFname = path.join(rc.baseDir || '',
         `${rc.execTransaction.transaction}.dump`);
       fs.readFile(rc.execTransaction.dumpFname, (err, data) => {
@@ -161,7 +160,7 @@ export class ResultQueue {
             obs.error(uerr);
             return;
           } else {
-            obs.next(rxme.data(rc));
+            obs.next(rxme.Msg.Type(rc));
             obs.complete();
           }
         });
@@ -193,6 +192,10 @@ export class ResultExec {
   public env: { [id: string]: string; };
   public exitCode: number;
 
+  public static match(cb: rxme.MatcherCallback<ResultExec>): rxme.MatcherCallback {
+    return rxme.Matcher.Type<ResultExec>(ResultExec, cb);
+  }
+
   constructor() {
     this.env = (<any>Object).assign({}, process.env);
     this.stdIn = '';
@@ -210,26 +213,26 @@ export class ResultExec {
     return this;
   }
 
-    public run(initiator: string, baseDir: string, cmd: string, cmdArgs: Mixed[], attributes: Mixed[]):
-    rxme.Observable<ResultExec> {
+  public run(initiator: string, baseDir: string, cmd: string, cmdArgs: Mixed[], attributes: Mixed[]):
+    rxme.Observable {
     this.initiator = initiator;
     this.baseDir = baseDir;
     this.cmd = cmd;
     this.cmdArgs = cmdArgs;
     this.attributes = attributes;
-    const input = rxme.Observable.create(ResultExec, (iobs: rxme.Observer<ResultExec>) => {
-      iobs.next(rxme.data(this));
+    const input = rxme.Observable.create(iobs => {
+      iobs.next(rxme.Msg.Type(this));
       iobs.complete();
     });
     const data: any = { next: [], error: [], complete: [] };
-    const obs: rxme.Observer<ResultExec>[] = [];
-    const ret = rxme.Observable.create(ResultExec, (ob: rxme.Observer<ResultExec>) => {
+    const obs: rxme.Observer[] = [];
+    const ret = rxme.Observable.create(ob => {
       // data.next.forEach((d: any) => ob.next(d));
       // data.error.forEach((e: any) => ob.error(e));
       // data.complete.forEach((c: any) => ob.complete());
       obs.push(ob);
     });
-    const output = new rxme.Subject<ResultExec>(ResultExec);
+    const output = new rxme.Subject();
     output.subscribe({
       next: (n) => {
         data.next.push(n);

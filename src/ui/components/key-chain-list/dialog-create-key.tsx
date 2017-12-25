@@ -17,8 +17,8 @@ interface DialogCreateKeyProps extends React.Props<DialogCreateKey> {
 
 export class DialogCreateKey extends React.Component<DialogCreateKeyProps, DialogCreateKeyState> {
 
-  constructor() {
-    super();
+  constructor(props: DialogCreateKeyProps) {
+    super(props);
     this.state = {
       readOnly: new NestedFlag()
     };

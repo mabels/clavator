@@ -27,8 +27,8 @@ export class RandomInputPassPhrase extends
 
   // private inputRandoms: JSX.Element[];
 
-  constructor() {
-    super();
+  constructor(props: RandomInputPassPhraseProps) {
+    super(props);
     this.state = { /* readOnly: null */ };
     this.randomize = this.randomize.bind(this);
   }

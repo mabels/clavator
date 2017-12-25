@@ -36,8 +36,8 @@ export class Message {
     return ret;
   }
 
-  public send(sub: rxme.Subject<Message>): Message {
-    sub.next(rxme.data(this));
+  public send(sub: rxme.Subject): Message {
+    sub.next(new rxme.RxMe(this));
     return this;
   }
   public dataToJson(a: any): Message {

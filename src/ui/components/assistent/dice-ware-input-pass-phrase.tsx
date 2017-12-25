@@ -31,8 +31,8 @@ export class DiceWareInputPassPhrase extends
 
   // private inputDiceWares: JSX.Element[];
 
-  constructor() {
-    super();
+  constructor(props: DiceWareInputPassPhraseProps) {
+    super(props);
     this.state = { /* readOnly: null */ };
     this.diceAll = this.diceAll.bind(this);
   }

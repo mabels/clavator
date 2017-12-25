@@ -22,8 +22,8 @@ interface InputPasswordProps extends React.Props<InputPassword> {
 export class InputPassword extends
   React.Component<InputPasswordProps, InputPasswordState> {
 
-  constructor() {
-    super();
+  constructor(props: InputPasswordProps) {
+    super(props);
     this.state = { readOnlyTimer: null };
     this.lockUnlock = this.lockUnlock.bind(this);
   }

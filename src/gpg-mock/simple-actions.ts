@@ -6,21 +6,21 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { SecretKey } from '../gpg/list-secret-keys';
 
-function quickAddKeyAction(y: yargs.Arguments, state: GpgMockState): rxme.Observable<boolean> {
-  return rxme.Observable.create(rxme.Match.BOOLEAN, (obs: rxme.Observer<boolean>) => {
-    obs.next(!!y.quickAddkey);
+function quickAddKeyAction(y: yargs.Arguments, state: GpgMockState): rxme.Observable {
+  return rxme.Observable.create(obs => {
+    obs.next(rxme.Msg.Boolean(!!y.quickAddkey));
     obs.complete();
   });
 }
 
-function searchFingerPrintInFile(fpr: string, y: yargs.Arguments, state: GpgMockState, obs: rxme.Observer<boolean>,
-  cb: (fname: string, data: SecretKey, completed: rxme.Observer<string>) => void,
+function searchFingerPrintInFile(fpr: string, y: yargs.Arguments, state: GpgMockState, obs: rxme.Observer,
+  cb: (fname: string, data: SecretKey, completed: rxme.Observer) => void,
   matches: string[], idx: number): void {
   // console.log('searchFingerPrintInFile:', idx, matches.length);
   if (idx >= matches.length) {
     state.exitCode(0);
     // console.log('Completed:');
-    obs.next(true);
+    obs.next(rxme.Msg.True());
     obs.complete();
     return;
   }
@@ -30,31 +30,31 @@ function searchFingerPrintInFile(fpr: string, y: yargs.Arguments, state: GpgMock
     // console.log(sk.fingerPrint.fpr, fpr, idx, matches);
     if (sk.fingerPrint.fpr.endsWith(fpr)) {
       // console.log('SSH-AAAA');
-      rxme.Observable.create(rxme.Match.STRING, (complete: rxme.Observer<string>) => {
+      rxme.Observable.create(complete => {
         // console.log('SSH-YYYY');
         cb(matches[idx], sk, complete);
-      }).matchComplete(() => {
+      }).match(rxme.Matcher.Complete(() => {
         searchFingerPrintInFile(fpr, y, state, obs, cb, matches, idx + 1);
         return true;
-      }).passTo(obs);
+      })).passTo(obs);
     } else {
       searchFingerPrintInFile(fpr, y, state, obs, cb, matches, idx + 1);
     }
   });
 }
 
-function searchFingerPrint(fpr: string, y: yargs.Arguments, state: GpgMockState, obs: rxme.Observer<boolean>,
-  cb: (fname: string, data: SecretKey, completed: rxme.Observer<string>) => void): void {
+function searchFingerPrint(fpr: string, y: yargs.Arguments, state: GpgMockState, obs: rxme.Observer,
+  cb: (fname: string, data: SecretKey, completed: rxme.Observer) => void): void {
   glob(path.join(y.homedir, '*.keyStore.json'), {}, (err, matches) => {
     searchFingerPrintInFile(fpr, y, state, obs, cb, matches, 0);
   });
 }
 
-function exportSecretKeyAction(y: yargs.Arguments, state: GpgMockState): rxme.Observable<boolean> {
+function exportSecretKeyAction(y: yargs.Arguments, state: GpgMockState): rxme.Observable {
   // console.log(y);
-  return rxme.Observable.create(rxme.Match.BOOLEAN, (obs: rxme.Observer<boolean>) => {
+  return rxme.Observable.create(obs => {
     if (y.exportSecretKey) {
-      const unRx = (fname: string, data: SecretKey, completed: rxme.Observer<string>) => {
+      const unRx = (fname: string, data: SecretKey, completed: rxme.Observer) => {
         state.stdout('-----BEGIN PGP PRIVATE KEY BLOCK-----');
         state.stdout(JSON.stringify(data));
         state.stdout('-----END PGP PRIVATE KEY BLOCK-----');
@@ -62,16 +62,16 @@ function exportSecretKeyAction(y: yargs.Arguments, state: GpgMockState): rxme.Ob
       };
       searchFingerPrint(y.exportSecretKey, y, state, obs, unRx);
     } else {
-      obs.next(false);
+      obs.next(rxme.Msg.False());
       obs.complete();
     }
   });
 }
 
-function exportAction(y: yargs.Arguments, state: GpgMockState): rxme.Observable<boolean> {
-  return rxme.Observable.create((obs: rxme.Observer<boolean>) => {
+function exportAction(y: yargs.Arguments, state: GpgMockState): rxme.Observable {
+  return rxme.Observable.create((obs: rxme.Observer) => {
     if (y.export) {
-      const unRx = (fname: string, data: SecretKey, completed: rxme.Observer<string>) => {
+      const unRx = (fname: string, data: SecretKey, completed: rxme.Observer) => {
         state.stdout('-----BEGIN PGP PUBLIC KEY BLOCK-----');
         state.stdout(JSON.stringify(data));
         state.stdout('-----END PGP PUBLIC KEY BLOCK-----');
@@ -79,32 +79,32 @@ function exportAction(y: yargs.Arguments, state: GpgMockState): rxme.Observable<
       };
       searchFingerPrint(y.export, y, state, obs, unRx);
     } else {
-      obs.next(false);
+      obs.next(rxme.Msg.False());
       obs.complete();
     }
   });
 }
 
-function exportSshKeyAction(y: yargs.Arguments, state: GpgMockState): rxme.Observable<boolean> {
-  return rxme.Observable.create((obs: rxme.Observer<boolean>) => {
+function exportSshKeyAction(y: yargs.Arguments, state: GpgMockState): rxme.Observable {
+  return rxme.Observable.create((obs: rxme.Observer) => {
     if (y.exportSshKey) {
-      const unRx = (fname: string, data: SecretKey, completed: rxme.Observer<string>) => {
+      const unRx = (fname: string, data: SecretKey, completed: rxme.Observer) => {
         // console.log('SSH-XXXX');
         state.stdout(`ssh-rsa ${data.key} ${data.uids[0].email}`);
         completed.complete();
       };
       searchFingerPrint(y.exportSshKey, y, state, obs, unRx);
     } else {
-      obs.next(false);
+      obs.next(rxme.Msg.False());
       obs.complete();
     }
   });
 }
 
-function deleteSecretKeyAction(y: yargs.Arguments, state: GpgMockState): rxme.Observable<boolean> {
-  return rxme.Observable.create((obs: rxme.Observer<boolean>) => {
+function deleteSecretKeyAction(y: yargs.Arguments, state: GpgMockState): rxme.Observable {
+  return rxme.Observable.create((obs: rxme.Observer) => {
     if (y.deleteSecretKey) {
-      const unRx = (fname: string, data: SecretKey, completed: rxme.Observer<string>) => {
+      const unRx = (fname: string, data: SecretKey, completed: rxme.Observer) => {
         fs.unlink(fname, nerr => {
           if (nerr) {
             console.error('can not delete file', fname);
@@ -114,21 +114,21 @@ function deleteSecretKeyAction(y: yargs.Arguments, state: GpgMockState): rxme.Ob
       };
       searchFingerPrint(y.deleteSecretKey, y, state, obs, unRx);
     } else {
-      obs.next(false);
+      obs.next(rxme.Msg.False());
       obs.complete();
     }
   });
 }
 
-function deleteKeyAction(y: yargs.Arguments, state: GpgMockState): rxme.Observable<boolean> {
-  return rxme.Observable.create((obs: rxme.Observer<boolean>) => {
-    obs.next(!!y.deleteKey);
+function deleteKeyAction(y: yargs.Arguments, state: GpgMockState): rxme.Observable {
+  return rxme.Observable.create(obs => {
+    obs.next(rxme.Msg.Boolean(!!y.deleteKey));
     obs.complete();
   });
 }
 
-function parseMimeBlocks(block: string): rxme.Observable<string> {
-  return rxme.Observable.create((obs: rxme.Observer<string>) => {
+function parseMimeBlocks(block: string): rxme.Observable {
+  return rxme.Observable.create(obs => {
     const begin = /^----[-]+BEGIN [^-]+----[-]+$/;
     const end = /^----[-]+END [^-]+----[-]+$/;
     let state = begin;
@@ -140,7 +140,7 @@ function parseMimeBlocks(block: string): rxme.Observable<string> {
           buffer = [];
           state = end;
         } else {
-          obs.next(buffer.join(`\n`));
+          obs.next(rxme.Msg.String(buffer.join(`\n`)));
           buffer = null;
           state = begin;
         }
@@ -153,17 +153,17 @@ function parseMimeBlocks(block: string): rxme.Observable<string> {
   });
 }
 
-function importAction(y: yargs.Arguments, state: GpgMockState): rxme.Observable<boolean> {
-  return rxme.Observable.create((obs: rxme.Observer<boolean>) => {
+function importAction(y: yargs.Arguments, state: GpgMockState): rxme.Observable {
+  return rxme.Observable.create(obs => {
     if (!y.import) {
-      obs.next(false);
+      obs.next(rxme.Msg.False());
       obs.complete();
       return;
     }
     const stdin: string[] = [];
     process.stdin.on('data', (data) => stdin.push(data));
     process.stdin.on('close', () => {
-      parseMimeBlocks(stdin.join('')).subscribe(json => {
+      parseMimeBlocks(stdin.join('')).match(rxme.Matcher.String(json => {
         // console.log(`[${json}]`);
         try {
           const sk = SecretKey.jsfill(JSON.parse(json));
@@ -171,8 +171,8 @@ function importAction(y: yargs.Arguments, state: GpgMockState): rxme.Observable<
         } catch (e) {
           /* */
         }
-      });
-      obs.next(true);
+      }));
+      obs.next(rxme.Msg.True());
       obs.complete();
     });
   });

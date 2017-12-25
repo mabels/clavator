@@ -24,8 +24,8 @@ interface DialogChangeAttributesProps extends React.Props<DialogChangeAttributes
 @observer
 export class DialogChangeAttributes extends React.Component<DialogChangeAttributesProps, DialogChangeAttributesState> {
 
-  constructor() {
-    super();
+  constructor(props: DialogChangeAttributesProps) {
+    super(props);
     this.state = {
       changeCard: null,
       transaction: Message.newTransaction<ChangeCard>('ChangeCard.Request')

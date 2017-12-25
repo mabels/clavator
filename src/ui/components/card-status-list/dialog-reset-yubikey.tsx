@@ -19,8 +19,8 @@ interface DialogResetYubiKeyProps extends React.Props<DialogResetYubiKey> {
 
 export class DialogResetYubiKey extends React.Component<DialogResetYubiKeyProps, DialogResetYubiKeyState> {
 
-  constructor() {
-    super();
+  constructor(props: DialogResetYubiKeyProps) {
+    super(props);
     this.state = {
       transaction: Message.newTransaction('ResetYubikey')
     };

@@ -2,8 +2,8 @@ import * as yargs from 'yargs';
 import GpgMockState from './gpg-mock-state';
 import * as rxme from 'rxme';
 
-function action(y: yargs.Arguments, state: GpgMockState): rxme.Observable<boolean> {
-  return rxme.Observable.create(rxme.Match.BOOLEAN, (obs: rxme.Observer<boolean>) => {
+function action(y: yargs.Arguments, state: GpgMockState): rxme.Observable {
+  return rxme.Observable.create(obs => {
     if (y.cardStatus && y.withColons) {
       state.stdoutMock('card-status-with-colons',
         [`Reader:1050:0405:X:0:AID:D2760001240102010006041775630000:openpgp-card:
@@ -27,9 +27,9 @@ fpr:F78D5B547A9BB0E8A174C0F5060FF53CB3ACAFEE:B3BCAFEEF73077EFA734EC83D851CAFFEED
           `:2D32339394392AF437181A28E66F405F1BE34D:\n`,
           `fprtime:1465218201:1465218221:1464700783:\n`].join(''));
       state.exitCode(0);
-      obs.next(true);
+      obs.next(rxme.Msg.True());
     } else {
-      obs.next(false);
+      obs.next(rxme.Msg.False());
     }
     obs.complete();
   });
