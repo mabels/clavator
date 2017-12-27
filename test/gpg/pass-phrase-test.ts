@@ -7,23 +7,25 @@ import DiceWare from '../../src/dice-ware/dice-ware';
 import CharFormat from '../../src/ui/model/char-format';
 import DiceWareDispatcher from '../../src/server/dispatcher/dice-ware-dispatcher';
 import { ResultQueue } from '../../src/gpg/result';
+import * as rxme from 'rxme';
 
 describe('PassPhrase', () => {
 
-  let diceWares: DiceWare[];
+  let diceWares: DiceWare[] = [];
   let rq: ResultQueue = null;
 
   before((done: any): void => {
-    rq = ResultQueue.create();
-    DiceWareDispatcher.get(rq).subscribe(rcdws => {
-      diceWares = rcdws.data;
-      console.log('diceWares loaded');
-      done();
-    });
+    ResultQueue.create().match(ResultQueue.match(irq => {
+      DiceWareDispatcher.get(rq).match(DiceWare.match(dw => {
+        diceWares.push(dw);
+        console.log('diceWares loaded');
+        done();
+      })).passTo();
+    })).passTo();
   });
 
   after((done) => {
-    rq.stop().subscribe(done);
+    rq.stop().match(rxme.Matcher.Complete(() => done()));
   });
 
   function warrents(i: number): Warrents {
@@ -53,7 +55,7 @@ describe('PassPhrase', () => {
       assert.equal(pp.doublePasswords.length, 6);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual((new Array(pp.doublePasswords.length)).fill('^[a-z]{4,8}$'),
-         pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
     });
 
     it('warrents-1 min==max', () => {
@@ -67,7 +69,7 @@ describe('PassPhrase', () => {
         return i.warrents.first().warrent !== pp.warrents.get(idx % pp.warrents.length());
       }));
       assert.deepEqual((new Array(pp.doublePasswords.length)).fill('^[a-z]{4,4}$'),
-         pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
     });
 
     it('warrents-2 min', () => {
@@ -75,7 +77,7 @@ describe('PassPhrase', () => {
       assert.equal(pp.doublePasswords.length, 6);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual((new Array(pp.doublePasswords.length)).fill('^[a-z]{4,}$'),
-         pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
 
     });
 
@@ -85,7 +87,7 @@ describe('PassPhrase', () => {
       assert.equal(pp.doublePasswords.length, 6);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual((new Array(pp.doublePasswords.length)).fill('^[a-z]{8,8}$'),
-         pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
     });
 
   });
@@ -105,7 +107,7 @@ describe('PassPhrase', () => {
       assert.deepEqual([
         '^[a-z]{4,}$'
       ],
-      pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
 
     });
 
@@ -116,7 +118,7 @@ describe('PassPhrase', () => {
       assert.deepEqual([
         '^[a-z]{4,8}$'
       ],
-      pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
 
     });
 
@@ -127,7 +129,7 @@ describe('PassPhrase', () => {
       assert.deepEqual([
         '^[a-z]{4,4}$'
       ],
-      pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
     });
 
     it('warrents-2 min', () => {
@@ -138,7 +140,7 @@ describe('PassPhrase', () => {
         '^[a-z]{2,}$',
         '^[a-z]{2,}$'
       ],
-      pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
 
     });
 
@@ -150,7 +152,7 @@ describe('PassPhrase', () => {
         '^[a-z]{2,4}$',
         '^[a-z]{2,4}$'
       ],
-      pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
     });
 
     it('warrents-2 min==max', () => {
@@ -161,7 +163,7 @@ describe('PassPhrase', () => {
         '^[a-z]{4,4}$',
         '^[a-z]{4,4}$'
       ],
-      pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
     });
 
     it('warrents-3 min', () => {
@@ -173,7 +175,7 @@ describe('PassPhrase', () => {
         '^[a-z]{1,}$',
         '^[a-z]{1,}$'
       ],
-      pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
     });
 
     it('warrents-3 min max', () => {
@@ -185,7 +187,7 @@ describe('PassPhrase', () => {
         '^[a-z]{1,3}$',
         '^[a-z]{1,2}$'
       ],
-      pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
     });
 
     it('warrents-3 min==max', () => {
@@ -197,7 +199,7 @@ describe('PassPhrase', () => {
         '^[a-z]{3,3}$',
         '^[a-z]{2,2}$'
       ],
-      pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
     });
 
     it('warrents-4 min', () => {
@@ -210,7 +212,7 @@ describe('PassPhrase', () => {
         '^[a-z]{1,}$',
         '^[a-z]{1,}$'
       ],
-      pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
     });
 
     it('warrents-4 min max', () => {
@@ -223,7 +225,7 @@ describe('PassPhrase', () => {
         '^[a-z]{1,2}$',
         '^[a-z]{1,2}$'
       ],
-      pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
     });
 
     it('warrents-4 min==max', () => {
@@ -236,7 +238,7 @@ describe('PassPhrase', () => {
         '^[a-z]{2,2}$',
         '^[a-z]{2,2}$'
       ],
-      pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
     });
 
     it('warrents-5 length 4 min', () => {
@@ -250,7 +252,7 @@ describe('PassPhrase', () => {
         '^[a-z]{1,}$',
         '^[a-z]{0,}$'
       ],
-      pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
     });
 
     it('warrents-5 length 4 min max', () => {
@@ -264,7 +266,7 @@ describe('PassPhrase', () => {
         '^[a-z]{1,1}$',
         '^[a-z]{0,1}$'
       ],
-      pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
     });
 
     it('warrents-5 length 4 min==max', () => {
@@ -278,7 +280,7 @@ describe('PassPhrase', () => {
         '^[a-z]{1,1}$',
         '^[a-z]{1,1}$',
       ],
-      pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
     });
 
     it('warrents-6 length 4 min', () => {
@@ -293,7 +295,7 @@ describe('PassPhrase', () => {
         '^[a-z]{0,}$',
         '^[a-z]{0,}$'
       ],
-      pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
     });
 
     it('warrents-6 length 4 min max', () => {
@@ -308,7 +310,7 @@ describe('PassPhrase', () => {
         '^[a-z]{0,1}$',
         '^[a-z]{0,1}$'
       ],
-      pp.doublePasswords.map(i => i.first.match().source));
+        pp.doublePasswords.map(i => i.first.match().source));
     });
 
     it('warrents-6 length 4 min==max', () => {
@@ -316,13 +318,13 @@ describe('PassPhrase', () => {
       assert.equal(pp.doublePasswords.length, 6);
       assert.isFalse(!!pp.doublePasswords.find(i => i.warrents.length() != 1));
       assert.deepEqual([
-            '^[a-z]{2,2}$',
-            '^[a-z]{2,2}$',
-            '^[a-z]{1,1}$',
-            '^[a-z]{1,1}$',
-            '^[a-z]{1,1}$',
-            '^[a-z]{1,1}$'
-        ],
+        '^[a-z]{2,2}$',
+        '^[a-z]{2,2}$',
+        '^[a-z]{1,1}$',
+        '^[a-z]{1,1}$',
+        '^[a-z]{1,1}$',
+        '^[a-z]{1,1}$'
+      ],
         pp.doublePasswords.map(i => i.first.match().source));
       // assert.equal(pp.doublePasswords[0].first.match().source, '^[a-z]{3,3}$');
       // assert.equal(pp.doublePasswords[1].first.match().source, '^[a-z]{3,3}$');

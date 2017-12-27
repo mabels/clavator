@@ -46,54 +46,43 @@ cp /etc/hosts /arch/etc/hosts
 
 
 
-/bin/sh /builder/create-os-image-updater.sh \
-     xorg lxde xf86-video-fbdev lightdm lightdm-gtk-greeter lightdm-gtk-greeter-settings \
-     midori dwm
+#     virtualbox-guest-dkms \
+/bin/sh -x /builder/create-os-image-updater.sh \
+     xf86-video-fbdev \
+     virtualbox-guest-modules-arch \
+     virtualbox-guest-utils
 cat <<MMC > /arch/create-mmcblk0.sh
 MMC
 
+mkdir -p /arch/pkg
+ls -l /builder/pkg
+cp -pr /builder/pkg /arch/pkg
+
 cat <<GRUB > /arch/grub.sh
 cat >> /etc/mkinitcpio.conf <<EOF
-MODULES+="ahci "
-MODULES+="ehci_pci "
-MODULES+="usb_storage "
-MODULES+="virtio_blk "
-MODULES+="virtio_pci "
-MODULES+="atkbd "
-MODULES+="hid_generic "
-MODULES+="ohci_pci "
-MODULES+="usbhid "
-MODULES+="hid_logitech_dj uhci_hcd usbhid "
+MODULES=(ahci ata_piix ata_generic libata sd_mod ehci_pci usb_storage virtio_blk virtio_pci atkbd hid_generic ohci_pci usbhid hid_logitech_dj uhci_hcd usbhid sata_dwc_460ex sata_inic162x sata_mv sata_nv sata_promise sata_qstor sata_sil sata_sil24 sata_sis sata_svw sata_sx4 sata_uli sata_via sata_vsc pata_acpi pata_ali pata_amd pata_artop pata_atiixp pata_atp867x pata_cmd640 pata_cmd64x pata_cypress pata_efar pata_hpt366 pata_hpt37x pata_hpt3x2n pata_hpt3x3 pata_it8213 pata_it821x pata_jmicron pata_legacy pata_marvell pata_mpiix pata_netcell pata_ninja32 pata_ns87410 pata_ns87415 pata_oldpiix pata_opti pata_optidma pata_pcmcia pata_pdc2027x pata_pdc202xx_old pata_piccolo pata_radisys pata_rdc pata_rz1000 pata_sch pata_serverworks pata_sil680 pata_sis pata_sl82c105 pata_triflex pata_via) 
 
-MODULES+="sata_dwc_460ex sata_inic162x sata_mv sata_nv "
-MODULES+="sata_promise sata_qstor sata_sil sata_sil24 "
-MODULES+="sata_sis sata_svw sata_sx4 sata_uli sata_via "
-MODULES+="sata_vsc "
-MODULES+="pata_acpi pata_ali pata_amd pata_artop pata_atiixp "
-MODULES+="pata_atp867x pata_cmd640 pata_cmd64x pata_cypress "
-MODULES+="pata_efar pata_hpt366 pata_hpt37x pata_hpt3x2n "
-MODULES+="pata_hpt3x3 pata_it8213 pata_it821x pata_jmicron "
-MODULES+="pata_legacy pata_marvell pata_mpiix pata_netcell "
-MODULES+="pata_ninja32 pata_ns87410 pata_ns87415 pata_oldpiix "
-MODULES+="pata_opti pata_optidma pata_pcmcia pata_pdc2027x "
-MODULES+="pata_pdc202xx_old pata_piccolo pata_radisys pata_rdc "
-MODULES+="pata_rz1000 pata_sch pata_serverworks pata_sil680 "
-MODULES+="pata_sis pata_sl82c105 pata_triflex pata_via "
-
-BINARIES="fsck fsck.ext2 fsck.ext3 fsck.ext4  e2fsck"
+BINARIES=(fsck fsck.ext2 fsck.ext3 fsck.ext4 e2fsck)
+HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)
 EOF
-pacman -Sy --noconfirm grub linux
-pacman -Scc --noconfirm ; rm -f /var/cache/pacman/pkg/*
+pacman -Sy --noconfirm sed grub linux
+pacman -Q linux 
+pacman -Q linux | awk '{print $2}'
+# echo mkinitcpio -g /boot/initramfs-linux.img $(pacman -Q linux | awk '{print $2}')-ARCH
+# mkinitcpio -g /boot/initramfs-linux.img $(pacman -Q linux | awk '{print $2}')-ARCH
 grub-mkconfig -o /tmp/doof.cfg
 sed "s/'.*UUID=.*img.p1'/clavator/g" /tmp/doof.cfg | \
 sed "s/root=.*$VERSION.img.p1/root=$ROOTID/" > /boot/grub/grub.cfg
-lsinitcpio /boot/initramfs-linux.img
+# lsinitcpio /boot/initramfs-linux.img
+pacman --noconfirm -U /pkg/*
+rm -rf /pkg
+pacman -Scc --noconfirm ; rm -f /var/cache/pacman/pkg/*
 GRUB
 
 
-echo $ROOTID
-arch-chroot /arch /bin/sh /updater.sh
-arch-chroot /arch /bin/sh /grub.sh
+echo "ROOTID=$ROOTID"
+arch-chroot /arch /bin/sh -x /updater.sh
+arch-chroot /arch /bin/sh -x /grub.sh
 
 cp /arch/etc/hosts.orig /arch/etc/hosts
 reflector --verbose --latest 5 --sort rate --save /arch/etc/pacman.d/mirrorlist

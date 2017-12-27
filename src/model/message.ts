@@ -25,6 +25,10 @@ export class Message {
   public header: Header;
   public data: string;
 
+  public static match(cb: rxme.MatcherCallback<Message>): rxme.MatcherCallback {
+    return rxme.Matcher.Type<Message>(Message, cb);
+  }
+
   constructor(header?: Header, data?: string) {
     this.header = header;
     this.data = data;

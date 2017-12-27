@@ -1,4 +1,5 @@
 import KeyState from './key-state';
+import * as rxme from 'rxme';
 
 const reCrNl = /\r?\n/;
 
@@ -109,6 +110,10 @@ export class Gpg2CardStatus {
       let num = parseInt(val.slice('\\x'.length), 16);
       return  String.fromCharCode(num);
     });
+  }
+
+  public static match(cb: rxme.MatcherCallback<Gpg2CardStatus>): rxme.MatcherCallback {
+    return rxme.Matcher.Type<Gpg2CardStatus>(Gpg2CardStatus, cb);
   }
 
   // typedef std::function<bool(Gpg2CardStatus &gcs, const std::vector<std::string> &strs)> GcsAction;

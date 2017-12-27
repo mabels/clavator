@@ -8,7 +8,7 @@ echo "DOCKER_REGISTRY:$DOCKER_REGISTRY"
 echo $(cat $HOME/.docker/config.json)
 id
 docker ps
-find $HOME -ls
+#find $HOME -ls
 
 echo docker build -t $IMG_NAME $BASE_PATH
 docker build -t $IMG_NAME $BASE_PATH
@@ -27,9 +27,12 @@ aws_access_key_id = $access_key
 aws_secret_access_key = $secret_key
 S3CFG
     #aws s3 --endpoint $endpoint ls s3://$bucket
+    cat $HOME/.aws/credentials
+    aws s3 ls --endpoint $endpoint
     awsCmd="aws s3 cp --endpoint $endpoint - s3://$bucket/$IMG_NAME.docker"
     echo "docker save $IMG_NAME | $awsCmd"
     docker save $IMG_NAME | $awsCmd 
+    aws s3 cp --endpoint $endpoint $DISK_IMAGE s3://$bucket/disk-image/$(basename $DISK_IMAGE)
 else
   if [ -n $IMAGES -a -d $IMAGES ]
   then

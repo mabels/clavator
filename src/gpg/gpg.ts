@@ -26,11 +26,16 @@ import * as rxme from 'rxme';
 // import { observer } from 'mobx-react';
 import GpgCmds from './gpg-cmds';
 import { RxMe } from 'rxme';
+import { Gpg2CardStatus } from './card-status';
 // import { Socket } from 'net';
 
 export class SocketNames {
   public readonly s1: string;
   public readonly s2: string;
+
+  public static match(cb: rxme.MatcherCallback<SocketNames>): rxme.MatcherCallback {
+    return rxme.Matcher.Type<SocketNames>(SocketNames, cb);
+  }
 
   constructor(s1: string, s2: string) {
     this.s1 = s1;
@@ -45,21 +50,20 @@ interface ChangeCardAttribute {
 
 function createTempDir(rq: ResultQueue, baseDir: string, dirName: string): rxme.Observable {
   return rxme.Observable.create(obs => {
-    const result = ResultContainer.builder<string>(rq);
-    result.data = path.join(baseDir, dirName);
-    fs.mkdir(result.data, (mkdirErr) => {
+    const result = path.join(baseDir, dirName);
+    fs.mkdir(result, (mkdirErr) => {
       if (mkdirErr) {
-        obs.next(result.setNodeError(mkdirErr));
+        obs.next(rxme.Msg.Error(mkdirErr));
         obs.complete();
         return;
       }
-      fs.chmod(result.data, 0o700, (chmodErr) => {
+      fs.chmod(result, 0o700, (chmodErr) => {
         if (chmodErr) {
-          obs.next(result.setNodeError(chmodErr));
+          obs.next(rxme.Msg.Error(chmodErr));
           obs.complete();
           return;
         }
-        obs.next(result);
+        obs.next(rxme.Msg.String(result));
         obs.complete();
       });
     });
@@ -71,6 +75,10 @@ export class Gpg {
   public workDir: string = process.cwd();
   public gpgCmds: GpgCmds;
   // public readonly mockCmd: GpgCmds;
+
+  public static match(cb: rxme.MatcherCallback<Gpg>): rxme.MatcherCallback {
+    return rxme.Matcher.Type<Gpg>(Gpg, cb);
+  }
 
   public static _create(/* mockCmd: GpgCmds */): Gpg {
     return new Gpg(/* mockCmd */);
@@ -180,7 +188,7 @@ export class Gpg {
         if (line) {
           obs.next(rxme.Msg.String(line.slice('D '.length)));
         }
-        res.doComplete(obs);
+        obs.complete();
       })).passTo(obs);
     });
   }
@@ -205,12 +213,9 @@ export class Gpg {
     return this.runAgent('resetYubikey', [], this.resetCommand());
   }
 
-  public matchSecretKey(cb: rxme.MatcherCallback<ListSecretKeys.SecretKey>): rxme.MatcherCallback {
-    return rxme.Matcher.Type<ListSecretKeys.SecretKey>(ListSecretKeys.SecretKey, cb);
-  }
   public getSecretKey(fpr: string): rxme.Observable {
     return rxme.Observable.create(obs => {
-      this.list_secret_keys().match(this.matchSecretKey(result => {
+      this.list_secret_keys().match(ListSecretKeys.SecretKey.match(result => {
         if (result.fingerPrint.fpr == fpr) {
           obs.next(rxme.Msg.Type(result));
         }
@@ -223,21 +228,22 @@ export class Gpg {
     return rxme.Observable.create(obs => {
       this.run('list_secret_keys',
         ['--list-secret-keys', '--with-colons'], null).match(ResultExec.match(result => {
-          ListSecretKeys.run(result.stdOut).forEach(lsk => obs.next(result.clone(lsk)));
+          ListSecretKeys.run(result.stdOut).forEach(lsk => {
+            obs.next(rxme.Msg.Type(lsk));
+          });
           obs.complete();
           return true;
         })).passTo(obs);
     });
   }
 
-  public matchCardStatus(cb: rxme.MatcherCallback<CardStatus.Gpg2CardStatus>): rxme.MatcherCallback {
-    return rxme.Matcher.Type<CardStatus.Gpg2CardStatus>(CardStatus.Gpg2CardStatus, cb);
-  }
   public card_status(): rxme.Observable {
     return rxme.Observable.create(obs => {
       this.run('card_status', ['--card-status', '--with-colons'], null)
         .match(ResultExec.match(result => {
-          CardStatus.run(result.stdOut).forEach(cs => obs.next(result.clone(cs)));
+          CardStatus.run(result.stdOut).forEach(cs => {
+            obs.next(rxme.Msg.Type(cs));
+          });
           obs.complete();
         })).passTo(obs);
     });
@@ -245,15 +251,14 @@ export class Gpg {
 
   public deleteSecretKey(fingerPrint: string): rxme.Observable {
     return rxme.Observable.create(obs => {
-      this.getSecretKey(fingerPrint).match((_, key) => {
+      this.getSecretKey(fingerPrint).match(ListSecretKeys.SecretKey.match(key => {
         const args: Mixed[] = ['--no-tty'];
         args.push('--expert', '--batch', '--yes', '--delete-secret-key', fingerPrint);
         this.run('deleteSecretKey', args, null).match(ResultExec.match(result => {
-          key.doComplete(obs);
-          return true;
+          obs.next(rxme.Msg.Type(key));
+          obs.complete();
         })).passTo(obs);
-        return true;
-      }).passTo(obs);
+      })).passTo(obs);
     });
   }
 
@@ -264,21 +269,18 @@ export class Gpg {
   public findKey(cmp: (sk: ListSecretKeys.SecretKey) => void): rxme.Observable {
     return rxme.Observable.create(obs => {
       let found = false;
-      this.list_secret_keys().match(this.matchSecretKey(ressk => {
+      this.list_secret_keys().match(ListSecretKeys.SecretKey.match(ressk => {
         if (cmp(ressk)) {
           found = true;
           obs.next(rxme.Msg.Type(ressk));
           obs.complete();
         }
-        return true;
       })).match(rxme.Matcher.Complete(() => {
         if (!found) {
-          obs.next(ResultContainer.builder<ListSecretKeys.SecretKey>(this.resultQueue())
-            .setNodeError(new Error('key not found')));
+          obs.next(rxme.Msg.Error('key not found'));
           obs.complete();
         }
-        return true;
-      }));
+      })).passTo(obs);
     });
   }
 
@@ -311,9 +313,6 @@ export class Gpg {
           //     sk.uids[0].toKeyGenUid().name.value, sk.uids[0].toKeyGenUid().email.value,
           //     sk.uids[0].toKeyGenUid().comment.value);
           return ret;
-        }).match((_, resfind) => {
-          // console.log('--O');
-          resfind.doComplete(obs);
         }).passTo(obs);
       })).passTo(obs);
     });
@@ -339,8 +338,8 @@ export class Gpg {
         this.findKey((sk): boolean => {
           // console.log('---', sk.fingerPrint.fpr, fpr);
           return sk.fingerPrint.fpr == fpr;
-        }).match(this.matchSecretKey(resfind => {
-          resfind.doComplete(obs);
+        }).match(ListSecretKeys.SecretKey.match(resfind => {
+          obs.complete();
         })).passTo(obs);
       })).passTo(obs);
     });
@@ -403,17 +402,12 @@ export class Gpg {
     return this.run('changePin', args, null);
   }
 
-  private matchSocketNames(cb: rxme.MatcherCallback<SocketNames>): rxme.MatcherCallback {
-    return rxme.Matcher.Type<SocketNames>(SocketNames, cb);
-  }
   private getSocketNames(g1: Gpg, g2: Gpg): rxme.Observable {
     return rxme.Observable.create(obs => {
       g1.getSocketName().match(rxme.Matcher.String(rs1 => {
         g2.getSocketName().match(rxme.Matcher.String(rs2 => {
-          rs2.clone<SocketNames>().setData({ s1: rs1, s2: rs2 }).doComplete(obs);
-          return true;
+          obs.next(rxme.Msg.Type(new SocketNames(rs1, rs2)));
         })).passTo(obs);
-        return true;
       })).passTo(obs);
     });
   }
@@ -431,39 +425,38 @@ export class Gpg {
 
   private handleImportedSecretedKey(inititator: string, srcGpg: Gpg, dstGpg: Gpg): rxme.Observable {
     return rxme.Observable.create(obs => {
-      this.getSocketNames(srcGpg, dstGpg).match(this.matchSocketNames(sockNamesRes => {
-        if (sockNamesRes.doProgress(obs)) { return; }
-        if (sockNamesRes.doError(obs)) { return; }
+      this.getSocketNames(srcGpg, dstGpg).match(SocketNames.match(sockNamesRes => {
         dstGpg.runAgent(inititator, ['killagent', '/bye'], null).match(ResultExec.match(ares => {
-          if (ares.doProgress(obs)) { return; }
-          if (ares.doError(obs)) { return; }
-          if (sockNamesRes.data.s1 != sockNamesRes.data.s2) {
-            fs.exists(sockNamesRes.data.s2, exist => {
+          if (sockNamesRes.s1 != sockNamesRes.s2) {
+            fs.exists(sockNamesRes.s2, exist => {
               if (!exist) {
-                ares.doComplete(obs);
+                obs.next(rxme.Msg.Error(`socket not found ${sockNamesRes.s2}`));
+                obs.complete();
                 return;
               }
-              fs.unlink(sockNamesRes.data.s2, err => {
+              fs.unlink(sockNamesRes.s2, err => {
                 if (!err) {
-                  ares.clone().setNodeError(err).doComplete(obs);
+                  obs.next(rxme.Msg.Error(err));
+                  obs.complete();
                   return;
                 }
-                fs.symlink(sockNamesRes.data.s1, sockNamesRes.data.s2, symerr => {
+                fs.symlink(sockNamesRes.s1, sockNamesRes.s2, symerr => {
                   if (!symerr) {
-                    ares.clone().setNodeError(err).doComplete(obs);
+                    obs.next(rxme.Msg.Error(symerr));
+                    obs.complete();
                     return;
                   }
-                  console.log('agent symlink created');
-                  ares.doComplete(obs);
+                  obs.next(rxme.LogInfo('agent symlink created'));
+                  obs.complete();
                 });
               });
             });
           } else {
-            console.log('agent killed');
-            ares.doComplete(obs);
+            obs.next(rxme.LogInfo('agent killed'));
+            obs.complete();
           }
         }));
-      }));
+      })).passTo(obs);
     });
   }
 
@@ -473,32 +466,22 @@ export class Gpg {
       rqa.fingerprint = ktyk.fingerprint;
       rqa.passphrase = ktyk.passphrase;
       this.pemPrivateKey(rqa).match(ResultExec.match(pkres => {
-        if (pkres.doProgress(obs)) { return; }
-        if (pkres.doError(obs)) { return; }
         // console.log('XXXXX', pkres.exec.stdOut, ktyk.fingerprint, 'YYYYY');
         createTempDir(this.gpgCmds.gpg.resultQueue, this.homeDir,
-          `${uuid.v4().toString().slice(0, 16)}.${inititator}.tdir`).subscribe(createdDir => {
-            if (createdDir.doProgress(obs)) { return; }
-            if (createdDir.doError(obs)) { return; }
+          `${uuid.v4().toString().slice(0, 16)}.${inititator}.tdir`).match(rxme.Matcher.String(createdDir => {
             const gpgSmartCard = this.clone();
-            gpgSmartCard.setHomeDir(createdDir.data);
-            pkres.log(obs, `[${pkres.exec.stdOut}]`);
+            gpgSmartCard.setHomeDir(createdDir);
+            obs.next(rxme.LogInfo(`[${pkres.stdOut}]`));
             // console.log(`[${pkres.exec.stdOut}]`);
-            gpgSmartCard.importSecretKey(ktyk, pkres.exec.stdOut).subscribe(iskres => {
+            gpgSmartCard.importSecretKey(ktyk, pkres.stdOut).match(ResultExec.match(iskres => {
               // console.log(iskres);
-              if (iskres.doProgress(obs)) { return; }
-              if (iskres.doError(obs)) { return; }
-              this.handleImportedSecretedKey(inititator, this, gpgSmartCard).subscribe(hres => {
-                if (hres.doProgress(obs)) { return; }
-                if (hres.doError(obs)) { return; }
-                ResultContainer.builder(gpgSmartCard.gpgCmds.gpg.resultQueue)
-                  .setData(gpgSmartCard)
-                  .doComplete(obs);
+              this.handleImportedSecretedKey(inititator, this, gpgSmartCard).match(_ => {
+                obs.next(rxme.Msg.Type(gpgSmartCard));
+                obs.complete();
               });
-            });
-          }
-          );
-      }));
+            })).passTo(obs);
+          })).passTo(obs);
+      })).passTo(obs);
     });
   }
 
@@ -507,9 +490,7 @@ export class Gpg {
     // that this key will removed from the current
     // key database
     return rxme.Observable.create(obs => {
-      this.prepareKeyToYubiKey('keyToYubiKey', ktyk).match((_, rsgpg) => {
-        if (rsgpg.doProgress(obs)) { return; }
-        if (rsgpg.doError(obs)) { return; }
+      this.prepareKeyToYubiKey('keyToYubiKey', ktyk).match(Gpg.match(rsgpg => {
         const args = [
           '--pinentry-mode', 'loopback',
           '--passphrase-fd', () => {
@@ -520,12 +501,12 @@ export class Gpg {
           },
           '--quick-keytocard', ktyk.fingerprint, `${ktyk.slot_id}`, ktyk.card_id
         ];
-        rsgpg.data.run('keyToYubiKey', args, null).match(resx => {
-          if (resx.doProgress(obs)) { return; }
-          if (resx.doError(obs)) { return; }
-          rsgpg.doComplete(obs);
-        });
-      });
+        rsgpg.run('keyToYubiKey', args, null).match(ResultExec.match(resx => {
+          obs.next(rxme.Msg.Type(rsgpg));
+          obs.complete();
+          return true;
+        }));
+      }));
     });
   }
 
@@ -551,7 +532,7 @@ export class Gpg {
     const current = actions.shift();
     this.changeAttribute(cc.adminPin.pin, current.name, current.value, cc.serialNo)
       .match(ResultExec.match(res => {
-        obs.next(res);
+        obs.next(rxme.Msg.Type(res));
         this._changeCard(obs, cc, actions);
       })).passTo(obs);
   }
@@ -581,18 +562,19 @@ function findMock(rq: ResultQueue, obs: rxme.Observer, dirname: string): void {
   let prevDirname = dirname;
   dirname = path.dirname(dirname);
   const gm = path.join(dirname, 'gpg-mock.js');
-  const rc = ResultContainer.builder<string>(rq);
-  rc.log(obs, `findMock:${gm}`);
+  // const rc = ResultContainer.builder<string>(rq);
+  obs.next(rxme.LogInfo(`findMock:${gm}`));
   // console.log('Zzz-1:', gm);
   fs.exists(gm, (exist: boolean) => {
     // console.log('Zzz-2:', gm, exist);
     if (exist) {
-      rc.setData(gm).doComplete(obs);
+      obs.next(rxme.Msg.String(gm));
     } else {
       if (prevDirname != dirname) {
         findMock(rq, obs, dirname);
       } else {
-        rc.doComplete(obs);
+        obs.next(rxme.Msg.Type(rq));
+        obs.complete();
       }
     }
   });
@@ -609,12 +591,13 @@ function gpgCmdMock(rq: ResultQueue): rxme.Observable {
       // console.log('Yyz-3:', process.execPath, rcgm.data, rcgm.isOk(), rcgm.progress);
       // console.log('Yyz-3.1:', process.execPath, rcgm.data);
       GpgCmds.create(rq, [process.execPath, rcgm], [process.execPath, rcgm, 'connect-agent'],
-        0, true).match((_, a) => {
+        0, true).match(GpgCmds.match(a => {
           // console.log('Yyz-4:', a.isError(), a.progress);
           // console.log('Yyz-4.1:', a.data);
-          a.doComplete(gcobs);
+          gcobs.next(rxme.Msg.Type(a));
+          gcobs.complete();
           return true;
-        }).passTo(gcobs);
+        })).passTo(gcobs);
         return true;
     })).passTo(gcobs);
   });
@@ -633,53 +616,47 @@ function possibleGpgCmds(rq: ResultQueue): rxme.Observable[] {
   ];
 }
 
-function resolveCmds(obs: rxme.Observer, gpgCmds: rxme.Observable[], ret: GpgCmds[]): void {
+function resolveCmds(obs: rxme.Observer, obsGpgCmds: rxme.Observable[], ret: GpgCmds[]): void {
   // console.log('Yyy-4:');
-  if (gpgCmds.length == 0) {
-    obs.next(ret);
+  if (obsGpgCmds.length == 0) {
+    obs.next(rxme.Msg.ArrayOf(ret));
     obs.complete();
     return;
   }
-  const work = gpgCmds.shift();
-  work.match((_, gpgcmds) => {
-    if (gpgcmds.doProgress(obs)) { return; }
-    if (gpgcmds.isOk()) {
-      ret.data.push(gpgcmds.data); // only add valid cmds
-    }
-    resolveCmds(obs, gpgCmds, ret);
+  const work = obsGpgCmds.shift();
+  work.match(GpgCmds.match(gpgcmds => {
+    ret.push(gpgcmds); // only add valid cmds
+    resolveCmds(obs, obsGpgCmds, ret);
     return true;
-  }).passTo(obs);
+  })).passTo(obs);
   return;
 }
 
 export function internalCreate(rq: ResultQueue, gpgCmds: rxme.Observable[]): rxme.Observable {
   return rxme.Observable.create(obs => {
-    gpgCmdMock(rq).match((_, mock) => {
-      // console.log('Yyx-3:');
-      if (mock.doProgress(obs)) { return; }
-      if (mock.doError(obs)) { return; }
-      resolveCmds(obs, gpgCmds, ResultContainer.builder<GpgCmds[]>(rq).setData([mock.data]));
-    });
+    gpgCmdMock(rq).match(GpgCmds.match(mock => {
+      resolveCmds(obs, gpgCmds, [mock]);
+    })).passTo(obs);
   });
 }
 
-function _silentCreate(rq: ResultQueue, gpgCmds: rxme.Observable[], title: string): ResultObservable {
+function _silentCreate(rq: ResultQueue, gpgCmds: rxme.Observable[], title: string): rxme.Observable {
   return rxme.Observable.create(obs => {
     // console.log('Yyx-1:');
-    internalCreate(rq, gpgCmds).match((_, rc: GpgCmds[]) => {
+    internalCreate(rq, gpgCmds).match(rxme.Matcher.ArrayOf<GpgCmds>(GpgCmds, rc => {
       // console.log('Yyx-2:');
-      if (rc.doProgress(obs)) { return; }
-      const rcgpg = rc.clone<Gpg>();
-      if (!rc.isError() && rc.data.length > 0) {
-        const mock = rc.data.find(a => a.mock);
-        const gcmds = rc.data.filter(a => !a.mock)
+      // const rcgpg = rc.clone<Gpg>();
+      if (rc.length > 0) {
+        const mock = rc.find(a => a.mock);
+        const gcmds = rc.filter(a => !a.mock)
           .sort((a, b) => b.order - a.order)
-          .find(a => a.gpg.data.version.data.versionNumber() >= GPGMINVERSION) || mock;
-        rcgpg.data = Gpg._create(/* mock */);
-        rcgpg.data.setGpgCmds(gcmds);
+          .find(a => a.gpg.version.versionNumber() >= GPGMINVERSION) || mock;
+        const gmock = Gpg._create(/* mock */);
+        gmock.setGpgCmds(gcmds);
+        obs.next(rxme.Msg.Type(gmock));
       }
-      rcgpg.doComplete(obs);
-    });
+      obs.complete();
+    })).passTo(obs);
   });
 }
 
@@ -689,15 +666,15 @@ export function create(rq: ResultQueue, gpgCmds: rxme.Observable[] = null,
     gpgCmds = possibleGpgCmds(rq);
   }
   return rxme.Observable.create(obs => {
-    _silentCreate(rq, gpgCmds, title).match((_, rsgpg) => {
-      if (rsgpg.doProgress(obs)) { return; }
-      if (rsgpg.isError()) {
-        console.log(`Failed to Create GPG:${title}`);
-      } else {
-        console.log(rsgpg.data.info(title));
-      }
-      rsgpg.doComplete(obs);
-    }).passTo(obs);
+    _silentCreate(rq, gpgCmds, title).match(Gpg.match(rsgpg => {
+      obs.next(rxme.LogInfo(rsgpg.info(title)));
+      obs.next(rxme.Msg.Type(rsgpg));
+      obs.complete();
+      return true;
+    })).match(rxme.Matcher.Error(err => {
+      obs.next(rxme.Msg.Error(`Failed to Create GPG:${title}`));
+      obs.complete();
+    })).passTo(obs);
   });
 }
 
@@ -712,25 +689,20 @@ export function createTest(rq: ResultQueue, gpgCmds: rxme.Observable[] = null,
   // console.log('Yxx-2:');
   return rxme.Observable.create(obs => {
     // console.log('Yxx-3:');
-    _silentCreate(rq, gpgCmds, title).match((_, rcgpg) => {
-      // console.log('Yxx-4:');
-      if (rcgpg.doProgress(obs)) { return; }
-      if (rcgpg.doError(obs)) {
-        console.log(`Failed to Create GPG:${title}`);
-        return;
-      }
-      createTempDir(rq, process.cwd(), `${uuid.v4().toString().slice(0, 16)}.tdir`).match(rcs => {
+    _silentCreate(rq, gpgCmds, title).match(Gpg.match(rcgpg => {
+      createTempDir(rq, process.cwd(), `${uuid.v4().toString().slice(0, 16)}.tdir`)
+        .match(rxme.Matcher.String(rcs => {
         // console.log('Yxx-5:');
-        if (rcs.doProgress(obs)) { return; }
-        if (rcs.doError(obs)) {
-          console.log(`Failed to Create GPG:${title}`);
-          return;
-        }
-        rcgpg.data.setHomeDir(rcs.data);
-        console.log(rcgpg.data.info(title));
-        rcgpg.doComplete(obs);
-      }).passTo(obs);
-    }).passTo(obs);
+        rcgpg.setHomeDir(rcs);
+        obs.next(rxme.LogInfo(rcgpg.info(title)));
+        obs.next(rxme.Msg.Type(rcgpg));
+        obs.complete();
+        return true;
+      })).passTo(obs);
+    })).match(rxme.Matcher.Error(err => {
+      obs.next(rxme.Msg.Error(`Failed to Create GPG:${title}`));
+      obs.complete();
+    })).passTo(obs);
   });
 }
 

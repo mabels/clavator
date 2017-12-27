@@ -2,6 +2,7 @@ import * as WebSocket from 'ws';
 import * as Message from '../model/message';
 // import { ResultContainer, ResultObservable } from '../gpg/result';
 import * as rxme from 'rxme';
+import { Dispatch } from './dispatch';
 // import { Observer } from './observer';
 
 export class MessageSubject extends rxme.Subject {
@@ -16,6 +17,10 @@ export class MessageObservable extends rxme.Observable {
 export class Dispatcher {
   public readonly recv: MessageSubject;
   public readonly send: MessageSubject;
+
+  public static match(cb: rxme.MatcherCallback<Dispatcher>): rxme.MatcherCallback {
+    return rxme.Matcher.Type<Dispatcher>(Dispatcher, cb);
+  }
   constructor() {
     this.recv = new MessageSubject();
     this.send = new MessageSubject();

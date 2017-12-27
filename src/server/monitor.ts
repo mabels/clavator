@@ -82,39 +82,35 @@ function gpgListSecretKeysMonitor(this: Monitor<ListSecretKeys.SecretKey[]>,
   ros: rxme.Observer[], force: boolean): void {
   // console.log('y', ros.length, force);
   const keys: ListSecretKeys.SecretKey[] = [];
-  this.gpg.list_secret_keys().match(key => {
-    if (key.doProgress(ros)) { return; }
-    if (key.doError(ros)) { return; }
-    keys.push(key.data);
-  }, null, () => {
+  this.gpg.list_secret_keys().match(ListSecretKeys.SecretKey.match(key => {
+    keys.push(key);
+  })).match(rxme.Matcher.Complete(() => {
     if (force || !this.prev || !equals(this.prev, keys)) {
       this.prev = keys;
       // console.log('x', ros.length, force);
       ros.forEach(obs => {
         // console.log('z', ros.length, force);
-        obs.next(ResultContainer.builder<ListSecretKeys.SecretKey[]>(this.gpg.resultQueue()).setData(keys));
+        obs.next(rxme.Msg.ArrayOf(keys));
       });
     }
     this.timeoutId = setTimeout(this.action, 5000);
-  });
+  }));
 }
 function gpgCardStatusMonitor(this: Monitor<CardStatus.Gpg2CardStatus[]>,
   ros: rxme.Observer[], force: boolean): void {
   // console.log(ros.length, force);
   const keys: CardStatus.Gpg2CardStatus[] = [];
-  this.gpg.card_status().match(key => {
-    if (key.doProgress(ros)) { return; }
-    if (key.doError(ros)) { return; }
-    keys.push(key.data);
-  }, null, () => {
+  this.gpg.card_status().match(CardStatus.Gpg2CardStatus.match(key => {
+    keys.push(key);
+  })).match(rxme.Matcher.Complete(() => {
     if (force || !this.prev || !equals(this.prev, keys)) {
       this.prev = keys;
       ros.forEach(obs => {
-        obs.next(ResultContainer.builder<CardStatus.Gpg2CardStatus[]>(this.gpg.resultQueue()).setData(keys));
+        obs.next(rxme.Msg.ArrayOf(keys));
       });
     }
     this.timeoutId = setTimeout(this.action, 5000);
-  });
+  }));
 }
 
 export function start(gpg: Gpg.Gpg): rxme.Observable {

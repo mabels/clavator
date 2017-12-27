@@ -4,22 +4,28 @@ import { assert } from 'chai';
 import DiceWareDispatcher from '../../src/server/dispatcher/dice-ware-dispatcher';
 import DiceWare from '../../src/dice-ware/dice-ware';
 import { ResultQueue } from '../../src/gpg/result';
+import * as rxme from 'rxme';
 
 describe('DiceWare', () => {
   let rq: ResultQueue = null;
 
   before((done) => {
-    rq = ResultQueue.create();
-    done();
+    ResultQueue.create().match(ResultQueue.match(myrq => {
+      rq = myrq;
+      done();
+    })).passTo();
   });
 
   after((done) => {
-    rq.stop().subscribe(done);
+    rq.stop().match(done).passTo();
   });
 
   it('serialize', async () => {
-    DiceWareDispatcher.get(rq).subscribe(rcdw => {
-      const diceWares = rcdw.data;
+    const dws: DiceWare[] = [];
+    DiceWareDispatcher.get(rq).match(DiceWare.match(rcdw => {
+      dws.push(rcdw);
+    })).match(rxme.Matcher.Complete(() => {
+      const diceWares = dws;
       const clones = diceWares.map(dw => DiceWare.fill(dw.toObj()));
       assert.isTrue(diceWares.length >= 1);
       assert.equal(diceWares.length, clones.length);
@@ -31,17 +37,20 @@ describe('DiceWare', () => {
       for (let i = 0; i < vclones.length; ++i) {
         assert.isTrue(vdiceWare[i].equals(vclones[i]));
       }
-    });
+    }));
   });
 
   it('read', async () => {
-    DiceWareDispatcher.get(rq).subscribe(rcdw => {
-      const diceWare = rcdw.data[0];
+    const dws: DiceWare[] = [];
+    DiceWareDispatcher.get(rq).match(DiceWare.match(rcdw => {
+      dws.push(rcdw);
+    })).match(rxme.Matcher.Complete(() => {
+      const diceWare = dws[0];
       assert.isNotEmpty(diceWare.fname);
       assert.isTrue(diceWare.diceCount == 5);
       assert.isTrue(diceWare.diceWare.size > 100);
       assert.isTrue(!!Array.from(diceWare.diceWare.values()).find(d => d.password == 'voice'));
-    });
+    }));
   });
 
 });

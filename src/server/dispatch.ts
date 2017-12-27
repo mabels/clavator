@@ -14,12 +14,17 @@ import DeleteSecretKey from './dispatcher/delete-secret-key';
 import RequestAsciiDispatcher from './dispatcher/request-ascii-dispatcher';
 import SendKeyToYubiKey from './dispatcher/send-key-to-yubikey';
 import DiceWareDispatcher from './dispatcher/dice-ware-dispatcher';
+import * as rxme from 'rxme';
 // import { ResultObservable, ResultObserver } from '../gpg/result';
 // import * as rx from 'rxjs';
 
 export class Dispatch extends Dispatcher {
     public readonly dispatchers: Dispatcher[] = [];
     private readonly gpg: Gpg.Gpg;
+
+    public static match(cb: rxme.MatcherCallback<Dispatch>): rxme.MatcherCallback {
+        return rxme.Matcher.Type<Dispatch>(Dispatch, cb);
+    }
 
     constructor(gpg: Gpg.Gpg) {
         super();

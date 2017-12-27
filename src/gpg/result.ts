@@ -9,6 +9,7 @@ import * as path from 'path';
 // import { intercept } from 'mobx/lib/api/intercept';
 import * as rxme from 'rxme';
 import * as simqle from 'simqle';
+import { MatcherCallback } from 'rxme';
 // import { LogMsg } from 'simqle';
 
 interface StringFunc {
@@ -35,6 +36,9 @@ export class ResultQueue {
   // public readonly logger: rx.Subject<simqle.LogMsg>;
   public readonly runQueue: simqle.Queue;
 
+  public static match(cb: rxme.MatcherCallback<ResultQueue>): MatcherCallback {
+    return rxme.Matcher.Type<ResultQueue>(ResultQueue, cb);
+  }
   public static create(): rxme.Observable {
     return rxme.Observable.create(obs => {
       simqle.start({ taskTimer: 250 }).match(simqle.MatchQ(res => {

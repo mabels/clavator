@@ -2,8 +2,8 @@ import { assert } from 'chai';
 
 import * as gpg from '../../src/gpg/gpg';
 import * as lsk from '../../src/gpg/list-secret-keys';
-import { ResultQueue, ResultObservable, ResultObserver, ResultContainer } from '../../src/gpg/result';
-import * as rx from 'rxjs';
+import { ResultQueue } from '../../src/gpg/result';
+import * as rxme from 'rxme';
 import { SecretKey } from '../../src/gpg/list-secret-keys';
 import { isComputingDerivation } from 'mobx/lib/core/derivation';
 import { KeyToYubiKey } from '../../src/gpg/key-to-yubikey';
@@ -77,20 +77,20 @@ grp:::::::::2DC62D282D308E58A8C7C4F7652955AC146860D2:
 
   let rq: ResultQueue = null;
   before((done) => {
-    ResultQueue.create().match((_, _rq) => {
+    ResultQueue.create().match(ResultQueue.match(_rq => {
       rq = _rq;
       done();
       return true;
-    }).passTo();
+    })).passTo();
   });
 
   after((done) => {
-    rq.stop().matchComplete(() => done()).passTo();
+    rq.stop().match(rxme.Matcher.Complete(() => done())).passTo();
   });
 
-  function importKey(mock: gpg.Gpg, obs: ResultObserver, sks: SecretKey[], idx: number): void {
+  function importKey(mock: gpg.Gpg, obs: rxme.Observer, sks: SecretKey[], idx: number): void {
     if (idx >= sks.length) {
-      obs.next(ResultContainer.builder(rq));
+      obs.next(rxme.Msg.Type(rq));
       obs.complete();
       return;
     }
@@ -102,29 +102,23 @@ grp:::::::::2DC62D282D308E58A8C7C4F7652955AC146860D2:
     }).passTo(obs);
   }
 
-  function importKeys(mock: gpg.Gpg): ResultObservable {
-    return rx.Observable.create((obs: ResultObserver) => {
+  function importKeys(mock: gpg.Gpg): rxme.Observable {
+    return rxme.Observable.create(obs => {
       importKey(mock, obs, createKeyFromString(), 0);
     });
   }
 
-  it('externListSecretKeys', async function(): Promise<void> {
+  it('externListSecretKeys', function(): Promise<void> {
     this.timeout(5000);
     return new Promise<void>((res, rej) => {
       // console.log('Xxx-1:');
-      gpg.createMock(rq).match((_, rcmock) => {
-        if (rcmock.doProgress()) { return; }
-        if (rcmock.doError()) { rej(rcmock); return; }
-        importKeys(rcmock.data).match((_, rciks) => {
-          if (rciks.doProgress()) { return; }
-          if (rciks.doError()) { rej(rcmock); return; }
+      gpg.createMock(rq).match(gpg.Gpg.match(rcmock => {
+        importKeys(rcmock).match(SecretKey.match(rciks => {
           const keys: lsk.SecretKey[] = [];
-          rcmock.data.list_secret_keys().subscribe(rskey => {
+          rcmock.list_secret_keys().match(SecretKey.match(rskey => {
             // console.log('externListSecretKeys:Keys:', rskey.isProgress(), rskey.isError());
-            if (rskey.doProgress()) { return; }
-            if (rskey.doError()) { return; }
-            keys.push(rskey.data);
-          }, null, () => {
+            keys.push(rskey);
+          })).match(rxme.Matcher.Complete(() => {
             // console.log('Xxx-3:');
             try {
               testListSecretKeys(keys);
@@ -132,9 +126,9 @@ grp:::::::::2DC62D282D308E58A8C7C4F7652955AC146860D2:
             } catch (e) {
               rej(e);
             }
-          });
-        });
-      });
+          })).passTo();
+        })).passTo();
+      })).passTo();
     });
   });
 

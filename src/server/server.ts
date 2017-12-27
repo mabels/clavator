@@ -34,7 +34,7 @@ import { ResultQueue, ResultExec } from '../gpg/result';
 // import { CardStatusList } from '../ui/components/card-status-list';
 // import { observe } from 'mobx/lib/api/observe';
 
-function handleMonitor(sock: ws): (r: rxme.Container<any>) => void {
+function handleMonitor(sock: ws): rxme.MatcherCallback {
   return (result: rxme.Container<any>) => {
     if (result.isProgress()) {
       const header = Message.broadcast('Progressor.Clavator');
@@ -66,8 +66,8 @@ function handleMonitor(sock: ws): (r: rxme.Container<any>) => void {
   };
 }
 
-function starter(rq: ResultQueue): rxme.Observable<void> {
-  return rxme.Observable.create(null, (obs: rxme.Observer<void>) => {
+function starter(rq: ResultQueue): rxme.Observable {
+  return rxme.Observable.create(obs => {
     let redirectPort = 8080;
     let applicationPort = process.env.PORT || 8443;
     if (process.getuid() == 0) {
@@ -97,7 +97,7 @@ function starter(rq: ResultQueue): rxme.Observable<void> {
 
     app.use(express.static(join(process.cwd(), 'dist')));
 
-    Gpg.create(rq).match((_, rcgpg) => {
+    Gpg.create(rq).match(Gpg.Gpg.match(rcgpg => {
       // if (rcgpg.doProgress(obs)) { return; }
       // if (rcgpg.isError()) { return; }
       const monitor = Monitor.start(rcgpg);
@@ -127,12 +127,12 @@ function starter(rq: ResultQueue): rxme.Observable<void> {
         // or ws.upgradeReq.headers.cookie (see http://stackoverflow.com/a/16395220/151312)
         // ws.send('something');
         console.log('WS-Connect');
-        const subMonitor = monitor.subscribe(handleMonitor(sock));
+        const subMonitor = monitor.match(handleMonitor(sock)).passTo();
         // observer.register(sock);
-        const recvSubject = dispatch.recv.subscribe(msg => {
+        const recvSubject = dispatch.recv.match(Dispatch.match(msg => {
           console.log('to-WS-recv:', msg.header);
           sock.send(msg.prepare());
-        });
+        })).passTo(obs);
         sock.on('close', () => {
           console.log('close');
           subMonitor.unsubscribe();
@@ -143,18 +143,18 @@ function starter(rq: ResultQueue): rxme.Observable<void> {
         sock.on('message', (payload) => {
           const msg = Message.fromData(payload.toString());
           console.log('from-WS-send:', msg.header);
-          dispatch.send.next(msg);
+          dispatch.send.next(rxme.Msg.Type(msg));
         });
       });
 
       httpServer.on('request', app);
       httpServer.listen(applicationPort);
       return true;
-    }).passTo();
+    })).passTo();
   });
 }
 
-ResultQueue.create().match((_, rq) => {
+ResultQueue.create().match(ResultQueue.match(rq => {
   starter(rq).passTo();
   return true;
-}).passTo();
+})).passTo();

@@ -13,8 +13,12 @@ export type Mixed = string | StringFunc;
 
 class GpgCmd {
   private readonly cmd: string[];
-  public version: rxme.RxMe;
+  public version: GpgVersion;
   public readonly resultQueue: ResultQueue;
+
+  public static match(cb: rxme.MatcherCallback<GpgCmd>): rxme.MatcherCallback {
+    return rxme.Matcher.Type<GpgCmd>(GpgCmd, cb);
+  }
 
   public static create(rq: ResultQueue, cmd: string[]): rxme.Observable {
     return rxme.Observable.create(obs => {
@@ -34,10 +38,10 @@ class GpgCmd {
   }
 
   public info(): string {
-    if (this.version.isError()) {
+    if (this.version) {
       return 'unknown';
     } else {
-      return `[${this.cmd.join(' ')}][${this.version.data.asString()}]`;
+      return `[${this.cmd.join(' ')}][${this.version.asString()}]`;
     }
   }
 
@@ -47,18 +51,17 @@ class GpgCmd {
 
   public resolveVersion(): rxme.Observable {
     return rxme.Observable.create(obs => {
-      this.run('getVersion', '', ['--version'], '').match((_, res) => {
-        this.version = res;
+      this.run('getVersion', '', ['--version'], '').match(ResultExec.match(res => {
         const lines = res.stdOut.split(/[\n\r]+/);
         // console.log(lines);
         if (lines[0]) {
-          res.data = new GpgVersion(lines[0]);
+          this.version = new GpgVersion(lines[0]);
+          obs.next(rxme.Msg.Type(this.version));
         } else {
-          res.nodeError = new Error('--version out not parsable');
+          obs.next(rxme.Msg.Error('--version out not parsable'));
         }
-        res.doComplete(obs);
-        return true;
-      }).passTo(obs);
+        obs.complete();
+      })).passTo(obs);
     });
   }
 
@@ -81,18 +84,19 @@ export class GpgCmds {
   public readonly order: number;
   public readonly mock: boolean;
 
+  public static match(cb: rxme.MatcherCallback<GpgCmds>): rxme.MatcherCallback {
+    return rxme.Matcher.Type<GpgCmds>(GpgCmds, cb);
+  }
   public static create(rq: ResultQueue, gpgcmdStr: string[], agentStr: string[], order: number, mock = false):
     rxme.Observable {
     return rxme.Observable.create(obs => {
-      GpgCmd.create(rq, gpgcmdStr).match((_, gpgres) => {
+      GpgCmd.create(rq, gpgcmdStr).match(GpgCmd.match(gpgres => {
         // console.log('GpgRes.create-1:', gpgres.data, gpgres.progress);
-        GpgCmd.create(rq, agentStr).match((__, agentres) => {
+        GpgCmd.create(rq, agentStr).match(GpgCmd.match(agentres => {
           // console.log('AgentRes.create-1:', agentres.data, agentres.progress);
           obs.next(rxme.Msg.Type(new GpgCmds(gpgres, agentres, order, mock)));
-          return false;
-        }).passTo(obs);
-        return false;
-      }).passTo(obs);
+        })).passTo(obs);
+      })).passTo(obs);
     });
   }
 

@@ -1,6 +1,7 @@
 import * as KeyGen from './key-gen';
 import KeyGenUid from './key-gen-uid';
 import { expireDate } from '../model/helper';
+import * as rxme from 'rxme';
 
 function debugArray(match: string[]): void {
   // let ret = {};
@@ -262,6 +263,10 @@ export class SecretKey extends Key {
   public static jsfill(js: any): SecretKey {
     let ret = new SecretKey();
     return ret.jsfill(js);
+  }
+
+  public static match(cb: rxme.MatcherCallback<SecretKey>): rxme.MatcherCallback {
+    return rxme.Matcher.Type<SecretKey>(SecretKey, cb);
   }
 
   public jsfill(js: any): SecretKey {

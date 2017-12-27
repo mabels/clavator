@@ -32,9 +32,10 @@ function moduleToDiceWare(): DiceWare[] {
     return diceWares;
 }
 
-export function get(rq: ResultQueue): ResultObservable {
+// export function match(cb: rxme.MatcherCallback<Resul)
+export function get(rq: ResultQueue): rxme.Observable {
  return rxme.Observable.create(obs => {
-    obs.next(ResultContainer.builder<DiceWare[]>(rq).setData(moduleToDiceWare()));
+    moduleToDiceWare().forEach(dw => obs.next(rxme.Msg.Type(dw)));
     obs.complete();
  });
 }

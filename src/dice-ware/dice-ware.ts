@@ -1,3 +1,4 @@
+import * as rxme from 'rxme';
 
 const DICERegex = /^[1-6]{1,}$/;
 
@@ -59,6 +60,10 @@ export class DiceWare {
   public readonly fname: string;
   public readonly diceWare: Map<number, Diced>;
   public readonly diceCount: number;
+
+  public static match(cb: rxme.MatcherCallback<DiceWare>): rxme.MatcherCallback {
+    return rxme.Matcher.Type<DiceWare>(DiceWare, cb);
+  }
 
   public static oneThrow(min = 1, max = 6): number {
     let random = 0;
