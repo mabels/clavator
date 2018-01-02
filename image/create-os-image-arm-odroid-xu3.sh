@@ -69,14 +69,15 @@ losetup -d $part1
 rm -f $image_name.p1
 
 mkdir -p /result/img
-xz -z -T 4 -9 $image_name
-ln $image_name.xz /result/img
+lbzip2 -6 -n $(nproc) $image_name
+ln $image_name.bz2 /result/img
+export DISK_IMAGE=/result/img/$image_name.bz2
 
 cat > /result/Dockerfile <<RUNNER
 FROM busybox
 
-COPY /img/$image_name.xz /odroid_xu3.img.xz
-RUN ln /odroid_xu3.img.xz /sdcard.img.xz
+COPY /img/$image_name.bz2 /odroid_xu3.img.bz2
+RUN ln /odroid_xu3.img.bz2 /sdcard.img.bz2
 
 CMD ["/bin/sh"]
 RUNNER

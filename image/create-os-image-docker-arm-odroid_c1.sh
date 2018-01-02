@@ -2,8 +2,9 @@ echo "clean hard link"
 rm -f $image_name.p?
 mkdir -p /result/img
 echo "compress image"
-xz -z -T 2 -9 $image_name
-ln $image_name.xz /result/img
+lbzip2 -6 -n $(nproc) $image_name
+ln $image_name.bz2 /result/img
+export DISK_IMAGE=/result/img/$image_name.bz2
 
 base_image_name=`basename $image_name`
 echo "Image:" $image_name
@@ -11,9 +12,9 @@ echo "BaseName:" $base_image_name
 cat > /result/Dockerfile <<RUNNER
 FROM busybox
 
-COPY /img/$base_image_name.xz /
-RUN ln -s $base_image_name.xz sdcard.img.xz
-RUN ln -s $base_image_name.xz odroid_c1.img.xz
+COPY /img/$base_image_name.bz2 /
+RUN ln -s $base_image_name.bz2 sdcard.img.bz2
+RUN ln -s $base_image_name.bz2 odroid_c1.img.bz2
 
 CMD ["/bin/sh"]
 RUNNER

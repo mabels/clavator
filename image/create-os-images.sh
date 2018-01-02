@@ -33,7 +33,11 @@ docker run -d --name haveged --privileged storytel/haveged
 
 #ruby construqt.rb
 
-docker build --no-cache -f Dockerfile-create-os-images -t clavator-create-os-images-$VERSION .
+cuuid=clavator-create-os-images-$VERSION
+cuuid=os-image-$(uuid)
+docker rmi -f $cuuid
+docker build --no-cache -f Dockerfile-create-os-images \
+  -t $cuuid . || exit 7
 
 #for i in x86_64-pc # aarch64-odroid-c2
 for i in $ARCHS
@@ -42,17 +46,17 @@ for i in $ARCHS
 do
   echo "Run: /builder/create-os-image-$i $VERSION"
   #  -v $IMAGES:$IMAGES \
+  #  -v /var/cache/docker/clavator:/clavator \
   docker ps -qa -f "name=$i-create-os-image" | xargs docker rm -f
   docker run -ti --privileged \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    -v /var/cache/docker/clavator:/clavator \
     --env "IMAGES=$IMAGES" \
     --env "DOCKER_CONFIG_JSON=$DOCKER_CONFIG_JSON" \
     --env "DOCKER_REGISTRY=$DOCKER_REGISTRY" \
     --env "ARCHLINUXARM=$ARCHLINUXARM" \
     --env "ARCHLINUX=$ARCHLINUX" \
     --name $i-create-os-image \
-    -t clavator-create-os-images-$VERSION \
+    -t $cuuid \
     /bin/sh /builder/create-os-image-$i.sh $VERSION
 done
 

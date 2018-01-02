@@ -31,10 +31,11 @@ mount $part2 arch
 mkdir arch/boot
 mount $part1 arch/boot
 
-[ -f /clavator/ArchLinuxARM-rpi-2-latest-$VERSION.tar.gz ] ||
-  wget --directory-prefix=/clavator -O /clavator/ArchLinuxARM-rpi-2-latest-$VERSION.tar.gz \
-    $ARCHLINUXARM/os/ArchLinuxARM-rpi-2-latest.tar.gz
-bsdtar -xpf /clavator/ArchLinuxARM-rpi-2-latest-$VERSION.tar.gz -C /arch
+mkdir -p /clavator
+wget --directory-prefix=/clavator \
+  $ARCHLINUXARM/os/ArchLinuxARM-rpi-2-latest.tar.gz
+
+bsdtar -xpf /clavator/ArchLinuxARM-rpi-2-latest.tar.gz -C /arch
 
 mkdir -p /arch/etc/pacman.d/
 mv /arch/etc/pacman.d/mirrorlist /arch/etc/pacman.d/mirrorlist.orig
@@ -57,9 +58,10 @@ echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x2
 #/bin/sh /builder/run-construqt.sh eth0
 
 /bin/sh /builder/create-os-image-updater.sh \
-     xorg lxde xf86-video-fbdev lightdm lightdm-gtk-greeter lightdm-gtk-greeter-settings \
-     midori dwm
- pacman -Scc --noconfir
+    xf86-video-fbdev
+
+rsync -vax /builder/aur /arch/usr/src
+rsync -vax /builder/tar /arch/usr/src
 
 cat <<MMC > /arch/create-mmcblk0.sh
 ln $hole_disk /dev/mmcblk0

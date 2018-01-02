@@ -16,7 +16,8 @@ RUN pacman-db-upgrade
 #RUN pacman --noconfirm -Syyu openssh openssl git npm gcc autoconf make wget base-devel docker arch-install-scripts dosfstools nodejs git npm gcc autoconf make libpng automake python2 pcsclite imagemagick mesa-libgl librsvg fig2dev ghostscript texinfo ruby 
 
 
-RUN yes  | pacman --noconfirm --force -Syyu openssh openssl git make wget base-devel \
+RUN yes  | pacman --noconfirm --force -Syyu \
+ openssh openssl git make wget base-devel lbzip2 \
  docker arch-install-scripts dosfstools ruby nodejs bash bzip2 coreutils \
  diffutils e2fsprogs file filesystem findutils gawk gcc-libs gettext glibc \
  grep gzip inetutils iproute2 iputils less libutil-linux licenses logrotate \
@@ -38,17 +39,18 @@ RUN git clone https://aur.archlinux.org/qemu-user-static.git && \
 RUN pacman --noconfirm -U qemu-user-static/qemu-user-static-*x86_64.pkg.tar.xz 
 RUN pacman -Syu --force --noconfirm grub virtualbox 
 
-RUN git clone https://aur.archlinux.org/xlogin-git.git && \
-    chown -R nobody:nobody xlogin-git && \
-    cd xlogin-git && sudo -u nobody makepkg -s
-COPY /xlogin-git/*.pkg.tar* /builder/pkg
-
 RUN pacman -Scc --noconfirm ; rm -f /var/cache/pacman/pkg/*
 
-RUN mkdir -p /builder
+RUN mkdir -p /builder/aur && cd /builder/aur && \
+    git clone https://aur.archlinux.org/xlogin-git.git && \
+    chown -R nobody:nobody xlogin-git && \
+    echo "systemctl enable xlogin@clavator" > /builder/aur/xlogin-git/enable.sh && \
+    echo "systemctl start xlogin@clavator" >> /builder/aur/xlogin-git/enable.sh
+
 COPY *.sh /builder/
 COPY *.rb /builder/
 COPY *.js /builder/
+COPY *.tar /builder/tar/
 COPY mirrorlist.* /builder/
 
 

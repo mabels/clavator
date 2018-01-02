@@ -23,13 +23,26 @@ mkfs.ext4 -O '^metadata_csum,^64bit' $part1 || mkfs.ext4 $part1
 ROOTID=$(blkid $part1 | awk '{print $2}')
 rm -rf /arch
 mkdir /arch
-mount $part1 /arch
+echo mount $part1 /arch 
+mount $part1 /arch || exit 9
+df
 
-
-version=$(date +'%Y.%m')
-[ -f /clavator/archlinux-bootstrap-$version.01-x86_64.tar.gz ] ||
+mkdir -p /clavator
+month=0
+out=1
+while [ $out -gt 0 -a $month -lt 3 ]
+do
+  version=$(date --date="$month month ago"  +'%Y.%m')
   wget --directory-prefix=/clavator \
     $ARCHLINUX/iso/$version.01/archlinux-bootstrap-$version.01-x86_64.tar.gz
+  out=$?
+  echo "$out:$month:$version"
+  month=$(expr $month + 1)
+done
+if [ $month -ge 3 ]
+then
+  exit 3
+fi
 
 tar xzf /clavator/archlinux-bootstrap-$version.01-x86_64.tar.gz -C /arch
 mv /arch/root.x86_64/* /arch/
@@ -51,12 +64,12 @@ cp /etc/hosts /arch/etc/hosts
      xf86-video-fbdev \
      virtualbox-guest-modules-arch \
      virtualbox-guest-utils
+
+rsync -ax /builder/aur /builder/tar /arch/usr/src
+find /builder /arch/usr/src
+
 cat <<MMC > /arch/create-mmcblk0.sh
 MMC
-
-mkdir -p /arch/pkg
-ls -l /builder/pkg
-cp -pr /builder/pkg /arch/pkg
 
 cat <<GRUB > /arch/grub.sh
 cat >> /etc/mkinitcpio.conf <<EOF
@@ -66,17 +79,14 @@ BINARIES=(fsck fsck.ext2 fsck.ext3 fsck.ext4 e2fsck)
 HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)
 EOF
 pacman -Sy --noconfirm sed grub linux
-pacman -Q linux 
-pacman -Q linux | awk '{print $2}'
-# echo mkinitcpio -g /boot/initramfs-linux.img $(pacman -Q linux | awk '{print $2}')-ARCH
-# mkinitcpio -g /boot/initramfs-linux.img $(pacman -Q linux | awk '{print $2}')-ARCH
 grub-mkconfig -o /tmp/doof.cfg
 sed "s/'.*UUID=.*img.p1'/clavator/g" /tmp/doof.cfg | \
 sed "s/root=.*$VERSION.img.p1/root=$ROOTID/" > /boot/grub/grub.cfg
-# lsinitcpio /boot/initramfs-linux.img
-pacman --noconfirm -U /pkg/*
-rm -rf /pkg
-pacman -Scc --noconfirm ; rm -f /var/cache/pacman/pkg/*
+#find /pkg -ls
+#pacman --noconfirm -U /pkg/*
+#rm -rf /pkg
+#pacman -Scc --noconfirm ; rm -f /var/cache/pacman/pkg/*
+#systemctl enable xlogin@clavator
 GRUB
 
 
@@ -96,10 +106,12 @@ cat /arch/boot/grub/device.map
 grub-install --modules part_msdos --root=/arch $hole_disk
 echo "$ROOTID / ext4 rw,relatime,data=ordered     0 0" >> /arch/etc/fstab
 
-umount /arch
+umount /arch || exit 3
 sh /builder/retry_losetup.sh -d $hole_disk
 sh /builder/retry_losetup.sh -d $part1
 rm -f $image_name.p1
+df
+losetup -l
 
 . /builder/create-os-image-docker-x86_64-pc.sh
 
