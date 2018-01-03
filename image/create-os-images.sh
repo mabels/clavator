@@ -9,6 +9,7 @@ ARCHS=$4
 if [ -z $ARCHS ]
 then
   ARCHS="aarch64-odroid_c2 arm-odroid_c1 x86_64-pc arm-rpi23 arm-odroid_xu3"
+  ARCHS="x86_64-pc arm-rpi23 arm-odroid_xu3"
 fi
 if [ -z $VERSION ]
 then
@@ -34,9 +35,9 @@ docker run -d --name haveged --privileged storytel/haveged
 #ruby construqt.rb
 
 cuuid=clavator-create-os-images-$VERSION
-cuuid=os-image-$(uuid)
-docker rmi -f $cuuid
-docker build --no-cache -f Dockerfile-create-os-images \
+cuuid=os-image-$(date "+%Y%m%d")
+#docker rmi -f $cuuid
+docker build -f Dockerfile-create-os-images \
   -t $cuuid . || exit 7
 
 #for i in x86_64-pc # aarch64-odroid-c2
@@ -48,7 +49,7 @@ do
   #  -v $IMAGES:$IMAGES \
   #  -v /var/cache/docker/clavator:/clavator \
   docker ps -qa -f "name=$i-create-os-image" | xargs docker rm -f
-  docker run -ti --privileged \
+  docker run -d --privileged \
     -v /var/run/docker.sock:/var/run/docker.sock \
     --env "IMAGES=$IMAGES" \
     --env "DOCKER_CONFIG_JSON=$DOCKER_CONFIG_JSON" \

@@ -25,6 +25,8 @@ cp /arch/etc/hosts /arch/etc/hosts.orig
 /bin/sh /builder/create-docker-archlinux-updater.sh
 
 arch-chroot /arch /bin/sh -x /updater.sh
+/bin/sh -x /builder/create-cleanup-disk.sh
+arch-chroot /arch /bin/sh -x /cleanup.sh
 
 mv /arch/etc/hosts /arch/etc/hosts.clavator
 mv /arch/etc/hosts.orig /arch/etc/hosts

@@ -34,6 +34,8 @@ echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x2
 /bin/sh /builder/create-docker-archlinux-updater.sh
 
 arch-chroot /arch /usr/bin/qemu-$qarch-static /bin/sh /updater.sh
+/bin/sh -x /builder/create-cleanup-disk.sh
+arch-chroot /arch /usr/bin/qemu-$qarch-static /bin/sh -x /cleanup.sh
 
 mv /arch/etc/pacman.d/mirrorlist /arch/etc/pacman.d/mirrorlist.clavator
 mv /arch/etc/pacman.d/mirrorlist.orig /arch/etc/pacman.d/mirrorlist

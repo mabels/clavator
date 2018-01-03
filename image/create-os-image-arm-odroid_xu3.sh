@@ -56,8 +56,7 @@ echo ':arm:M::\x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x2
 
 /bin/sh /builder/create-os-image-updater.sh
 
-rsync -vax /builder/aur /arch/usr/src
-rsync -vax /builder/tar /arch/usr/src
+/bin/sh /builder/create-prepare-source-packages.sh
 
 cat <<MMC > /arch/create-mmcblk0.sh
 ln $hole_disk /dev/mmcblk0
@@ -65,6 +64,8 @@ ls -la $hole_disk /dev/mmcblk0
 MMC
 
 arch-chroot /arch /usr/bin/qemu-$qarch-static /bin/sh /updater.sh
+/bin/sh -x /builder/create-cleanup-disk.sh
+arch-chroot /arch /usr/bin/qemu-$qarch-static /bin/sh -x /cleanup.sh
 
 mv /arch/etc/pacman.d/mirrorlist.orig /arch/etc/pacman.d/mirrorlist
 mv /arch/etc/hosts.orig /arch/etc/hosts

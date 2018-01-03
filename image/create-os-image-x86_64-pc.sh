@@ -52,21 +52,12 @@ cp /builder/mirrorlist.x86_64 /arch/etc/pacman.d/mirrorlist
 mv /arch/etc/hosts /arch/etc/hosts.orig
 cp /etc/hosts /arch/etc/hosts
 
-#/bin/sh /builder/run-construqt.sh "enp0s3"
-
-#echo 'MODULES="piix ide_disk ahci libahci"' >> /arch/etc/mkinitcpio.conf
-#echo MODULES="ac acpi_cpufreq aesni_intel ahci ata_generic ata_piix atkbd battery button crc32_pclmul crc32c_intel crct10dif_pclmul e1000 evdev ext4 fjes floppy ghash_clmulni_intel i2c_piix4 i8042 input_leds intel_agp intel_cstate intel_powerclamp intel_rapl intel_rapl_perf mac_hid mousedev ohci_pci parport_pc pata_acpi pcc_cpufreq pcspkr psmouse sd_mod serio_raw sr_mod tpm_tis usbcore video"  >> /arch/etc/mkinitcpio.conf
-
-
-
-#     virtualbox-guest-dkms \
 /bin/sh -x /builder/create-os-image-updater.sh \
      xf86-video-fbdev \
      virtualbox-guest-modules-arch \
      virtualbox-guest-utils
 
-rsync -ax /builder/aur /builder/tar /arch/usr/src
-find /builder /arch/usr/src
+/bin/sh /builder/create-prepare-source-packages.sh
 
 cat <<MMC > /arch/create-mmcblk0.sh
 MMC
@@ -79,20 +70,19 @@ BINARIES=(fsck fsck.ext2 fsck.ext3 fsck.ext4 e2fsck)
 HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)
 EOF
 pacman -Sy --noconfirm sed grub linux
-grub-mkconfig -o /tmp/doof.cfg
-sed "s/'.*UUID=.*img.p1'/clavator/g" /tmp/doof.cfg | \
-sed "s/root=.*$VERSION.img.p1/root=$ROOTID/" > /boot/grub/grub.cfg
-#find /pkg -ls
-#pacman --noconfirm -U /pkg/*
-#rm -rf /pkg
-#pacman -Scc --noconfirm ; rm -f /var/cache/pacman/pkg/*
-#systemctl enable xlogin@clavator
+grub-probe --target device /
+grub-mkconfig -o /boot/grub/doof.cfg
+sed "s/'.*UUID=.*img.p1'/clavator/g" /boot/grub/doof.cfg | \
+sed "s/^\(.*\s*linux\s.*\s\)root=\S\S*\(\s.*\)$/\1root=$ROOTID\2/" > /boot/grub/grub.cfg
 GRUB
 
 
 echo "ROOTID=$ROOTID"
 arch-chroot /arch /bin/sh -x /updater.sh
 arch-chroot /arch /bin/sh -x /grub.sh
+
+/bin/sh -x /builder/create-cleanup-disk.sh
+arch-chroot /arch /bin/sh -x /cleanup.sh
 
 cp /arch/etc/hosts.orig /arch/etc/hosts
 reflector --verbose --latest 5 --sort rate --save /arch/etc/pacman.d/mirrorlist

@@ -58,6 +58,8 @@ ls -la $hole_disk /dev/mmcblk0 $part1 /dev/mmcblk0p1
 MMC
 
 arch-chroot /arch /usr/bin/qemu-$qarch-static /bin/sh /updater.sh
+/bin/sh -x /builder/create-cleanup-disk.sh
+arch-chroot /arch /usr/bin/qemu-$qarch-static /bin/sh -x /cleanup.sh
 
 mv /arch/etc/pacman.d/mirrorlist.orig /arch/etc/pacman.d/mirrorlist
 mv /arch/etc/hosts.orig /arch/etc/hosts

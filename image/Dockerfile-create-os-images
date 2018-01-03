@@ -41,12 +41,6 @@ RUN pacman -Syu --force --noconfirm grub virtualbox
 
 RUN pacman -Scc --noconfirm ; rm -f /var/cache/pacman/pkg/*
 
-RUN mkdir -p /builder/aur && cd /builder/aur && \
-    git clone https://aur.archlinux.org/xlogin-git.git && \
-    chown -R nobody:nobody xlogin-git && \
-    echo "systemctl enable xlogin@clavator" > /builder/aur/xlogin-git/enable.sh && \
-    echo "systemctl start xlogin@clavator" >> /builder/aur/xlogin-git/enable.sh
-
 COPY *.sh /builder/
 COPY *.rb /builder/
 COPY *.js /builder/

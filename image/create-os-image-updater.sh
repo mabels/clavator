@@ -8,9 +8,7 @@ pacman -Syyu --noconfirm base openssh openssl git docker pcsclite e2fsprogs sed 
      foomatic-db-gutenprint-ppds xfce4-goodies \
     $@
 
-pacman -Scc --noconfirm ; rm -f /var/cache/pacman/pkg/*
-dd if=/dev/zero of=/dummy bs=1024k
-rm -f /dummy
+#pacman -Scc --noconfirm ; rm -f /var/cache/pacman/pkg/*
 
 systemctl enable sshd.service
 systemctl start sshd.service
@@ -37,9 +35,10 @@ for i in /usr/src/aur/*
 do
   echo "build \$i"
   (cd \$i && \
+    bsdtar xzf xlogin-git*.src.tar.gz && \
     chown -R clavator . && \
+    cd xlogin-git && \
     sudo -u clavator makepkg -s && \
-    ls -la * && \
     pacman -U --noconfirm *.pkg.tar.xz && \
     sh \$i/enable.sh)
 done
