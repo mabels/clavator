@@ -45,8 +45,8 @@ interface CreateKeyProps extends React.Props<CreateKey> {
 
 export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
 
-  constructor() {
-    super();
+  constructor(props: CreateKeyProps) {
+    super(props);
     let kg = KeyGen.KeyGen.withSubKeys(3);
     kg.uids.add(new KeyGenUid());
     this.state = {

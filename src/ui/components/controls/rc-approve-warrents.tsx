@@ -21,8 +21,8 @@ interface RcApproveWarrentsProps extends React.Props<RcApproveWarrents> {
 @observer export class RcApproveWarrents extends
   React.Component<RcApproveWarrentsProps, RcApproveWarrentsState> {
 
-  constructor() {
-    super();
+  constructor(props: RcApproveWarrentsProps) {
+    super(props);
     this.state = { };
   }
 

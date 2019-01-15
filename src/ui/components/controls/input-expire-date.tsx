@@ -20,8 +20,8 @@ interface InputExpireDateProps extends React.Props<InputExpireDate> {
 export class InputExpireDate extends
   React.Component<InputExpireDateProps, InputExpireDateState> {
 
-  constructor() {
-    super();
+  constructor(props: InputExpireDateProps) {
+    super(props);
     this.state = { };
   }
 

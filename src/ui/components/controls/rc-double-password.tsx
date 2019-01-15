@@ -31,8 +31,8 @@ interface RcDoublePasswordProps extends React.Props<RcDoublePassword> {
 export class RcDoublePassword extends
   React.Component<RcDoublePasswordProps, RcDoublePasswordState> {
 
-  constructor() {
-    super();
+  constructor(props: RcDoublePasswordProps) {
+    super(props);
     this.state = {
       readOnly: null
     };

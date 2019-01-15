@@ -31,8 +31,8 @@ export interface InputPassPhraseProps extends React.Props<InputPassPhrase> {
 export class InputPassPhrase extends
   React.Component<InputPassPhraseProps, InputPassPhraseState> {
 
-  constructor() {
-    super();
+  constructor(props: InputPassPhraseProps) {
+    super(props);
     this.state = { };
   }
 

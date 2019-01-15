@@ -4,12 +4,12 @@ process.on('unhandledRejection', (reason, p) => {
   // application specific logging, throwing an error, or other logic here
 });
 
-const JSDOM = require("node-jsdom");
-//const { JSDOM } = jsdom;
+//const JSDOM = require("node-jsdom");
+const { JSDOM } = require("jsdom");
 
 const exposedProperties = ['window', 'navigator', 'document'];
 
-global.document = new JSDOM.jsdom('');
+global.document = new JSDOM('');
 global.window = document.defaultView;
 global.WebSocket = function() { console.error('WebSocket fake')};
 /*

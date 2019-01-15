@@ -21,8 +21,8 @@ interface DialogSendToCardProps extends React.Props<DialogSendToCard> {
 
 export class DialogSendToCard extends React.Component<DialogSendToCardProps, DialogSendToCardState> {
 
-  constructor() {
-    super();
+  constructor(props: DialogSendToCardProps) {
+    super(props);
     this.state = {
     };
   }

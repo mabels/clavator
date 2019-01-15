@@ -29,8 +29,8 @@ interface AskKeyToYubiKeyProps extends React.Props<AskKeyToYubiKey> {
 
 export class AskKeyToYubiKey
   extends React.Component<AskKeyToYubiKeyProps, AskKeyToYubiKeyState> {
-  constructor() {
-    super();
+  constructor(props: AskKeyToYubiKeyProps) {
+    super(props);
     let transaction = Message.newTransaction<KeyToYubiKey>('SendKeyToYubiKey.run');
     transaction.data = new KeyToYubiKey();
     this.state = {

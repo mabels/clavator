@@ -16,8 +16,8 @@ interface AskPassphraseProps extends React.Props<AskPassphrase> {
 export class AskPassphrase
   extends React.Component<AskPassphraseProps, AskPassphraseState> {
 
-  constructor() {
-    super();
+  constructor(props: AskPassphraseProps) {
+    super(props);
     this.state = {
       value: null
     };

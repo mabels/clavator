@@ -19,8 +19,8 @@ interface RcUidsProps extends React.Props<RcUids> {
 export class RcUids extends
   React.Component<RcUidsProps, RcUidsState> {
 
-  constructor() {
-    super();
+  constructor(props: RcUidsProps) {
+    super(props);
     this.state = {};
     this.handleAddUid = this.handleAddUid.bind(this);
     // this.handleDelUid = this.handleDelUid.bind(this);

@@ -20,8 +20,8 @@ interface DialogRenderAsciiProps extends React.Props<DialogRenderAscii> {
 
 export class DialogRenderAscii extends React.Component<DialogRenderAsciiProps, DialogRenderAsciiState> {
 
-  constructor() {
-    super();
+  constructor(props: DialogRenderAsciiProps) {
+    super(props);
     this.state = {
       transaction: Message.newTransaction('ResetYubikey')
     };

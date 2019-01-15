@@ -21,8 +21,8 @@ interface RcSimpleKeyCommonProps extends React.Props<RcSimpleKeyCommon> {
 export class RcSimpleKeyCommon extends
   React.Component<RcSimpleKeyCommonProps, RcSimpleKeyCommonState> {
 
-  constructor() {
-    super();
+  constructor(props: RcSimpleKeyCommonProps) {
+    super(props);
     this.state = { /* readonly: false  */ };
   }
 

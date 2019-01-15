@@ -15,8 +15,8 @@ interface ChannelStatusProps extends React.Props<ChannelStatus> {
 export class ChannelStatus extends
   React.Component<ChannelStatusProps, ChannelStatusState> {
 
-  constructor() {
-    super();
+  constructor(props: ChannelStatusProps) {
+    super(props);
     this.state = { status: 'not started' };
   }
 

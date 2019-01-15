@@ -4,11 +4,12 @@ import * as http from 'http';
 import * as https from 'https';
 import * as path from 'path';
 
+const DOMAIN = process.env.DOMAIN || 'clavator.com';
 let privateKey: string = null;
 let certificate: string = null;
 try {
-  privateKey = fs.readFileSync('/etc/letsencrypt/live/clavator.com/privkey.pem', 'utf8');
-  certificate = fs.readFileSync('/etc/letsencrypt/live/clavator.com/fullchain.pem', 'utf8');
+  privateKey = fs.readFileSync(`/etc/letsencrypt/live/${DOMAIN}/privkey.pem`, 'utf8');
+  certificate = fs.readFileSync(`/etc/letsencrypt/live/${DOMAIN}/fullchain.pem`, 'utf8');
 } catch (e) {
   /* */
 }
@@ -28,7 +29,7 @@ import * as Gpg from '../gpg/gpg';
 import * as Message from '../model/message';
 
 async function starter(): Promise<void> {
-  let redirectPort = 8080;
+  let redirectPort = process.env.HTTPPORT || 8080;
   let applicationPort = process.env.PORT || 8443;
   if (process.getuid() == 0) {
     redirectPort = 80;
@@ -36,11 +37,7 @@ async function starter(): Promise<void> {
   }
 
   const redirectHttp = express();
-  redirectHttp.get('/*', (req, res, next) => {
-    res.location('https://clavator.com');
-    res.sendStatus(302);
-    res.end('<a href="https://clavator.com">https://clavator.com</a>');
-  });
+  redirectHttp.get('/*', (req, res, next) => res.redirect(`https://${DOMAIN}/`));
   redirectHttp.listen(redirectPort);
   console.log(`Started redirectPort on ${redirectPort}`);
 
@@ -54,22 +51,20 @@ async function starter(): Promise<void> {
   }
 
   const app = express();
-
   app.use(express.static(join(process.cwd(), 'dist')));
 
-  let gpg = await Gpg.create();
-  let cmd = [process.execPath, path.join(
+  const gpg = await Gpg.create();
+  const cmd = [process.execPath, path.join(
     path.dirname(process.argv[process.argv.length - 1]), 'gpg-mock.js')];
-  let cmdAgent = cmd.concat(['connect-agent']);
+  const cmdAgent = cmd.concat(['connect-agent']);
 
   gpg.setGpgCmd(cmd);
   gpg.setGpgAgentCmd(cmdAgent);
 
-  console.log(`Use GPG ${cmd}`);
   gpg.setGpgCmd(cmd);
 
-  let observer = Observer.start(gpg);
-  let dispatch = Dispatch.start(gpg);
+  const observer = Observer.start(gpg);
+  const dispatch = Dispatch.start(gpg);
 
   app.get('/', (req: express.Request, res: express.Response) => res.redirect('/index.html'));
 

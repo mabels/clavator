@@ -18,8 +18,8 @@ interface RcWarrentsProps extends React.Props<RcWarrents> {
 @observer export class RcWarrents extends
   React.Component<RcWarrentsProps, RcWarrentsState> {
 
-  constructor() {
-    super();
+  constructor(props: RcWarrentsProps) {
+    super(props);
     this.state = {
       // warrent: new Warrent(),
       done: false

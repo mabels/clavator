@@ -1,4 +1,4 @@
-import * as uuid from 'node-uuid';
+import * as uuid from 'uuid';
 
 export class Header {
   public action: string;

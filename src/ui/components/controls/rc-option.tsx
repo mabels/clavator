@@ -21,8 +21,8 @@ interface RcOptionProps<T> extends React.Props<RcOption<T>> {
 export class RcOption<T> extends
   React.Component<RcOptionProps<T>, RcOptionState> {
 
-  constructor() {
-    super();
+  constructor(props: RcOptionProps<T>) {
+    super(props);
     this.state = {};
   }
 

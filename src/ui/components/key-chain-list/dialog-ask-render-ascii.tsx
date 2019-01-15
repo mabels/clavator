@@ -22,8 +22,8 @@ interface DialogAskRenderAsciiProps extends React.Props<DialogAskRenderAscii> {
 
 export class DialogAskRenderAscii extends React.Component<DialogAskRenderAsciiProps, DialogAskRenderAsciiState> {
 
-  constructor() {
-    super();
+  constructor(props: DialogAskRenderAsciiProps) {
+    super(props);
     this.state = {
       passPhrase: new MutableString(),
       doRead: false

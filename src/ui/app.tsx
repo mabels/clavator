@@ -1,9 +1,9 @@
 import * as React from 'react';
-import './normalize.css';
-import './skeleton.css';
-import './app.less';
-import 'font-awesome/less/font-awesome.less';
-const Clavator = require('./img/clavator.png');
+import '../../../src/ui/normalize.css';
+import '../../../src/ui/skeleton.css';
+import '../../../src/ui/app.less';
+// import 'font-awesome/less/font-awesome.less';
+const Clavator = require('../../../src/ui/img/clavator.png');
 
 // import { observable } from 'mobx';
 // import { observer } from 'mobx-react';
@@ -34,8 +34,8 @@ class AppViewState {
 // @observer
 export class App extends React.Component<{}, AppViewState> {
 
-  constructor() {
-    super();
+  constructor(props: {} = {}) {
+    super(props);
     this.state = {
       createKeyDialog: false,
       selectedTabIndex: 0,

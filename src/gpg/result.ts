@@ -1,6 +1,6 @@
 import { spawn } from 'child_process';
 import * as stream from 'stream';
-import * as uuid from 'node-uuid';
+import * as uuid from 'uuid';
 import { Gpg } from './gpg';
 import * as fsPromise from 'fs-extra';
 import * as path from 'path';
@@ -82,6 +82,7 @@ export class Result {
 
     let stdio: any[] = ['pipe', 'pipe', 'pipe'];
     stdio = stdio.concat(writables);
+    console.log('STDIO:', stdio);
     this.execTransaction = { transaction: uuid.v4() };
     // console.log("run=",cmd, attrs);
     const c = spawn(cmd, attrs, {
@@ -91,7 +92,7 @@ export class Result {
       stdio: stdio
     });
     c.on('error', (e: Event) => {
-      console.log(e);
+      console.error(`SPAWN ERROR:`, cmd, attrs, e);
       cb(this);
       this.processQueue();
     });
@@ -111,18 +112,18 @@ export class Result {
             console.error('stdio->' + i + '->error', e);
           }
         });
-        c.stdio[i].on('end', (e: any) => { /*console.log("stdio->"+i+"->end", e) */ });
+        c.stdio[i].on('end', () => { console.log("stdio->"+i+"->end"); });
         let s = new stream.Readable();
-        // console.log(">>>>>>", stdio.length, 1, fds[i-3]());
+        console.log(">>>>>>", stdio.length, i, 1, fds[i-3]());
         s.push(fds[i - 3]());
-        // console.log(">>>>>>", stdio.length, 2);
+        console.log(">>>>>>", stdio.length, i, 2);
         s.push(null);
-        // console.log(">>>>>>", stdio.length, 3);
+        console.log(">>>>>>", stdio.length, i, 3);
         s.pipe(c.stdio[i] as stream.Writable, { end: true });
-        // console.log(">>>>>>", stdio.length, 4);
+        console.log(">>>>>>", stdio.length, i, 4);
         s.on('end', () => {
           s_closed = true;
-          // console.log("s.end:", i);
+          console.log("s.end:", i);
         });
       })(j);
     }
@@ -130,6 +131,9 @@ export class Result {
     c.stdout.on('data', (data: string) => { this.stdOut += data; });
     c.stderr.on('data', (data: string) => { this.stdErr += data; });
     c.on('close', (code: number) => {
+      if (code) {
+        console.error(`SPAWN CLOSE:`, cmd, attrs, code);
+      }
       this.exitCode = code;
       this.readExectransactionDump(cb);
       this.processQueue();
@@ -138,6 +142,7 @@ export class Result {
 
   private readExectransactionDump(cb: (res: Result) => void): void {
     this.execTransaction.dumpFname = path.join(this.gpg.homeDir || '', `${this.execTransaction.transaction}.dump`);
+    console.log(`readExectransactionDump:${this.execTransaction.dumpFname}`);
     fsPromise.readFile(this.execTransaction.dumpFname).then(data => {
       try {
         this.execTransaction.data = JSON.parse(data.toString());

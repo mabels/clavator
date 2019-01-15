@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import * as fsPromise from 'fs-extra';
 // import * as pse from "../pinentry/server";
 import * as Ac from './agent-conf';
-import * as uuid from 'node-uuid';
+import * as uuid from 'uuid';
 
 import KeyToYubiKey from './key-to-yubikey';
 
@@ -162,7 +162,7 @@ export class Gpg {
       attributes.splice(0, 0, '--homedir');
     }
     // console.log(attributes);
-    let result = (new Result(this)).setStdIn(stdIn);
+    const result = (new Result(this)).setStdIn(stdIn);
     // if (this.pinEntryServer) {
     //     result.addEnv('F_MOD_HOME', "xxx");
     //     result.addEnv('S_PINENTRY_SOCKET', this.pinEntryServer.socketFile);
@@ -608,13 +608,11 @@ export async function internalCreate(selectGpgCmd: (gc: GpgCmd) => void): Promis
   });
 }
 
-export function create(selectGpgCmd = gpgCmd): Promise<Gpg> {
-  return new Promise<Gpg>(async (res, rej) => {
-    const gpg = await internalCreate(selectGpgCmd);
-    const gi = await gpg.info();
-    console.log('Created Gpg:', gi);
-    return gpg;
-  });
+export async function create(selectGpgCmd = gpgCmd): Promise<Gpg> {
+  const gpg = await internalCreate(selectGpgCmd);
+  const gi = await gpg.info();
+  console.log('Created Gpg:', gi);
+  return gpg;
 }
 
 export function createTest(selectGpgCmd = gpgCmd, title = 'Test'): Promise<Gpg> {

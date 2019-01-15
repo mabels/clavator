@@ -78,8 +78,8 @@ interface AssistentProps extends React.Props<Assistent> {
 
 @observer
 export class Assistent extends React.Component<AssistentProps> {
-  constructor() {
-    super();
+  constructor(props: AssistentProps) {
+    super(props);
     this.state = {
       // warrents: (new Warrents()).add(new Warrent()),
       // simpleYubiKey: null,

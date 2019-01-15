@@ -20,8 +20,8 @@ interface ChangePinProps extends React.Props<ChangePin> {
 
 export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
 
-  constructor() {
-    super();
+  constructor(props: ChangePinProps) {
+    super(props);
     this.state = {
       pin: new RequestChangePin(),
       transaction: Message.newTransaction<RequestChangePin>('GpgChangePinYubikey.run')

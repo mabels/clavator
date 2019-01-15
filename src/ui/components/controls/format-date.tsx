@@ -11,8 +11,8 @@ interface FormatDateProps extends React.Props<FormatDate> {
 export class FormatDate
   extends React.Component<FormatDateProps, FormatDateState> {
 
-  constructor() {
-    super();
+  constructor(props: FormatDateProps) {
+    super(props);
     this.state = {};
   }
 
