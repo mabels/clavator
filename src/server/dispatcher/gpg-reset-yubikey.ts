@@ -3,21 +3,18 @@ import * as WebSocket from 'ws';
 import * as Message from '../../model/message';
 import Dispatcher from '../dispatcher';
 import * as Gpg from '../../gpg/gpg';
-// import Result from '../../gpg/result';
-import * as Progress from '../../model/progress';
+import { ResultExec } from '../../gpg/result';
+// import * as Progress from '../../model/progress';
 // import { Observer } from '../observer';
 
 export function create(gpg: Gpg.Gpg): Dispatcher {
   const ret = new Dispatcher();
-  ret.recv.match((_, req) => {
+  ret.recv.match(Message.Message.actionMatch('ResetYubikey', req => {
     // console.log('GpgResetYubikey.run', req.header);
-    if (req.header.action != 'ResetYubikey') {
-      return false;
-    }
     const reply = req.reply('Progressor.Clavator');
     reply.progressOk('Resetting your Yubikey now. This will take a couple of seconds. ...').send(ret.send);
 
-    gpg.resetYubikey().match((__, res) => {
+    gpg.resetYubikey().match(ResultExec.match(res => {
       // ws.send(Message.prepare(header, res));
       if (res.stdOut.split(`\n`).find((i: string) => i.startsWith('ERR '))) {
         res.stdOut.split(`\n`).forEach((s: string) => {
@@ -31,7 +28,7 @@ export function create(gpg: Gpg.Gpg): Dispatcher {
       }
       req.reply('GpgResetYubikey.Completed').send(ret.send);
       return true;
-    });
+    }));
 
     // attributes: string[], stdIn: string, cb: (res: Result) => void)
 
@@ -48,7 +45,7 @@ export function create(gpg: Gpg.Gpg): Dispatcher {
     // console.log('ok:', a);
     // ws.send(Message.prepare('Progressor.Clavator', Progress.fail('Mhhh')))
     return true;
-  });
+  }));
   return ret;
 }
 

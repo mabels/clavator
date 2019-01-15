@@ -27,6 +27,7 @@ import * as rxme from 'rxme';
 import GpgCmds from './gpg-cmds';
 import { RxMe } from 'rxme';
 import { Gpg2CardStatus } from './card-status';
+import gpgCmds from './gpg-cmds';
 // import { Socket } from 'net';
 
 export class SocketNames {
@@ -73,18 +74,19 @@ function createTempDir(rq: ResultQueue, baseDir: string, dirName: string): rxme.
 export class Gpg {
   public homeDir: string = path.join(process.env.HOME, '.gnupg');
   public workDir: string = process.cwd();
-  public gpgCmds: GpgCmds;
+  public readonly gpgCmds: GpgCmds;
   // public readonly mockCmd: GpgCmds;
 
   public static match(cb: rxme.MatcherCallback<Gpg>): rxme.MatcherCallback {
     return rxme.Matcher.Type<Gpg>(Gpg, cb);
   }
 
-  public static _create(/* mockCmd: GpgCmds */): Gpg {
-    return new Gpg(/* mockCmd */);
-  }
+  // public static _create(/* mockCmd: GpgCmds */): Gpg {
+  //   return new Gpg(/* mockCmd */);
+  // }
 
-  private constructor(/* mockCmd: GpgCmds */) {
+  constructor(gc: GpgCmds) {
+    this.gpgCmds = gc;
     // this.gpgCmd = 'gpg2';
     // this.gpgAgentCmd = 'gpg-connect-agent';
     // this.mockCmd = mockCmd;
@@ -99,10 +101,10 @@ export class Gpg {
   }
 
   public clone(): Gpg {
-    let ret = new Gpg(/* this.mockCmd */);
+    let ret = new Gpg(this.gpgCmds);
     ret.homeDir = this.homeDir;
     ret.workDir = this.workDir;
-    ret.gpgCmds = this.gpgCmds;
+    // ret.gpgCmds = this.gpgCmds;
     return ret;
   }
 
@@ -170,10 +172,10 @@ export class Gpg {
     return this;
   }
 
-  public setGpgCmds(cmd: GpgCmds): Gpg {
-    this.gpgCmds = cmd;
-    return this;
-  }
+  // public setGpgCmds(cmd: GpgCmds): Gpg {
+  //   this.gpgCmds = cmd;
+  //   return this;
+  // }
 
   public started(): rxme.Observable {
     return this.run('started', ['--print-md', 'md5'], 'test');
@@ -532,7 +534,7 @@ export class Gpg {
     const current = actions.shift();
     this.changeAttribute(cc.adminPin.pin, current.name, current.value, cc.serialNo)
       .match(ResultExec.match(res => {
-        obs.next(rxme.Msg.Type(res));
+        // obs.next(rxme.Msg.Type(res));
         this._changeCard(obs, cc, actions);
       })).passTo(obs);
   }
@@ -632,18 +634,18 @@ function resolveCmds(obs: rxme.Observer, obsGpgCmds: rxme.Observable[], ret: Gpg
   return;
 }
 
-export function internalCreate(rq: ResultQueue, gpgCmds: rxme.Observable[]): rxme.Observable {
+export function internalCreate(rq: ResultQueue, gpgCmdObss: rxme.Observable[]): rxme.Observable {
   return rxme.Observable.create(obs => {
     gpgCmdMock(rq).match(GpgCmds.match(mock => {
-      resolveCmds(obs, gpgCmds, [mock]);
+      resolveCmds(obs, gpgCmdObss, [mock]);
     })).passTo(obs);
   });
 }
 
-function _silentCreate(rq: ResultQueue, gpgCmds: rxme.Observable[], title: string): rxme.Observable {
+function _silentCreate(rq: ResultQueue, gpgCmdObss: rxme.Observable[], title: string): rxme.Observable {
   return rxme.Observable.create(obs => {
     // console.log('Yyx-1:');
-    internalCreate(rq, gpgCmds).match(rxme.Matcher.ArrayOf<GpgCmds>(GpgCmds, rc => {
+    internalCreate(rq, gpgCmdObss).match(rxme.Matcher.ArrayOf<GpgCmds>(GpgCmds, rc => {
       // console.log('Yyx-2:');
       // const rcgpg = rc.clone<Gpg>();
       if (rc.length > 0) {
@@ -651,8 +653,7 @@ function _silentCreate(rq: ResultQueue, gpgCmds: rxme.Observable[], title: strin
         const gcmds = rc.filter(a => !a.mock)
           .sort((a, b) => b.order - a.order)
           .find(a => a.gpg.version.versionNumber() >= GPGMINVERSION) || mock;
-        const gmock = Gpg._create(/* mock */);
-        gmock.setGpgCmds(gcmds);
+        const gmock = new Gpg(gcmds);
         obs.next(rxme.Msg.Type(gmock));
       }
       obs.complete();
@@ -660,13 +661,13 @@ function _silentCreate(rq: ResultQueue, gpgCmds: rxme.Observable[], title: strin
   });
 }
 
-export function create(rq: ResultQueue, gpgCmds: rxme.Observable[] = null,
+export function create(rq: ResultQueue, gpgCmdObss: rxme.Observable[] = null,
   title = ''): rxme.Observable {
-  if (!gpgCmds) {
-    gpgCmds = possibleGpgCmds(rq);
+  if (!gpgCmdObss) {
+    gpgCmdObss = possibleGpgCmds(rq);
   }
   return rxme.Observable.create(obs => {
-    _silentCreate(rq, gpgCmds, title).match(Gpg.match(rsgpg => {
+    _silentCreate(rq, gpgCmdObss, title).match(Gpg.match(rsgpg => {
       obs.next(rxme.LogInfo(rsgpg.info(title)));
       obs.next(rxme.Msg.Type(rsgpg));
       obs.complete();
@@ -678,18 +679,18 @@ export function create(rq: ResultQueue, gpgCmds: rxme.Observable[] = null,
   });
 }
 
-export function createTest(rq: ResultQueue, gpgCmds: rxme.Observable[] = null,
+export function createTest(rq: ResultQueue, gpgCmdObss: rxme.Observable[] = null,
   title = 'Test'): rxme.Observable {
-  if (!gpgCmds) {
-    gpgCmds = possibleGpgCmds(rq);
+  if (!gpgCmdObss) {
+    gpgCmdObss = possibleGpgCmds(rq);
   }
   if (process.env.FORCE_MOCK) {
-    gpgCmds = [];
+    gpgCmdObss = [];
   }
   // console.log('Yxx-2:');
   return rxme.Observable.create(obs => {
     // console.log('Yxx-3:');
-    _silentCreate(rq, gpgCmds, title).match(Gpg.match(rcgpg => {
+    _silentCreate(rq, gpgCmdObss, title).match(Gpg.match(rcgpg => {
       createTempDir(rq, process.cwd(), `${uuid.v4().toString().slice(0, 16)}.tdir`)
         .match(rxme.Matcher.String(rcs => {
         // console.log('Yxx-5:');

@@ -6,8 +6,8 @@ import { Dispatch } from './dispatch';
 // import { Observer } from './observer';
 
 export class MessageSubject extends rxme.Subject {
-
 }
+
 export class MessageObservable extends rxme.Observable {
   // public static create(cb: (obs: rxme.Observer<Message.Message>) => void): MessageObservable {
   //   return rxme.Observable.create(Message.Message, cb);

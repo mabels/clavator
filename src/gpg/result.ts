@@ -39,6 +39,7 @@ export class ResultQueue {
   public static match(cb: rxme.MatcherCallback<ResultQueue>): MatcherCallback {
     return rxme.Matcher.Type<ResultQueue>(ResultQueue, cb);
   }
+
   public static create(): rxme.Observable {
     return rxme.Observable.create(obs => {
       simqle.start({ taskTimer: 250 }).match(simqle.MatchQ(res => {
@@ -91,10 +92,9 @@ export class ResultQueue {
         stdio: stdio
       });
       c.on('error', (e: Error) => {
-        output.next(rxme.LogInfo(
+        output.next(rxme.LogError(
           `Error:[${rc.execTransaction.transaction}][${rc.cmd} ${aaw.attrs.join(' ')}][${e}]`));
-        rc.nodeError = e;
-        rc.doComplete(output);
+        output.complete();
       });
 
       if (rc.stdIn && rc.stdIn.length > 0) {
@@ -217,7 +217,7 @@ export class ResultExec {
     return this;
   }
 
-  public run(initiator: string, baseDir: string, cmd: string, cmdArgs: Mixed[], attributes: Mixed[]):
+  public run(rq: ResultQueue, initiator: string, baseDir: string, cmd: string, cmdArgs: Mixed[], attributes: Mixed[]):
     rxme.Observable {
     this.initiator = initiator;
     this.baseDir = baseDir;
@@ -251,8 +251,9 @@ export class ResultExec {
         obs.forEach(o => o.complete());
       }
     });
-    this.runQueue.push(input, output);
-    return ret;
+    throw "don't do this @home";
+    // rq.push(input, output);
+    // return ret;
   }
 }
 

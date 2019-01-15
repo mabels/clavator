@@ -102,17 +102,17 @@ describe('Gpg', () => {
       // if (res.doProgress()) { return; }
       // console.log(`After:1:${gpg.homeDir}`);
       // assert.equal(res.isOk(), true, 'delete secret key');
-      gpg.deletePublicKey(key.fingerPrint.fpr).match(ListSecretKeys.SecretKey.match((_res) => {
+      gpg.deletePublicKey(key.fingerPrint.fpr).match(ListSecretKeys.SecretKey.match(_res => {
         // console.log(`After:2:${gpg.homeDir}`);
         // if (_res.doProgress()) { return; }
         // assert.equal(_res.isOk(), true, 'delete pub key');
-        gpg.list_secret_keys().filter(i => i.isOk()).toArray().match((_, data) => {
+        gpg.list_secret_keys().match(data => {
           // console.log(`After:3:${gpg.homeDir}`);
-          assert.equal(data.length, 0);
-          gpg.runAgent('after', ['killagent', '/bye'], null).match((__, __res) => {
+          // assert.equal(data.length, 0);
+          gpg.runAgent('after', ['killagent', '/bye'], null).match(ResultExec.match(__res => {
             // console.log(`After:4:${gpg.homeDir}`);
             // if (__res.doProgress()) { return; }
-            gpg.runAgent('cleanupYubiKey', ['killagent', '/bye'], null).match((___, cyres) => {
+            gpg.runAgent('cleanupYubiKey', ['killagent', '/bye'], null).match(ResultExec.match(___res => {
               // console.log(`After:5:${gpg.homeDir}`, cyres.isError(), cyres.isOk(),
               // cyres.isProgress());
               safeRaf(gpg.homeDir).match(rxme.Matcher.Complete(() => {
@@ -121,9 +121,9 @@ describe('Gpg', () => {
                 return true;
               })).passTo();
               return true;
-            }).passTo();
+            })).passTo();
             return true;
-          }).passTo();
+          })).passTo();
         }).passTo();
         return true;
       })).passTo();

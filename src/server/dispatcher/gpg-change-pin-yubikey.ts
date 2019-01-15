@@ -8,7 +8,7 @@ import * as Gpg from '../../gpg/gpg';
 import RequestChangePin from '../../gpg/request-change-pin';
 // import { Observer } from '../observer';
 
-import * as Progress from '../../model/progress';
+// import * as Progress from '../../model/progress';
 
 export function create(gpg: Gpg.Gpg): Dispatcher {
   const ret = new Dispatcher();

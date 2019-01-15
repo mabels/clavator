@@ -7,7 +7,7 @@ import Dispatcher from '../dispatcher';
 import { DiceWare, Diced } from '../../dice-ware/dice-ware';
 // import * as CardStatus from './gpg/card_status';
 
-import * as Progress from '../../model/progress';
+// import * as Progress from '../../model/progress';
 // import { Observer } from '../observer';
 import * as rxme from 'rxme';
 import { ResultQueue } from '../../gpg/result';
@@ -42,27 +42,20 @@ export function get(rq: ResultQueue): rxme.Observable {
 
 export function create(rq: ResultQueue): Dispatcher {
     const ret = new Dispatcher();
-    ret.recv.match(req => {
+    ret.recv.match(Message.Message.actionMatch('DiceWares.Request', req => {
         // console.log('DiceWareDispatcher.run', req.header);
-        if (req.header.action != 'DiceWares.Request') {
-            // ws.send(Message.prepare('Progressor.Clavator', Progress.fail('Ohh')))
-            return false;
-        }
         const reply = req.reply('Progressor.Clavator');
-        get(this.resultQueue).subscribe(rcdw => {
-            if (rcdw.isError()) {
-                return;
-            }
-            diceWares = rcdw.data;
-            console.log(JSON.stringify(diceWares[0]));
+        get(this.resultQueue).match(rxme.Matcher.Type<DiceWare>(DiceWare, rcdw => {
+            // diceWares = rcdw.data;
+            // console.log(JSON.stringify(diceWares[0]));
             reply.progressInfo(`DiceWareRequest Action`).send(ret.send);
             // console.log('DiceWares.Response:', JSON.stringify(diceWares[0]));
             req.reply('DiceWares.Response').dataToJson(diceWares.map(dw => dw.toObj())).send(ret.send);
-        }, _ => {
-            console.log('error:', _);
+        })).match(rxme.Matcher.Error(error => {
+            console.log('error:', error);
             reply.progressError('can not read diceware file').send(ret.send);
-        });
-    });
+        })).passTo();
+    })).passTo();
     return ret;
 }
 

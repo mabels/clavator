@@ -14,26 +14,19 @@ import CreateKeySetTask from '../tasks/create-key-set-task';
 
 export function create(gpg: Gpg.Gpg): Dispatcher {
   const ret = new Dispatcher();
-  ret.recv.match((_, req) => {
+  ret.recv.match(Message.Message.actionMatch('CreateKeySet.Request', req => {
     // console.log('CreateKeySet.Request', req.header);
-    if (req.header.action != 'CreateKeySet.Request') {
-      // ws.send(Message.prepare('Progressor.Clavator', Progress.fail('Ohh')))
-      return false;
-    }
     const kg = new KeyGen.KeyGen();
     KeyGen.KeyGen.fill(JSON.parse(req.data) || {}, kg);
     // console.log(m, a, kg)
-    CreateKeySetTask.run(this.gpg, kg).match((__, rc) => {
-      return rc.doProgress() && rc.doError() && rc.doComplete();
-      // ws.send(Message.prepare(m.header.setAction('Progressor.Clavator'), Progress.result(rc)));
-    });
+    CreateKeySetTask.run(this.gpg, kg).passTo(ret.send);
     // create master gpg --expert --gen-key
     // not here gpg --gen-revoke B8EFD59D
     // create subkey --edit-key ...
     // create subkey --edit-key ...
     // create subkey --edit-key ...
     return true;
-  });
+  }));
   return ret;
 }
 

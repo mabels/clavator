@@ -3,10 +3,11 @@ import * as Message from '../../model/message';
 import * as KeyGen from '../../gpg/key-gen';
 import * as Gpg from '../../gpg/gpg';
 // import Result from '../../gpg/result';
-import * as Progress from '../../model/progress';
+// import * as Progress from '../../model/progress';
 import * as ListSecretKeys from '../../gpg/list-secret-keys';
 // import * as rx from 'rxjs';
 import * as rxme from 'rxme';
+import { ResultExec } from '../../gpg/result';
 // import { ResultObservable, ResultObserver, ResultContainer } from '../../gpg/result';
 
 export default class CreateKeySetTask {
@@ -16,21 +17,20 @@ export default class CreateKeySetTask {
     return rxme.Observable.create(obs => {
       if (!kg.valid()) {
         const err = `Failed send KeyGen is not valid ${kg.errText().join('\n')}`;
-        obs.next(ResultContainer.builder<ListSecretKeys.SecretKey>(gpg.gpgCmds.gpg.resultQueue)
-          .setNodeError(new Error(err)));
+        obs.next(rxme.LogError(err));
         obs.complete();
         return;
       }
-      gpg.createMasterKey(kg).match((_, res) => {
-        this.addUids(gpg, 1, res.fingerPrint.fpr, kg).match((__, addUidsRes) => {
-          this.createSubKeys(gpg, 0, res.fingerPrint.fpr, kg).match((___, cskRes) => {
-            cskRes.doComplete(obs);
+      gpg.createMasterKey(kg).match(ListSecretKeys.SecretKey.match(res => {
+        this.addUids(gpg, 1, res.fingerPrint.fpr, kg).match(ResultExec.match(addUidsRes => {
+          this.createSubKeys(gpg, 0, res.fingerPrint.fpr, kg).match(ListSecretKeys.SecretKey.match(cskRes => {
+            obs.complete();
             return true;
-          }).passTo(obs);
+          })).passTo(obs);
           return true;
-        }).passTo(obs);
+        })).passTo(obs);
         return true;
-      }).passTo(obs);
+      })).passTo(obs);
       // this.gpg
     });
   }
@@ -43,15 +43,14 @@ export default class CreateKeySetTask {
       obs.complete();
       return;
     }
-    gpg.createSubkey(fpr, ki, ki.subKeys.get(cnt)).match((_, res) => {
+    gpg.createSubkey(fpr, ki, ki.subKeys.get(cnt)).match(ListSecretKeys.SecretKey.match(res => {
       // if (res.doProgress(obs)) { return; }
       // if (res.doError(obs)) { return; }
       // console.log('createSubKeys:4');
-      obs.next(new rxme.RxMe(res));
       this._createSubKeys(obs, gpg, cnt + 1, fpr, ki);
-      return true;
-    }).passTo(obs);
+    })).passTo(obs);
   }
+
   public static createSubKeys(gpg: Gpg.Gpg, cnt: number, fpr:
     string, ki: KeyGen.KeyGen): rxme.Observable {
     return rxme.Observable.create(obs => {
@@ -64,14 +63,14 @@ export default class CreateKeySetTask {
       obs.complete();
       return;
     }
-    gpg.addUid(fpr, ki, ki.uids.get(cnt)).match((_, res) => {
+    gpg.addUid(fpr, ki, ki.uids.get(cnt)).match(ResultExec.match(res => {
       // if (res.doProgress(obs)) { return; }
       // if (res.doError(obs)) { return; }
       // console.log('createSubKeys:5');
-      obs.next(new rxme.RxMe(res));
+      // obs.next(rxme.Msg.Type(res));
       this._addUids(obs, gpg, cnt + 1, fpr, ki);
-      return true;
-    }).passTo(obs);
+      // return true;
+    })).passTo(obs);
   }
   public static addUids(gpg: Gpg.Gpg, cnt: number, fpr: string, ki: KeyGen.KeyGen): rxme.Observable {
     // console.log('createSubKeys:1', cnt, ki.subKeys.subKeys.length);

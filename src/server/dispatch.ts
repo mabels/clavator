@@ -26,36 +26,36 @@ export class Dispatch extends Dispatcher {
         return rxme.Matcher.Type<Dispatch>(Dispatch, cb);
     }
 
+    public static start(gpg: Gpg.Gpg): Dispatch {
+        const dispatch = new Dispatch(gpg);
+        // dispatch.recv = new rx.Subject<Message.Message>();
+        dispatch.dispatchers.push(GpgCreateKeySet.create(gpg));
+        dispatch.dispatchers.push(GpgResetYubikey.create(gpg));
+        dispatch.dispatchers.push(GpgChangePinYubikey.create(gpg));
+        dispatch.dispatchers.push(DeleteSecretKey.create(gpg));
+        dispatch.dispatchers.push(RequestAsciiDispatcher.create(gpg));
+        dispatch.dispatchers.push(SendKeyToYubiKey.create(gpg));
+        dispatch.dispatchers.push(GpgChangeCard.create(gpg));
+        dispatch.dispatchers.push(DiceWareDispatcher.create(gpg.gpgCmds.gpg.resultQueue));
+
+        // dispatch.send = rx.Observable.create((obs: rx.Observer<Message.Message>) => {
+        console.log('Dispatch.start');
+        dispatch.dispatchers.forEach(dp => {
+            dp.send.subscribe(msg => {
+                // console.log('dispatch-to-recv:', msg);
+                dispatch.recv.next(msg);
+            });
+        });
+        dispatch.send.subscribe(msg => {
+            // console.log('dispatch-from-send:', msg);
+            dispatch.dispatchers.forEach(dp => dp.recv.next(msg));
+        });
+        // });
+        return dispatch;
+    }
+
     constructor(gpg: Gpg.Gpg) {
         super();
         this.gpg = gpg;
     }
-}
-
-export function start(gpg: Gpg.Gpg): Dispatch {
-    const dispatch = new Dispatch(gpg);
-    // dispatch.recv = new rx.Subject<Message.Message>();
-    dispatch.dispatchers.push(GpgCreateKeySet.create(gpg));
-    dispatch.dispatchers.push(GpgResetYubikey.create(gpg));
-    dispatch.dispatchers.push(GpgChangePinYubikey.create(gpg));
-    dispatch.dispatchers.push(DeleteSecretKey.create(gpg));
-    dispatch.dispatchers.push(RequestAsciiDispatcher.create(gpg));
-    dispatch.dispatchers.push(SendKeyToYubiKey.create(gpg));
-    dispatch.dispatchers.push(GpgChangeCard.create(gpg));
-    dispatch.dispatchers.push(DiceWareDispatcher.create(gpg.gpgCmds.gpg.resultQueue));
-
-    // dispatch.send = rx.Observable.create((obs: rx.Observer<Message.Message>) => {
-    console.log('Dispatch.start');
-    dispatch.dispatchers.forEach(dp => {
-        dp.send.subscribe(msg => {
-            // console.log('dispatch-to-recv:', msg);
-            dispatch.recv.next(msg);
-        });
-    });
-    dispatch.send.subscribe(msg => {
-        // console.log('dispatch-from-send:', msg);
-        dispatch.dispatchers.forEach(dp => dp.recv.next(msg));
-    });
-    // });
-    return dispatch;
 }

@@ -120,10 +120,10 @@ export function start(gpg: Gpg.Gpg): rxme.Observable {
   return rxme.Observable.create((obs: rxme.Observer) => {
     const sglskm = glskm.match(globs => {
       obs.next(globs);
-    });
+    }).passTo();
     const sgcsm = gcsm.match(globs => {
       obs.next(globs);
-    });
+    }).passTo();
     return () => {
       console.log('monitor unsubscribe:');
       sglskm.unsubscribe();

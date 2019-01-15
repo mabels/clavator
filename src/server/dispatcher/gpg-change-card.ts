@@ -8,17 +8,13 @@ import * as Gpg from '../../gpg/gpg';
 import ChangeCard from '../../gpg/change-card';
 // import * as CardStatus from './gpg/card_status';
 
-import * as Progress from '../../model/progress';
+// import * as Progress from '../../model/progress';
+import { ResultExec } from '../../gpg/result';
 // import { Observer } from '../observer';
 
 export function create(gpg: Gpg.Gpg): Dispatcher {
   const ret = new Dispatcher();
-  ret.recv.match(req => {
-    // console.log('GpgChangeCard.run', req.header);
-    if (req.action != 'ChangeCard.Request') {
-      // ws.send(Message.prepare('Progressor.Clavator', Progress.fail('Ohh')))
-      return false;
-    }
+  ret.recv.match(Message.Message.actionMatch('ChangeCard.Request', req => {
     const a = JSON.parse(req.data) || {};
     const cc = ChangeCard.fill(a);
     // console.log(m, a, kg)
@@ -30,13 +26,13 @@ export function create(gpg: Gpg.Gpg): Dispatcher {
     }
     // console.log('>>>', kg.masterCommand())
     reply.progressInfo(`ChangeCard Action`);
-    gpg.changeCard(cc).subscribe(res => {
-      reply.progressInfo(res.exec.stdOut).send(ret.send);
-      reply.progressError(res.exec.stdErr).send(ret.send);
+    gpg.changeCard(cc).match(ResultExec.match(res => {
+      reply.progressInfo(res.stdOut).send(ret.send);
+      reply.progressError(res.stdErr).send(ret.send);
       req.reply('ChangeCard.Completed').send(ret.send);
       // send cardlist
-    });
-  });
+    }));
+  }));
   return ret;
 }
 

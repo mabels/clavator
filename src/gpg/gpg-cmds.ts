@@ -74,7 +74,7 @@ class GpgCmd {
     // ResultContainer.builder<T>(this.resultQueue);
     rc.setStdIn(stdIn);
     // console.log('GpgCmd:run', this.cmd, homeDir, attributes);
-    return rc.run(initiator, homeDir, this.cmd[0], this.cmd.slice(1), attributes);
+    return rc.run(this.resultQueue, initiator, homeDir, this.cmd[0], this.cmd.slice(1), attributes);
   }
 }
 

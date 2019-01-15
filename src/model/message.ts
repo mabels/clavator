@@ -1,5 +1,5 @@
 import * as uuid from 'node-uuid';
-import * as Progress from './progress';
+// import * as Progress from './progress';
 import * as rxme from 'rxme';
 
 export class Header {
@@ -25,8 +25,16 @@ export class Message {
   public header: Header;
   public data: string;
 
+  public static actionMatch(action: string, cb: rxme.MatcherCallback<Message>): rxme.MatcherCallback {
+    return rxme.Matcher.Type<Message>(Message, (m, sub, rx) => {
+      if (!action || action == m.header.action) {
+        cb(m, sub, rx);
+      }
+    });
+  }
+
   public static match(cb: rxme.MatcherCallback<Message>): rxme.MatcherCallback {
-    return rxme.Matcher.Type<Message>(Message, cb);
+    return this.actionMatch(null, cb);
   }
 
   constructor(header?: Header, data?: string) {

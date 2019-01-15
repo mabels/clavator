@@ -24,7 +24,7 @@ import * as ws from 'ws';
 // const expressWs: typeof expressWsTs = expressWsTs;
 
 import * as Monitor from './monitor';
-import * as Dispatch from './dispatch';
+import { Dispatch } from './dispatch';
 import * as Gpg from '../gpg/gpg';
 
 import * as Message from '../model/message';
@@ -133,6 +133,7 @@ function starter(rq: ResultQueue): rxme.Observable {
           console.log('to-WS-recv:', msg.header);
           sock.send(msg.prepare());
         })).passTo(obs);
+
         sock.on('close', () => {
           console.log('close');
           subMonitor.unsubscribe();
