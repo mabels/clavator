@@ -22,7 +22,7 @@ export class BooleanValue extends ObjectId implements Validatable {
   }
 
   public errText(): string[] {
-    return [ this.errorText ];
+    return [this.errorText];
   }
 
   public valid(): boolean {
@@ -32,7 +32,6 @@ export class BooleanValue extends ObjectId implements Validatable {
   public fill(js: any): void {
     this.value = js['value'];
   }
-
 }
 
 export default BooleanValue;

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
-import * as classnames from 'classnames';
+import classnames from 'classnames';
 import ViewWarrents from '../../model/view-warrents';
 import ViewWarrent from '../../model/view-warrent';
 import NestedFlag from '../../../model/nested-flag';
@@ -23,7 +23,6 @@ interface RcApproveWarrentsProps extends React.Props<RcApproveWarrents> {
 
   constructor(props: RcApproveWarrentsProps) {
     super(props);
-    this.state = { };
   }
 
   private checkWarrents(ap: ViewWarrent): void {

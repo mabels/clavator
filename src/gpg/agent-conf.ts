@@ -1,12 +1,11 @@
-
 import * as fs from 'fs';
 
 const reCrNl = /\r?\n/;
 
 export class AgentLine {
   public nr: number;
-  private line: string;
-  public key: string;
+  private readonly line: string;
+  public readonly key: string;
   public value: string;
   constructor(line: string) {
     this.nr = -1;
@@ -35,7 +34,10 @@ export class AgentConf {
   public lines: AgentLine[] = [];
   public byKey: { [key: string]: AgentLine[] } = {};
 
-  public static read_file(fname: string, done: (err: any, ag: AgentConf) => void): void {
+  public static read_file(
+    fname: string,
+    done: (err: any, ag: AgentConf) => void
+  ): void {
     fs.readFile(fname, 'utf8', (err: any, data: string) => {
       if (err && err.code == 'ENOENT') {
         done(null, new AgentConf());
@@ -71,7 +73,9 @@ export class AgentConf {
   }
 
   public asString(): string {
-    let lines = this.lines.map((al) => { return al.getLine(); });
+    let lines = this.lines.map(al => {
+      return al.getLine();
+    });
     let postcr = '';
     if (lines.length && lines[lines.length - 1].trim().length) {
       postcr = '\n';
@@ -82,5 +86,4 @@ export class AgentConf {
   public write_file(fname: string, done: (err: any) => void): void {
     fs.writeFile(fname, this.asString(), done);
   }
-
 }

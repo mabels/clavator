@@ -1,13 +1,16 @@
 import Pallet from './pallet';
-import { observable } from 'mobx';
+import { observable, computed } from 'mobx';
 import { assignOnError } from './helper';
 
 export class Container<T extends Pallet> {
-  @observable protected pallets: T[] = [];
+  @observable
+  protected pallets: T[] = [];
   public factory: () => T;
   constructor(factory: () => T) {
     this.factory = factory;
   }
+
+  @computed
   public length(): number {
     return this.pallets.filter(i => i).length;
   }

@@ -7,13 +7,18 @@ import * as Progress from '../../model/progress';
 import * as ListSecretKeys from '../../gpg/list-secret-keys';
 
 export default class CreateKeySetTask {
-
-  public static run(gpg: Gpg.Gpg, ws: WebSocket, m: Message.Message, kg: KeyGen.KeyGen):
-    Promise<ListSecretKeys.SecretKey> {
+  public static run(
+    gpg: Gpg.Gpg,
+    ws: WebSocket,
+    m: Message.Message,
+    kg: KeyGen.KeyGen
+  ): Promise<ListSecretKeys.SecretKey> {
     return new Promise((resolve, reject) => {
       let header = Message.toHeader(m, 'Progressor.Clavator');
       if (!kg.valid()) {
-        const err = `Failed send KeyGen is not valid ${kg.errText().join('\n')}`;
+        const err = `Failed send KeyGen is not valid ${kg
+          .errText()
+          .join('\n')}`;
         ws.send(Message.prepare(header, Progress.fail(err)));
         return reject(err);
       }
@@ -22,45 +27,96 @@ export default class CreateKeySetTask {
       gpg.createMasterKey(kg, (res: Result) => {
         ws.send(Message.prepare(header, Progress.info(res.stdOut)));
         ws.send(Message.prepare(header, Progress.error(res.stdErr)));
-        gpg.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
-          if (err) {
-            console.error(err);
-            reject(err);
-            return;
-          }
-          for (let key of keys) {
-            for (let uid of key.uids) {
-              if (uid.name == kg.uids.first().name.value && uid.email == kg.uids.first().email.value) {
-                this.addUids(gpg, header, ws, 1, key.fingerPrint.fpr, kg, () => {
-                  this.createSubKeys(gpg, header, ws, 0, key.fingerPrint.fpr, kg, () => {
-                    gpg.getSecretKey(key.fingerPrint.fpr, (_key: ListSecretKeys.SecretKey) => {
-                      if (_key) {
-                        const msg = 'CreateKeySet.Completed';
-                        ws.send(Message.prepare(header, Progress.ok('KeysetCreated')));
-                        ws.send(Message.prepare(header.setAction(msg), _key));
-                        console.log('Done:Resolve:', msg, header.setAction(msg));
-                        resolve(_key);
-                        return;
-                      } else {
-                        ws.send(Message.prepare(header, Progress.error('KeysetFailed')));
-                        ws.send(Message.prepare(header.setAction('CreateKeySet.Failed')));
-                        console.log('Done:Error:');
-                        reject('CreateKeySet.Failed');
-                        return;
-                      }
-                    });
-                  });
-                });
+        gpg.list_secret_keys(
+          (err: string, keys: ListSecretKeys.SecretKey[]) => {
+            if (err) {
+              console.error(err);
+              reject(err);
+              return;
+            }
+            for (let key of keys) {
+              for (let uid of key.uids) {
+                if (
+                  uid.name == kg.uids.first().name.value &&
+                  uid.email == kg.uids.first().email.value
+                ) {
+                  this.addUids(
+                    gpg,
+                    header,
+                    ws,
+                    1,
+                    key.fingerPrint.fpr,
+                    kg,
+                    () => {
+                      this.createSubKeys(
+                        gpg,
+                        header,
+                        ws,
+                        0,
+                        key.fingerPrint.fpr,
+                        kg,
+                        () => {
+                          gpg.getSecretKey(
+                            key.fingerPrint.fpr,
+                            (_key: ListSecretKeys.SecretKey) => {
+                              if (_key) {
+                                const msg = 'CreateKeySet.Completed';
+                                ws.send(
+                                  Message.prepare(
+                                    header,
+                                    Progress.ok('KeysetCreated')
+                                  )
+                                );
+                                ws.send(
+                                  Message.prepare(header.setAction(msg), _key)
+                                );
+                                console.log(
+                                  'Done:Resolve:',
+                                  msg,
+                                  header.setAction(msg)
+                                );
+                                resolve(_key);
+                                return;
+                              } else {
+                                ws.send(
+                                  Message.prepare(
+                                    header,
+                                    Progress.error('KeysetFailed')
+                                  )
+                                );
+                                ws.send(
+                                  Message.prepare(
+                                    header.setAction('CreateKeySet.Failed')
+                                  )
+                                );
+                                console.log('Done:Error:');
+                                reject('CreateKeySet.Failed');
+                                return;
+                              }
+                            }
+                          );
+                        }
+                      );
+                    }
+                  );
+                }
               }
             }
           }
-        });
+        );
         // this.gpg
       });
     });
   }
-  public static createSubKeys(gpg: Gpg.Gpg, header: Message.Header, ws: WebSocket, cnt: number, fpr:
-    string, ki: KeyGen.KeyGen, cb: () => void): void {
+  public static createSubKeys(
+    gpg: Gpg.Gpg,
+    header: Message.Header,
+    ws: WebSocket,
+    cnt: number,
+    fpr: string,
+    ki: KeyGen.KeyGen,
+    cb: () => void
+  ): void {
     // console.log('createSubKeys:1', cnt, ki.subKeys.subKeys.length);
     if (cnt >= ki.subKeys.length()) {
       // console.log('createSubKeys:2');
@@ -76,11 +132,17 @@ export default class CreateKeySetTask {
       // console.log('createSubKeys:5');
       this.createSubKeys(gpg, header, ws, cnt + 1, fpr, ki, cb);
     });
-
   }
 
-  public static addUids(gpg: Gpg.Gpg, header: Message.Header, ws: WebSocket, cnt: number, fpr:
-    string, ki: KeyGen.KeyGen, cb: () => void): void {
+  public static addUids(
+    gpg: Gpg.Gpg,
+    header: Message.Header,
+    ws: WebSocket,
+    cnt: number,
+    fpr: string,
+    ki: KeyGen.KeyGen,
+    cb: () => void
+  ): void {
     // console.log('createSubKeys:1', cnt, ki.subKeys.subKeys.length);
     if (cnt >= ki.uids.length()) {
       cb();

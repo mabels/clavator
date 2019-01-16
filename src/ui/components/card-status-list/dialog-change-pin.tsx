@@ -10,7 +10,7 @@ import { observer } from 'mobx-react';
 import AppState from '../../model/app-state';
 
 interface DialogChangePinState {
-  transaction: Message.Transaction<any>;
+  // transaction: Message.Transaction<any>;
 }
 
 interface DialogChangePinProps extends React.Props<DialogChangePin> {
@@ -26,7 +26,7 @@ export class DialogChangePin extends React.Component<DialogChangePinProps, Dialo
   constructor(props: DialogChangePinProps) {
     super(props);
     this.state = {
-      transaction: null
+      // transaction: null
     };
   }
 

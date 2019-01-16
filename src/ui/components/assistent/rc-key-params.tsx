@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as classnames from 'classnames';
+import classnames from 'classnames';
 import NestedFlag from '../../../model/nested-flag';
 import KeyParams from '../../../gpg/key-params';
 import RcOption from '../controls/rc-option';

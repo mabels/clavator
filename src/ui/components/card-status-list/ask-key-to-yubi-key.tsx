@@ -7,7 +7,7 @@ import KeyState from '../../../gpg/key-state';
 
 // import { CardStatusListState } from '../../model/card-status-list-state';
 
-import * as classnames from 'classnames';
+import classnames from 'classnames';
 
 // import * as WsChannel from '../../model/ws-channel';
 import * as Message from '../../../model/message';
@@ -15,6 +15,8 @@ import * as Message from '../../../model/message';
 
 import ButtonToProgressor from '../controls/button-to-progressor';
 import AppState from '../../model/app-state';
+import { CardSlot } from './card-slot';
+import { observer } from 'mobx-react';
 
 interface AskKeyToYubiKeyState {
   keyToYubiKey: KeyToYubiKey;
@@ -27,6 +29,7 @@ interface AskKeyToYubiKeyProps extends React.Props<AskKeyToYubiKey> {
   slot_id: number;
 }
 
+@observer
 export class AskKeyToYubiKey
   extends React.Component<AskKeyToYubiKeyProps, AskKeyToYubiKeyState> {
   constructor(props: AskKeyToYubiKeyProps) {
@@ -52,47 +55,21 @@ export class AskKeyToYubiKey
     this.props.appState.channel.send(this.state.transaction.asMsg());
   }
 
-  public render_card_slot(): JSX.Element {
-    // let selected = `${this.state.keyToYubiKey.card_id}:Slot${this.state.keyToYubiKey.slot_id}`;
-    return (
-      <div className="row">
-        <select
-          className="three columns"
-          value={this.state.keyToYubiKey.slot_id}
-          onChange={(e: any) => {
-            this.state.keyToYubiKey.slot_id = ~~e.target.value;
-            console.log('this.state.keyToYubiKey:', this.state.keyToYubiKey);
-            this.setState(Object.assign({}, this.state, {
-              keyToYubiKey: this.state.keyToYubiKey
-            }));
-          }} >
-          {this.props.appState.cardStatusListState.cardStatusList.map((cardstatus) => {
-            return cardstatus.keyStates.map((ks: KeyState, idx: number) => {
-              let key = `${cardstatus.reader.cardid}:Slot${idx + 1}`;
-              return (<option value={idx + 1} key={key}>{key}</option>);
-            });
-          })}
-        </select>
-      </div>
-    );
-  }
-
   public render(): JSX.Element {
     return (
       <form
         onSubmit={(e) => e.preventDefault()}
         className={classnames({ 'AskKeyToYubiKey': true, good: this.state.keyToYubiKey.verify() })}
         key={this.props.fingerprint}>
-        {this.render_card_slot()}
+        <CardSlot
+          keyToYubiKey={this.state.keyToYubiKey}
+          appState={this.props.appState} />
         <div className="row">
           <label>Passphrase:</label><input type="password"
             className={classnames({ good: this.state.keyToYubiKey.verify() })}
             name={`aktyk-${this.props.fingerprint}`}
             onChange={(e: any) => {
               this.state.keyToYubiKey.passphrase.value = e.target.value;
-              this.setState(Object.assign({}, this.state, {
-                keyToYubiKey: this.state.keyToYubiKey
-              }));
             }} />
         </div>
 
@@ -102,9 +79,6 @@ export class AskKeyToYubiKey
             name={`aktyk-${this.props.fingerprint}`}
             onChange={(e: any) => {
               this.state.keyToYubiKey.admin_pin.pin = e.target.value;
-              this.setState(Object.assign({}, this.state, {
-                keyToYubiKey: this.state.keyToYubiKey
-              }));
             }} />
         </div>
 

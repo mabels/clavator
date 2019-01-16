@@ -1,4 +1,3 @@
-
 import * as WebSocket from 'ws';
 
 import * as Message from '../model/message';
@@ -16,25 +15,26 @@ import SendKeyToYubiKey from './dispatcher/send-key-to-yubikey';
 import DiceWareDispatcher from './dispatcher/dice-ware-dispatcher';
 
 export class Dispatch {
-    public dispatcher: Dispatcher[] = [];
+  public dispatcher: Dispatcher[] = [];
 
-    public run(observer: Observer, ws: WebSocket, m: Message.Message): boolean {
-        console.log('Dispatch.run', m.header);
-        return !!(this.dispatcher.find((dispatch: Dispatcher) => dispatch.run(observer, ws, m)));
-    }
-
+  public run(observer: Observer, ws: WebSocket, m: Message.Message): boolean {
+    console.log('Dispatch.run', m.header);
+    return !!this.dispatcher.find((dispatch: Dispatcher) =>
+      dispatch.run(observer, ws, m)
+    );
+  }
 }
 
 export function start(gpg: Gpg.Gpg): Dispatch {
-    console.log('Dispatch.start');
-    let dispatch = new Dispatch();
-    dispatch.dispatcher.push(GpgCreateKeySet.create(gpg));
-    dispatch.dispatcher.push(GpgResetYubikey.create(gpg));
-    dispatch.dispatcher.push(GpgChangePinYubikey.create(gpg));
-    dispatch.dispatcher.push(DeleteSecretKey.create(gpg));
-    dispatch.dispatcher.push(RequestAsciiDispatcher.create(gpg));
-    dispatch.dispatcher.push(SendKeyToYubiKey.create(gpg));
-    dispatch.dispatcher.push(GpgChangeCard.create(gpg));
-    dispatch.dispatcher.push(DiceWareDispatcher.create());
-    return dispatch;
+  console.log('Dispatch.start');
+  let dispatch = new Dispatch();
+  dispatch.dispatcher.push(GpgCreateKeySet.create(gpg));
+  dispatch.dispatcher.push(GpgResetYubikey.create(gpg));
+  dispatch.dispatcher.push(GpgChangePinYubikey.create(gpg));
+  dispatch.dispatcher.push(DeleteSecretKey.create(gpg));
+  dispatch.dispatcher.push(RequestAsciiDispatcher.create(gpg));
+  dispatch.dispatcher.push(SendKeyToYubiKey.create(gpg));
+  dispatch.dispatcher.push(GpgChangeCard.create(gpg));
+  dispatch.dispatcher.push(DiceWareDispatcher.create());
+  return dispatch;
 }

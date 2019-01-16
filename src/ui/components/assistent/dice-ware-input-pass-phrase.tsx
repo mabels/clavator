@@ -16,6 +16,7 @@ import { DiceWare, Diced } from '../../../dice-ware/dice-ware';
 import { InputDiceWare, InputDiceWareProps } from '../controls/input-dice-ware';
 // import RcWarrent from './rc-warrent';
 import { InputPassPhrase, InputPassPhraseProps } from '../controls/input-pass-phrase';
+import { LabelWithDice } from './label-with-dice';
 
 class DiceWareInputPassPhraseState {
   // @observable public readable: boolean;
@@ -34,44 +35,22 @@ export class DiceWareInputPassPhrase extends
   constructor(props: DiceWareInputPassPhraseProps) {
     super(props);
     this.state = { /* readOnly: null */ };
-    this.diceAll = this.diceAll.bind(this);
+    // this.diceAll = this.diceAll.bind(this);
   }
 
-  private diceAll(e: any): void {
+  private diceAll = (e: any): void => {
     // console.log('diceAll');
     this.props.passPhrase.doublePasswords.forEach(dp => dp.inputDiceWare.randomDice());
-  }
-
-  private labelWithDice(label: string | JSX.Element): string | JSX.Element {
-    let diceWareOption: string | JSX.Element = '';
-    if (this.props.diceWares.length == 1) {
-      diceWareOption = `[${this.props.diceWares[0].fname}]`;
-      this.props.passPhrase.doublePasswords.forEach(dp => dp.selectDiceWare(this.props.diceWares[0].fname));
-    }
-    if (this.props.diceWares.length > 1) {
-      const fnames = this.props.diceWares.map(dw => dw.fname);
-      diceWareOption = <RcOption
-        onChange={(fname: string) => {
-          console.log('Switch:DiceWare:', fname);
-          this.props.passPhrase.doublePasswords.forEach(dp => dp.selectDiceWare(fname));
-        }}
-        name="DiceWare.Fname" label=""
-        option={new Option(fnames[0], fnames, '')}
-        readOnly={this.props.readOnly} />;
-    }
-    if (this.props.passPhrase.warrents.length() > 1) {
-      return label;
-    }
-    return <span>{label}{diceWareOption}<button
-      className="fa fa-random"
-      onClick={this.diceAll}
-      ></button></span>;
   }
 
   public render(): JSX.Element {
     // console.log('dice-ware-input-pass-phrase:', this.props.readOnly);
     return <InputPassPhrase
-            label={this.labelWithDice(this.props.label)}
+            label={<LabelWithDice
+                label={this.props.label}
+                diceWares={this.props.diceWares}
+                passPhrase={this.props.passPhrase}
+              />}
             passPhrase={this.props.passPhrase}
             readOnly={this.props.readOnly}
             childFactory={(dp: DoublePassword) => {

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
-import * as classnames from 'classnames';
+import classnames from 'classnames';
 // import SimpleYubiKey from '../gpg/simple-yubikey';
 import NestedFlag from '../../../model/nested-flag';
 import DateValue from '../../../model/date-value';
@@ -22,7 +22,6 @@ export class InputExpireDate extends
 
   constructor(props: InputExpireDateProps) {
     super(props);
-    this.state = { };
   }
 
   public render(): JSX.Element {

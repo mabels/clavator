@@ -1,7 +1,7 @@
 import * as React from 'react';
 // import { observable } from 'mobx';
 import { observer } from 'mobx-react';
-import * as classnames from 'classnames';
+import classnames from 'classnames';
 // import StringValue from '../../../model/string-value';
 import NestedFlag from '../../../model/nested-flag';
 import PasswordControl from '../../model/password-control';

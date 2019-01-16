@@ -35,13 +35,15 @@ export class Uid {
   }
 
   public eq(o: Uid): boolean {
-    return this.trust == o.trust &&
+    return (
+      this.trust == o.trust &&
       this.name == o.name &&
       this.email == o.email &&
       this.comment == o.comment &&
       this.created == o.created &&
       this.id == o.id &&
-      this.key == o.key;
+      this.key == o.key
+    );
   }
 
   public toKeyGenUid(): KeyGenUid {
@@ -91,7 +93,6 @@ class FingerPrint {
     this.fpr = match[9];
     return this;
   }
-
 }
 
 class Group {
@@ -112,10 +113,9 @@ class Group {
     this.grp = match[9];
     return this;
   }
-
 }
 
-const Ciphers: { [id: string]: string; } = {
+const Ciphers: { [id: string]: string } = {
   22: 'ed25519',
   1: 'rsa'
 };
@@ -180,7 +180,8 @@ export class Key {
   }
 
   public eq(o: Key): boolean {
-    return this.type == o.type &&
+    return (
+      this.type == o.type &&
       this.trust == o.trust &&
       this.cipher == o.cipher &&
       this.funky == o.funky &&
@@ -191,7 +192,8 @@ export class Key {
       this.expires == o.expires &&
       this.usesEq(o.uses) &&
       this.group.eq(o.group) &&
-      this.fingerPrint.eq(o.fingerPrint);
+      this.fingerPrint.eq(o.fingerPrint)
+    );
   }
 
   // sec:u:256:22:19B013CF06A4BEEF:1464699940:1622379940::u:::cESCA:::#::ed25519::
@@ -304,7 +306,9 @@ export function run(str: string): SecretKey[] {
   let currentSec: SecretKey = null;
   let currentKey: Key = null;
   str.split(reCrNl).forEach((line: string) => {
-    if (!line.trim().length) { return; }
+    if (!line.trim().length) {
+      return;
+    }
     let match = line.split(':');
     switch (match[0]) {
       case 'sec':
@@ -315,10 +319,10 @@ export function run(str: string): SecretKey[] {
         ret.push(currentSec);
         break;
       case 'uid':
-        currentSec.uids.push((new Uid()).fill(match));
+        currentSec.uids.push(new Uid().fill(match));
         break;
       case 'ssb':
-        currentKey = (new Key()).fill(match);
+        currentKey = new Key().fill(match);
         currentSec.subKeys.push(currentKey);
         break;
       case 'fpr':

@@ -27,12 +27,17 @@ export class DeleteSecretKey implements Dispatcher {
     }
     let payload = JSON.parse(m.data);
     let header = Message.toHeader(m, 'Progressor.Clavator');
-    myws.send(Message.prepare(header,
-      Progress.ok('DeleteSecretKey=' + m.data)));
+    myws.send(
+      Message.prepare(header, Progress.ok('DeleteSecretKey=' + m.data))
+    );
     this.gpg.deleteSecretKey(payload.fpr, (res: Result) => {
       myws.send(Message.prepare(header, Progress.info(res.stdOut)));
       myws.send(Message.prepare(header, Progress.error(res.stdErr)));
-      if (res.stdOut.split('\n').find((i: string) => { return i.startsWith('ERR '); })) {
+      if (
+        res.stdOut.split('\n').find((i: string) => {
+          return i.startsWith('ERR ');
+        })
+      ) {
         res.stdOut.split('\n').forEach((s: string) => {
           myws.send(Message.prepare(header, Progress.fail(s)));
         });
@@ -40,13 +45,14 @@ export class DeleteSecretKey implements Dispatcher {
         this.gpg.deletePublicKey(payload.fpr, (rs: Result) => {
           myws.send(Message.prepare(header, Progress.info(rs.stdOut)));
           myws.send(Message.prepare(header, Progress.error(rs.stdErr)));
-          myws.send(Message.prepare(header, Progress.ok('DeleteKey Successfull', true)));
+          myws.send(
+            Message.prepare(header, Progress.ok('DeleteKey Successfull', true))
+          );
         });
       }
     });
     return true;
   }
-
 }
 
 export default DeleteSecretKey;

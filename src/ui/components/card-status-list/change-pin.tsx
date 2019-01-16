@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as classnames from 'classnames';
+import classnames from 'classnames';
 import RequestChangePin from '../../../gpg/request-change-pin';
 // import * as WsChannel from '../../model/ws-channel';
 import * as Message from '../../../model/message';
@@ -26,22 +26,16 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
       pin: new RequestChangePin(),
       transaction: Message.newTransaction<RequestChangePin>('GpgChangePinYubikey.run')
     };
-    this.doPinChange = this.doPinChange.bind(this);
+    // this.doPinChange = this.doPinChange.bind(this);
   }
 
   public componentWillMount(): void {
-    this.setState(Object.assign({}, this.state, {
-      pin: this.state.pin.changeAction(this.props.type)
-    }));
+    this.state.pin.changeAction(this.props.type);
   }
 
-  public doPinChange(): void {
+  public doPinChange = (): void => {
     this.state.pin.app_id = this.props.app_id;
     this.state.transaction.data = this.state.pin;
-    this.setState({
-      pin: this.state.pin,
-      transaction: this.state.transaction
-    });
     this.props.appState.channel.send(this.state.transaction.asMsg());
   }
 
@@ -56,9 +50,6 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
             className={classnames({ good: this.state.pin.admin_pin.verify() })}
             onChange={(e: any) => {
               this.state.pin.admin_pin.pin = e.target.value;
-              this.setState(Object.assign({}, this.state, {
-                pin: this.state.pin
-              }));
             }} />
         </div>
 
@@ -68,18 +59,12 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
             className={classnames({ good: this.state.pin.new_pin.verify() })}
             onChange={(e: any) => {
               this.state.pin.new_pin.pin = e.target.value;
-              this.setState(Object.assign({}, this.state, {
-                pin: this.state.pin
-              }));
             }} />
           <input type="password"
             name="verify-new-pin"
             className={classnames({ good: this.state.pin.new_pin_verify.verify() })}
             onChange={(e: any) => {
               this.state.pin.new_pin_verify.pin = e.target.value;
-              this.setState(Object.assign({}, this.state, {
-                pin: this.state.pin
-              }));
             }} />
         </div>
 

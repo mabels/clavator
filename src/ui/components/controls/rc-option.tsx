@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as classnames from 'classnames';
+import classnames from 'classnames';
 import { observer } from 'mobx-react';
 import NestedFlag from '../../../model/nested-flag';
 // import Container from '../../../model/container';
@@ -23,12 +23,11 @@ export class RcOption<T> extends
 
   constructor(props: RcOptionProps<T>) {
     super(props);
-    this.state = {};
   }
 
   public render(): JSX.Element {
     let value = '';
-    let ret = this.props.option.map((s, o) => {
+    const ret = this.props.option.map((s, o) => {
       value = s ? o.toString() : value;
       return (<option key={o.toString()} disabled={this.props.readOnly.is} value={o.toString()}>{o}</option>);
     });
@@ -51,7 +50,6 @@ export class RcOption<T> extends
             if (this.props.onChange) {
               this.props.onChange(e.target.value);
             }
-            // this.setState(this.state);
           }}>
           {ret}
         </select>

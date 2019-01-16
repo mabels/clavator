@@ -1,7 +1,7 @@
 import * as React from 'react';
 // import { observable, computed } from 'mobx';
 import { observer } from 'mobx-react';
-import * as classnames from 'classnames';
+import classnames from 'classnames';
 // import SimpleYubiKey from '../gpg/simple-yubikey';
 // import RcCheckWarrents from './rc-check-warrents';
 // import StringValue from '../../../model/string-value';
@@ -53,15 +53,11 @@ export interface InputDiceWareProps extends InputPassPhraseProps {
 
 @observer
 export class InputDiceWare extends
-  React.Component<InputDiceWareProps, InputDiceWareState> {
+  React.Component<InputDiceWareProps, {}> {
   private readonly key: string;
 
   constructor(props: InputDiceWareProps) {
     super(props);
-    this.state = {
-      diceValue: null
-    };
-    this.randomDice = this.randomDice.bind(this);
   }
 
   private setDice(val: string): void {
@@ -79,7 +75,7 @@ export class InputDiceWare extends
     }
   }
 
-  public randomDice(): void {
+  public randomDice = (): void  => {
     this.setDice('' + this.props.doublePassword.diceWare().randomDice().diced);
   }
 

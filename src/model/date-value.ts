@@ -5,7 +5,7 @@ export class DateValue extends ObjectId {
   public errText: string;
 
   public static fill(js: any, dv: DateValue): void {
-    dv.value = (new Date(js['value'])) || dv.value;
+    dv.value = new Date(js['value']) || dv.value;
   }
 
   public constructor(v: Date, e: string) {

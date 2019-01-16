@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as classnames from 'classnames';
+import classnames from 'classnames';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import NestedFlag from '../../../model/nested-flag';

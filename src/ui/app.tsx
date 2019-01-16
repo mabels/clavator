@@ -1,46 +1,44 @@
 import * as React from 'react';
-import '../../../src/ui/normalize.css';
-import '../../../src/ui/skeleton.css';
-import '../../../src/ui/app.less';
-// import 'font-awesome/less/font-awesome.less';
-const Clavator = require('../../../src/ui/img/clavator.png');
+import * as ReactModal from 'react-modal';
 
-// import { observable } from 'mobx';
-// import { observer } from 'mobx-react';
+import './normalize.css';
+import './skeleton.css';
+import './app.less';
+const Clavator = require('./img/clavator.png');
 
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import { KeyChainList } from './components/key-chain-list';
 import { CardStatusList } from './components/card-status-list';
-// import { CreateKey } from './create-key';
-// import { Progressor } from './progressor';
 import ChannelStatus from './components/controls/channel-status';
-// import * as WsChannel from './model/ws-channel';
-// import { CardStatusListState } from './model/card-status-list-state';
-// import { KeyChainListState } from './model/key-chain-list-state';
 import DialogCreateKey from './components/key-chain-list/dialog-create-key';
 import { Assistent } from './components/assistent';
-import * as ReactModal from 'react-modal';
 import { Progressor } from './components/controls/progressor';
-import AppState from './model/app-state';
+import { AppState } from './model/app-state';
+import { AppProgressor } from './app-progressor';
+import { observable } from 'mobx';
 
 const appState = AppState.create();
 
 class AppViewState {
-  public createKeyDialog: boolean;
-  public selectedTabIndex: number;
-  public openProgressor: boolean;
+  // public createKeyDialog: boolean;
+  // public openProgressor: boolean;
 }
 
 // @observer
 export class App extends React.Component<{}, AppViewState> {
 
+  @observable
+  public selectedTabIndex: number;
+
   constructor(props: {} = {}) {
     super(props);
+    this.selectedTabIndex = 0;
+    /*
     this.state = {
       createKeyDialog: false,
-      selectedTabIndex: 0,
-      openProgressor: false
+      // openProgressor: false
     };
+    */
   }
 
   public componentWillUnmount(): void {
@@ -61,43 +59,16 @@ export class App extends React.Component<{}, AppViewState> {
   }
   */
 
-  private renderProgressor(): JSX.Element {
-    /*
-    if (!this.state.openProgressor) {
-      return null;
-    }
-    */
-    return <ReactModal
-      isOpen={this.state.openProgressor}
-      closeTimeoutMS={150}
-      onAfterOpen={() => { /* */ }}
-      contentLabel="Modal"
-      shouldCloseOnOverlayClick={true}
-    >
-      <i onClick={() => {
-          this.setState({ openProgressor: false });
-        }}
-        className="closeBox fa fa-close"></i>
-      <Progressor
-        progressor={appState.progressorState}
-        msg={'Clavator'}
-        controls={true} />
-    </ReactModal>;
-  }
-
   public render(): JSX.Element {
     return (
       <ChannelStatus channel={appState.channel}>
         <img src={Clavator} className="logo" />
-        {this.renderProgressor()}
+        <AppProgressor progressState={appState.progressorState} />
         <Tabs
-          selectedIndex={this.state.selectedTabIndex}
+          selectedIndex={this.selectedTabIndex}
           onSelect={(index: number, last: number, event: Event) => {
             console.log('Tabs:', index, last, event);
-            // this.state.selectedTab = index;
-            this.setState(Object.assign(this.state, {
-              selectedTabIndex: index
-            }));
+            this.selectedTabIndex = index;
             return true;
           }}>
           <TabList className="MainMenu" >
@@ -106,7 +77,7 @@ export class App extends React.Component<{}, AppViewState> {
             <Tab className="Assistent">Assistent</Tab>
             <a title="add new key"
               onClick={() => {
-                this.setState({ openProgressor: !this.state.openProgressor });
+                appState.progressorState.open = !appState.progressorState.open;
               }}
               className="closeBox">
               <i className="fa fa-comment"></i>

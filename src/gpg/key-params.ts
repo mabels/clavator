@@ -11,8 +11,16 @@ export class KeyParams extends ObjectId implements Validatable {
   constructor() {
     super('KeyParams');
     this.type = new Option('RSA', ['RSA', 'DSA'], 'keyType Error');
-    this.masterLen = new Option(4096, [1024, 2048, 4096, 8192], 'master keyLength Error');
-    this.subLen = new Option(4096, [1024, 2048, 4096, 8192], 'master keyLength Error');
+    this.masterLen = new Option(
+      4096,
+      [1024, 2048, 4096, 8192],
+      'master keyLength Error'
+    );
+    this.subLen = new Option(
+      4096,
+      [1024, 2048, 4096, 8192],
+      'master keyLength Error'
+    );
   }
 
   public valid(): boolean {
@@ -40,7 +48,6 @@ export class KeyParams extends ObjectId implements Validatable {
       subLen: this.subLen.value
     };
   }
-
 }
 
 export default KeyParams;

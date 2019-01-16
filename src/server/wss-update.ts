@@ -12,7 +12,7 @@ export class WssUpdate<T extends Equalizer<T>> {
   public run(action: string, wss: WebSocket[], t: T[], cb: () => void): void {
     let wssChanged: WebSocket[] = [];
     let wssUnChanged: WebSocket[] = [];
-    wss.forEach((ws) => {
+    wss.forEach(ws => {
       if (!this.prevWss.has(ws)) {
         this.prevWss.add(ws);
         wssChanged.push(ws);
@@ -33,11 +33,15 @@ export class WssUpdate<T extends Equalizer<T>> {
     this.prevT = t;
     let needCb = false;
     if (wssChanged.length) {
-      console.log(`Changed:WssUpdate:action=${action} keysChanged=${keysChanged}`);
+      console.log(
+        `Changed:WssUpdate:action=${action} keysChanged=${keysChanged}`
+      );
       needCb = needCb || this.send(wssChanged, action, t, cb);
     }
     if (keysChanged) {
-      console.log(`KeyChanged:WssUpdate:action=${action} keysChanged=${keysChanged}`);
+      console.log(
+        `KeyChanged:WssUpdate:action=${action} keysChanged=${keysChanged}`
+      );
       needCb = needCb || this.send(wssUnChanged, action, t, cb);
     }
     if (!needCb) {
@@ -45,7 +49,12 @@ export class WssUpdate<T extends Equalizer<T>> {
     }
   }
 
-  public send(wss: WebSocket[], action: string, t: T[], cb: () => void): boolean {
+  public send(
+    wss: WebSocket[],
+    action: string,
+    t: T[],
+    cb: () => void
+  ): boolean {
     let cnt = wss.length;
     let header = Message.broadcast(action);
     wss.forEach((ws: WebSocket) => {

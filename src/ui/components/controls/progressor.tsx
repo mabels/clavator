@@ -6,10 +6,12 @@ import * as Message from '../../../model/message';
 import { Dispatch  } from '../../model/ws-channel';
 
 export class ProgressorState {
+  @observable public open: boolean;
   @observable public progressList: Progress.Progress[];
   private channel: Dispatch;
 
   constructor(channel: Dispatch) {
+    this.open = false;
     this.channel = channel;
     this.progressList = [];
     this.channel.register({

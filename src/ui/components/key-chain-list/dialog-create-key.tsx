@@ -4,7 +4,7 @@ import NestedFlag from '../../../model/nested-flag';
 import * as ReactModal from 'react-modal';
 // import { ProgressorState } from '../controls/progressor';
 import CreateKey from './create-key';
-import AppState from '../../model/app-state';
+import { AppState } from '../../model/app-state';
 
 interface DialogCreateKeyState {
   readOnly: NestedFlag;
@@ -33,12 +33,9 @@ export class DialogCreateKey extends React.Component<DialogCreateKeyProps, Dialo
         contentLabel="Modal"
         shouldCloseOnOverlayClick={true}
       >
-        <i onClick={
-            (() => {
-              // this.setState(Object.assign(this.state, {createDialog: false}));
+        <i onClick={() => {
               this.props.onClose();
-            }).bind(this)
-          }
+            }}
            className="closeBox fa fa-close"></i>
         <h4>Creating Key:</h4>
         <CreateKey

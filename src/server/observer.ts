@@ -1,4 +1,3 @@
-
 import * as WebSocket from 'ws';
 // import * as Message from './message';
 
@@ -38,7 +37,6 @@ export class Observer {
   public unregister(ws: WebSocket): void {
     this.wss = this.wss.filter(item => item !== ws);
   }
-
 }
 
 export function start(gpg: Gpg.Gpg): Observer {

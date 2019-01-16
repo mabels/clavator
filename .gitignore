@@ -8,4 +8,5 @@ coverage/
 npm-debug.log
 dist
 #test/all.ts
+src/**/*.js
 **/.dice-req-cache/

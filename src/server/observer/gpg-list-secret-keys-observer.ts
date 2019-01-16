@@ -12,9 +12,14 @@ class GpgListSecretKeysObserver {
   public timeoutId: any;
   public gpg: Gpg.Gpg;
   public actionCount: number;
-  public prev: WssUpdate<ListSecretKeys.SecretKey> = new WssUpdate<ListSecretKeys.SecretKey>();
+  public prev: WssUpdate<ListSecretKeys.SecretKey> = new WssUpdate<
+    ListSecretKeys.SecretKey
+  >();
 
-  public static create(gpg: Gpg.Gpg, obs: Observer.Observer): GpgListSecretKeysObserver {
+  public static create(
+    gpg: Gpg.Gpg,
+    obs: Observer.Observer
+  ): GpgListSecretKeysObserver {
     let glsko = new GpgListSecretKeysObserver();
     glsko.gpg = gpg;
     glsko.actionCount = 0;
@@ -43,15 +48,17 @@ class GpgListSecretKeysObserver {
     if (!wss.length) {
       return;
     }
-    this.gpg.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
-      if (err) {
-        console.error(err);
-        keys = [];
+    this.gpg.list_secret_keys(
+      (err: string, keys: ListSecretKeys.SecretKey[]) => {
+        if (err) {
+          console.error(err);
+          keys = [];
+        }
+        this.prev.run('KeyChainList', wss, keys, () => {
+          this.timeoutId = setTimeout(this.action, 5000);
+        });
       }
-      this.prev.run('KeyChainList', wss, keys, () => {
-        this.timeoutId = setTimeout(this.action, 5000);
-      });
-    });
+    );
   }
 
   public start(): void {

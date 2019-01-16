@@ -1,7 +1,8 @@
 import ObjectId from './object-id';
+import { observable } from 'mobx';
 
 export class MultiOption<T> extends ObjectId {
-  public values: T[];
+  @observable public values: T[];
   public options: T[] = [];
   public errText: string;
 

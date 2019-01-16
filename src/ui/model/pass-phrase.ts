@@ -11,9 +11,11 @@ import DiceWare from '../../dice-ware/dice-ware';
 // import ViewWarrents from './view-warrents';
 import MinMax from './min-max';
 import CharFormat from './char-format';
+import { observable } from 'mobx';
 
 export class PassPhrase extends ObjectId implements Validatable {
   public readonly readOnly: BooleanValue;
+  @observable
   public readonly warrents: Warrents;
   // public errorText: string;
   public readonly doublePasswords: DoublePassword[];

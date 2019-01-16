@@ -1,8 +1,9 @@
-
 import Pin from './pin';
+import { computed, observable } from 'mobx';
 
 export class RequestChangePin {
   public action: string;
+  @observable
   public app_id: string;
   public admin_pin: Pin = new Pin();
   public new_pin: Pin = new Pin();
@@ -18,6 +19,7 @@ export class RequestChangePin {
     return ra;
   }
 
+  @computed
   public changeAction(action: string): RequestChangePin {
     this.action = action;
     this.admin_pin.match = /^[0-9]{8}$/;

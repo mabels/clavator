@@ -12,16 +12,21 @@ class GpgCardStatusObserver {
   public timeoutId: any;
   public gpg: Gpg.Gpg;
   public actionCount: number;
-  public prev: WssUpdate<CardStatus.Gpg2CardStatus> = new WssUpdate<CardStatus.Gpg2CardStatus>();
+  public prev: WssUpdate<CardStatus.Gpg2CardStatus> = new WssUpdate<
+    CardStatus.Gpg2CardStatus
+  >();
 
-  public static create(gpg: Gpg.Gpg, obs: Observer.Observer): GpgCardStatusObserver {
-      let glsko = new GpgCardStatusObserver();
-      glsko.gpg = gpg;
-      glsko.actionCount = 0;
-      glsko.observer = obs;
-      glsko.action = glsko.action.bind(glsko);
-      glsko.start();
-      return glsko;
+  public static create(
+    gpg: Gpg.Gpg,
+    obs: Observer.Observer
+  ): GpgCardStatusObserver {
+    let glsko = new GpgCardStatusObserver();
+    glsko.gpg = gpg;
+    glsko.actionCount = 0;
+    glsko.observer = obs;
+    glsko.action = glsko.action.bind(glsko);
+    glsko.start();
+    return glsko;
   }
 
   constructor() {
@@ -44,7 +49,12 @@ class GpgCardStatusObserver {
 
   public action(wss = this.observer.wss): void {
     this.actionCount++;
-    // console.log('actionCount:', this.actionCount, this.observer.wss.length, this.gpg);
+    console.log(
+      'Card-Status: actionCount:',
+      this.actionCount,
+      this.observer.wss.length,
+      this.gpg
+    );
     if (!wss.length) {
       return;
     }
@@ -63,9 +73,8 @@ class GpgCardStatusObserver {
   }
 
   public start(): void {
-    // console.log('started');
+    console.log('Card-Status: started');
   }
-
 }
 
 export default GpgCardStatusObserver;

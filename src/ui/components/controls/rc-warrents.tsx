@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
-import * as classnames from 'classnames';
+import classnames from 'classnames';
 import Warrents from '../../../gpg/warrents';
 import Warrent from '../../../gpg/warrent';
 // import Warrents from '../../model/view-warrents';

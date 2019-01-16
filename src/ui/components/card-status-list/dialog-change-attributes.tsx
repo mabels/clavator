@@ -5,14 +5,16 @@ import * as Message from '../../../model/message';
 // import * as WsChannel from '../../model/ws-channel';
 // import { Progressor } from './progressor';
 import ChangeCard from '../../../gpg/change-card';
-import * as classnames from 'classnames';
+import classnames from 'classnames';
 import { observer } from 'mobx-react';
 import ButtonToProgressor from '../controls/button-to-progressor';
 import AppState from '../../model/app-state';
+import { observable } from 'mobx';
 
-interface DialogChangeAttributesState {
-  changeCard: ChangeCard;
-  transaction: Message.Transaction<ChangeCard>;
+class DialogChangeAttributesState {
+  @observable
+  public changeCard: ChangeCard;
+  public transaction: Message.Transaction<ChangeCard>;
 }
 
 interface DialogChangeAttributesProps extends React.Props<DialogChangeAttributes> {
@@ -26,10 +28,8 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
 
   constructor(props: DialogChangeAttributesProps) {
     super(props);
-    this.state = {
-      changeCard: null,
-      transaction: Message.newTransaction<ChangeCard>('ChangeCard.Request')
-    };
+    this.state = new DialogChangeAttributesState();
+    this.state.transaction = Message.newTransaction<ChangeCard>('ChangeCard.Request');
   }
 
  public updateAttributes(): () => void {
@@ -40,7 +40,7 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
   }
 
   public componentWillMount(): void {
-    this.setState({ changeCard: ChangeCard.fromCardStatus(this.props.cardStatus) });
+    this.state.changeCard = ChangeCard.fromCardStatus(this.props.cardStatus);
   }
 
   public render(): JSX.Element {

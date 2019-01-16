@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
 import { observable } from 'mobx';
-import * as classnames from 'classnames';
+import classnames from 'classnames';
 // import MutableString from '../gpg/mutable_string';
 // import * as Actions from './actions';
 // import AssistentCreateKey from './assistent-create-key';

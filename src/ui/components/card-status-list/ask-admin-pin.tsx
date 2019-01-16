@@ -20,18 +20,18 @@ export class AskAdminPin extends React.Component<AskAdminPinProps, AskAdminPinSt
     super(props);
     this.state = {
     };
-    this.handleChange = this.handleChange.bind(this);
+    // this.handleChange = this.handleChange.bind(this);
   }
 
   public getSetAdminPin(): string {
     if (!this.props.cardStatusListState.adminPins.has(this.props.serialNo)) {
       this.props.cardStatusListState.adminPins.set(this.props.serialNo, '');
     }
-    let val = this.props.cardStatusListState.adminPins.get(this.props.serialNo);
+    const val = this.props.cardStatusListState.adminPins.get(this.props.serialNo);
     return val;
   }
 
-  private handleChange(e: any): void {
+  private handleChange = (e: any): void => {
     this.props.cardStatusListState.adminPins.set(this.props.serialNo, e.target.value);
   }
 

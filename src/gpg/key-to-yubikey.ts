@@ -1,10 +1,11 @@
-
 import Pin from './pin';
 import MutableString from '../model/mutable-string';
+import { observable } from 'mobx';
 
 export class KeyToYubiKey {
   public fingerprint: string;
   public card_id: string;
+  @observable
   public slot_id: number = null;
   public admin_pin: Pin = new Pin();
   public passphrase: MutableString = new MutableString();

@@ -10,7 +10,9 @@ function action(y: yargs.Arguments, state: GpgMockState): boolean {
     match = 'import';
   }
   if (match) {
-    state.stdoutMock(match, `sec:u:256:22:19B013CF06A4CAFE:1464699940:1622379940::u:::cESCA:::#::ed25519::
+    state.stdoutMock(
+      match,
+      `sec:u:256:22:19B013CF06A4CAFE:1464699940:1622379940::u:::cESCA:::#::ed25519::
 fpr:::::::::F36846C4A7DEFD55F492069C19B013CF06A4CAFE:
 grp:::::::::75E60BCBF5E25BBBF0E701CD55BC79F4C03BC320:
 uid:u::::1488957915::D4B312C2CD42C1C31F1AE693D3FFDA777E6C6EB8::Gpg Test Master <gpg.sock@lodke.gpg>:
@@ -32,5 +34,8 @@ grp:::::::::A5516054BF25070216663AD255A8FC2DFBB6324B:`
 
 export function cli(y: yargs.Argv, state: GpgMockState): yargs.Argv {
   state.onParsed(action);
-  return yargs.option('full-gen-key', { describe: 'full-gen-key action', boolean: true});
+  return yargs.option('full-gen-key', {
+    describe: 'full-gen-key action',
+    boolean: true
+  });
 }

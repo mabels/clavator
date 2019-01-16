@@ -1,4 +1,3 @@
-
 const DICERegex = /^[1-6]{1,}$/;
 
 export class Diced {
@@ -52,7 +51,6 @@ export class Diced {
     }
     return 0;
   }
-
 }
 
 export class DiceWare {
@@ -70,13 +68,15 @@ export class DiceWare {
       random = Math.random();
     }
     // console.log('oneThrow:', random);
-    return (Math.floor(random * (max - min + 1)) + min);
+    return Math.floor(random * (max - min + 1)) + min;
   }
 
   public static fill(obj: any): DiceWare {
     // debugger;
     const fname = obj['fname'];
-    const list = (obj['list'] || []).map((i: any) => Diced.fill(i)).filter((d: Diced) => d);
+    const list = (obj['list'] || [])
+      .map((i: any) => Diced.fill(i))
+      .filter((d: Diced) => d);
     return new DiceWare(fname, list);
   }
 
@@ -101,7 +101,10 @@ export class DiceWare {
   }
 
   public randomDice(): Diced {
-    const diced = (new Array(this.diceCount)).fill(0).map(_ => DiceWare.oneThrow()).join('');
+    const diced = new Array(this.diceCount)
+      .fill(0)
+      .map(_ => DiceWare.oneThrow())
+      .join('');
     // console.log('randomDice:', diced);
     return this.dice(diced);
   }
@@ -111,7 +114,7 @@ export class DiceWare {
   }
 
   public dices(): number[] {
-    return (new Array(this.dicesCount())).fill(0).map((_, idx) => idx);
+    return new Array(this.dicesCount()).fill(0).map((_, idx) => idx);
   }
 
   public dicesCount(): number {
@@ -124,7 +127,6 @@ export class DiceWare {
       list: Array.from(this.diceWare.values())
     };
   }
-
 }
 
 export default DiceWare;

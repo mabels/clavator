@@ -3,12 +3,20 @@ import Pallet from '../model/pallet';
 import ObjectId from '../model/object-id';
 import StringValue from '../model/string-value';
 
-const EmailRegExp = new RegExp([`^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*`,
-`@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+[a-z])|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))`,
-`(:[0-9]{1,5})?$`].join(''), 'i');
+const EmailRegExp = new RegExp(
+  [
+    `^[-a-z0-9~!$%^&*_=+}{\'?]+(\.[-a-z0-9~!$%^&*_=+}{\'?]+)*`,
+    `@([a-z0-9_][-a-z0-9_]*(\.[-a-z0-9_]+[a-z])|([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}))`,
+    `(:[0-9]{1,5})?$`
+  ].join(''),
+  'i'
+);
 
 export class KeyGenUid extends ObjectId implements Pallet {
-  public name: StringValue = new StringValue(/^([A-Z][a-z]*\s*)+$/, 'name error');
+  public name: StringValue = new StringValue(
+    /^([A-Z][a-z]*\s*)+$/,
+    'name error'
+  );
   public email: StringValue = new StringValue(EmailRegExp, 'email error');
   public comment: StringValue = new StringValue(/.*/, 'comment error');
 
@@ -26,9 +34,7 @@ export class KeyGenUid extends ObjectId implements Pallet {
   public valid(): boolean {
     // console.log('KeyGenUid:', this.key, this.name.valid(),
     //    this.email.valid(), this.comment.valid());
-    return this.name.valid() &&
-      this.email.valid() &&
-      this.comment.valid();
+    return this.name.valid() && this.email.valid() && this.comment.valid();
   }
 
   public errText(): string[] {

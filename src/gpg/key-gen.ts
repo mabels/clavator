@@ -6,8 +6,9 @@ import Container from '../model/container';
 import Pallet from '../model/pallet';
 import ObjectId from '../model/object-id';
 
-import { assignOnError, format_date, expireDate  } from '../model/helper';
+import { assignOnError, format_date, expireDate } from '../model/helper';
 import { StringValue } from '../model/string-value';
+import { observable } from 'mobx';
 
 // export class Uid extends KeyGenUid {
 
@@ -62,11 +63,23 @@ export class KeyInfo extends ObjectId implements Pallet {
   public length: Option<number>;
   public usage: MultiOption<string>;
 
-  public constructor(type = 'RSA', length = 4096, usage = ['sign', 'encr', 'auth']) {
+  public constructor(
+    type = 'RSA',
+    length = 4096,
+    usage = ['sign', 'encr', 'auth']
+  ) {
     super('KeyInfo');
     this.type = new Option(type, ['RSA', 'DSA'], 'keyType Error');
-    this.length = new Option(length, [1024, 2048, 4096, 8192], 'sub keyLength Error');
-    this.usage = new MultiOption(usage, ['cert', 'sign', 'encr', 'auth'], 'keyUsage Error');
+    this.length = new Option(
+      length,
+      [1024, 2048, 4096, 8192],
+      'sub keyLength Error'
+    );
+    this.usage = new MultiOption(
+      usage,
+      ['cert', 'sign', 'encr', 'auth'],
+      'keyUsage Error'
+    );
   }
   public fill(js: any): void {
     Option.fill(js['type'] || {}, this.type);
@@ -77,8 +90,7 @@ export class KeyInfo extends ObjectId implements Pallet {
   }
 
   public valid(): boolean {
-    return this.type.valid() && this.length.valid() &&
-      this.usage.valid();
+    return this.type.valid() && this.length.valid() && this.usage.valid();
   }
 
   public errText(): string[] {
@@ -127,11 +139,22 @@ export class KeyInfo extends ObjectId implements Pallet {
 // }
 
 export class KeyGen {
-  public password: StringValue = new StringValue(/^.{14,1024}$/, 'Password Error');
+  public password: StringValue = new StringValue(
+    /^.{14,1024}$/,
+    'Password Error'
+  );
   public keyInfo: KeyInfo = new KeyInfo('RSA', 4096, ['cert']);
-  public expireDate: DateValue = new DateValue(expireDate(), 'expireDate error');
-  public uids: Container<KeyGenUid> = new Container<KeyGenUid>(() => { return new KeyGenUid(); });
-  public subKeys: Container<KeyInfo> = new Container<KeyInfo>(() => { return new KeyInfo(); });
+  public expireDate: DateValue = new DateValue(
+    expireDate(),
+    'expireDate error'
+  );
+  @observable
+  public uids: Container<KeyGenUid> = new Container<KeyGenUid>(() => {
+    return new KeyGenUid();
+  });
+  public subKeys: Container<KeyInfo> = new Container<KeyInfo>(() => {
+    return new KeyInfo();
+  });
 
   public static withSubKeys(cnt: number): KeyGen {
     let ret = new KeyGen();
@@ -159,16 +182,17 @@ export class KeyGen {
     assignOnError(this.password.valid(), ret, this.password.errText());
     // !this.adminPin.valid() && ret.push(this.adminPin.errText);
     // !this.userPin.valid() && ret.push(this.userPin.errText);
-    assignOnError(this.keyInfo.valid(), ret,  this.keyInfo.errText());
-    assignOnError(this.subKeys.valid(), ret,  this.subKeys.errText());
-    assignOnError(this.uids.valid(), ret,  this.uids.errText());
+    assignOnError(this.keyInfo.valid(), ret, this.keyInfo.errText());
+    assignOnError(this.subKeys.valid(), ret, this.subKeys.errText());
+    assignOnError(this.uids.valid(), ret, this.uids.errText());
     assignOnError(this.expireDate.valid(), ret, this.expireDate.errText);
     return ret;
   }
 
   public valid(): boolean {
     // console.log(this.errText());
-    let ret = this.password.valid() &&
+    let ret =
+      this.password.valid() &&
       //  this.adminPin.valid() && this.userPin.valid() &&
       this.keyInfo.valid() &&
       this.uids.valid() &&
@@ -186,7 +210,7 @@ export class KeyGen {
       'Key-Length: ' + this.keyInfo.length.value,
       'Key-Usage: ' + this.keyInfo.usage.values,
       'Name-Real: ' + this.uids.first().name.value,
-      'Name-Email: ' + this.uids.first().email.value,
+      'Name-Email: ' + this.uids.first().email.value
     ];
     if (this.uids.first().comment.value.length > 0) {
       ret.push('Name-Comment: ' + this.uids.first().comment.value);
@@ -196,7 +220,6 @@ export class KeyGen {
     ret.push('%echo done');
     return ret.join('\n');
   }
-
 }
 
 export default KeyGen;

@@ -1,4 +1,7 @@
+import { observable } from 'mobx';
+
 export class Pin {
+  @observable
   public pin: string;
   public match: RegExp = /.+/;
 

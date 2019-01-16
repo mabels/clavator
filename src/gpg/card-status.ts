@@ -49,10 +49,12 @@ export class Reader {
   }
 
   public eq(obj: Reader): boolean {
-    return this.model == obj.model &&
+    return (
+      this.model == obj.model &&
       this.aid == obj.aid &&
       this.cardid == obj.cardid &&
-      this.type == obj.type;
+      this.type == obj.type
+    );
   }
 }
 
@@ -105,16 +107,16 @@ export class Gpg2CardStatus {
   }
 
   private static decode(str: string): string {
-    return str.replace(/\\x[a-fA-F0-9]{2}/, (val) => {
+    return str.replace(/\\x[a-fA-F0-9]{2}/, val => {
       let num = parseInt(val.slice('\\x'.length), 16);
-      return  String.fromCharCode(num);
+      return String.fromCharCode(num);
     });
   }
 
   // typedef std::function<bool(Gpg2CardStatus &gcs, const std::vector<std::string> &strs)> GcsAction;
   private static actors(): { [id: string]: ActionFunc } {
     return {
-      'Reader': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      Reader: (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         let reader = Reader.fill(strs);
         if (!reader) {
           return false;
@@ -122,43 +124,43 @@ export class Gpg2CardStatus {
         gcs.reader = reader;
         return true;
       },
-      'version': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      version: (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.version = strs[1];
         return true;
       },
-      'vendor': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      vendor: (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.vendor = strs.slice(1, strs.length).join(':');
         return true;
       },
-      'serial': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      serial: (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.serial = strs.slice(1, strs.length).join(':');
         return true;
       },
-      'name': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      name: (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.name = strs.slice(1, strs.length).join(' ');
         return true;
       },
-      'lang': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      lang: (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.lang = strs[1];
         return true;
       },
-      'sex': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      sex: (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.sex = strs[1];
         return true;
       },
-      'url': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      url: (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.url = Gpg2CardStatus.decode(strs[1]);
         return true;
       },
-      'login': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      login: (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.login = strs[1];
         return true;
       },
-      'forcepin': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      forcepin: (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.forcepin = strs.slice(1, strs.length).join(':');
         return true;
       },
-      'keyattr': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      keyattr: (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         let id = parseInt(strs[1], 10);
         let ki = gcs.allocKeyState(id - 1);
         ki.id = id;
@@ -166,7 +168,7 @@ export class Gpg2CardStatus {
         ki.bits = parseInt(strs[3], 10);
         return true;
       },
-      'maxpinlen': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      maxpinlen: (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         let i = 0;
         for (let si = 1; si < strs.length; ++si, ++i) {
           let ki = gcs.allocKeyState(i);
@@ -174,7 +176,7 @@ export class Gpg2CardStatus {
         }
         return true;
       },
-      'pinretry': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      pinretry: (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         let i = 0;
         for (let si = 1; si < strs.length; ++si, ++i) {
           let ki = gcs.allocKeyState(i);
@@ -182,7 +184,7 @@ export class Gpg2CardStatus {
         }
         return true;
       },
-      'sigcount': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      sigcount: (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         gcs.sigcount = parseInt(strs[1], 10) || 0;
         let i = 0;
         for (let si = 2; si < strs.length; ++si, ++i) {
@@ -191,7 +193,7 @@ export class Gpg2CardStatus {
         }
         return true;
       },
-      'cafpr': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      cafpr: (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         // gcs.cafpr = parseInt(strs[1], 10);
         let i = 0;
         for (let si = 1; si < strs.length; ++si, ++i) {
@@ -200,7 +202,7 @@ export class Gpg2CardStatus {
         }
         return true;
       },
-      'fpr': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      fpr: (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         let i = 0;
         for (let si = 1; si < strs.length; ++si, ++i) {
           let ki = gcs.allocKeyState(i);
@@ -208,7 +210,7 @@ export class Gpg2CardStatus {
         }
         return true;
       },
-      'fprtime': (gcs: Gpg2CardStatus, strs: string[]): boolean => {
+      fprtime: (gcs: Gpg2CardStatus, strs: string[]): boolean => {
         let i = 0;
         for (let si = 1; si < strs.length; ++si, ++i) {
           let ki = gcs.allocKeyState(i);
@@ -246,7 +248,7 @@ export class Gpg2CardStatus {
         return;
       }
       // std::cerr << "Action:" << action->first << std::endl;
-      if (!(action)(gcsi, strs)) {
+      if (!action(gcsi, strs)) {
         gcsi = null;
       }
     });
@@ -301,7 +303,6 @@ export class Gpg2CardStatus {
     }
     return ret;
   }
-
 }
 
 export function run(str: string): Gpg2CardStatus[] {

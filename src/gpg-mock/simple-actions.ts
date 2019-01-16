@@ -5,7 +5,10 @@ function quickAddKeyAction(y: yargs.Arguments, state: GpgMockState): boolean {
   return y.quickAddkey;
 }
 
-function exportSecretKeyAction(y: yargs.Arguments, state: GpgMockState): boolean {
+function exportSecretKeyAction(
+  y: yargs.Arguments,
+  state: GpgMockState
+): boolean {
   // console.log(y);
   if (y.exportSecretKey) {
     state.stdout('-----BEGIN PGP PRIVATE KEY BLOCK-----');
@@ -30,7 +33,10 @@ function exportSshKeyAction(y: yargs.Arguments, state: GpgMockState): boolean {
   return false;
 }
 
-function deleteSecretKeyAction(y: yargs.Arguments, state: GpgMockState): boolean {
+function deleteSecretKeyAction(
+  y: yargs.Arguments,
+  state: GpgMockState
+): boolean {
   return y.deleteSecretKey;
 }
 
@@ -48,9 +54,9 @@ export function cli(y: yargs.Argv, state: GpgMockState): yargs.Argv {
   return yargs.options({
     'quick-addkey': { describe: 'quick-addkey action', boolean: true },
     'export-secret-key': { describe: 'export secret key', type: 'string' },
-    'export': { describe: 'export public key', type: 'string'},
-    'export-ssh-key': { describe: 'export ssh public key', type: 'string'},
-    'delete-secret-key': { describe: 'delete secret key', type: 'string'},
-    'delete-key': { describe: 'delete key' , type: 'string'},
+    export: { describe: 'export public key', type: 'string' },
+    'export-ssh-key': { describe: 'export ssh public key', type: 'string' },
+    'delete-secret-key': { describe: 'delete secret key', type: 'string' },
+    'delete-key': { describe: 'delete key', type: 'string' }
   });
 }

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as classnames from 'classnames';
+import classnames from 'classnames';
 // import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 // import BooleanValue from '../../../model/boolean-value';
@@ -33,7 +33,6 @@ export class InputPassPhrase extends
 
   constructor(props: InputPassPhraseProps) {
     super(props);
-    this.state = { };
   }
 
   public render(): JSX.Element {

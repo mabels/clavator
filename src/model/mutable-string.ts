@@ -1,4 +1,7 @@
+import { observable } from 'mobx';
+
 export class MutableString {
+  @observable
   public value: string = null;
   public static fill(js: any): MutableString {
     let m = new MutableString();

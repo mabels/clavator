@@ -1,4 +1,3 @@
-
 export class KeyState {
   public id: number;
   public mode: number;
@@ -40,7 +39,8 @@ export class KeyState {
   }
 
   public eq(o: KeyState): boolean {
-    return this.id == o.id &&
+    return (
+      this.id == o.id &&
       this.mode == o.mode &&
       this.bits == o.bits &&
       this.maxpinlen == o.maxpinlen &&
@@ -48,7 +48,8 @@ export class KeyState {
       this.sigcount == o.sigcount &&
       this.cafpr == o.cafpr &&
       this.fpr == o.fpr &&
-      this.fprtime == o.fprtime;
+      this.fprtime == o.fprtime
+    );
   }
 }
 

@@ -33,11 +33,11 @@ export default class GpgMockState {
   }
 
   public stdout(str: string): void {
-    this.stdOut.push({fname: '', value: str});
+    this.stdOut.push({ fname: '', value: str });
   }
 
   public stdoutMock(mockFname: string, str: string): void {
-    this.stdOut.push({fname: mockFname, value: str});
+    this.stdOut.push({ fname: mockFname, value: str });
   }
 
   public exitCode(code: number): void {
@@ -58,22 +58,37 @@ export default class GpgMockState {
     if (this._processed) {
       this.stdOut.forEach(i => console.log(i.value));
     }
-    if (process.env['NODEEXECTRANSACTION'] && y.homedir && fs.existsSync(y.homedir)) {
-      const dump = path.join(y.homedir || '', `${process.env['NODEEXECTRANSACTION']}.dump`);
-      const readFds = (y.passphraseFd || []).map((fd: any) => { return {
-        'fd': fd,
-        'value': fs.readFileSync(fd, 'utf-8').toString()
-      }; });
-      fs.writeFileSync(dump, JSON.stringify({
-        'args': {
-          process: process.argv,
-          yargs: y
-        },
-        'readFds': readFds,
-        'env': process.env
-      }, null, ' '));
+    if (
+      process.env['NODEEXECTRANSACTION'] &&
+      y.homedir &&
+      fs.existsSync(y.homedir)
+    ) {
+      const dump = path.join(
+        y.homedir || '',
+        `${process.env['NODEEXECTRANSACTION']}.dump`
+      );
+      const readFds = (y.passphraseFd || []).map((fd: any) => {
+        return {
+          fd: fd,
+          value: fs.readFileSync(fd, 'utf-8').toString()
+        };
+      });
+      fs.writeFileSync(
+        dump,
+        JSON.stringify(
+          {
+            args: {
+              process: process.argv,
+              yargs: y
+            },
+            readFds: readFds,
+            env: process.env
+          },
+          null,
+          ' '
+        )
+      );
     }
     process.exit(this._exitCode);
   }
-
 }

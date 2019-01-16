@@ -16,17 +16,17 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = [{
   target: 'web',
-  entry: './src/ui/client',
+  entry: './src/ui/client.js',
   output: {
     path: __dirname + '/dist',
     filename: 'client.js'
   },
   module: {
     rules: [
-      {
-        test: /\.tsx?$/,
-        loader: 'ts-loader'
-      },
+      // {
+      //   test: /\.tsx?$/,
+      //   loader: 'ts-loader'
+      // },
       {
         test: /\.css$/,
         loader: ExtractTextPlugin.extract('css-loader?sourceMap!less-loader?sourceMap')
@@ -51,7 +51,7 @@ module.exports = [{
   },
   devtool: 'source-map',
   resolve: {
-    extensions: ['.tsx', '.ts', '.webpack.js', '.web.js', '.js']
+    extensions: [/* '.tsx', '.ts', */ '.webpack.js', '.web.js', '.js']
   },
   plugins: [
     new ExtractTextPlugin('styles.css'),
@@ -59,88 +59,4 @@ module.exports = [{
       template: './src/ui/index.ejs'
     })
   ]
-},{
-  target: 'node',
-  entry: './src/gpg-mock/gpg-mock',
-  output: {
-    path: __dirname + '/dist',
-    filename: 'gpg-mock.js',
-    libraryTarget: 'commonjs2'
-  },
-  module: {
-    loaders: [
-      {
-        test: /\.tsx?$/,
-        loader: 'awesome-typescript-loader?useBabel=false'
-      }
-    ]
-  },
-  externals: node_modules,
-  devtool: 'source-map',
-  resolve: {
-    extensions: ['.ts', '.webpack.js', '.web.js', '.js']
-  }
-},{
-  target: 'node',
-  entry: './src/server/server',
-  output: {
-    path: __dirname + '/dist',
-    filename: 'server.js',
-    libraryTarget: 'commonjs2'
-  },
-  module: {
-    loaders: [
-      {
-        test: /\.tsx?$/,
-        loader: 'awesome-typescript-loader?useBabel=false'
-      }
-    ]
-  },
-  externals: node_modules,
-  devtool: 'source-map',
-  resolve: {
-    extensions: ['.ts', '.webpack.js', '.web.js', '.js']
-  }
-},{
-  target: 'node',
-  entry: './test/all',
-  output: {
-    path: __dirname + '/dist',
-    filename: 'test.js',
-    libraryTarget: 'commonjs2'
-  },
-  module: {
-    loaders: [
-      {
-        test: /\.tsx?$/,
-        loader: 'awesome-typescript-loader?useBabel=false'
-      },
-      {
-        test: /\.css$/,
-        loader: 'style-loader!css-loader!less-loader'
-      },
-      {
-        test: /\.less$/,
-        loader: 'style-loader!css-loader!less-loader'
-      },
-      {
-          test: /\.png$/,
-          loader: "url-loader",
-          query: { mimetype: "image/png" }
-      },
-      {
-        test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-        loader: "url-loader?limit=10000&mimetype=application/font-woff"
-      },
-      {
-        test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-        loader: "file-loader"
-      }
-    ]
-  },
-  externals: node_modules,
-  devtool: 'source-map',
-  resolve: {
-    extensions: ['.tsx', '.ts', '.webpack.js', '.web.js', '.js']
-  }
 }];

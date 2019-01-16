@@ -1,4 +1,5 @@
 import * as uuid from 'uuid';
+import { observable } from 'mobx';
 
 export class Header {
   public action: string;
@@ -58,6 +59,7 @@ export function prepare<T>(action: Header, data: T = null): string {
 
 export class Transaction<T> {
   public header: Header;
+  @observable
   public data: T;
 
   public asMsg(data?: T): string {

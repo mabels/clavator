@@ -4,6 +4,7 @@ import * as ListSecretKeys from './list-secret-keys';
 import * as FullGenKey from './full-gen-key';
 import * as SimpleActions from './simple-actions';
 import * as Agent from './agent';
+import * as CardStatus from './card-status';
 
 function cli(args: string[]): void {
   const state = GpgMockState.create();
@@ -28,6 +29,7 @@ function cli(args: string[]): void {
   y = FullGenKey.cli(y, state);
   y = SimpleActions.cli(y, state);
   y = Agent.cli(y, state);
+  y = CardStatus.cli(y, state);
   y = y.help().showHelpOnFail(true);
   y.parse(args.slice(2), (err: any, argv: yargs.Arguments, output: any) => {
     state.parsed(argv);

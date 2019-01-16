@@ -1,4 +1,3 @@
-
 import Pin from './pin';
 import { Gpg2CardStatus } from './card-status';
 
@@ -25,7 +24,10 @@ export class ChangeCard {
     // return new ChangeCard(js['action'], js['params']);
   }
 
-  public static fromCardStatus(cs: Gpg2CardStatus, pin: string = null): ChangeCard {
+  public static fromCardStatus(
+    cs: Gpg2CardStatus,
+    pin: string = null
+  ): ChangeCard {
     // debugger
     return ChangeCard.fill({
       adminPin: { pin: pin },
@@ -39,13 +41,15 @@ export class ChangeCard {
   }
 
   public valid(): boolean {
-    return this.adminPin.verify() &&
+    return (
+      this.adminPin.verify() &&
       this.serialNo.length > 0 &&
-      typeof(this.lang) == 'string' &&
-      typeof(this.name) == 'string' &&
-      typeof(this.login) == 'string' &&
-      typeof(this.sex) == 'string' &&
-      typeof(this.url) == 'string';
+      typeof this.lang == 'string' &&
+      typeof this.name == 'string' &&
+      typeof this.login == 'string' &&
+      typeof this.sex == 'string' &&
+      typeof this.url == 'string'
+    );
   }
 }
 

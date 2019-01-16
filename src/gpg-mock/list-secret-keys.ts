@@ -3,7 +3,9 @@ import * as yargs from 'yargs';
 
 function action(y: yargs.Arguments, state: GpgMockState): boolean {
   if (y.listSecretKeys && y.withColons) {
-    state.stdoutMock('list-secrect-keys', `sec:-:2048:1:1A5D93796CF70ADF:1333149072:1493647783::-:::escaESCA:::+::::
+    state.stdoutMock(
+      'list-secrect-keys',
+      `sec:-:2048:1:1A5D93796CF70ADF:1333149072:1493647783::-:::escaESCA:::+::::
 fpr:::::::::547484819BCCDBDA0E73858F1A5D93796CF70ADF:
 grp:::::::::71AA10F2E9194FF66E3FD4AE883B4CB9180CF977:
 uid:-::::1462111783::A319A573075CF1606705BDA9FD5F07E5AD24F257::Meno Abels <meno.abels@adviser.com>:::::::::
@@ -29,7 +31,8 @@ fpr:::::::::F78D5B547A9BB0E8A174C0F5060FF53CB3A32992:
 grp:::::::::EC5F333359383F725488E7DEC8B289EC521E5F39:
 ssb:u:4096:1:3D851A5DF09DEB9C:1465218921:1622898921:::::es:::D2760001240102010006041775630000:::
 fpr:::::::::B3B94966DF73077EFA734EC83D851A5DF09DEB9C:
-grp:::::::::2DC62D282D308E58A8C7C4F7652955AC146860D2:`);
+grp:::::::::2DC62D282D308E58A8C7C4F7652955AC146860D2:`
+    );
     state.exitCode(0);
     return true;
   }
@@ -38,5 +41,8 @@ grp:::::::::2DC62D282D308E58A8C7C4F7652955AC146860D2:`);
 
 export function cli(y: yargs.Argv, state: GpgMockState): yargs.Argv {
   state.onParsed(action);
-  return yargs.option('list-secret-keys', { describe: 'list secret keys', boolean: true});
+  return yargs.option('list-secret-keys', {
+    describe: 'list secret keys',
+    boolean: true
+  });
 }

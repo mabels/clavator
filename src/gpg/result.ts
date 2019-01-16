@@ -28,7 +28,7 @@ export class Result {
   public stdErr: string;
   public stdIn: string;
   public execTransaction: ExecTransaction;
-  public env: { [id: string]: string; } = {};
+  public env: { [id: string]: string } = {};
   public exitCode: number;
   public runQueue: ResultQueue[] = [];
   public readonly gpg: Gpg;
@@ -51,13 +51,19 @@ export class Result {
     return this;
   }
 
-  public run(cmd: string, cmdArgs: Mixed[], attributes: Mixed[], cb: (res: Result) => void): void {
+  public run(
+    cmd: string,
+    cmdArgs: Mixed[],
+    attributes: Mixed[],
+    cb: (res: Result) => void
+  ): void {
     let args = cmdArgs.concat(attributes);
     this.runQueue.push({ cmd: cmd, attributes: args, cb: cb });
     if (this.runQueue.length == 1) {
       this._run(cmd, args, cb);
     }
   }
+
   public processQueue(): void {
     this.runQueue.shift();
     if (this.runQueue.length > 0) {
@@ -65,30 +71,38 @@ export class Result {
       this._run(head.cmd, head.attributes, head.cb);
     }
   }
-  private _run(cmd: string, attributes: Mixed[], cb: (res: Result) => void): void {
+
+  private _run(
+    cmd: string,
+    attributes: Mixed[],
+    cb: (res: Result) => void
+  ): void {
     // console.log("run=["+cmd+"]", attributes);
     let fds: (() => string)[] = [];
     let freeFd = 3;
-    let attrs = attributes.map((i) => {
-      if (typeof (i) == 'function') {
+    let attrs = attributes.map(i => {
+      if (typeof i == 'function') {
         fds.push(i);
         return '' + freeFd++;
       }
       return i;
     });
-    let writables: string[] = fds.map((func) => {
+    let writables: string[] = fds.map(func => {
       return 'pipe';
     });
 
     let stdio: any[] = ['pipe', 'pipe', 'pipe'];
     stdio = stdio.concat(writables);
-    console.log('STDIO:', stdio);
+    // console.log('STDIO:', stdio);
     this.execTransaction = { transaction: uuid.v4() };
-    // console.log("run=",cmd, attrs);
+    console.log('run=', cmd, attrs);
     const c = spawn(cmd, attrs, {
-      env: Object.assign({
-        NODEEXECTRANSACTION: this.execTransaction.transaction
-      }, this.env),
+      env: Object.assign(
+        {
+          NODEEXECTRANSACTION: this.execTransaction.transaction
+        },
+        this.env
+      ),
       stdio: stdio
     });
     c.on('error', (e: Event) => {
@@ -105,31 +119,40 @@ export class Result {
 
     // console.log(">>>>>>", stdio.length);
     for (let j = 3; j < stdio.length; ++j) {
-      ((i) => {
+      (i => {
         let s_closed = false;
         c.stdio[i].on('error', (e: any) => {
           if (!s_closed) {
             console.error('stdio->' + i + '->error', e);
           }
         });
-        c.stdio[i].on('end', () => { console.log("stdio->"+i+"->end"); });
+        c.stdio[i].on('end', () => {
+          // console.log('stdio->'+i+"->end");
+        });
         let s = new stream.Readable();
-        console.log(">>>>>>", stdio.length, i, 1, fds[i-3]());
+        // console.log(">>>>>>", stdio.length, i, 1, fds[i-3]());
         s.push(fds[i - 3]());
-        console.log(">>>>>>", stdio.length, i, 2);
+        // console.log(">>>>>>", stdio.length, i, 2);
         s.push(null);
-        console.log(">>>>>>", stdio.length, i, 3);
-        s.pipe(c.stdio[i] as stream.Writable, { end: true });
-        console.log(">>>>>>", stdio.length, i, 4);
+        // console.log(">>>>>>", stdio.length, i, 3);
+        s.pipe(
+          c.stdio[i] as stream.Writable,
+          { end: true }
+        );
+        // console.log(">>>>>>", stdio.length, i, 4);
         s.on('end', () => {
           s_closed = true;
-          console.log("s.end:", i);
+          // console.log("s.end:", i);
         });
       })(j);
     }
 
-    c.stdout.on('data', (data: string) => { this.stdOut += data; });
-    c.stderr.on('data', (data: string) => { this.stdErr += data; });
+    c.stdout.on('data', (data: string) => {
+      this.stdOut += data;
+    });
+    c.stderr.on('data', (data: string) => {
+      this.stdErr += data;
+    });
     c.on('close', (code: number) => {
       if (code) {
         console.error(`SPAWN CLOSE:`, cmd, attrs, code);
@@ -141,22 +164,31 @@ export class Result {
   }
 
   private readExectransactionDump(cb: (res: Result) => void): void {
-    this.execTransaction.dumpFname = path.join(this.gpg.homeDir || '', `${this.execTransaction.transaction}.dump`);
-    console.log(`readExectransactionDump:${this.execTransaction.dumpFname}`);
-    fsPromise.readFile(this.execTransaction.dumpFname).then(data => {
-      try {
-        this.execTransaction.data = JSON.parse(data.toString());
-      } catch (_) {
-        /* */
-      }
-      fsPromise.unlink(this.execTransaction.dumpFname).then(_ => {
-        cb(this);
-      }).catch(err => {
+    this.execTransaction.dumpFname = path.join(
+      this.gpg.homeDir || '',
+      `${this.execTransaction.transaction}.dump`
+    );
+    // console.log(`readExectransactionDump:${this.execTransaction.dumpFname}`);
+    fsPromise
+      .readFile(this.execTransaction.dumpFname)
+      .then(data => {
+        try {
+          this.execTransaction.data = JSON.parse(data.toString());
+        } catch (_) {
+          /* */
+        }
+        fsPromise
+          .unlink(this.execTransaction.dumpFname)
+          .then(_ => {
+            cb(this);
+          })
+          .catch(err => {
+            cb(this);
+          });
+      })
+      .catch(err => {
         cb(this);
       });
-    }).catch(err => {
-      cb(this);
-    });
   }
 }
 

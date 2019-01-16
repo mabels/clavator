@@ -3,6 +3,7 @@ import * as React from 'react';
 import * as Message from '../../../model/message';
 import * as WsChannel from '../../model/ws-channel';
 import * as ReactModal from 'react-modal';
+import { observable } from 'mobx';
 
 interface ChannelStatusState {
   status: string;
@@ -13,19 +14,21 @@ interface ChannelStatusProps extends React.Props<ChannelStatus> {
 }
 
 export class ChannelStatus extends
-  React.Component<ChannelStatusProps, ChannelStatusState> {
+  React.Component<ChannelStatusProps, {}> implements ChannelStatusState {
+
+  @observable public status: string;
 
   constructor(props: ChannelStatusProps) {
     super(props);
-    this.state = { status: 'not started' };
+    this.status = 'not started';
   }
 
   public onOpen(e: Event): void {
-    this.setState({ status: 'connected' });
+    this.status = 'connected';
   }
 
   public onClose(e: CloseEvent): void {
-    this.setState({ status: 'not connected' });
+    this.status = 'not connected';
   }
 
   public onMessage(action: Message.Header, data: string): void {
