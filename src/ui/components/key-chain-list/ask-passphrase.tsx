@@ -1,11 +1,9 @@
 
 import * as React from 'react';
+import { observer } from 'mobx-react';
+import { observable } from 'mobx';
 
-import MutableString from '../../../model/mutable-string';
-
-interface AskPassphraseState {
-  value: string;
-}
+import { MutableString } from '../../../model';
 
 interface AskPassphraseProps extends React.Props<AskPassphrase> {
   passphrase?: MutableString;
@@ -13,14 +11,15 @@ interface AskPassphraseProps extends React.Props<AskPassphrase> {
   completed: (pp: string) => void;
 }
 
+@observer
 export class AskPassphrase
-  extends React.Component<AskPassphraseProps, AskPassphraseState> {
+  extends React.Component<AskPassphraseProps, {}> {
+
+  @observable
+  public value: string;
 
   constructor(props: AskPassphraseProps) {
     super(props);
-    this.state = {
-      value: null
-    };
   }
 
   public render(): JSX.Element {
@@ -31,15 +30,15 @@ export class AskPassphrase
         <label>Passphrase:</label><input type="password"
           name={`ap-${this.props.key}`}
           onChange={(e: any) => {
-            if (this.state.value) {
-              this.setState({ value : e.target.value });
+            if (this.value) {
+              this.value = e.target.value;
             } else {
               this.props.passphrase.value = e.target.value;
             }
           }} />
         <button type="button" onClick={(e: any) => {
           if (this.props.completed) {
-            this.props.completed(this.state.value || this.props.passphrase.value);
+            this.props.completed(this.value || this.props.passphrase.value);
           }
         }}>Ready</button>
       </form>

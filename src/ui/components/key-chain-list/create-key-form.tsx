@@ -1,17 +1,27 @@
 import * as React from 'react';
-import InputExpireDate from '../controls/input-expire-date';
-import KeyGenUid from '../../../gpg/key-gen-uid';
-import RcDoublePassword from '../controls/rc-double-password';
+import {
+    KeyGenUid,
+    KeyGen } from '../../../gpg';
+import { NestedFlag } from '../../../model/nested-flag';
+import { RcDoublePassword,
+InputExpireDate } from '../controls';
+
 import { CreateKeyCreate } from './create-key-create';
-import KeyGen from '../../../gpg/key-gen';
-import NestedFlag from '../../../model/nested-flag';
 import { CreateKeyUid } from './create-key-uid';
 import { CreateKeyLong } from './create-key-long';
 import { CreateKeyCompact } from './create-key-compact';
+import { AppState } from '../../model';
+import { Message } from '../../../model';
+import { CreateKey } from './create-key';
 
 export interface CreateKeyFormProps {
-    readonly keyGen: KeyGen;
-    readonly readOnly: NestedFlag;
+  readonly compact: boolean;
+  readonly keyGen: KeyGen;
+  readonly readOnly: NestedFlag;
+  readonly appState: AppState;
+  readonly createKey: CreateKey;
+  readonly transaction: Message.Transaction<KeyGen>;
+  readonly renderSubmit?: (ck: CreateKey) => JSX.Element;
 }
 
 export function CreateKeyForm(props: CreateKeyFormProps): JSX.Element {
@@ -46,12 +56,16 @@ export function CreateKeyForm(props: CreateKeyFormProps): JSX.Element {
           {this.render_verify_password('Password', 'cq-password', this.state.keyGen.password)}
         </div>
         */}
-      <CreateKeyLong  compact={props} />
-      <CreateKeyCompact compact={props} />
-      // {this.render_long()}
-      // {this.render_compact()}
+      <CreateKeyLong  compact={props.compact} keyGen={props.keyGen} />
+      <CreateKeyCompact compact={props.compact} keyGen={props.keyGen} />
       <div className="row">
-        <CreateKeyCreate  />
+        <CreateKeyCreate
+          createKey={props.createKey}
+          renderSubmit={props.renderSubmit}
+          appState={props.appState}
+          createDialog={}
+          transaction={props.transaction}
+        />
       </div>
     </form>
   );

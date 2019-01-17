@@ -1,16 +1,18 @@
 import * as React from 'react';
-import { ButtonToProgressor } from '../controls/button-to-progressor';
-import CreateKey from './create-key';
-import AppState from '../../model/app-state';
-import * as KeyGen from '../../../gpg/key-gen';
-import * as Message from '../../../model/message';
 import { observer } from 'mobx-react';
+
+import { ButtonToProgressor } from '../controls';
+import { CreateKey } from './create-key';
+import { AppState } from '../../model';
+import { Message } from '../../../model';
+import { KeyGen } from '../../../gpg';
 
 export interface CreateKeyCreateProps {
   readonly renderSubmit?: (ck: CreateKey) => JSX.Element;
   readonly appState: AppState;
-  readonly transaction: Message.Transaction<KeyGen.KeyGen>;
   createDialog: boolean;
+  transaction: Message.Transaction<KeyGen>;
+  createKey: CreateKey;
 }
 
 function create_key(props: CreateKeyCreateProps): void {
@@ -21,7 +23,7 @@ function create_key(props: CreateKeyCreateProps): void {
 
 export const CreateKeyCreate = observer((props: CreateKeyCreateProps): JSX.Element => {
   if (props.renderSubmit) {
-    return props.renderSubmit(this);
+    return props.renderSubmit(props.createKey);
   }
   return (
     <ButtonToProgressor

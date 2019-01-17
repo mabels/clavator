@@ -3,14 +3,13 @@ import * as React from 'react';
 import * as ReactModal from 'react-modal';
 import { observer } from 'mobx-react';
 
-import { CardStatus } from '../../../gpg';
-import { Message } from '../../../model';
+import { Gpg2CardStatus } from '../../../gpg';
 import { AppState } from '../../model';
 import { ChangePin } from './change-pin';
 
 export interface DialogChangePinProps {
   onClose: () => void;
-  cardStatus: CardStatus.Gpg2CardStatus;
+  cardStatus: Gpg2CardStatus;
   appState: AppState;
   type: string;
 }

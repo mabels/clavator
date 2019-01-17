@@ -1,33 +1,31 @@
 import * as React from 'react';
 import * as  ReactModal from 'react-modal';
-// import * as CopyToClipboard from 'react-copy-to-clipboard';
-import { AskPassphrase } from './ask-passphrase';
-import * as ListSecretKeys from '../../../gpg/list-secret-keys';
-import * as WsChannel from '../../model/ws-channel';
-// import { CardStatusListState } from './card-status-list-state';
-import MutableString from '../../../model/mutable-string';
-import ReadAsciiResponse from '../controls/read-ascii-respond';
 
-interface DialogAskRenderAsciiState {
-  passPhrase: MutableString;
-  doRead: boolean;
-}
+import { GpgKey } from '../../../gpg';
+import { Dispatch } from '../../model';
+import { MutableString } from '../../../model';
+
+import { AskPassphrase } from './ask-passphrase';
+import { ReadAsciiRespond } from '../controls';
+import { observable } from 'mobx';
 
 interface DialogAskRenderAsciiProps extends React.Props<DialogAskRenderAscii> {
   onClose: () => void;
-  secKey: ListSecretKeys.Key;
-  channel: WsChannel.Dispatch;
+  secKey: GpgKey;
+  channel: Dispatch;
   action: string;
 }
 
-export class DialogAskRenderAscii extends React.Component<DialogAskRenderAsciiProps, DialogAskRenderAsciiState> {
+export class DialogAskRenderAscii extends React.Component<DialogAskRenderAsciiProps, {}> {
+
+  public passPhrase: MutableString;
+  @observable
+  public doRead: boolean;
 
   constructor(props: DialogAskRenderAsciiProps) {
     super(props);
-    this.state = {
-      passPhrase: new MutableString(),
-      doRead: false
-    };
+    this.passPhrase = new MutableString();
+    this.doRead = false;
   }
 
   public render(): JSX.Element {
@@ -41,15 +39,15 @@ export class DialogAskRenderAscii extends React.Component<DialogAskRenderAsciiPr
         <i style={{ float: 'right' }} onClick={this.props.onClose} className="closeBox fa fa-close"></i>
         <h4>{this.props.action}:{this.props.secKey.fingerPrint.fpr}</h4>
         <AskPassphrase
-          passphrase={this.state.passPhrase}
+          passphrase={this.passPhrase}
           fingerprint={this.props.secKey.fingerPrint.fpr}
-          completed={(pp) => this.setState({doRead: true })}
+          completed={(pp) => this.doRead = true}
           />
-        {this.state.doRead ? <ReadAsciiResponse
+        {this.doRead ? <ReadAsciiRespond
           action="pem-private"
           secKey={this.props.secKey}
           channel={this.props.channel}
-          passPhrase={this.state.passPhrase}
+          passPhrase={this.passPhrase}
         /> : null}
       </ReactModal>
     );

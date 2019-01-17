@@ -1,5 +1,5 @@
-import * as Message from '../model/message';
 import * as WebSocket from 'ws';
+import { Message } from '../model/message';
 
 export interface Equalizer<T> {
   eq(o: T): boolean;

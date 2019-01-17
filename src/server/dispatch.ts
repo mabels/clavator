@@ -1,18 +1,19 @@
 import * as WebSocket from 'ws';
 
-import * as Message from '../model/message';
-
-import * as Gpg from '../gpg/gpg';
-import Dispatcher from './dispatcher';
+import { Dispatcher } from './dispatcher';
 import { Observer } from './observer';
-import GpgCreateKeySet from './dispatcher/gpg-create-key-set';
-import GpgResetYubikey from './dispatcher/gpg-reset-yubikey';
-import GpgChangePinYubikey from './dispatcher/gpg-change-pin-yubikey';
-import GpgChangeCard from './dispatcher/gpg-change-card';
-import DeleteSecretKey from './dispatcher/delete-secret-key';
-import RequestAsciiDispatcher from './dispatcher/request-ascii-dispatcher';
-import SendKeyToYubiKey from './dispatcher/send-key-to-yubikey';
-import DiceWareDispatcher from './dispatcher/dice-ware-dispatcher';
+import { Gpg } from '../gpg';
+import { Message } from '../model';
+import {
+  GpgCreateKeySet,
+  GpgResetYubikey,
+  GpgChangePinYubikey,
+  GpgChangeCard,
+  DeleteSecretKey,
+  RequestAsciiDispatcher,
+  SendKeyToYubiKey,
+  DiceWareDispatcher
+} from './dispatcher';
 
 export class Dispatch {
   public dispatcher: Dispatcher[] = [];
@@ -25,7 +26,7 @@ export class Dispatch {
   }
 }
 
-export function start(gpg: Gpg.Gpg): Dispatch {
+export function startDispatch(gpg: Gpg): Dispatch {
   console.log('Dispatch.start');
   let dispatch = new Dispatch();
   dispatch.dispatcher.push(GpgCreateKeySet.create(gpg));

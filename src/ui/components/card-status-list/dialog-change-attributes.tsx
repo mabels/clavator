@@ -1,44 +1,44 @@
 import * as React from 'react';
 import * as ReactModal from 'react-modal';
-import { observable } from 'mobx';
 import { observer } from 'mobx-react';
-
-import { CardStatus, ChangeCard } from '../../../gpg';
-import { Message } from '../../../model';
+import { observable } from 'mobx';
 import classnames from 'classnames';
-import { ButtonToProgressor } from '../controls';
-import { AppState } from '../../model';
 
-class DialogChangeAttributesState {
-  @observable
-  public changeCard: ChangeCard;
-  public transaction: Message.Transaction<ChangeCard>;
-}
+import {
+  Gpg2CardStatus,
+  ChangeCard } from '../../../gpg';
+
+import { Message } from '../../../model';
+import { AppState } from '../../model';
+import { ButtonToProgressor } from '../controls';
 
 interface DialogChangeAttributesProps extends React.Props<DialogChangeAttributes> {
   onClose: () => void;
-  cardStatus: CardStatus.Gpg2CardStatus;
+  cardStatus: Gpg2CardStatus;
   appState: AppState;
 }
 
 @observer
-export class DialogChangeAttributes extends React.Component<DialogChangeAttributesProps, DialogChangeAttributesState> {
+export class DialogChangeAttributes extends React.Component<DialogChangeAttributesProps, {}> {
+
+  @observable
+  public changeCard: ChangeCard;
+  public transaction: Message.Transaction<ChangeCard>;
 
   constructor(props: DialogChangeAttributesProps) {
     super(props);
-    this.state = new DialogChangeAttributesState();
-    this.state.transaction = Message.newTransaction<ChangeCard>('ChangeCard.Request');
+    this.transaction = Message.newTransaction<ChangeCard>('ChangeCard.Request');
   }
 
  public updateAttributes(): () => void {
     return (() => {
-      this.state.transaction.data = this.state.changeCard;
-      this.props.appState.channel.send(this.state.transaction.asMsg());
+      this.transaction.data = this.changeCard;
+      this.props.appState.channel.send(this.transaction.asMsg());
     }).bind(this);
   }
 
   public componentWillMount(): void {
-    this.state.changeCard = ChangeCard.fromCardStatus(this.props.cardStatus);
+    this.changeCard = ChangeCard.fromCardStatus(this.props.cardStatus);
   }
 
   public render(): JSX.Element {
@@ -51,52 +51,46 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
       >
         <i style={{ float: 'right' }} onClick={this.props.onClose} className="closeBox fa fa-close"></i>
         <h4>ChangeAttributes:</h4>
-        <h5>{this.state.changeCard.name}({this.state.changeCard.serialNo})</h5>
+        <h5>{this.changeCard.name}({this.changeCard.serialNo})</h5>
         {/*<form>*/}
         <label>AdminPin:</label><input type="password"
           name="admin-pin"
-          className={classnames({ good: this.state.changeCard.adminPin.verify() })}
+          className={classnames({ good: this.changeCard.adminPin.verify() })}
           onChange={(e: any) => {
-            this.state.changeCard.adminPin.pin = e.target.value;
-            this.setState({changeCard: this.state.changeCard});
+            this.changeCard.adminPin.pin = e.target.value;
           }} />
         <label>Name of cardholder:</label><input type="text"
           onChange={(e: any) => {
-            this.state.changeCard.name = e.target.value;
-            this.setState({changeCard: this.state.changeCard});
+            this.changeCard.name = e.target.value;
           }}
-          value={this.state.changeCard.name} />
+          value={this.changeCard.name} />
         <label>Language prefs:</label><input type="text"
           onChange={(e: any) => {
-            this.state.changeCard.lang = e.target.value;
-            this.setState({changeCard: this.state.changeCard});
+            this.changeCard.lang = e.target.value;
           }}
-          value={this.state.changeCard.lang} />
-        <label>Sex:</label><select value={this.state.changeCard.sex[0]}
+          value={this.changeCard.lang} />
+        <label>Sex:</label><select value={this.changeCard.sex[0]}
           onChange={(e) => {
-            this.state.changeCard.sex = e.target.value[0];
-            this.setState({changeCard: this.state.changeCard});
+            this.changeCard.sex = e.target.value[0];
           }}>
           <option value={'f'}>Female</option>
           <option value={'m'}>Male</option>
         </select>
         <label>Login data:</label><input type="text"
           onChange={(e: any) => {
-            this.state.changeCard.login = e.target.value;
-            this.setState({changeCard: this.state.changeCard});
+            this.changeCard.login = e.target.value;
           }}
-          value={this.state.changeCard.login} />
+          value={this.changeCard.login} />
         <label>Url:</label><input type="text"
           onChange={(e: any) => {
-            this.state.changeCard.url = e.target.value;
-            this.setState({changeCard: this.state.changeCard});
+            this.changeCard.url = e.target.value;
           }}
-          value={this.state.changeCard.url} />
+          value={this.changeCard.url} />
         <br />
         <ButtonToProgressor
           appState={this.props.appState}
           onClick={this.updateAttributes()}
-          transaction={this.state.transaction}
+          transaction={this.transaction}
           >Update</ButtonToProgressor>
       </ReactModal>
     );

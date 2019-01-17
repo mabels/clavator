@@ -1,29 +1,25 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
 import classnames from 'classnames';
-import Warrents from '../../../gpg/warrents';
-import Warrent from '../../../gpg/warrent';
-// import Warrents from '../../model/view-warrents';
+import {
+  Warrents,
+  Warrent } from '../../../model';
+import { observable } from 'mobx';
 
-interface RcWarrentsState {
-  // warrent: Warrent;
-  done: boolean;
-}
-
-interface RcWarrentsProps extends React.Props<RcWarrents> {
+export interface RcWarrentsProps extends React.Props<RcWarrents> {
   warrents: Warrents;
   completed: () => void;
 }
 
 @observer export class RcWarrents extends
-  React.Component<RcWarrentsProps, RcWarrentsState> {
+  React.Component<RcWarrentsProps, {}> {
+
+  @observable
+  public done: boolean;
 
   constructor(props: RcWarrentsProps) {
     super(props);
-    this.state = {
-      // warrent: new Warrent(),
-      done: false
-    };
+    this.state = false;
     this.handlePressEnter = this.handlePressEnter.bind(this);
     this.addClick = this.addClick.bind(this);
   }
@@ -40,13 +36,10 @@ interface RcWarrentsProps extends React.Props<RcWarrents> {
     switch (this.checkOrComplete(this.props.warrents, this.props.warrents.last())) {
       case 'add':
         this.props.warrents.add(new Warrent());
-        // this.setState({
-          // warrent: new Warrent()
-        // });
         break;
       case 'done':
         this.props.warrents.pop();
-        this.setState({ done: true });
+        this.done = true;
         this.props.completed();
         break;
     }
@@ -72,7 +65,7 @@ interface RcWarrentsProps extends React.Props<RcWarrents> {
 
   private renderInput(): JSX.Element {
     // console.log('-1-');
-    if (this.state.done) {
+    if (this.done) {
       return null ;
     }
     // console.log('-2-', this.props.warrents.last().key);
@@ -86,7 +79,6 @@ interface RcWarrentsProps extends React.Props<RcWarrents> {
         onKeyPress={this.handlePressEnter}
         onChange={(e: any) => {
           this.props.warrents.last().warrent.value = e.target.value;
-          // this.setState(this.tate);
         }}
       />{this.renderButton()}
     </li>;

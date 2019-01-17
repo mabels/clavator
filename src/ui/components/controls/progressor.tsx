@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
 import { observable } from 'mobx';
-import * as Progress from '../../../model/progress';
-import * as Message from '../../../model/message';
-import { Dispatch  } from '../../model/ws-channel';
+
+import { Progress, Message } from '../../../model';
+import { Dispatch } from '../../model';
 
 export class ProgressorState {
   @observable public open: boolean;
@@ -40,38 +40,33 @@ export class ProgressorState {
   }
 }
 
-interface ProgressorProps extends React.Props<Progressor> {
+interface ProgressorProps {
   progressor: ProgressorState;
   msg?: string;
   transaction?: string;
   controls?: boolean;
 }
 
-@observer
-export class Progressor extends React.Component<ProgressorProps> {
-
-  private controls(): JSX.Element {
-    if (!this.props.controls) {
+function Controls(props: ProgressorProps): JSX.Element {
+    if (!props.controls) {
       return null;
     }
     return (<div className="action">
       <a title="reset-log"
         onClick={() => {
-          this.setState(Object.assign({}, this.state, {
-            progressList: []
-          }));
+          props.progressor.progressList = [];
         }}>
         <i className="fa fa-trash"></i>
       </a>
     </div>);
   }
 
-  public render(): JSX.Element {
+export const Progressor = (props: ProgressorProps): JSX.Element => {
     return (
       <div className="Progressor">
-        {this.controls()}
+        <Controls {...props} />
         <pre><code>
-          {this.props.progressor.progressList.map((ps: Progress.Progress, _: number) => {
+          {props.progressor.progressList.map((ps: Progress.Progress, _: number) => {
             return (ps.msgs.map((msg: string, idx: number) => {
               return (<div key={ps.id + ':' + idx}
                   className={ps.isOk ? 'ok' : 'fail'}>{msg}{ps.isEndOfMessages ? '<EOM>' : ''}</div>);
@@ -81,6 +76,4 @@ export class Progressor extends React.Component<ProgressorProps> {
         </pre>
       </div>
     );
-  }
-
-}
+};

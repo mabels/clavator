@@ -1,34 +1,29 @@
 import * as React from 'react';
 import * as ReactModal from 'react-modal';
-import * as CardStatus from '../../../gpg/card-status';
-import * as Message from '../../../model/message';
-// import * as WsChannel from '../../model/ws-channel';
-import AppState from '../../model/app-state';
-// import { Progressor } from './progressor';
-import ButtonToProgressor from '../controls/button-to-progressor';
 
-interface DialogResetYubiKeyState {
-  transaction: Message.Transaction<any>;
-}
+import { Gpg2CardStatus } from '../../../gpg';
+import { Message } from '../../../model';
+import { AppState } from '../../model';
+import { ButtonToProgressor } from '../controls';
 
-interface DialogResetYubiKeyProps extends React.Props<DialogResetYubiKey> {
+export interface DialogResetYubiKeyProps extends React.Props<DialogResetYubiKey> {
   onClose: () => void;
-  cardStatus: CardStatus.Gpg2CardStatus;
+  cardStatus: Gpg2CardStatus;
   appState: AppState;
 }
 
-export class DialogResetYubiKey extends React.Component<DialogResetYubiKeyProps, DialogResetYubiKeyState> {
+export class DialogResetYubiKey extends React.Component<DialogResetYubiKeyProps, {}> {
+
+  private transaction: Message.Transaction<any>;
 
   constructor(props: DialogResetYubiKeyProps) {
     super(props);
-    this.state = {
-      transaction: Message.newTransaction('ResetYubikey')
-    };
+    this.transaction = Message.newTransaction('ResetYubikey');
     this.resetYubikey = this.resetYubikey.bind(this);
   }
 
   private resetYubikey(): void {
-    this.props.appState.channel.send(this.state.transaction.asMsg());
+    this.props.appState.channel.send(this.transaction.asMsg());
   }
 
   public render(): JSX.Element {
@@ -48,7 +43,7 @@ export class DialogResetYubiKey extends React.Component<DialogResetYubiKeyProps,
       <ButtonToProgressor
         appState={this.props.appState}
         onClick={this.resetYubikey}
-        transaction={this.state.transaction}
+        transaction={this.transaction}
       >REALY WIPE YUBIKEY</ButtonToProgressor>
     </ReactModal>);
   }

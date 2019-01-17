@@ -1,8 +1,5 @@
 import * as React from 'react';
-import * as KeyGen from '../../../gpg/key-gen';
-import KeyGenUid from '../../../gpg/key-gen-uid';
-import classnames = require('classnames');
-import MultiOption from '../../../model/multi-option';
+import { MultiOption } from '../../../model';
 
 export interface CreateKeyMultioptionProps<T> {
   readonly name: string;
@@ -42,7 +39,6 @@ export function CreateKeyMultioption<T>(
                     props.op.values = props.op.values.slice(0, -1);
                   }
                 }
-                // this.setState(this.state);
               }}
             />
           </span>

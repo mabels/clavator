@@ -1,26 +1,21 @@
 import * as WebSocket from 'ws';
-import * as Message from '../../model/message';
-import Dispatcher from '../dispatcher';
+import { Dispatcher } from '../dispatcher';
 
-import * as Gpg from '../../gpg/gpg';
-import Result from '../../gpg/result';
-// import RequestChangePin from './gpg/request_change_pin';
-// import KeyToYubiKey from '../../gpg/key-to-yubikey';
+import { Message, Progress } from '../../model';
+import { Result, Gpg, SecretKey } from '../../gpg';
 
-import * as Progress from '../../model/progress';
-import { SimpleYubikey } from '../../ui/model/simple-yubikey';
-import CreateKeySetTask from '../tasks/create-key-set-task';
-import * as ListSecretKeys from '../../gpg/list-secret-keys';
+import { SimpleYubikey } from '../../ui/model';
+import { CreateKeySetTask } from '../tasks/create-key-set-task';
 import { Observer } from '../observer';
 
 export class SendKeyToYubiKey implements Dispatcher {
-  private readonly gpg: Gpg.Gpg;
+  private readonly gpg: Gpg;
 
-  public static create(g: Gpg.Gpg): SendKeyToYubiKey {
+  public static create(g: Gpg): SendKeyToYubiKey {
     return new SendKeyToYubiKey(g);
   }
 
-  constructor(g: Gpg.Gpg) {
+  constructor(g: Gpg) {
     this.gpg = g;
   }
 
@@ -28,7 +23,7 @@ export class SendKeyToYubiKey implements Dispatcher {
     observer: Observer,
     ws: WebSocket,
     header: Message.Header,
-    ksk: ListSecretKeys.SecretKey,
+    ksk: SecretKey,
     syk: SimpleYubikey,
     idx = 0
   ): void {
@@ -94,7 +89,7 @@ export class SendKeyToYubiKey implements Dispatcher {
     );
     ws.send(Message.prepare(header, Progress.ok(`SimpleYubiKey:${syk} ...`)));
     CreateKeySetTask.run(this.gpg, ws, m, syk.asKeyGen())
-      .then((ksk: ListSecretKeys.SecretKey) => {
+      .then((ksk: SecretKey) => {
         console.log('then:CreateKeySetTask:');
         ws.send(
           Message.prepare(

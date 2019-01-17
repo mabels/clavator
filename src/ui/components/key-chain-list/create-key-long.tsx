@@ -1,12 +1,13 @@
 import * as React from 'react';
-import * as KeyGen from '../../../gpg/key-gen';
+import { observer } from 'mobx-react';
+
+import { KeyGen, KeyInfo } from '../../../gpg';
 import { CreateKeyOption } from './create-key-option';
 import { CreateKeyMultioption } from './create-key-multioption';
-import { observer } from 'mobx-react';
 
 export interface CreateKeyLongProps {
   readonly compact: boolean;
-  readonly keyGen: KeyGen.KeyGen;
+  readonly keyGen: KeyGen;
 }
 
 export const CreateKeyLong = observer((props: CreateKeyLongProps): JSX.Element => {
@@ -38,7 +39,7 @@ export const CreateKeyLong = observer((props: CreateKeyLongProps): JSX.Element =
         </div>
       </div>
 
-      {props.keyGen.subKeys.map((sb: KeyGen.KeyInfo, i: number) => {
+      {props.keyGen.subKeys.map((sb: KeyInfo, i: number) => {
         return (
           <div className="row" key={i}>
             <div className="two columns">SubKey {i}</div>
@@ -46,14 +47,14 @@ export const CreateKeyLong = observer((props: CreateKeyLongProps): JSX.Element =
               <label>Key-Type:</label>
               <CreateKeyOption
                 name={'subkeys.' + i + '.keyType'}
-                op={[sb.type]}
+                ops={[sb.type]}
                 />
             </div>
             <div className="three columns">
               <label>Key-Length:</label>
               <CreateKeyOption
                 name={'subkeys.' + i + '.length'}
-                op={[sb.length]}
+                ops={[sb.length]}
                 />
             </div>
             <div className="three columns">

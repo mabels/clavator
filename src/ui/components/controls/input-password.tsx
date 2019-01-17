@@ -3,13 +3,12 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 import classnames from 'classnames';
 // import StringValue from '../../../model/string-value';
-import NestedFlag from '../../../model/nested-flag';
-import PasswordControl from '../../model/password-control';
-import DoublePassword from '../../model/double-password';
-
-class InputPasswordState {
-  // @observable public readOnlyTimer: number;
-}
+import {
+  NestedFlag,
+} from '../../../model';
+import {
+  PasswordControl,
+  DoublePassword } from '../../model';
 
 interface InputPasswordProps extends React.Props<InputPassword> {
   passwordControl: PasswordControl;
@@ -20,17 +19,12 @@ interface InputPasswordProps extends React.Props<InputPassword> {
 
 @observer
 export class InputPassword extends
-  React.Component<InputPasswordProps, InputPasswordState> {
+  React.Component<InputPasswordProps, {}> {
 
   constructor(props: InputPasswordProps) {
     super(props);
-    this.state = { readOnlyTimer: null };
     this.lockUnlock = this.lockUnlock.bind(this);
   }
-
-  // public componentWillReceiveProps(next: InputPasswordProps): void {
-  //   this.props.passwordControl.readonly = next.readOnly;
-  // }
 
   private lockUnlock(e: any): void {
     if (e) {

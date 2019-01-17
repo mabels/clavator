@@ -5,17 +5,13 @@ import * as path from 'path';
 
 import * as express from 'express';
 import * as ws from 'ws';
-// const express: typeof expressTs = expressTs;
-// import * as WebSocket from 'ws';
-// const expressWs: typeof expressWsTs = expressWsTs;
+import * as yargs from 'yargs';
 
-import * as Observer from './observer';
-import * as Dispatch from './dispatch';
-import * as Gpg from '../gpg/gpg';
+import { Observer } from './observer';
+import { startDispatch } from './dispatch';
+import { Gpg } from '../gpg/gpg';
 
-import * as Message from '../model/message';
-import yargs = require('yargs');
-import { string } from 'prop-types';
+import { Message } from '../model';
 
 interface Config {
   readonly domain: string;
@@ -72,7 +68,7 @@ async function starter(cfg: Config): Promise<void> {
   console.log('Created Gpg:', gi);
 
   const observer = Observer.start(gpg);
-  const dispatch = Dispatch.start(gpg);
+  const dispatch = startDispatch(gpg);
 
   app.get('/', (req: express.Request, res: express.Response) =>
     res.redirect('/index.html')

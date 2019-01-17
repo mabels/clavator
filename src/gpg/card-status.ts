@@ -305,6 +305,6 @@ export class Gpg2CardStatus {
   }
 }
 
-export function run(str: string): Gpg2CardStatus[] {
+export function runCardStatus(str: string): Gpg2CardStatus[] {
   return Gpg2CardStatus.read(str);
 }

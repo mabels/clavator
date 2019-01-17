@@ -1,6 +1,7 @@
 import { KeyGen, KeyInfo } from './key-gen';
 import { KeyGenUid } from './key-gen-uid';
 import { expireDate } from '../model';
+import { observable } from 'mobx';
 
 function debugArray(match: string[]): void {
   // let ret = {};
@@ -13,7 +14,7 @@ function debugArray(match: string[]): void {
 const reNameAndEmail = /^\s*(.*)\s+\<(\S+)\>\s*$/;
 const reNameAndCommentAndEmail = /^\s*(.*)\s+\((.*)\)\s+\<(\S+)\>\s*$/;
 
-export class Uid {
+export class GpgUid {
   public trust: string;
   public name: string;
   public email: string;
@@ -22,8 +23,8 @@ export class Uid {
   public id: string;
   public key: string;
 
-  public static jsfill(js: any): Uid {
-    let ret = new Uid();
+  public static jsfill(js: any): GpgUid {
+    let ret = new GpgUid();
     ret.trust = js['trust'];
     ret.name = js['name'];
     ret.email = js['email'];
@@ -34,7 +35,7 @@ export class Uid {
     return ret;
   }
 
-  public eq(o: Uid): boolean {
+  public eq(o: GpgUid): boolean {
     return (
       this.trust == o.trust &&
       this.name == o.name &&
@@ -55,7 +56,7 @@ export class Uid {
   }
 
   // uid:u::::1464699940::A319A573075CF1606705BDA9FD5F07E5AD24F257::Meno Abels <meno.abels@adviser.com>:::::::::
-  public fill(match: string[]): Uid {
+  public fill(match: string[]): GpgUid {
     debugArray(match);
     this.trust = match[1];
     this.created = parseInt(match[5], 10);
@@ -120,7 +121,7 @@ const Ciphers: { [id: string]: string } = {
   1: 'rsa'
 };
 
-export class Key {
+export class GpgKey {
   public type: string;
   public trust: string;
   public cipher: string;
@@ -134,8 +135,8 @@ export class Key {
   public group: Group = new Group();
   public fingerPrint: FingerPrint = new FingerPrint();
 
-  public static jsfill(js: any): Key {
-    let ret = new Key();
+  public static jsfill(js: any): GpgKey {
+    let ret = new GpgKey();
     return ret.jsfill(js);
   }
 
@@ -159,11 +160,11 @@ export class Key {
     return ret;
   }
 
-  public jsfill(js: any): Key {
+  public jsfill(js: any): GpgKey {
     return this._jsfill(js);
   }
 
-  protected _jsfill(js: any): Key {
+  protected _jsfill(js: any): GpgKey {
     this.type = js['type'];
     this.trust = js['trust'];
     this.cipher = js['cipher'];
@@ -179,7 +180,7 @@ export class Key {
     return this;
   }
 
-  public eq(o: Key): boolean {
+  public eq(o: GpgKey): boolean {
     return (
       this.type == o.type &&
       this.trust == o.trust &&
@@ -202,7 +203,7 @@ export class Key {
   // ssb:u:4096:1:060FF53CB3A32992:1465218501:1622898501:::::es:::D2760001240102010006041775630000::ed25519:
   // ssb:u:4096:1:3D851A5DF09DEB9C:1465218921:1622898921:::::es:::D2760001240102010006041775630000::ed25519:
 
-  public fill(match: string[]): Key {
+  public fill(match: string[]): GpgKey {
     debugArray(match);
     this.type = match[0];
     this.trust = match[1];
@@ -217,9 +218,9 @@ export class Key {
   }
 }
 
-export class SecretKey extends Key {
-  public uids: Uid[] = [];
-  public subKeys: Key[] = [];
+export class SecretKey extends GpgKey {
+  public uids: GpgUid[] = [];
+  public subKeys: GpgKey[] = [];
 
   public static jsfill(js: any): SecretKey {
     let ret = new SecretKey();
@@ -229,10 +230,10 @@ export class SecretKey extends Key {
   public jsfill(js: any): SecretKey {
     this._jsfill(js);
     for (let uid of js['uids']) {
-      this.uids.push(Uid.jsfill(uid));
+      this.uids.push(GpgUid.jsfill(uid));
     }
     for (let subKey of js['subKeys']) {
-      this.subKeys.push(Key.jsfill(subKey));
+      this.subKeys.push(GpgKey.jsfill(subKey));
     }
     return this;
   }
@@ -301,10 +302,10 @@ const reCrNl = /\r?\n/;
 // const reUid = /^uid\s+\[\s*(\S+)\s*\]\s+(.*)\s+\<(\S+)\>\s*$/;
 // const reKeyId = /^\s+([0-9A-F]+)\s*$/;
 
-export function run(str: string): SecretKey[] {
+export function runSecretKeys(str: string): SecretKey[] {
   let ret: SecretKey[] = [];
   let currentSec: SecretKey = null;
-  let currentKey: Key = null;
+  let currentKey: GpgKey = null;
   str.split(reCrNl).forEach((line: string) => {
     if (!line.trim().length) {
       return;
@@ -319,10 +320,10 @@ export function run(str: string): SecretKey[] {
         ret.push(currentSec);
         break;
       case 'uid':
-        currentSec.uids.push(new Uid().fill(match));
+        currentSec.uids.push(new GpgUid().fill(match));
         break;
       case 'ssb':
-        currentKey = new Key().fill(match);
+        currentKey = new GpgKey().fill(match);
         currentSec.subKeys.push(currentKey);
         break;
       case 'fpr':

@@ -2,22 +2,12 @@ import * as React from 'react';
 import classnames from 'classnames';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react';
-import NestedFlag from '../../../model/nested-flag';
-// import SimpleYubiKey from '../../model/simple-yubikey';
-// import RcCheckWarrents from './rc-check-warrents';
-// import DateValue from '../../../model/date-value';
-// import { format_date } from '../../../model/helper';
-// import PassPhrase from '../../model/pass-phrase';
-import DoublePassword from '../../model/double-password';
-// import ViewWarrents from '../../model/view-warrents';
-import InputPassword from '../controls/input-password';
-import RcApproveWarrents from './rc-approve-warrents';
-import ViewWarrent from '../../model/view-warrent';
-// import { isApproved } from '../../model/helper';
-
-class RcDoublePasswordState {
-  @observable public readOnly: NestedFlag;
-}
+import { NestedFlag, } from '../../../model';
+import {
+  ViewWarrent,
+  DoublePassword } from '../../model';
+import { InputPassword } from '../controls';
+import { RcApproveWarrents } from './rc-approve-warrents';
 
 interface RcDoublePasswordProps extends React.Props<RcDoublePassword> {
   // label?: string;
@@ -29,19 +19,16 @@ interface RcDoublePasswordProps extends React.Props<RcDoublePassword> {
 
 @observer
 export class RcDoublePassword extends
-  React.Component<RcDoublePasswordProps, RcDoublePasswordState> {
+  React.Component<RcDoublePasswordProps, {}> {
+
+  @observable public readOnly: NestedFlag;
 
   constructor(props: RcDoublePasswordProps) {
     super(props);
-    this.state = {
-      readOnly: null
-    };
   }
 
   public componentWillMount(): void {
-    this.setState(Object.assign(this.state, {
-      readOnly: new NestedFlag(this.props.readOnly)
-    }));
+    this.readOnly = new NestedFlag(this.props.readOnly);
   }
 
   private renderIndexLabel(idx: number): JSX.Element {
@@ -61,25 +48,25 @@ export class RcDoublePassword extends
       className={classnames({
         RcDoublePassword: true,
         four: true,
-        readonly: this.state.readOnly.is,
+        readonly: this.readOnly.is,
         completed: dp.warrents.valid(),
         columns: true,
         good: dp.valid()
       })} >
       {this.renderIndexLabel(this.props.idx)}
       <InputPassword onReadable={this.props.onReadable}
-        readOnly={this.state.readOnly}
+        readOnly={this.readOnly}
         doublePassword={dp}
         passwordControl={dp.first} />
       <InputPassword onReadable={this.props.onReadable}
-        readOnly={this.state.readOnly}
+        readOnly={this.readOnly}
         doublePassword={dp}
         passwordControl={dp.second} />
       {React.Children.map(this.props.children, (child, i) => {
-        return React.cloneElement(child as any, { readOnly: this.state.readOnly } );
+        return React.cloneElement(child as any, { readOnly: this.readOnly } );
       })}
       <RcApproveWarrents
-        readOnly={this.state.readOnly}
+        readOnly={this.readOnly}
         valid={dp.valid()}
         viewWarrents={dp.warrents}
         showWarrents={dp.showWarrent()}

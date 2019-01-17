@@ -1,15 +1,9 @@
 import * as React from 'react';
 import classnames from 'classnames';
 import { observer } from 'mobx-react';
-import NestedFlag from '../../../model/nested-flag';
-// import Container from '../../../model/container';
-// import Uid from '../../../gpg/key-gen-uid';
-import Option from '../../../model/option';
+import { NestedFlag, Option } from '../../../model';
 
-interface RcOptionState {
-}
-
-interface RcOptionProps<T> extends React.Props<RcOption<T>> {
+interface RcOptionProps<T> {
   name: string;
   label: string;
   option: Option<T>;
@@ -17,29 +11,21 @@ interface RcOptionProps<T> extends React.Props<RcOption<T>> {
   onChange?: (val: T) => void;
 }
 
-@observer
-export class RcOption<T> extends
-  React.Component<RcOptionProps<T>, RcOptionState> {
-
-  constructor(props: RcOptionProps<T>) {
-    super(props);
-  }
-
-  public render(): JSX.Element {
+function actionRcOption<T>(props: RcOptionProps<T>): JSX.Element {
     let value = '';
-    const ret = this.props.option.map((s, o) => {
+    const ret = props.option.map((s, o) => {
       value = s ? o.toString() : value;
-      return (<option key={o.toString()} disabled={this.props.readOnly.is} value={o.toString()}>{o}</option>);
+      return (<option key={o.toString()} disabled={props.readOnly.is} value={o.toString()}>{o}</option>);
     });
     return (
       <span>
-        <label>{this.props.label}:</label>
-        <select name={this.props.name}
-          className={classnames({ 'u-full-width': true, readonly: this.props.readOnly.is })}
-          disabled={this.props.readOnly.is}
+        <label>{props.label}:</label>
+        <select name={props.name}
+          className={classnames({ 'u-full-width': true, readonly: props.readOnly.is })}
+          disabled={props.readOnly.is}
           defaultValue={value}
           onChange={(e: any) => {
-            this.props.option.options.forEach((op) => {
+            props.option.options.forEach((op) => {
               let murks = op as any;
               if (murks['value']) {
                 murks['value'] = e.target.value;
@@ -47,8 +33,8 @@ export class RcOption<T> extends
                 murks = e.target.value;
               }
             });
-            if (this.props.onChange) {
-              this.props.onChange(e.target.value);
+            if (props.onChange) {
+              props.onChange(e.target.value);
             }
           }}>
           {ret}
@@ -57,4 +43,4 @@ export class RcOption<T> extends
     );
   }
 
-}
+export const RcOption = observer(actionRcOption);

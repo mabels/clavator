@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { ButtonToProgressor } from '../controls/button-to-progressor';
-import KeyGen from '../../../gpg/key-gen';
+import { KeyGen } from '../../../gpg';
 
 export interface CreateKeyDeleteProps {
   readonly idx: number;
@@ -10,15 +9,10 @@ export interface CreateKeyDeleteProps {
 function handleDelUid(props: CreateKeyDeleteProps): void {
   if (props.keyGen.uids.length() > 1) {
     props.keyGen.uids.del(props.idx);
-    /*
-      this.setState(Object.assign({}, this.state, {
-        keyGen: this.keyGen
-      }));
-      */
   }
 }
 
-export function CreateKeyCreate(props: CreateKeyDeleteProps): JSX.Element {
+export function CreateKeyDelete(props: CreateKeyDeleteProps): JSX.Element {
   if (props.keyGen.uids.length() > 1) {
     return (
       <button type="button" onClick={() => handleDelUid(props)}>

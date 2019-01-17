@@ -2,13 +2,13 @@ import * as React from 'react';
 import classnames from 'classnames';
 import { observer } from 'mobx-react';
 import { Container, NestedFlag } from '../../../model';
-import { Uid } from '../../model';
+import { KeyGenUid } from '../../../gpg';
 
 interface RcUidsState {
 }
 
 interface RcUidsProps extends React.Props<RcUids> {
-  uids: Container<Uid>;
+  uids: Container<KeyGenUid>;
   readOnly: NestedFlag;
   completed?: boolean;
 }
@@ -27,21 +27,13 @@ export class RcUids extends
   private handleDelUid = (idx: number): void => {
     if (this.props.uids.length() > 1) {
       this.props.uids.del(idx);
-      // this.setState(Object.assign({}, this.state, {
-        // keyGen: this.state.keyGen
-      // }));
-      this.setState(this.state);
     }
   }
 
   private handleAddUid = (/*idx: number */): void => {
-    let uid = new Uid();
+    let uid = new KeyGenUid();
     uid.name.value = this.props.uids.last().name.value;
     this.props.uids.add(uid);
-    this.setState(this.state);
-    // this.setState(Object.assign({}, this.state, {
-      // keyGen: this.state.keyGen
-    // }));
   }
 
   private render_delete_button(idx: number): JSX.Element {
@@ -53,7 +45,7 @@ export class RcUids extends
     return null;
   }
 
-  private renderUid(idx: number, uid: Uid): JSX.Element {
+  private renderUid(idx: number, uid: KeyGenUid): JSX.Element {
     return <div className={classnames({
         'Uid': true,
         'u-full-width': true,
@@ -74,7 +66,6 @@ export class RcUids extends
             name={`uid.name.${idx}`}
             onChange={(e: any) => {
               uid.name.value = e.target.value;
-              this.setState(this.state);
             }}
             value={uid.name.value} />
         </div>
@@ -91,7 +82,6 @@ export class RcUids extends
             name={`email.${idx}`}
             onChange={(e: any) => {
               uid.email.value = e.target.value;
-              this.setState(this.state);
             }}
             value={uid.email.value} />
         </div>
@@ -113,7 +103,6 @@ export class RcUids extends
             name={`nameComment.${idx}`}
             onChange={(e: any) => {
               uid.comment.value = e.target.value;
-              this.setState(this.state);
             }}
             value={uid.comment.value} />
         </div>
@@ -137,7 +126,7 @@ export class RcUids extends
         'Uids': true,
         'good': this.props.uids.valid()
       })}>
-        {this.props.uids.map((sb: Uid, i: number) => {
+        {this.props.uids.map((sb: KeyGenUid, i: number) => {
           if (sb) {
             return this.renderUid(i, sb);
           }

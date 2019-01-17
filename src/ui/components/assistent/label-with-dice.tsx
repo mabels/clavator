@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
+
 import { RcOption } from '../controls';
 import { PassPhrase } from '../../model';
+import { Option } from '../../../model';
 import { DiceWare } from '../../../dice-ware';
 
 export interface LabelWithDiceProps {
@@ -37,11 +39,11 @@ export const LabelWithDice = observer(
       );
     }
     if (props.passPhrase.warrents.length() > 1) {
-      return label;
+      return props.label as JSX.Element;
     }
     return (
       <span>
-        {label}
+        {props.label}
         {diceWareOption}
         <button className="fa fa-random" onClick={this.diceAll} />
       </span>

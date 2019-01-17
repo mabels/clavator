@@ -1,13 +1,13 @@
 import { observable, ObservableMap } from 'mobx';
 import { WsChannel, Dispatch } from './ws-channel';
-import { CardStatus } from '../../gpg';
+import { Gpg2CardStatus } from '../../gpg';
 import { Message } from '../../model';
 
 // import DevTools from 'mobx-react-devtools';
 
 export class CardStatusListState implements WsChannel {
   // @observable timer = 0;
-  @observable public cardStatusList: CardStatus.Gpg2CardStatus[] = [];
+  @observable public cardStatusList: Gpg2CardStatus[] = [];
   @observable public adminPins: ObservableMap<string> = observable.map<string>();
 
   constructor(channel: Dispatch) {
@@ -22,7 +22,7 @@ export class CardStatusListState implements WsChannel {
       let pdata = JSON.parse(data);
       pdata.forEach((a: any, idx: number) => {
         let found = false;
-        let n = CardStatus.Gpg2CardStatus.jsfill(a);
+        let n = Gpg2CardStatus.jsfill(a);
         this.cardStatusList.forEach((csl) => {
           if (csl.reader.eq(n.reader)) {
             csl.jsfill(a);

@@ -15,7 +15,7 @@ export class ViewWarrents extends Container<ViewWarrent> {
     return ret;
   }
 
-  constructor() {
+  public constructor() {
     super(() => { throw 'do not use @home'; });
   }
 
@@ -43,7 +43,8 @@ export class ViewWarrents extends Container<ViewWarrent> {
   //   return ret;
   // }
 
-  @action.bound public completed(): boolean {
+  @action
+  public completed(): boolean {
     if (this.pallets.length == 1 && !this.pallets[0].approved) {
       throw 'das darf nicht sein';
       // console.log('Set Approved for lenght==1');

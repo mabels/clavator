@@ -4,8 +4,8 @@ import * as rimraf from 'rimraf';
 import * as fsPromise from 'fs-extra';
 import * as uuid from 'uuid';
 
-import { ListSecretKeys } from './list-secret-keys';
-import { CardStatus } from './card-status';
+import { SecretKey, runSecretKeys } from './list-secret-keys';
+// import { CardStatus } from './card-status';
 import { AgentConf, AgentLine } from './agent-conf';
 
 import { KeyToYubiKey } from './key-to-yubikey';
@@ -19,6 +19,7 @@ import {
 import { RequestChangePin } from './request-change-pin';
 import { KeyGenUid } from './key-gen-uid';
 import { Result, Mixed } from './result';
+import { Gpg2CardStatus, runCardStatus } from './card-status';
 
 interface GpgCmd {
   cmd: string[];
@@ -64,6 +65,10 @@ export class Gpg {
 
   public static _create(mockCmd: string[]): Gpg {
     return new Gpg(mockCmd);
+  }
+  public static async create(selectGpgCmd = gpgCmd): Promise<Gpg> {
+    const gpg = await internalCreate(selectGpgCmd);
+    return gpg;
   }
 
   private constructor(mockCmd: string[]) {
@@ -223,9 +228,9 @@ export class Gpg {
 
   public getSecretKey(
     fpr: string,
-    cb: (key: ListSecretKeys.SecretKey) => void
+    cb: (key: SecretKey) => void
   ): void {
-    this.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
+    this.list_secret_keys((err: string, keys: SecretKey[]) => {
       if (err) {
         cb(null);
         return;
@@ -244,7 +249,7 @@ export class Gpg {
   }
 
   public list_secret_keys(
-    cb: (err: string, keys: ListSecretKeys.SecretKey[]) => void
+    cb: (err: string, keys: SecretKey[]) => void
   ): void {
     this.run(
       ['--list-secret-keys', '--with-colons'],
@@ -262,13 +267,13 @@ export class Gpg {
           );
           return;
         }
-        cb(null, ListSecretKeys.run(result.stdOut));
+        cb(null, runSecretKeys(result.stdOut));
       }
     );
   }
 
   public card_status(
-    cb: (err: string, keys: CardStatus.Gpg2CardStatus[]) => void
+    cb: (err: string, keys: Gpg2CardStatus[]) => void
   ): void {
     this.run(['--card-status', '--with-colons'], null, (result: Result) => {
       if (result.exitCode != 0) {
@@ -283,7 +288,7 @@ export class Gpg {
         );
         return;
       }
-      cb(null, CardStatus.run(result.stdOut));
+      cb(null, runCardStatus(result.stdOut));
     });
   }
 
@@ -742,11 +747,6 @@ export async function internalCreate(
     gpg.setGpgAgentCmd(gpgcmd.cmdAgent);
     res(gpg);
   });
-}
-
-export async function create(selectGpgCmd = gpgCmd): Promise<Gpg> {
-  const gpg = await internalCreate(selectGpgCmd);
-  return gpg;
 }
 
 export function createTest(

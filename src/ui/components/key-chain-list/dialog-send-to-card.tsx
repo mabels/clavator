@@ -3,23 +3,16 @@ import * as React from 'react';
 import * as ReactModal from 'react-modal';
 import { AskKeyToYubiKey } from '../card-status-list/ask-key-to-yubi-key';
 import { AppState } from '../../model';
+import { GpgKey } from '../../../gpg';
 
-interface DialogSendToCardProps extends React.Props<DialogSendToCard> {
+interface DialogSendToCardProps {
   onClose: () => void;
-  secKey: ListSecretKeys.Key;
+  secKey: GpgKey;
   idx: number;
   appState: AppState;
 }
 
-export class DialogSendToCard extends React.Component<DialogSendToCardProps, DialogSendToCardState> {
-
-  constructor(props: DialogSendToCardProps) {
-    super(props);
-    this.state = {
-    };
-  }
-
-  public render(): JSX.Element {
+export function DialogSendToCard(props: DialogSendToCardProps): JSX.Element {
     return (
       <ReactModal
         isOpen={true}
@@ -39,5 +32,3 @@ export class DialogSendToCard extends React.Component<DialogSendToCardProps, Dia
 
     );
   }
-
-}

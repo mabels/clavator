@@ -14,10 +14,6 @@ import { KeyGenUid } from './key-gen-uid';
 import { StringValue } from '../model/string-value';
 import { observable } from 'mobx';
 
-// export class Uid extends KeyGenUid {
-
-// }
-
 export class ValidatableString {
   public match: RegExp;
   public value: string;

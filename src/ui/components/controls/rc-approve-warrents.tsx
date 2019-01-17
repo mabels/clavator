@@ -1,14 +1,14 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
 import classnames from 'classnames';
-import ViewWarrents from '../../model/view-warrents';
-import ViewWarrent from '../../model/view-warrent';
-import NestedFlag from '../../../model/nested-flag';
 
-interface RcApproveWarrentsState {
-}
+import {
+  ViewWarrents,
+  ViewWarrent } from '../../model';
 
-interface RcApproveWarrentsProps extends React.Props<RcApproveWarrents> {
+import { NestedFlag } from '../../../model';
+
+export interface RcApproveWarrentsProps {
   viewWarrents: ViewWarrents;
   showWarrents: boolean;
   classNames?: string[];
@@ -16,58 +16,50 @@ interface RcApproveWarrentsProps extends React.Props<RcApproveWarrents> {
   completed?: boolean;
   readOnly: NestedFlag;
   approved?: (ap: ViewWarrent) => void;
+  children?: JSX.Element | JSX.Element[];
 }
 
-@observer export class RcApproveWarrents extends
-  React.Component<RcApproveWarrentsProps, RcApproveWarrentsState> {
-
-  constructor(props: RcApproveWarrentsProps) {
-    super(props);
+function checkWarrents(ap: ViewWarrent): void {
+  // console.log('checkWarrents:', this.props, ap);
+  ap.approved = true;
+  this.props.readOnly.is = true;
+  if (this.props.approved) {
+    this.props.approved(ap);
   }
+}
 
-  private checkWarrents(ap: ViewWarrent): void {
-    // console.log('checkWarrents:', this.props, ap);
-    ap.approved = true;
-    this.props.readOnly.is = true;
-    if (this.props.approved) {
-      this.props.approved(ap);
-    }
-  }
-
-  private renderWarrents(): JSX.Element {
-    if (!this.props.showWarrents) {
+function Warrents(props: RcApproveWarrentsProps): JSX.Element {
+    if (!props.showWarrents) {
       return null;
     }
     return <div className={classnames({
         row: true,
-        completed: this.props.completed || this.props.viewWarrents.valid()
+        completed: props.completed || props.viewWarrents.valid()
       })} >
-      {this.props.viewWarrents.map((i, idx) => {
+      {props.viewWarrents.map((i, idx) => {
         const good = i.approved;
-        const disabled = !this.props.valid;
+        const disabled = !props.valid;
         // console.log('renderWarrents:', good, disabled, this.props);
         return <button disabled={disabled || good}
                 className={classnames({
-                  fail: this.props.valid && !good,
+                  fail: props.valid && !good,
                   good: good })}
                 key={i.objectId()} type="button"
-                onClick={() => this.checkWarrents(i)}>{i.warrent.value()}</button>;
+                onClick={() => checkWarrents(i)}>{i.warrent.value()}</button>;
       })}
     </div>;
   }
 
-  public render(): JSX.Element {
-    const clazz: any = { good: this.props.valid,
-                         completed: this.props.completed || this.props.viewWarrents.valid() };
-    if (this.props.classNames) {
-      this.props.classNames.forEach(cz => { clazz[cz] = true; });
+export const RcApproveWarrents = observer((props: RcApproveWarrentsProps) => {
+    const clazz: any = { good: props.valid,
+                         completed: props.completed || props.viewWarrents.valid() };
+    if (props.classNames) {
+      props.classNames.forEach(cz => { clazz[cz] = true; });
     }
     return (
       <div className={classnames(clazz)} >
-        {this.props.children}
-        {this.renderWarrents()}
+        {props.children}
+        <Warrents {...props} />
       </div>
     );
-  }
-
-}
+  });

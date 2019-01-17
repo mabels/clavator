@@ -1,26 +1,18 @@
 import * as React from 'react';
-import * as KeyGen from '../../../gpg/key-gen';
-import KeyGenUid from '../../../gpg/key-gen-uid';
-import classnames = require('classnames');
+import classnames from 'classnames';
+import { KeyGen, KeyGenUid } from '../../../gpg';
 import { observer } from 'mobx-react';
 
 export interface CreateKeyUidProps {
   readonly idx: number;
   readonly keyGenUid: KeyGenUid;
-  readonly keyGen: KeyGen.KeyGen;
+  readonly keyGen: KeyGen;
 }
 
 function handleAddUid(props: CreateKeyUidProps): void {
   const uid = new KeyGenUid();
   uid.name.value = props.keyGen.uids.last().name.value;
   props.keyGen.uids.add(uid);
-  /*
-  this.setState(
-    Object.assign({}, this.state, {
-      keyGen: this.state.keyGen
-    })
-  );
-  */
 }
 
 export const CreateKeyUid = observer((props: CreateKeyUidProps): JSX.Element => {
@@ -40,7 +32,6 @@ export const CreateKeyUid = observer((props: CreateKeyUidProps): JSX.Element => 
             name={`uid.name.{idx}`}
             onChange={(e: any) => {
               keyGenUid.name.value = e.target.value;
-              // this.setState(this.state);
             }}
             value={keyGenUid.name.value}
           />
@@ -57,7 +48,6 @@ export const CreateKeyUid = observer((props: CreateKeyUidProps): JSX.Element => 
             name="email"
             onChange={(e: any) => {
               keyGenUid.email.value = e.target.value;
-              // this.setState(this.state);
             }}
             value={keyGenUid.email.value}
           />
@@ -78,7 +68,6 @@ export const CreateKeyUid = observer((props: CreateKeyUidProps): JSX.Element => 
             name="nameComment"
             onChange={(e: any) => {
               keyGenUid.comment.value = e.target.value;
-              // this.setState(this.state);
             }}
             value={keyGenUid.comment.value}
           />

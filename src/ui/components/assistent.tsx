@@ -3,32 +3,15 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 import { observable } from 'mobx';
 import classnames from 'classnames';
-// import MutableString from '../gpg/mutable_string';
-// import * as Actions from './actions';
-// import AssistentCreateKey from './assistent-create-key';
-// import AssistentSendKeyToCard from './assistent-send-key-to-card';
-// import AssistentCompleted from './assistent-completed';
-// import AssistentCheckCard from './assistent-checkcard';
-// import * as ListSecretKeys from '../../gpg/list-secret-keys';
-import * as WsChannel from '../model/ws-channel';
-// import CardStatusListState from '../model/card-status-list-state';
-import Warrents from '../../gpg/warrents';
-import Warrent from '../../gpg/warrent';
-// import ViewWarrents from '../model/warrent';
-import SimpleYubiKey from '../model/simple-yubikey';
-import RcWarrents from './controls/rc-warrents';
-// import RcCheckWarrents from './assistent/rc-check-warrents';
-import RcSimpleKeyCommon from './assistent/rc-simple-key-common';
-// import InputPassPhrase from './controls/input-pass-phrase';
-// import ButtonToProgressor from './controls/button-to-progressor';
-import DiceWareInputPassPhrase from './assistent/dice-ware-input-pass-phrase';
-import RandomInputPassPhrase from './assistent/random-input-pass-phrase';
-import DiceWare from '../../dice-ware/dice-ware';
-import * as Message from '../../model/message';
+
+import { Dispatch, AppState, SimpleYubikey } from '../model';
+import { Option, Message, Warrent, Warrents } from '../../model';
+import { RcOption, RcWarrents } from './controls';
+import { RcSimpleKeyCommon } from './assistent/rc-simple-key-common';
+import { DiceWareInputPassPhrase } from './assistent/dice-ware-input-pass-phrase';
+import { RandomInputPassPhrase } from './assistent/random-input-pass-phrase';
+import { DiceWare } from '../../dice-ware';
 // import Progressor from './controls/progressor';
-import { RcOption } from './controls/rc-option';
-import Option from '../../model/option';
-import AppState from '../model/app-state';
 
 export class AssistentState {
   // public current: Actions.Steps;
@@ -36,9 +19,9 @@ export class AssistentState {
   // public secretKey: ListSecretKeys.SecretKey;
 
   @observable public warrents: Warrents;
-  @observable public simpleYubiKey: SimpleYubiKey;
+  @observable public simpleYubiKey: SimpleYubikey;
   public diceWareTransaction: Message.Transaction<DiceWare>;
-  public simpleYubiKeyTransaction: Message.Transaction<SimpleYubiKey>;
+  public simpleYubiKeyTransaction: Message.Transaction<SimpleYubikey>;
   @observable public diceWares: DiceWare[];
   public diceWareLoading: boolean;
 
@@ -46,12 +29,12 @@ export class AssistentState {
     this.warrents = (new Warrents()).add(new Warrent());
     this.simpleYubiKey = null;
     this.diceWareTransaction = Message.newTransaction('DiceWares.Request');
-    this.simpleYubiKeyTransaction = Message.newTransaction<SimpleYubiKey>('SimpleYubiKey.run');
+    this.simpleYubiKeyTransaction = Message.newTransaction<SimpleYubikey>('SimpleYubiKey.run');
     this.diceWares = [];
     this.diceWareLoading = false;
   }
 
-  public load(channel: WsChannel.Dispatch): void {
+  public load(channel: Dispatch): void {
     if (this.diceWares.length || this.diceWareLoading) {
       return;
     }
@@ -165,7 +148,7 @@ export class Assistent extends React.Component<AssistentProps> {
       <RcWarrents
         warrents={assistentState.warrents}
         completed={() => {
-          assistentState.simpleYubiKey = new SimpleYubiKey(assistentState.warrents,
+          assistentState.simpleYubiKey = new SimpleYubikey(assistentState.warrents,
             assistentState.diceWares, this.props.appState.cardStatusListState.cardStatusList[0].reader.cardid);
         }} />
     </div>;

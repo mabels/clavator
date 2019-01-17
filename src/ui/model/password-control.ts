@@ -1,8 +1,8 @@
 import { observable } from 'mobx';
-import { ObjectId, StringValue, Validateable } from '../../model';
+import { ObjectId, StringValue, Validatable } from '../../model';
 import { MinMax } from './min-max';
 
-export class PasswordControl extends ObjectId implements Validateable {
+export class PasswordControl extends ObjectId implements Validatable {
   @observable public readonly password: StringValue;
   // @observable public readonly: boolean;
   // @observable public readable: boolean;

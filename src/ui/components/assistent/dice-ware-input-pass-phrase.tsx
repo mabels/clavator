@@ -9,11 +9,7 @@ import {
 } from '../controls/input-pass-phrase';
 import { LabelWithDice } from './label-with-dice';
 
-class DiceWareInputPassPhraseState {
-  // @observable public readable: boolean;
-}
-
-interface DiceWareInputPassPhraseProps extends InputPassPhraseProps {
+export interface DiceWareInputPassPhraseProps extends InputPassPhraseProps {
   diceWares: DiceWare[];
 }
 
@@ -24,7 +20,7 @@ interface DiceWareInputPassPhraseProps extends InputPassPhraseProps {
   }
   */
 
-const DiceWareInputPassPhrase = observer(
+export const DiceWareInputPassPhrase = observer(
   (props: DiceWareInputPassPhraseProps) => {
     // console.log('dice-ware-input-pass-phrase:', .props.readOnly);
     return (

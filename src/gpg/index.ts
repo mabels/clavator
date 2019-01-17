@@ -12,4 +12,4 @@ export * from './request-change-pin';
 export * from './result';
 
 // export * from './create-key-set';
-// export * from './list-secret-keys';
+export * from './list-secret-keys';
