@@ -1,5 +1,5 @@
-import ObjectId from './object-id';
 import { observable } from 'mobx';
+import { ObjectId } from './object-id';
 
 export class MultiOption<T> extends ObjectId {
   @observable public values: T[];
@@ -28,5 +28,3 @@ export class MultiOption<T> extends ObjectId {
   }
 
 }
-
-// export default MultiOption;

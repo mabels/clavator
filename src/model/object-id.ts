@@ -13,5 +13,3 @@ export class ObjectId {
     return this._objectId;
   }
 }
-
-// export default ObjectId;

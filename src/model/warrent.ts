@@ -1,7 +1,6 @@
-import ObjectId from '../model/object-id';
-import Pallet from '../model/pallet';
-import StringValue from '../model/string-value';
-// import RegMinMaxWarrent from './reg-min-max-warrent';
+import { ObjectId } from './object-id';
+import { Pallet } from './pallet';
+import { StringValue } from './string-value';
 
 export class Warrent extends ObjectId implements Pallet {
   public warrent: StringValue;
@@ -32,5 +31,3 @@ export class Warrent extends ObjectId implements Pallet {
   }
 
 }
-
-export default Warrent;

@@ -1,5 +1,5 @@
 import * as yargs from 'yargs';
-import GpgMockState from './gpg-mock-state';
+import { GpgMockState } from './gpg-mock-state';
 
 function action(y: yargs.Arguments, state: GpgMockState): boolean {
   if (y.cardStatus && y.withColons) {
@@ -35,7 +35,7 @@ fpr:F78D5B547A9BB0E8A174C0F5060FF53CB3ACAFEE:B3BCAFEEF73077EFA734EC83D851CAFFEED
   return false;
 }
 
-export function cli(y: yargs.Argv, state: GpgMockState): yargs.Argv {
+export function cardStatusCli(y: yargs.Argv, state: GpgMockState): yargs.Argv {
   state.onParsed(action);
   return y.option('card-status', {
     describe: 'card status output',

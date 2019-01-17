@@ -1,5 +1,5 @@
-import GpgMockState from './gpg-mock-state';
 import * as yargs from 'yargs';
+import { GpgMockState } from './gpg-mock-state';
 
 function action(y: yargs.Arguments, state: GpgMockState): boolean {
   if (y.listSecretKeys && y.withColons) {
@@ -39,7 +39,7 @@ grp:::::::::2DC62D282D308E58A8C7C4F7652955AC146860D2:`
   return false;
 }
 
-export function cli(y: yargs.Argv, state: GpgMockState): yargs.Argv {
+export function listSecretKeysCli(y: yargs.Argv, state: GpgMockState): yargs.Argv {
   state.onParsed(action);
   return yargs.option('list-secret-keys', {
     describe: 'list secret keys',

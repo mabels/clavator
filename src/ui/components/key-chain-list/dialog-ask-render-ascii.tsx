@@ -55,4 +55,3 @@ export class DialogAskRenderAscii extends React.Component<DialogAskRenderAsciiPr
     );
   }
 }
-export default DialogAskRenderAscii;

@@ -109,5 +109,3 @@ interface RcWarrentsProps extends React.Props<RcWarrents> {
   }
 
 }
-
-export default RcWarrents;

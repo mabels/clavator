@@ -1,7 +1,7 @@
 // import Validatable from './validatable';
 // import StringValue from './string-value';
-import Container from '../model/container';
-import Warrent from './warrent';
+import { Container } from './container';
+import { Warrent } from './warrent';
 
 export class Warrents extends Container<Warrent> {
   constructor(ws: Warrent[] = []) {
@@ -32,5 +32,3 @@ export class Warrents extends Container<Warrent> {
     return reduced.length == this.pallets.length;
   }
 }
-
-export default Warrents;

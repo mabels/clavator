@@ -190,5 +190,3 @@ export class Assistent extends React.Component<AssistentProps> {
     );
   }
 }
-
-export default Assistent;

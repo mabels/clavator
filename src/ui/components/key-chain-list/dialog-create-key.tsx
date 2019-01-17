@@ -45,5 +45,3 @@ export class DialogCreateKey extends React.Component<DialogCreateKeyProps, Dialo
     );
   }
 }
-
-export default DialogCreateKey;

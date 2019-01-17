@@ -1,6 +1,8 @@
-import ObjectId from './object-id';
+import { ObjectId } from './object-id';
+import { observable } from 'mobx';
 
 export class DateValue extends ObjectId {
+  @observable
   public value: Date;
   public errText: string;
 
@@ -20,5 +22,3 @@ export class DateValue extends ObjectId {
     return this.value.getTime() > tomorrow.getTime();
   }
 }
-
-// export default DateValue;

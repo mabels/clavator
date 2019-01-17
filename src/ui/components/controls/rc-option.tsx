@@ -58,5 +58,3 @@ export class RcOption<T> extends
   }
 
 }
-
-export default RcOption;

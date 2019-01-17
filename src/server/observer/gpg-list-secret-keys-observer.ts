@@ -1,24 +1,19 @@
 import * as WebSocket from 'ws';
+import { Observer } from './observer';
 
-// import * as Message from './message';
-import * as Observer from '../observer';
+import { Gpg, SecretKey } from '../../gpg';
+import { WssUpdate } from '../wss-update';
 
-import * as Gpg from '../../gpg/gpg';
-import * as ListSecretKeys from '../../gpg/list-secret-keys';
-import WssUpdate from '../wss-update';
-
-class GpgListSecretKeysObserver {
-  public observer: Observer.Observer;
+export class GpgListSecretKeysObserver {
+  public observer: Observer;
   public timeoutId: any;
-  public gpg: Gpg.Gpg;
+  public gpg: Gpg;
   public actionCount: number;
-  public prev: WssUpdate<ListSecretKeys.SecretKey> = new WssUpdate<
-    ListSecretKeys.SecretKey
-  >();
+  public prev: WssUpdate<SecretKey> = new WssUpdate<SecretKey>();
 
   public static create(
-    gpg: Gpg.Gpg,
-    obs: Observer.Observer
+    gpg: Gpg,
+    obs: Observer
   ): GpgListSecretKeysObserver {
     let glsko = new GpgListSecretKeysObserver();
     glsko.gpg = gpg;
@@ -49,7 +44,7 @@ class GpgListSecretKeysObserver {
       return;
     }
     this.gpg.list_secret_keys(
-      (err: string, keys: ListSecretKeys.SecretKey[]) => {
+      (err: string, keys: SecretKey[]) => {
         if (err) {
           console.error(err);
           keys = [];
@@ -65,5 +60,3 @@ class GpgListSecretKeysObserver {
     // console.log('started');
   }
 }
-
-export default GpgListSecretKeysObserver;

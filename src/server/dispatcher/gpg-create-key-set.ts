@@ -1,24 +1,23 @@
 
 import * as WebSocket from 'ws';
-import * as Message from '../../model/message';
-import Dispatcher from '../dispatcher';
+import { Message, Progress } from '../../model';
+import { Dispatcher } from '../dispatcher';
 
-import * as KeyGen from '../../gpg/key-gen';
+import { KeyGen, Gpg } from '../../gpg';
 // import * as ListSecretKeys from '../../gpg/list-secret-keys';
-import * as Gpg from '../../gpg/gpg';
-import CreateKeySetTask from '../tasks/create-key-set-task';
+import { CreateKeySetTask } from '../tasks';
 import { Observer } from '../observer';
 
 // import * as Progress from '../../model/progress';
 
 export class GpgCreateKeySet implements Dispatcher {
-  public gpg: Gpg.Gpg;
+  public gpg: Gpg;
 
-  public static create(g: Gpg.Gpg): GpgCreateKeySet {
+  public static create(g: Gpg): GpgCreateKeySet {
     return new GpgCreateKeySet(g);
   }
 
-  constructor(gpg: Gpg.Gpg) {
+  constructor(gpg: Gpg) {
     this.gpg = gpg;
   }
 
@@ -28,8 +27,8 @@ export class GpgCreateKeySet implements Dispatcher {
       // ws.send(Message.prepare('Progressor.Clavator', Progress.fail('Ohh')))
       return false;
     }
-    const kg = new KeyGen.KeyGen();
-    KeyGen.KeyGen.fill(JSON.parse(m.data) || {}, kg);
+    const kg = new KeyGen();
+    KeyGen.fill(JSON.parse(m.data) || {}, kg);
     // console.log(m, a, kg)
     CreateKeySetTask.run(this.gpg, ws, m, kg)
       .then(() => { /* */ })
@@ -44,5 +43,3 @@ export class GpgCreateKeySet implements Dispatcher {
   }
 
 }
-
-export default GpgCreateKeySet;

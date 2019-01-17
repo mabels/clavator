@@ -6,12 +6,12 @@ export interface ParsedAction {
   (y: yargs.Arguments, state: GpgMockState): boolean; // returns true stopped
 }
 
-interface StdOut {
+export interface StdOut {
   fname: string;
   value: string;
 }
 
-export default class GpgMockState {
+export class GpgMockState {
   public action: ParsedAction[];
   public _exitCode: number;
   public stdOut: StdOut[];

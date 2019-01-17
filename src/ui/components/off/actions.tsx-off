@@ -59,5 +59,3 @@ export class Actions
     );
   }
 }
-
-export default Actions;

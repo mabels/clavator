@@ -1,10 +1,6 @@
 import { action, computed } from 'mobx';
-// import Validatable from './validatable';
-// import StringValue from './string-value';
-import Container from '../../model/container';
-// import Warrent from '../../gpg/warrent';
-import Warrents from '../../gpg/warrents';
-import ViewWarrent from './view-warrent';
+import { Container, Warrents } from '../../model';
+import { ViewWarrent } from './view-warrent';
 
 export class ViewWarrents extends Container<ViewWarrent> {
   // private warrents: Warrents;
@@ -64,5 +60,3 @@ export class ViewWarrents extends Container<ViewWarrent> {
   }
 
 }
-
-export default ViewWarrents;

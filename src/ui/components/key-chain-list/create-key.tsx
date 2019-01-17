@@ -125,5 +125,3 @@ export class CreateKey extends React.Component<CreateKeyProps, CreateKeyState> {
   }
 
 }
-
-export default CreateKey;

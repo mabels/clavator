@@ -78,5 +78,3 @@ export class AssistentCheckcard
     );
   }
 }
-
-export default AssistentCheckcard;

@@ -1,10 +1,8 @@
 import * as React from 'react';
 import classnames from 'classnames';
 import { observer } from 'mobx-react';
-// import BooleanValue from '../../../model/boolean-value';
-import Container from '../../../model/container';
-import NestedFlag from '../../../model/nested-flag';
-import Uid from '../../../gpg/key-gen-uid';
+import { Container, NestedFlag } from '../../../model';
+import { Uid } from '../../model';
 
 interface RcUidsState {
 }
@@ -149,5 +147,3 @@ export class RcUids extends
   }
 
 }
-
-export default RcUids;

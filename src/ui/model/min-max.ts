@@ -1,6 +1,6 @@
-import CharFormat from './char-format';
+import { CharFormat } from './char-format';
 
-export default class MinMax {
+export class MinMax {
   public min: number;
   public max: number;
   public readonly contReg: CharFormat;

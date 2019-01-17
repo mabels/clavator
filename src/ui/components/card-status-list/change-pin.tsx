@@ -1,10 +1,9 @@
 import * as React from 'react';
 import classnames from 'classnames';
-import RequestChangePin from '../../../gpg/request-change-pin';
-// import * as WsChannel from '../../model/ws-channel';
-import * as Message from '../../../model/message';
-import ButtonToProgressor from '../controls/button-to-progressor';
-import AppState from '../../model/app-state';
+import { RequestChangePin } from '../../../gpg';
+import { Message } from '../../../model';
+import { ButtonToProgressor } from '../controls';
+import { AppState } from '../../model';
 
 interface ChangePinState {
   pin: RequestChangePin;

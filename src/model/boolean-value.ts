@@ -1,6 +1,6 @@
 import { observable } from 'mobx';
-import Validatable from './validatable';
-import ObjectId from './object-id';
+import { Validatable } from './validatable';
+import { ObjectId } from './object-id';
 
 export class BooleanValue extends ObjectId implements Validatable {
   public errorText: string;
@@ -33,5 +33,3 @@ export class BooleanValue extends ObjectId implements Validatable {
     this.value = js['value'];
   }
 }
-
-// export default BooleanValue;

@@ -1,4 +1,4 @@
-import KeyState from './key-state';
+import { KeyState } from './key-state';
 
 const reCrNl = /\r?\n/;
 

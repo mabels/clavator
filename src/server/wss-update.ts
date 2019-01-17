@@ -68,5 +68,3 @@ export class WssUpdate<T extends Equalizer<T>> {
     return wss.length > 0;
   }
 }
-
-export default WssUpdate;

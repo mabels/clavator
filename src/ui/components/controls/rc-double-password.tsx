@@ -92,5 +92,3 @@ export class RcDoublePassword extends
   }
 
 }
-
-export default RcDoublePassword;

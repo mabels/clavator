@@ -1,5 +1,5 @@
-import GpgMockState from './gpg-mock-state';
 import * as yargs from 'yargs';
+import { GpgMockState } from './gpg-mock-state';
 
 function quickAddKeyAction(y: yargs.Arguments, state: GpgMockState): boolean {
   return y.quickAddkey;
@@ -44,7 +44,7 @@ function deleteKeyAction(y: yargs.Arguments, state: GpgMockState): boolean {
   return y.deleteKey;
 }
 
-export function cli(y: yargs.Argv, state: GpgMockState): yargs.Argv {
+export function simpleActionsCli(y: yargs.Argv, state: GpgMockState): yargs.Argv {
   state.onParsed(quickAddKeyAction);
   state.onParsed(exportSecretKeyAction);
   state.onParsed(exportAction);

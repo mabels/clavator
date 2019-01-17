@@ -1,5 +1,5 @@
 import { observable } from 'mobx';
-import Validatable from './validatable';
+import { Validatable } from './validatable';
 import { ObjectId } from './object-id';
 
 export class StringValue extends ObjectId implements Validatable {
@@ -32,5 +32,3 @@ export class StringValue extends ObjectId implements Validatable {
   }
 
 }
-
-// export default StringValue;

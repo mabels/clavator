@@ -1,4 +1,4 @@
-import Pin from './pin';
+import { Pin } from './pin';
 import { Gpg2CardStatus } from './card-status';
 
 export class ChangeCard {
@@ -52,5 +52,3 @@ export class ChangeCard {
     );
   }
 }
-
-export default ChangeCard;

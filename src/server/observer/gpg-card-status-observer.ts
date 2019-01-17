@@ -1,24 +1,21 @@
 import * as WebSocket from 'ws';
 
 // import * as Message from './message';
-import * as Observer from '../observer';
+import { Observer } from './observer';
 
-import * as Gpg from '../../gpg/gpg';
-import * as CardStatus from '../../gpg/card-status';
-import WssUpdate from '../wss-update';
+import { Gpg, Gpg2CardStatus } from '../../gpg';
+import { WssUpdate } from '../wss-update';
 
-class GpgCardStatusObserver {
-  public observer: Observer.Observer;
+export class GpgCardStatusObserver {
+  public observer: Observer;
   public timeoutId: any;
-  public gpg: Gpg.Gpg;
+  public gpg: Gpg;
   public actionCount: number;
-  public prev: WssUpdate<CardStatus.Gpg2CardStatus> = new WssUpdate<
-    CardStatus.Gpg2CardStatus
-  >();
+  public prev: WssUpdate<Gpg2CardStatus> = new WssUpdate<Gpg2CardStatus>();
 
   public static create(
-    gpg: Gpg.Gpg,
-    obs: Observer.Observer
+    gpg: Gpg,
+    obs: Observer
   ): GpgCardStatusObserver {
     let glsko = new GpgCardStatusObserver();
     glsko.gpg = gpg;
@@ -58,7 +55,7 @@ class GpgCardStatusObserver {
     if (!wss.length) {
       return;
     }
-    this.gpg.card_status((err: string, keys: CardStatus.Gpg2CardStatus[]) => {
+    this.gpg.card_status((err: string, keys: Gpg2CardStatus[]) => {
       if (err) {
         if (!err.includes('OpenPGP card not available')) {
           console.error(err);
@@ -76,5 +73,3 @@ class GpgCardStatusObserver {
     console.log('Card-Status: started');
   }
 }
-
-export default GpgCardStatusObserver;

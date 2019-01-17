@@ -75,5 +75,3 @@ export class InputPassword extends
   }
 
 }
-
-export default InputPassword;

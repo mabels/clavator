@@ -124,5 +124,3 @@ export class SendKeyToYubiKey implements Dispatcher {
     return true;
   }
 }
-
-export default SendKeyToYubiKey;

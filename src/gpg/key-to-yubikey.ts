@@ -1,5 +1,5 @@
-import Pin from './pin';
-import MutableString from '../model/mutable-string';
+import { Pin } from './pin';
+import { MutableString } from '../model';
 import { observable } from 'mobx';
 
 export class KeyToYubiKey {
@@ -47,5 +47,3 @@ export class KeyToYubiKey {
     return ret;
   }
 }
-
-// export default KeyToYubiKey;

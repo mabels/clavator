@@ -47,5 +47,3 @@ export class RcWarrent extends
   }
 
 }
-
-export default RcWarrent;

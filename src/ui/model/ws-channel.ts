@@ -1,4 +1,4 @@
-import * as Message from '../../model/message';
+import { Message } from '../../model';
 
 export interface WsMessage {
   (h: Message.Header, data: string): void;

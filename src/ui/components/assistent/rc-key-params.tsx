@@ -1,8 +1,10 @@
 import * as React from 'react';
 import classnames from 'classnames';
-import NestedFlag from '../../../model/nested-flag';
-import KeyParams from '../../../gpg/key-params';
-import RcOption from '../controls/rc-option';
+import {
+  NestedFlag
+} from '../../../model';
+import { KeyParams } from '../../../gpg';
+import { RcOption } from '../controls';
 
 export interface RcKeyParamsProps {
   // extends React.Props<RcKeyParams> {

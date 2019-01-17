@@ -1,23 +1,19 @@
 
 import * as WebSocket from 'ws';
-import * as Message from '../../model/message';
-import Dispatcher from '../dispatcher';
+import { Message, Progress } from '../../model';
+import { Dispatcher } from '../dispatcher';
 
-import * as Gpg from '../../gpg/gpg';
-import Result from '../../gpg/result';
-import RequestChangePin from '../../gpg/request-change-pin';
+import { Gpg, RequestChangePin, Result } from '../../gpg';
 import { Observer } from '../observer';
-
-import * as Progress from '../../model/progress';
 
 export class GpgChangePinYubikey implements Dispatcher {
 
-  public gpg: Gpg.Gpg;
+  public gpg: Gpg;
 
-  public static create(g: Gpg.Gpg): GpgChangePinYubikey {
+  public static create(g: Gpg): GpgChangePinYubikey {
     return new GpgChangePinYubikey(g);
   }
-  constructor(g: Gpg.Gpg) {
+  constructor(g: Gpg) {
     this.gpg = g;
   }
 
@@ -43,5 +39,3 @@ export class GpgChangePinYubikey implements Dispatcher {
   }
 
 }
-
-export default GpgChangePinYubikey;

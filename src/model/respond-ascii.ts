@@ -11,5 +11,3 @@ export class RespondAscii {
     this.data = data;
   }
 }
-
-// export default RespondAscii;

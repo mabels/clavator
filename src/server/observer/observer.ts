@@ -1,16 +1,16 @@
 import * as WebSocket from 'ws';
 // import * as Message from './message';
 
-import * as Gpg from '../gpg/gpg';
-import GpgListSecretKeysObserver from './observer/gpg-list-secret-keys-observer';
-import GpgCardStatusObserver from './observer/gpg-card-status-observer';
+import { Gpg } from '../../gpg';
+import { GpgListSecretKeysObserver } from './gpg-list-secret-keys-observer';
+import { GpgCardStatusObserver } from './gpg-card-status-observer';
 
 export class Observer {
   public wss: WebSocket[] = [];
   public gpgListSecretKeysObserver: GpgListSecretKeysObserver;
   public gpgCardStatusObserver: GpgCardStatusObserver;
 
-  public static start(gpg: Gpg.Gpg): Observer {
+  public static start(gpg: Gpg): Observer {
     console.log('Observer.start');
     let obs = new Observer();
     obs.gpgListSecretKeysObserver = GpgListSecretKeysObserver.create(gpg, obs);
@@ -39,6 +39,6 @@ export class Observer {
   }
 }
 
-export function start(gpg: Gpg.Gpg): Observer {
+export function start(gpg: Gpg): Observer {
   return Observer.start(gpg);
 }

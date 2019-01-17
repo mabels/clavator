@@ -32,5 +32,3 @@ export function AdminPin(): Pin {
   ret.match = /[0-9]{8}/;
   return ret;
 }
-
-export default Pin;

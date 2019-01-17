@@ -1,15 +1,9 @@
 import * as React from 'react';
-// import { observable, computed } from 'mobx';
 import { observer } from 'mobx-react';
 import classnames from 'classnames';
-// import SimpleYubiKey from '../gpg/simple-yubikey';
-// import RcCheckWarrents from './rc-check-warrents';
-// import StringValue from '../../../model/string-value';
-// import BooleanValue from '../../../model/boolean-value';
 import { Diced } from '../../../dice-ware/dice-ware';
-// import { format_date } from '../../../model/helper';
-import { InputPassPhraseProps } from '../controls/input-pass-phrase';
-import DoublePassword from '../../model/double-password';
+import { InputPassPhraseProps } from '../controls';
+import { DoublePassword } from '../../model';
 
 // class ResetOnUnreadable {
 //     private _dicedValue: StringValue;
@@ -110,5 +104,3 @@ export class InputDiceWare extends
   }
 
 }
-
-export default InputDiceWare;

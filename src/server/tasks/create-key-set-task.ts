@@ -1,18 +1,14 @@
 import * as WebSocket from 'ws';
-import * as Message from '../../model/message';
-import * as KeyGen from '../../gpg/key-gen';
-import * as Gpg from '../../gpg/gpg';
-import Result from '../../gpg/result';
-import * as Progress from '../../model/progress';
-import * as ListSecretKeys from '../../gpg/list-secret-keys';
+import { Message, Progress } from '../../model';
+import { KeyGen, Gpg, Result, SecretKey } from '../../gpg';
 
-export default class CreateKeySetTask {
+export class CreateKeySetTask {
   public static run(
-    gpg: Gpg.Gpg,
+    gpg: Gpg,
     ws: WebSocket,
     m: Message.Message,
-    kg: KeyGen.KeyGen
-  ): Promise<ListSecretKeys.SecretKey> {
+    kg: KeyGen
+  ): Promise<SecretKey> {
     return new Promise((resolve, reject) => {
       let header = Message.toHeader(m, 'Progressor.Clavator');
       if (!kg.valid()) {
@@ -28,7 +24,7 @@ export default class CreateKeySetTask {
         ws.send(Message.prepare(header, Progress.info(res.stdOut)));
         ws.send(Message.prepare(header, Progress.error(res.stdErr)));
         gpg.list_secret_keys(
-          (err: string, keys: ListSecretKeys.SecretKey[]) => {
+          (err: string, keys: SecretKey[]) => {
             if (err) {
               console.error(err);
               reject(err);
@@ -58,7 +54,7 @@ export default class CreateKeySetTask {
                         () => {
                           gpg.getSecretKey(
                             key.fingerPrint.fpr,
-                            (_key: ListSecretKeys.SecretKey) => {
+                            (_key: SecretKey) => {
                               if (_key) {
                                 const msg = 'CreateKeySet.Completed';
                                 ws.send(
@@ -109,12 +105,12 @@ export default class CreateKeySetTask {
     });
   }
   public static createSubKeys(
-    gpg: Gpg.Gpg,
+    gpg: Gpg,
     header: Message.Header,
     ws: WebSocket,
     cnt: number,
     fpr: string,
-    ki: KeyGen.KeyGen,
+    ki: KeyGen,
     cb: () => void
   ): void {
     // console.log('createSubKeys:1', cnt, ki.subKeys.subKeys.length);
@@ -135,12 +131,12 @@ export default class CreateKeySetTask {
   }
 
   public static addUids(
-    gpg: Gpg.Gpg,
+    gpg: Gpg,
     header: Message.Header,
     ws: WebSocket,
     cnt: number,
     fpr: string,
-    ki: KeyGen.KeyGen,
+    ki: KeyGen,
     cb: () => void
   ): void {
     // console.log('createSubKeys:1', cnt, ki.subKeys.subKeys.length);

@@ -1,16 +1,16 @@
 import { observable, ObservableMap } from 'mobx';
-import * as CardStatus from '../../gpg/card-status';
-import * as WsChannel from './ws-channel';
-import * as Message from '../../model/message';
+import { WsChannel, Dispatch } from './ws-channel';
+import { CardStatus } from '../../gpg';
+import { Message } from '../../model';
 
 // import DevTools from 'mobx-react-devtools';
 
-export class CardStatusListState implements WsChannel.WsChannel {
+export class CardStatusListState implements WsChannel {
   // @observable timer = 0;
   @observable public cardStatusList: CardStatus.Gpg2CardStatus[] = [];
   @observable public adminPins: ObservableMap<string> = observable.map<string>();
 
-  constructor(channel: WsChannel.Dispatch) {
+  constructor(channel: Dispatch) {
     channel.register(this);
   }
   public onOpen(e: Event): void {
@@ -46,5 +46,3 @@ export class CardStatusListState implements WsChannel.WsChannel {
     this.cardStatusList.length = 0; // = [];
   }
 }
-
-export default CardStatusListState;

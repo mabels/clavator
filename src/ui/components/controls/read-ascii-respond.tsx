@@ -79,5 +79,3 @@ export class ReadAsciiRespond extends React.Component<ReadAsciiRespondProps, Rea
     }
   }
 }
-
-export default ReadAsciiRespond;

@@ -1,7 +1,4 @@
-import ObjectId from '../model/object-id';
-import Option from '../model/option';
-import Validatable from '../model/validatable';
-import { assignOnError } from '../model/helper';
+import { Option, ObjectId, Validatable, assignOnError } from '../model';
 
 export class KeyParams extends ObjectId implements Validatable {
   public type: Option<string>;
@@ -49,5 +46,3 @@ export class KeyParams extends ObjectId implements Validatable {
     };
   }
 }
-
-// export default KeyParams;

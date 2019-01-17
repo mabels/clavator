@@ -1,5 +1,6 @@
-import GpgMockState from './gpg-mock-state';
 import * as yargs from 'yargs';
+
+import { GpgMockState } from './gpg-mock-state';
 
 function action(y: yargs.Arguments, state: GpgMockState): boolean {
   let match: string = null;
@@ -32,7 +33,7 @@ grp:::::::::A5516054BF25070216663AD255A8FC2DFBB6324B:`
   return false;
 }
 
-export function cli(y: yargs.Argv, state: GpgMockState): yargs.Argv {
+export function fullGenKeyCli(y: yargs.Argv, state: GpgMockState): yargs.Argv {
   state.onParsed(action);
   return yargs.option('full-gen-key', {
     describe: 'full-gen-key action',

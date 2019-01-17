@@ -1,17 +1,14 @@
 import { observable } from 'mobx';
-import ObjectId from '../../model/object-id';
-import MinMax from './min-max';
-// import BooleanValue from '../../model/boolean-value';
-import ViewWarrent from './view-warrent';
-import ViewWarrents from './view-warrents';
-import Validatable from '../../model/validatable';
-import StringValue from '../../model/string-value';
-import PassPhrase from './pass-phrase';
-import PasswordControl from './password-control';
-import Warrents from '../../gpg/warrents';
-import DiceWare from '../../dice-ware/dice-ware';
-import InputDiceWare from '../components/controls/input-dice-ware';
-import CharFormat from './char-format';
+import { ObjectId, Validatable, StringValue, Warrents } from '../../model';
+import { MinMax } from './min-max';
+
+import { ViewWarrent } from './view-warrent';
+import { ViewWarrents } from './view-warrents';
+import { PassPhrase } from './pass-phrase';
+import { PasswordControl } from './password-control';
+import { DiceWare } from '../../dice-ware';
+import { InputDiceWare } from '../components/controls';
+import { CharFormat } from './char-format';
 
 export class DoublePassword extends ObjectId implements Validatable {
   // @observable public approved: BooleanValue;
@@ -157,5 +154,3 @@ export class DoublePassword extends ObjectId implements Validatable {
     // return this;
   }
 }
-
-export default DoublePassword;

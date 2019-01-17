@@ -128,5 +128,3 @@ export class DiceWare {
     };
   }
 }
-
-export default DiceWare;

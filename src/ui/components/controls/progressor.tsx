@@ -84,5 +84,3 @@ export class Progressor extends React.Component<ProgressorProps> {
   }
 
 }
-
-export default Progressor;

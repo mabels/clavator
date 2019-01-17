@@ -1,4 +1,4 @@
-import Pallet from './pallet';
+import { Pallet } from './pallet';
 import { observable, computed } from 'mobx';
 import { assignOnError } from './helper';
 
@@ -113,5 +113,3 @@ export class Container<T extends Pallet> {
     return this.pallets.map(ws => ws.toObj());
   }
 }
-
-// export default Container;

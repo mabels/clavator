@@ -71,5 +71,3 @@ interface RcApproveWarrentsProps extends React.Props<RcApproveWarrents> {
   }
 
 }
-
-export default RcApproveWarrents;

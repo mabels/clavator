@@ -3,17 +3,15 @@
 // import * as ReactDOM from 'react-dom';
 import { observable, ObservableMap } from 'mobx';
 
-import * as ListSecretKeys from '../../gpg/list-secret-keys';
-// import { AdminPin, Pin } from '../gpg/pin';
+import { SecretKey }  from '../../gpg';
+import { WsChannel, Dispatch } from './ws-channel';
+import { Message } from '../../model';
 
-import * as WsChannel from './ws-channel';
-import * as Message from '../../model/message';
-
-export class KeyChainListState implements WsChannel.WsChannel {
-  @observable public keyChainList: ListSecretKeys.SecretKey[] = [];
+export class KeyChainListState implements WsChannel {
+  @observable public keyChainList: SecretKey[] = [];
   @observable public adminPins: ObservableMap<string> = observable.map<string>();
 
-  constructor(channel: WsChannel.Dispatch) {
+  constructor(channel: Dispatch) {
     channel.register(this);
   }
 
@@ -29,5 +27,3 @@ export class KeyChainListState implements WsChannel.WsChannel {
     this.keyChainList.length = 0;
   }
 }
-
-export default KeyChainListState;

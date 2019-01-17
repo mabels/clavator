@@ -46,5 +46,3 @@ public render(): JSX.Element {
     );
   }
 }
-
-export default DialogRenderAscii;

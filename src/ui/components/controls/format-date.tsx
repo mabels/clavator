@@ -25,5 +25,3 @@ export class FormatDate
     );
   }
 }
-
-export default FormatDate;

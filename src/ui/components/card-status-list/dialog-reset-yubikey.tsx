@@ -54,5 +54,3 @@ export class DialogResetYubiKey extends React.Component<DialogResetYubiKeyProps,
   }
 
 }
-
-export default DialogResetYubiKey;

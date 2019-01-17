@@ -1,22 +1,10 @@
 import { observable } from 'mobx';
-// import DateValue from '../../model/date-value';
-// import BooleanValue from '../../model/boolean-value';
-// import Option from '../../model/option';
-// import Container from '../../model/container';
-// import Validatable from '../../model/validatable';
-import NestedFlag from '../../model/nested-flag';
-// import KeyGenUid from '../../gpg/key-gen-uid';
-import Warrents from '../../gpg/warrents';
-// import Warrent from '../../gpg/warrent';
-// import KeyParams from '../../gpg/key-params';
-import PassPhrase from './pass-phrase';
-import SimpleKeyCommon from './simple-key-common';
-import DiceWare from '../../dice-ware/dice-ware';
-import CharFormat from './char-format';
-import { Warrent } from '../../gpg/warrent';
-import { KeyGen, KeyInfo } from '../../gpg/key-gen';
-// import KeyGenUid from '../../gpg/key-gen-uid';
-import { KeyToYubiKey } from '../../gpg/key-to-yubikey';
+import { NestedFlag, Warrents, Warrent } from '../../model';
+import { PassPhrase } from './pass-phrase';
+import { SimpleKeyCommon } from './simple-key-common';
+import { DiceWare } from '../../dice-ware';
+import { CharFormat } from './char-format';
+import { KeyGen, KeyInfo, KeyToYubiKey } from '../../gpg';
 
 // import { assignOnError } from '../../model/helper';
 
@@ -133,5 +121,3 @@ export class SimpleYubikey {
   }
 
 }
-
-export default SimpleYubikey;

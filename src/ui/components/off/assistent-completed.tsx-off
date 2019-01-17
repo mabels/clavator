@@ -27,5 +27,3 @@ export class AssistentCompleted
     );
   }
 }
-
-export default AssistentCompleted;

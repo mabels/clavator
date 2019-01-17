@@ -1,16 +1,8 @@
 
 import * as React from 'react';
 import * as ReactModal from 'react-modal';
-// import * as CopyToClipboard from 'react-copy-to-clipboard';
 import { AskKeyToYubiKey } from '../card-status-list/ask-key-to-yubi-key';
-import * as ListSecretKeys from '../../../gpg/list-secret-keys';
-// import * as WsChannel from '../../model/ws-channel';
-// import { CardStatusListState } from '../../model/card-status-list-state';
-// import { ProgressorState } from '../controls/progressor';
-import AppState from '../../model/app-state';
-
-interface DialogSendToCardState {
-}
+import { AppState } from '../../model';
 
 interface DialogSendToCardProps extends React.Props<DialogSendToCard> {
   onClose: () => void;
@@ -49,4 +41,3 @@ export class DialogSendToCard extends React.Component<DialogSendToCardProps, Dia
   }
 
 }
-export default DialogSendToCard;

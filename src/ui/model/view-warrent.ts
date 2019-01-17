@@ -1,7 +1,9 @@
 import { observable } from 'mobx';
-import ObjectId from '../../model/object-id';
-import Pallet from '../../model/pallet';
-import Warrent from '../../gpg/warrent';
+import {
+  ObjectId,
+  Pallet,
+  Warrent
+} from '../../model';
 
 export class ViewWarrent extends ObjectId implements Pallet {
   public readonly warrent: Warrent;
@@ -62,5 +64,3 @@ export class ViewWarrent extends ObjectId implements Pallet {
   }
 
 }
-
-export default ViewWarrent;

@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { RcOption } from '../controls/rc-option';
 import { observer } from 'mobx-react';
-import PassPhrase from '../../model/pass-phrase';
-import DiceWare from '../../../dice-ware/dice-ware';
+import { RcOption } from '../controls';
+import { PassPhrase } from '../../model';
+import { DiceWare } from '../../../dice-ware';
 
 export interface LabelWithDiceProps {
   readonly label: string | JSX.Element;

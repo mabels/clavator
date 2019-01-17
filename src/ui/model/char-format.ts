@@ -39,7 +39,7 @@ class Range {
 
 }
 
-export default class CharFormat {
+export class CharFormat {
   private readonly ranges: Range[];
 
   public static decNumber(): CharFormat {

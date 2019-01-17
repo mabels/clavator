@@ -1,9 +1,9 @@
 import * as React from 'react';
-import * as Message from '../../../model/message';
-// import * as WsChannel from '../../model/ws-channel';
-import { Progressor } from './progressor';
 import { observer } from 'mobx-react';
-import AppState from '../../model/app-state';
+
+import { Message } from '../../../model';
+import { Progressor } from './progressor';
+import { AppState } from '../../model';
 
 interface ButtonToProgressorState {
   running: boolean;
@@ -43,5 +43,3 @@ export class ButtonToProgressor extends React.Component<ButtonToProgressorProps,
     }
   }
 }
-
-export default ButtonToProgressor;

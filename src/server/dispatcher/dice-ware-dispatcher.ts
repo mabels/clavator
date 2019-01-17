@@ -1,14 +1,9 @@
 import * as WebSocket from 'ws';
-import * as Message from '../../model/message';
-import Dispatcher from '../dispatcher';
-// import * as fsExtra from 'fs-extra';
-
-import { DiceWare, Diced } from '../../dice-ware/dice-ware';
-// import * as CardStatus from './gpg/card_status';
-
-import * as Progress from '../../model/progress';
+import { Dispatcher } from '../dispatcher';
+import { DiceWare, Diced } from '../../dice-ware';
+import { Progress, Message } from '../../model';
 import { Observer } from '../observer';
-// import { WordList } from './word-list';
+
 import { DICEWAREWORLDLISTS } from './dice-ware-word-list-data';
 
 export class DiceWareDispatcher implements Dispatcher {
@@ -86,5 +81,3 @@ export class DiceWareDispatcher implements Dispatcher {
     return true;
   }
 }
-
-export default DiceWareDispatcher;

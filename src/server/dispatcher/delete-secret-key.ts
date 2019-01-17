@@ -1,21 +1,19 @@
 import * as ws from 'ws';
-import * as Message from '../../model/message';
-import Dispatcher from '../dispatcher';
+import { Dispatcher } from '../dispatcher';
 
-import * as Gpg from '../../gpg/gpg';
-import { Result } from '../../gpg/result';
-
-import { Progress } from '../../model/progress';
+import { Gpg, Result } from '../../gpg';
 import { Observer } from '../observer';
 
-export class DeleteSecretKey implements Dispatcher {
-  private gpg: Gpg.Gpg;
+import { Progress, Message } from '../../model';
 
-  public static create(g: Gpg.Gpg): DeleteSecretKey {
+export class DeleteSecretKey implements Dispatcher {
+  private gpg: Gpg;
+
+  public static create(g: Gpg): DeleteSecretKey {
     return new DeleteSecretKey(g);
   }
 
-  constructor(g: Gpg.Gpg) {
+  constructor(g: Gpg) {
     this.gpg = g;
   }
 
@@ -54,5 +52,3 @@ export class DeleteSecretKey implements Dispatcher {
     return true;
   }
 }
-
-// export default DeleteSecretKey;

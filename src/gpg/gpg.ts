@@ -1,22 +1,23 @@
-import * as ListSecretKeys from './list-secret-keys';
-import * as CardStatus from './card-status';
 import * as path from 'path';
 import * as fs from 'fs';
-// import * as fsPromise from "fs-promise";
+import * as rimraf from 'rimraf';
 import * as fsPromise from 'fs-extra';
-// import * as pse from "../pinentry/server";
-import * as Ac from './agent-conf';
 import * as uuid from 'uuid';
 
-import KeyToYubiKey from './key-to-yubikey';
+import { ListSecretKeys } from './list-secret-keys';
+import { CardStatus } from './card-status';
+import { AgentConf, AgentLine } from './agent-conf';
 
-import * as KeyGen from './key-gen';
-import ChangeCard from './change-card';
-import RequestAscii from '../model/request-ascii';
-import RequestChangePin from './request-change-pin';
-import KeyGenUid from './key-gen-uid';
-import { format_date } from '../model/helper';
-import * as rimraf from 'rimraf';
+import { KeyToYubiKey } from './key-to-yubikey';
+
+import { KeyGen, KeyInfo } from './key-gen';
+import { ChangeCard } from './change-card';
+import {
+  RequestAscii,
+  format_date
+} from '../model';
+import { RequestChangePin } from './request-change-pin';
+import { KeyGenUid } from './key-gen-uid';
 import { Result, Mixed } from './result';
 
 interface GpgCmd {
@@ -327,7 +328,7 @@ export class Gpg {
 
   public write_agent_conf(pinentryPath: string, cb: (err: any) => void): void {
     let gpgAgentFname = path.join(this.homeDir, 'gpg-agent.conf');
-    Ac.AgentConf.read_file(gpgAgentFname, (err: any, ag: Ac.AgentConf) => {
+    AgentConf.read_file(gpgAgentFname, (err: any, ag: AgentConf) => {
       if (err) {
         cb(err);
         return;
@@ -336,9 +337,9 @@ export class Gpg {
       let pv = pinentryPath;
       let als = ag.find(pp);
       if (!als) {
-        als = [new Ac.AgentLine([pp, pv].join(' '))];
+        als = [new AgentLine([pp, pv].join(' '))];
       }
-      als.forEach((al: Ac.AgentLine) => {
+      als.forEach((al: AgentLine) => {
         al.value = pv;
       });
       ag.write_file(gpgAgentFname, (errx: string) => {
@@ -352,7 +353,7 @@ export class Gpg {
   }
 
   public createMasterKey(
-    keyGen: KeyGen.KeyGen,
+    keyGen: KeyGen,
     cb: (res: Result) => void
   ): void {
     //  '--enable-large-rsa',
@@ -403,7 +404,7 @@ export class Gpg {
 
   public addUid(
     fpr: string,
-    kg: KeyGen.KeyGen,
+    kg: KeyGen,
     uid: KeyGenUid,
     cb: (res: Result) => void
   ): void {
@@ -425,8 +426,8 @@ export class Gpg {
 
   public createSubkey(
     fpr: string,
-    kg: KeyGen.KeyGen,
-    ki: KeyGen.KeyInfo,
+    kg: KeyGen,
+    ki: KeyInfo,
     cb: (res: Result) => void
   ): void {
     // gpg2  --quick-addkey  FDCF2566BA8134E3BAD15B7DDDC4941118503075 rsa2048 sign,auth,encr

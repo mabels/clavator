@@ -15,5 +15,3 @@ export class RequestAscii {
   }
 
 }
-
-// export default RequestAscii;

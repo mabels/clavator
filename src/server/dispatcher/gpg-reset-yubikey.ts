@@ -1,20 +1,18 @@
 
 import * as WebSocket from 'ws';
-import * as Message from '../../model/message';
-import Dispatcher from '../dispatcher';
-import * as Gpg from '../../gpg/gpg';
-import Result from '../../gpg/result';
-import * as Progress from '../../model/progress';
+import { Message, Progress } from '../../model';
+import { Dispatcher } from '../dispatcher';
+import { Gpg, Result } from '../../gpg';
 import { Observer } from '../observer';
 
 export class GpgResetYubikey implements Dispatcher {
-  public gpg: Gpg.Gpg;
+  public gpg: Gpg;
 
-  public static create(g: Gpg.Gpg): GpgResetYubikey {
+  public static create(g: Gpg): GpgResetYubikey {
     return new GpgResetYubikey(g);
   }
 
-  constructor(g: Gpg.Gpg) {
+  constructor(g: Gpg) {
     this.gpg = g;
   }
 
@@ -62,5 +60,3 @@ export class GpgResetYubikey implements Dispatcher {
   }
 
 }
-
-export default GpgResetYubikey;

@@ -1,23 +1,17 @@
 import * as React from 'react';
 import classnames from 'classnames';
-// import { observable } from 'mobx';
 import { observer } from 'mobx-react';
-// import BooleanValue from '../../../model/boolean-value';
-// import SimpleYubiKey from '../../model/simple-yubikey';
-// import RcCheckWarrents from './rc-check-warrents';
-import NestedFlag from '../../../model/nested-flag';
-// import { format_date } from '../../../model/helper';
-import PassPhrase from '../../model/pass-phrase';
-import DoublePassword from '../../model/double-password';
-import ViewWarrents from '../../model/view-warrents';
-// import InputPassword from '../controls/input-password';
-// import RcWarrent from './rc-warrent';
-import RcDoublePassword from './rc-double-password';
+import {
+  NestedFlag,
+} from '../../../model';
+import {
+  PassPhrase,
+  DoublePassword,
+  ViewWarrents
+} from '../../model';
+import { RcDoublePassword } from './rc-double-password';
 
-class InputPassPhraseState {
-}
-
-export interface InputPassPhraseProps extends React.Props<InputPassPhrase> {
+export interface InputPassPhraseProps {
   label: string | JSX.Element;
   passPhrase: PassPhrase;
   elementsPerRow?: number;
@@ -27,18 +21,10 @@ export interface InputPassPhraseProps extends React.Props<InputPassPhrase> {
   // onReadable?: (readable: boolean) => void;
 }
 
-@observer
-export class InputPassPhrase extends
-  React.Component<InputPassPhraseProps, InputPassPhraseState> {
-
-  constructor(props: InputPassPhraseProps) {
-    super(props);
-  }
-
-  public render(): JSX.Element {
+export const InputPassPhrase = observer((props: InputPassPhraseProps) => {
     const rows: DoublePassword[][] = [];
-    const elements = this.props.elementsPerRow || 3;
-    this.props.passPhrase.doublePasswords.forEach((dp, idx) => {
+    const elements = props.elementsPerRow || 3;
+    props.passPhrase.doublePasswords.forEach((dp, idx) => {
       let row = rows[~~(idx / elements)];
       if (!row) {
         row = [];
@@ -46,37 +32,53 @@ export class InputPassPhrase extends
       }
       row.push(dp);
     });
-    // console.log('input-pass-phrase:', this.props.readOnly);
-    return <div
-        key={`InputPassPhrase.${this.props.passPhrase.objectId()}`}
+    // console.log('input-pass-phrase:', props.readOnly);
+    return (
+      <div
+        key={`InputPassPhrase.${props.passPhrase.objectId()}`}
         className={classnames({
           InputPassPhrase: true,
-          completed: this.props.passPhrase.completed(),
-          readonly: this.props.passPhrase.readOnly.value ||
-                    (this.props.approvedWarrents && this.props.approvedWarrents.non())
-    })}>
+          completed: props.passPhrase.completed(),
+          readonly:
+            props.passPhrase.readOnly.value ||
+            (props.approvedWarrents && props.approvedWarrents.non())
+        })}
+      >
         <div className="row">
-          <label>{this.props.label}:</label>
+          <label>{props.label}:</label>
         </div>
-        {rows.map((row, ridx) =>
-          <div key={`${this.props.passPhrase.objectId()}.${ridx}`} className="row">
+        {rows.map((row, ridx) => (
+          <div
+            key={`${props.passPhrase.objectId()}.${ridx}`}
+            className="row"
+          >
             {row.map((dp, pidx) => {
               const idx = ridx * elements + pidx;
               // console.log('input-pass-phrase:render:', idx);
-              return <RcDoublePassword
-                onReadable={(r: boolean) => console.log('input-pass-phrase:onReadable:', dp.objectId(), r)}
-                readOnly={this.props.readOnly}
-                key={`${this.props.passPhrase.objectId()}.${idx}`}
-                doublePassword={dp} idx={this.props.passPhrase.doublePasswords.length > 1 ? idx : null} >
-                {this.props.childFactory && this.props.childFactory(dp, idx)}
-              </RcDoublePassword>;
-            }
-            )}
+              return (
+                <RcDoublePassword
+                  onReadable={(r: boolean) =>
+                    console.log(
+                      'input-pass-phrase:onReadable:',
+                      dp.objectId(),
+                      r
+                    )
+                  }
+                  readOnly={props.readOnly}
+                  key={`${props.passPhrase.objectId()}.${idx}`}
+                  doublePassword={dp}
+                  idx={
+                    props.passPhrase.doublePasswords.length > 1
+                      ? idx
+                      : null
+                  }
+                >
+                  {props.childFactory && props.childFactory(dp, idx)}
+                </RcDoublePassword>
+              );
+            })}
           </div>
-        )}
-    </div>;
-  }
-
-}
-
-export default InputPassPhrase;
+        ))}
+      </div>
+    );
+  });

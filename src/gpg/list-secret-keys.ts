@@ -1,6 +1,6 @@
-import * as KeyGen from './key-gen';
-import KeyGenUid from './key-gen-uid';
-import { expireDate } from '../model/helper';
+import { KeyGen, KeyInfo } from './key-gen';
+import { KeyGenUid } from './key-gen-uid';
+import { expireDate } from '../model';
 
 function debugArray(match: string[]): void {
   // let ret = {};
@@ -151,8 +151,8 @@ export class Key {
     return true;
   }
 
-  public toKeyGenInfo(): KeyGen.KeyInfo {
-    let ret = new KeyGen.KeyInfo();
+  public toKeyGenInfo(): KeyInfo {
+    let ret = new KeyInfo();
     ret.length.value = this.bits;
     ret.type.value = this.cipher;
     // ret.usage.values = this.
@@ -244,8 +244,8 @@ export class SecretKey extends Key {
     return null;
   }
 
-  public toKeyGen(subKeys = 3): KeyGen.KeyGen {
-    let ret = new KeyGen.KeyGen();
+  public toKeyGen(subKeys = 3): KeyGen {
+    let ret = new KeyGen();
     ret.keyInfo.length.value = this.bits || 4096;
     ret.keyInfo.type.value = this.cipher || 'RSA';
     ret.keyInfo.usage.values = ['cert'];
@@ -258,7 +258,7 @@ export class SecretKey extends Key {
       ret.subKeys.push(sb.toKeyGenInfo());
     }
     for (let i = 0; ret.subKeys.length() < subKeys; ++i) {
-      ret.subKeys.add(new KeyGen.KeyInfo());
+      ret.subKeys.add(new KeyInfo());
     }
     for (let uid of this.uids) {
       ret.uids.add(uid.toKeyGenUid());

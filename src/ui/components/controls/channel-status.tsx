@@ -1,8 +1,8 @@
 import * as React from 'react';
-// import * as classnames from 'classnames';
-import * as Message from '../../../model/message';
-import * as WsChannel from '../../model/ws-channel';
 import * as ReactModal from 'react-modal';
+// import * as classnames from 'classnames';
+import { Message } from '../../../model';
+import { Dispatch } from '../../model';
 import { observable } from 'mobx';
 
 interface ChannelStatusState {
@@ -10,7 +10,7 @@ interface ChannelStatusState {
 }
 
 interface ChannelStatusProps extends React.Props<ChannelStatus> {
-  channel: WsChannel.Dispatch;
+  channel: Dispatch;
 }
 
 export class ChannelStatus extends
@@ -44,11 +44,11 @@ export class ChannelStatus extends
   }
 
   private renderStatus(): JSX.Element {
-    if (this.state.status == 'connected' || this.state.status == 'not started') {
+    if (this.status == 'connected' || this.status == 'not started') {
       // console.log("NOT: renderStatus:", this.state.status);
       return null;
     }
-    console.log('renderStatus:', this.state.status);
+    console.log('renderStatus:', this.status);
     return <ReactModal
         className="waitForConnect"
         isOpen={true}
@@ -60,7 +60,7 @@ export class ChannelStatus extends
   }
 
   private renderChildren(): React.ReactNode {
-    if (this.state.status == 'connected' || this.state.status == 'not started') {
+    if (this.status == 'connected' || this.status == 'not started') {
       // console.log("NOT: renderStatus:", this.state.status);
       return this.props.children;
     }
@@ -69,7 +69,7 @@ export class ChannelStatus extends
 
   public render(): JSX.Element {
     return (
-      <div className={this.state.status}>
+      <div className={this.status}>
         {this.renderChildren()}
         {this.renderStatus()}
       </div>
@@ -77,5 +77,3 @@ export class ChannelStatus extends
   }
 
 }
-
-export default ChannelStatus;

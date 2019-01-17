@@ -1,7 +1,8 @@
-import { assignOnError } from '../model/helper';
-import Pallet from '../model/pallet';
-import ObjectId from '../model/object-id';
-import StringValue from '../model/string-value';
+import {
+  assignOnError,
+  Pallet,
+  ObjectId,
+  StringValue } from '../model';
 
 const EmailRegExp = new RegExp(
   [
@@ -65,5 +66,3 @@ export class KeyGenUid extends ObjectId implements Pallet {
     };
   }
 }
-
-export default KeyGenUid;

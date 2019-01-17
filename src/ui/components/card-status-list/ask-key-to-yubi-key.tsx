@@ -1,16 +1,12 @@
 import * as React from 'react';
-
-// import MutableString from '../gpg/mutable_string';
-import KeyToYubiKey from '../../../gpg/key-to-yubikey';
-
+import { observer } from 'mobx-react';
 import classnames from 'classnames';
 
-import * as Message from '../../../model/message';
-
-import ButtonToProgressor from '../controls/button-to-progressor';
-import { AppState } from '../../model/app-state';
+import { KeyToYubiKey } from '../../../gpg';
+import { Message } from '../../../model';
+import { ButtonToProgressor } from '../controls';
+import { AppState } from '../../model';
 import { CardSlot } from './card-slot';
-import { observer } from 'mobx-react';
 
 interface AskKeyToYubiKeyState {
   keyToYubiKey: KeyToYubiKey;

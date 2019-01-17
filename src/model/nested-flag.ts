@@ -1,5 +1,5 @@
 import { computed, observable } from 'mobx';
-import ObjectId from './object-id';
+import { ObjectId } from './object-id';
 
 export class NestedFlag extends ObjectId {
   @observable private value: boolean;

@@ -1,15 +1,13 @@
 import * as React from 'react';
 import * as ReactModal from 'react-modal';
-import * as CardStatus from '../../../gpg/card-status';
-import * as Message from '../../../model/message';
-// import * as WsChannel from '../../model/ws-channel';
-// import { Progressor } from './progressor';
-import ChangeCard from '../../../gpg/change-card';
-import classnames from 'classnames';
-import { observer } from 'mobx-react';
-import ButtonToProgressor from '../controls/button-to-progressor';
-import AppState from '../../model/app-state';
 import { observable } from 'mobx';
+import { observer } from 'mobx-react';
+
+import { CardStatus, ChangeCard } from '../../../gpg';
+import { Message } from '../../../model';
+import classnames from 'classnames';
+import { ButtonToProgressor } from '../controls';
+import { AppState } from '../../model';
 
 class DialogChangeAttributesState {
   @observable
@@ -104,5 +102,3 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
     );
   }
 }
-
-export default DialogChangeAttributes;

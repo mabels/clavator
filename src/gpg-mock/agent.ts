@@ -1,6 +1,6 @@
 import * as yargs from 'yargs';
 import * as path from 'path';
-import GpgMockState from './gpg-mock-state';
+import { GpgMockState } from './gpg-mock-state';
 
 /*
 AGENT
@@ -16,7 +16,7 @@ KillAgentBye();
   process.exit(0);
 */
 
-export function cli(y: yargs.Argv, state: GpgMockState): yargs.Argv {
+export function agentCli(y: yargs.Argv, state: GpgMockState): yargs.Argv {
   return y.command({
     command: 'connect-agent [gpg-connect..]',
     describe: 'connect agent mode',

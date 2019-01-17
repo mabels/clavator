@@ -1,9 +1,10 @@
 import { spawn } from 'child_process';
 import * as stream from 'stream';
 import * as uuid from 'uuid';
-import { Gpg } from './gpg';
 import * as fsPromise from 'fs-extra';
 import * as path from 'path';
+
+import { Gpg } from './gpg';
 
 interface StringFunc {
   (): string;
@@ -191,5 +192,3 @@ export class Result {
       });
   }
 }
-
-export default Result;

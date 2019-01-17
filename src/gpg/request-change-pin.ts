@@ -1,4 +1,4 @@
-import Pin from './pin';
+import { Pin } from './pin';
 import { computed, observable } from 'mobx';
 
 export class RequestChangePin {
@@ -48,5 +48,3 @@ export class RequestChangePin {
     return ret;
   }
 }
-
-export default RequestChangePin;

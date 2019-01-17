@@ -46,5 +46,3 @@ export class AssistentCreateKey
     );
   }
 }
-
-export default AssistentCreateKey;

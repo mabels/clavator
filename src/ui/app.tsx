@@ -103,5 +103,3 @@ export class App extends React.Component<{}, AppViewState> {
     );
   }
 }
-
-export default App;

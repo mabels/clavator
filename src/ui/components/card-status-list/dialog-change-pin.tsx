@@ -1,36 +1,21 @@
 
 import * as React from 'react';
 import * as ReactModal from 'react-modal';
-import * as CardStatus from '../../../gpg/card-status';
-import * as Message from '../../../model/message';
-// import * as WsChannel from '../../model/ws-channel';
-// import { Progressor } from './progressor';
-import { ChangePin } from './change-pin';
 import { observer } from 'mobx-react';
-import AppState from '../../model/app-state';
 
-interface DialogChangePinState {
-  // transaction: Message.Transaction<any>;
-}
+import { CardStatus } from '../../../gpg';
+import { Message } from '../../../model';
+import { AppState } from '../../model';
+import { ChangePin } from './change-pin';
 
-interface DialogChangePinProps extends React.Props<DialogChangePin> {
+export interface DialogChangePinProps {
   onClose: () => void;
   cardStatus: CardStatus.Gpg2CardStatus;
   appState: AppState;
   type: string;
 }
 
-@observer
-export class DialogChangePin extends React.Component<DialogChangePinProps, DialogChangePinState> {
-
-  constructor(props: DialogChangePinProps) {
-    super(props);
-    this.state = {
-      // transaction: null
-    };
-  }
-
-  public render(): JSX.Element {
+export const DialogChangePin = observer((props: DialogChangePinProps) => {
     return (
       <ReactModal
         isOpen={true}
@@ -39,16 +24,13 @@ export class DialogChangePin extends React.Component<DialogChangePinProps, Dialo
         shouldCloseOnOverlayClick={true}
       >
         <i style={{ float: 'right' }}
-           onClick={this.props.onClose}
+           onClick={props.onClose}
            className="fa fa-close"></i>
-        <h4>ChangePin:{this.props.type}</h4>
-        <h5>{this.props.cardStatus.name}({this.props.cardStatus.reader.cardid})</h5>
-        <ChangePin type={this.props.type}
-          appState={this.props.appState}
-          app_id={this.props.cardStatus.reader.cardid} />
+        <h4>ChangePin:{props.type}</h4>
+        <h5>{props.cardStatus.name}({props.cardStatus.reader.cardid})</h5>
+        <ChangePin type={props.type}
+          appState={props.appState}
+          app_id={props.cardStatus.reader.cardid} />
       </ReactModal>
     );
-  }
-}
-
-export default DialogChangePin;
+});

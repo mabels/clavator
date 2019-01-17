@@ -2,52 +2,34 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 import classnames from 'classnames';
 // import SimpleYubiKey from '../gpg/simple-yubikey';
-import NestedFlag from '../../../model/nested-flag';
-import DateValue from '../../../model/date-value';
-import { format_date } from '../../../model/helper';
+import { format_date, NestedFlag, DateValue } from '../../../model';
 
-interface InputExpireDateState {
-}
-
-interface InputExpireDateProps extends React.Props<InputExpireDate> {
+export interface InputExpireDateProps {
   title: string;
   expireDate: DateValue;
   readOnly: NestedFlag;
   completed?: boolean;
 }
 
-@observer
-export class InputExpireDate extends
-  React.Component<InputExpireDateProps, InputExpireDateState> {
-
-  constructor(props: InputExpireDateProps) {
-    super(props);
-  }
-
-  public render(): JSX.Element {
+export const InputExpireDate = observer((props: InputExpireDateProps) => {
     return (
-      <div className={classnames({row: true, completed: this.props.completed})}>
+      <div className={classnames({row: true, completed: props.completed})}>
           <div className="three columns">
-            <label>{this.props.title}:</label><input type="date" name="expireDate"
+            <label>{props.title}:</label><input type="date" name="expireDate"
               className={classnames({
                  InputExpireDate: true,
-                 good: this.props.expireDate.valid(),
-                 readonly:  this.props.readOnly.is })}
-              disabled={this.props.readOnly.is}
-              readOnly={this.props.readOnly.is}
+                 good: props.expireDate.valid(),
+                 readonly:  props.readOnly.is })}
+              disabled={props.readOnly.is}
+              readOnly={props.readOnly.is}
               autoComplete="on"
               min={Date.now()}
               onChange={(e: any) => {
-                this.props.expireDate.value = new Date(e.target.value);
-                this.setState(this.state);
+                props.expireDate.value = new Date(e.target.value);
               }}
-              defaultValue={format_date(this.props.expireDate.value)}
+              defaultValue={format_date(props.expireDate.value)}
             />
           </div>
         </div>
     );
-  }
-
-}
-
-export default InputExpireDate;
+  });

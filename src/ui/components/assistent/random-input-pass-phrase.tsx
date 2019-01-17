@@ -40,5 +40,3 @@ export class RandomInputPassPhrase extends
   }
 
 }
-
-export default RandomInputPassPhrase;

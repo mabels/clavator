@@ -1,12 +1,17 @@
 import * as React from 'react';
-// import { observable } from 'mobx';
 import { observer } from 'mobx-react';
-import NestedFlag from '../../../model/nested-flag';
-import SimpleKeyCommon from '../../model/simple-key-common';
-import InputExpireDate from '../controls/input-expire-date';
-import RcUids from './rc-uids';
+import {
+  NestedFlag,
+} from '../../../model';
+import {
+  SimpleKeyCommon
+} from '../../model';
+import {
+  InputExpireDate,
+  RcApproveWarrents
+} from '../controls';
+import { RcUids } from './rc-uids';
 import { RcKeyParams } from './rc-key-params';
-import RcApproveWarrents from '../controls/rc-approve-warrents';
 
 class RcSimpleKeyCommonState {
   // public readonly: boolean;
@@ -55,5 +60,3 @@ export class RcSimpleKeyCommon extends
   }
 
 }
-
-// export default RcSimpleKeyCommon;
