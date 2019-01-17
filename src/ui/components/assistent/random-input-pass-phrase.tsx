@@ -1,18 +1,5 @@
 import * as React from 'react';
-// import * as classnames from 'classnames';
-// import { observable } from 'mobx';
 import { observer } from 'mobx-react';
-// import NestedFlag from '../../../model/nested-flag';
-// import SimpleYubiKey from '../../model/simple-yubikey';
-// import RcCheckWarrents from './rc-check-warrents';
-// import DateValue from '../../../model/date-value';
-// import { format_date } from '../../../model/helper';
-// import PassPhrase from '../../model/pass-phrase';
-// import DoublePassword from '../../model/double-password';
-// import ViewWarrents from '../../model//view-warrents';
-// import RcOption from '../controls/rc-option';
-// import Option from '../../../model/option';
-// import RcWarrent from './rc-warrent';
 import { InputPassPhrase, InputPassPhraseProps } from '../controls/input-pass-phrase';
 
 class RandomInputPassPhraseState {

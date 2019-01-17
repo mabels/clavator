@@ -5,7 +5,7 @@ import Dispatcher from '../dispatcher';
 import * as Gpg from '../../gpg/gpg';
 import { Result } from '../../gpg/result';
 
-import * as Progress from '../../model/progress';
+import { Progress } from '../../model/progress';
 import { Observer } from '../observer';
 
 export class DeleteSecretKey implements Dispatcher {
@@ -55,4 +55,4 @@ export class DeleteSecretKey implements Dispatcher {
   }
 }
 
-export default DeleteSecretKey;
+// export default DeleteSecretKey;

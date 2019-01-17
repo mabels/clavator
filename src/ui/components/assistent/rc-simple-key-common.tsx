@@ -5,7 +5,7 @@ import NestedFlag from '../../../model/nested-flag';
 import SimpleKeyCommon from '../../model/simple-key-common';
 import InputExpireDate from '../controls/input-expire-date';
 import RcUids from './rc-uids';
-import RcKeyParam from './rc-key-params';
+import { RcKeyParams } from './rc-key-params';
 import RcApproveWarrents from '../controls/rc-approve-warrents';
 
 class RcSimpleKeyCommonState {
@@ -47,7 +47,7 @@ export class RcSimpleKeyCommon extends
         <RcUids uids={this.props.simpleKeyCommon.uids}
           readOnly={this.props.simpleKeyCommon.readOnly}
           completed={this.props.simpleKeyCommon.completed} />
-        <RcKeyParam keyParams={this.props.simpleKeyCommon.keyParams}
+        <RcKeyParams keyParams={this.props.simpleKeyCommon.keyParams}
           readOnly={this.props.simpleKeyCommon.readOnly}
           completed={this.props.simpleKeyCommon.completed} />
       </RcApproveWarrents>
@@ -56,4 +56,4 @@ export class RcSimpleKeyCommon extends
 
 }
 
-export default RcSimpleKeyCommon;
+// export default RcSimpleKeyCommon;

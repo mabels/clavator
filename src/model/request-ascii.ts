@@ -1,5 +1,5 @@
 
-import MutableString from '../model/mutable-string';
+import { MutableString } from '../model/mutable-string';
 
 export class RequestAscii {
   public passphrase: MutableString = new MutableString();
@@ -16,4 +16,4 @@ export class RequestAscii {
 
 }
 
-export default RequestAscii;
+// export default RequestAscii;

@@ -2,19 +2,13 @@ import * as React from 'react';
 
 // import MutableString from '../gpg/mutable_string';
 import KeyToYubiKey from '../../../gpg/key-to-yubikey';
-// import * as CardStatus from '../gpg/card_status';
-import KeyState from '../../../gpg/key-state';
-
-// import { CardStatusListState } from '../../model/card-status-list-state';
 
 import classnames from 'classnames';
 
-// import * as WsChannel from '../../model/ws-channel';
 import * as Message from '../../../model/message';
-// import { ProgressorState } from '../controls/progressor';
 
 import ButtonToProgressor from '../controls/button-to-progressor';
-import AppState from '../../model/app-state';
+import { AppState } from '../../model/app-state';
 import { CardSlot } from './card-slot';
 import { observer } from 'mobx-react';
 

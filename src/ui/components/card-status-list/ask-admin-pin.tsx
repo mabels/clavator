@@ -1,10 +1,6 @@
 import * as React from 'react';
 
-// import * as Message from '../message';
-// import ChangeCard from '../gpg/change_card';
-// import * as WsChannel from './ws-channel';
 import CardStatusListState from '../../model/card-status-list-state';
-// import Pin from '../gpg/pin';
 
 interface AskAdminPinState {
 }
@@ -18,9 +14,6 @@ export class AskAdminPin extends React.Component<AskAdminPinProps, AskAdminPinSt
 
   constructor(props: AskAdminPinProps) {
     super(props);
-    this.state = {
-    };
-    // this.handleChange = this.handleChange.bind(this);
   }
 
   public getSetAdminPin(): string {

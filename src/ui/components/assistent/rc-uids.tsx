@@ -21,12 +21,12 @@ export class RcUids extends
 
   constructor(props: RcUidsProps) {
     super(props);
-    this.state = {};
-    this.handleAddUid = this.handleAddUid.bind(this);
+    // this.state = {};
+    // this.handleAddUid = this.handleAddUid.bind(this);
     // this.handleDelUid = this.handleDelUid.bind(this);
   }
 
-  private handleDelUid(idx: number): void {
+  private handleDelUid = (idx: number): void => {
     if (this.props.uids.length() > 1) {
       this.props.uids.del(idx);
       // this.setState(Object.assign({}, this.state, {
@@ -36,7 +36,7 @@ export class RcUids extends
     }
   }
 
-  private handleAddUid(/*idx: number */): void {
+  private handleAddUid = (/*idx: number */): void => {
     let uid = new Uid();
     uid.name.value = this.props.uids.last().name.value;
     this.props.uids.add(uid);

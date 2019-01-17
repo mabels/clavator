@@ -1,6 +1,6 @@
 import { observable } from 'mobx';
 import Validatable from './validatable';
-import ObjectId from './object-id';
+import { ObjectId } from './object-id';
 
 export class StringValue extends ObjectId implements Validatable {
   public match: RegExp;
@@ -33,4 +33,4 @@ export class StringValue extends ObjectId implements Validatable {
 
 }
 
-export default StringValue;
+// export default StringValue;

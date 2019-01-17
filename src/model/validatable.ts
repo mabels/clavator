@@ -7,4 +7,4 @@ export interface Validatable extends IObjectId {
   fill(js: any): void;
 }
 
-export default Validatable;
+// export default Validatable;

@@ -50,4 +50,4 @@ export class KeyParams extends ObjectId implements Validatable {
   }
 }
 
-export default KeyParams;
+// export default KeyParams;

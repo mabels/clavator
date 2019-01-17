@@ -1,4 +1,4 @@
-import ObjectId from './object-id';
+import { ObjectId } from './object-id';
 import { observable } from 'mobx';
 
 export class Option<T> extends ObjectId {
@@ -27,4 +27,4 @@ export class Option<T> extends ObjectId {
   }
 }
 
-export default Option;
+// export default Option;

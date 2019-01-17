@@ -1,7 +1,7 @@
 import { computed, observable } from 'mobx';
 import ObjectId from './object-id';
 
-export default class NestedFlag extends ObjectId {
+export class NestedFlag extends ObjectId {
   @observable private value: boolean;
   private parent?: NestedFlag;
   private children: NestedFlag[];

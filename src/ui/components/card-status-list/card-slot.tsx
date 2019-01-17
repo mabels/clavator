@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { KeyState } from '../../../gpg/key-state';
-import AppState from '../../model/app-state';
+import { AppState } from '../../model/app-state';
 import KeyToYubiKey from '../../../gpg/key-to-yubikey';
 import { observer } from 'mobx-react';
 
