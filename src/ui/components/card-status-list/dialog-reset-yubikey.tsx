@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactModal from 'react-modal';
 
-import { Gpg2CardStatus } from '../../../gpg';
+import { Gpg2CardStatus } from '../../../gpg/types';
 import { Message } from '../../../model';
 import { AppState } from '../../model';
 import { ButtonToProgressor } from '../controls';

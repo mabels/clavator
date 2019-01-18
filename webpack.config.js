@@ -15,6 +15,7 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 //   .join('\n'));
 
 module.exports = [{
+  mode: 'development',
   target: 'web',
   entry: './src/ui/client.js',
   output: {

@@ -3,7 +3,8 @@ import * as WebSocket from 'ws';
 import { Message, Progress } from '../../model';
 import { Dispatcher } from '../dispatcher';
 
-import { Result, Gpg, ChangeCard } from '../../gpg';
+import { Result, Gpg } from '../../gpg';
+import { ChangeCard } from '../../gpg/types';
 import { Observer } from '../observer';
 
 export class GpgChangeCard implements Dispatcher {

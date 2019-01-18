@@ -1,23 +1,23 @@
-import { observable } from 'mobx';
+import { observable, IObservableValue } from 'mobx';
 import { Validatable } from './validatable';
 import { ObjectId } from './object-id';
 
 export class BooleanValue extends ObjectId implements Validatable {
   public errorText: string;
-  @observable public value: boolean;
+  public value: IObservableValue<boolean> = observable.box(true);
 
   public static fill(js: any, dv: BooleanValue): void {
-    dv.value = js['value'] || dv.value;
+    dv.value.set(js['value'] || dv.value);
   }
 
   public constructor(errorText: string) {
     super('BooleanValue');
     this.errorText = errorText;
-    this.value = true;
+    this.value.set(true);
   }
 
   public set(b: boolean): BooleanValue {
-    this.value = b;
+    this.value.set(b);
     return this;
   }
 

@@ -23,10 +23,9 @@ export class InputPassword extends
 
   constructor(props: InputPasswordProps) {
     super(props);
-    this.lockUnlock = this.lockUnlock.bind(this);
   }
 
-  private lockUnlock(e: any): void {
+  private lockUnlock = (e: any): void => {
     if (e) {
       e.preventDefault();
     }

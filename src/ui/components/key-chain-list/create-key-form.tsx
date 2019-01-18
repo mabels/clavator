@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {
     KeyGenUid,
-    KeyGen } from '../../../gpg';
+    KeyGen } from '../../../gpg/types';
 import { NestedFlag } from '../../../model/nested-flag';
 import { RcDoublePassword,
 InputExpireDate } from '../controls';
@@ -59,11 +59,10 @@ export function CreateKeyForm(props: CreateKeyFormProps): JSX.Element {
       <CreateKeyLong  compact={props.compact} keyGen={props.keyGen} />
       <CreateKeyCompact compact={props.compact} keyGen={props.keyGen} />
       <div className="row">
-        <CreateKeyCreate
+      <CreateKeyCreate
           createKey={props.createKey}
           renderSubmit={props.renderSubmit}
           appState={props.appState}
-          createDialog={}
           transaction={props.transaction}
         />
       </div>

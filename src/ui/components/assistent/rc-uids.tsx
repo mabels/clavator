@@ -2,10 +2,7 @@ import * as React from 'react';
 import classnames from 'classnames';
 import { observer } from 'mobx-react';
 import { Container, NestedFlag } from '../../../model';
-import { KeyGenUid } from '../../../gpg';
-
-interface RcUidsState {
-}
+import { KeyGenUid } from '../../../gpg/types';
 
 interface RcUidsProps extends React.Props<RcUids> {
   uids: Container<KeyGenUid>;
@@ -15,7 +12,7 @@ interface RcUidsProps extends React.Props<RcUids> {
 
 @observer
 export class RcUids extends
-  React.Component<RcUidsProps, RcUidsState> {
+  React.Component<RcUidsProps, {}> {
 
   constructor(props: RcUidsProps) {
     super(props);
@@ -25,7 +22,7 @@ export class RcUids extends
   }
 
   private handleDelUid = (idx: number): void => {
-    if (this.props.uids.length() > 1) {
+    if (this.props.uids.length > 1) {
       this.props.uids.del(idx);
     }
   }
@@ -37,7 +34,7 @@ export class RcUids extends
   }
 
   private render_delete_button(idx: number): JSX.Element {
-    if (this.props.uids.length() > 1) {
+    if (this.props.uids.length > 1) {
       return (
         <button type="button" onClick={this.handleDelUid.bind(this, idx)}>Delete Uid</button>
       );

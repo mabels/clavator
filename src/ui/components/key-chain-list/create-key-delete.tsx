@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { KeyGen } from '../../../gpg';
+import { KeyGen } from '../../../gpg/types';
 
 export interface CreateKeyDeleteProps {
   readonly idx: number;
@@ -7,13 +7,13 @@ export interface CreateKeyDeleteProps {
 }
 
 function handleDelUid(props: CreateKeyDeleteProps): void {
-  if (props.keyGen.uids.length() > 1) {
+  if (props.keyGen.uids.length > 1) {
     props.keyGen.uids.del(props.idx);
   }
 }
 
 export function CreateKeyDelete(props: CreateKeyDeleteProps): JSX.Element {
-  if (props.keyGen.uids.length() > 1) {
+  if (props.keyGen.uids.length > 1) {
     return (
       <button type="button" onClick={() => handleDelUid(props)}>
         Delete Uid

@@ -78,7 +78,7 @@ export class Dispatch {
       setTimeout(this.connector.bind(this), 1000);
     };
     this.ws.onmessage = (e: MessageEvent) => {
-      let msg = Message.fromData(e.data);
+      const msg = Message.fromData(e.data);
       // console.log('onmessage', msg);
       this.wscs.forEach((wsc: WsChannel) => {
         if (wsc.onMessage) {

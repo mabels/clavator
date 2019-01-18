@@ -6,7 +6,7 @@ import classnames from 'classnames';
 
 import {
   Gpg2CardStatus,
-  ChangeCard } from '../../../gpg';
+  ChangeCard } from '../../../gpg/types';
 
 import { Message } from '../../../model';
 import { AppState } from '../../model';

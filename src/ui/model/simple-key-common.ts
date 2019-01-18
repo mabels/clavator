@@ -1,5 +1,5 @@
-import { observable, computed } from 'mobx';
-import { KeyParams, KeyGenUid } from '../../gpg';
+import { observable, computed, IObservableValue } from 'mobx';
+import { KeyParams, KeyGenUid } from '../../gpg/types';
 import {
   NestedFlag,
   DateValue,
@@ -10,12 +10,12 @@ import {
 import { ViewWarrents } from './view-warrents';
 
 export class SimpleKeyCommon {
-  @observable public readonly viewWarrents: ViewWarrents;
-  @observable public readOnly: NestedFlag;
+  public readonly viewWarrents: ViewWarrents;
+  public readonly readOnly: NestedFlag;
 
-  @observable public expireDate: DateValue;
-  @observable public keyParams: KeyParams;
-  @observable public uids: Container<KeyGenUid>;
+  public expireDate: DateValue;
+  public keyParams: KeyParams;
+  public uids: Container<KeyGenUid>;
 
   constructor(warrents: Warrents, nestedFlag: NestedFlag) {
     this.readOnly = new NestedFlag(nestedFlag);
@@ -26,21 +26,21 @@ export class SimpleKeyCommon {
       return new KeyGenUid();
     });
     const kgu = new KeyGenUid();
-    if (warrents.length() > 1) {
-      kgu.comment.value = `Warrents ${warrents
+    if (warrents.length > 1) {
+      kgu.comment.value.set(`Warrents ${warrents
         .tail()
         .map(i => `[${i.warrent.value}]`)
-        .join(',')}`;
+        .join(',')}`);
     }
     this.uids.add(kgu);
   }
 
   public showWarrents(): boolean {
-    return this.viewWarrents.length() > 1;
+    return this.viewWarrents.length > 1;
   }
 
   public valid(): boolean {
-    // console.log('SimpleKeyCommons:valid:', this.uids.length(),
+    // console.log('SimpleKeyCommons:valid:', this.uids.length,
     // this.uids.valid());
     return (
       this.expireDate.valid() && this.keyParams.valid() && this.uids.valid()

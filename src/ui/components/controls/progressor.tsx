@@ -1,19 +1,17 @@
 import * as React from 'react';
-import { observer } from 'mobx-react';
-import { observable } from 'mobx';
+// import { observer } from 'mobx-react';
+import { observable, IObservableValue } from 'mobx';
 
 import { Progress, Message } from '../../../model';
 import { Dispatch } from '../../model';
 
 export class ProgressorState {
-  @observable public open: boolean;
-  @observable public progressList: Progress.Progress[];
+  public open: IObservableValue<boolean> = observable.box(false);
+  public progressList: Progress.Progress[] = observable.array([]);
   private channel: Dispatch;
 
   constructor(channel: Dispatch) {
-    this.open = false;
     this.channel = channel;
-    this.progressList = [];
     this.channel.register({
       onClose: this.onClose.bind(this),
       onOpen: this.onOpen.bind(this),

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as  ReactModal from 'react-modal';
 
-import { GpgKey } from '../../../gpg';
+import { GpgKey } from '../../../gpg/types';
 import { Dispatch } from '../../model';
 import { MutableString } from '../../../model';
 

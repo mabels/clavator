@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 
 import { AppState } from '../../model';
-import { KeyToYubiKey, KeyState } from '../../../gpg';
+import { KeyToYubiKey, KeyState } from '../../../gpg/types';
 
 export interface CardSlotProps {
   readonly appState: AppState;

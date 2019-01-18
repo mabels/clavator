@@ -1,5 +1,6 @@
 import * as React from 'react';
-import * as ReactModal from 'react-modal';
+import { observable, configure, action, IObservableValue } from 'mobx';
+import { observer } from 'mobx-react';
 
 import './normalize.css';
 import './skeleton.css';
@@ -7,28 +8,28 @@ import './app.less';
 const Clavator = require('./img/clavator.png');
 
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
-import { KeyChainList } from './components/key-chain-list';
+import { KeyChainList, CreateKey } from './components/key-chain-list';
 import { CardStatusList } from './components/card-status-list';
 import { ChannelStatus } from './components/controls';
 import { DialogCreateKey } from './components/key-chain-list/dialog-create-key';
 import { Assistent } from './components/assistent';
 import { AppState } from './model/app-state';
 import { AppProgressor } from './app-progressor';
-import { observable } from 'mobx';
 
-// @observer
+configure({
+ enforceActions: 'always'
+});
+
+@observer
 export class App extends React.Component<{}, {}> {
 
   private appState: AppState;
-  @observable
-  public createKeyDialog: boolean;
+  public readonly createKeyDialog: IObservableValue<boolean> = observable.box(false);
 
-  @observable
-  public selectedTabIndex: number;
+  public readonly selectedTabIndex: IObservableValue<number> = observable.box(0);
 
-  constructor(props: {} = {}) {
+  public constructor(props: {} = {}) {
     super(props);
-    this.selectedTabIndex = 0;
     this.appState = AppState.create();
   }
 
@@ -41,7 +42,7 @@ export class App extends React.Component<{}, {}> {
       return null;
     }
     return <DialogCreateKey appState={this.appState}
-      onClose={() => this.createKeyDialog = false} />;
+      onClose={action(() => this.createKeyDialog.set(false))} />;
   }
 
   /*
@@ -56,19 +57,18 @@ export class App extends React.Component<{}, {}> {
         <img src={Clavator} className="logo" />
         <AppProgressor progressState={this.appState.progressorState} />
         <Tabs
-          selectedIndex={this.selectedTabIndex}
-          onSelect={(index: number, last: number, event: Event) => {
+          selectedIndex={this.selectedTabIndex.get()}
+          onSelect={action((index: number, last: number, event: Event) => {
             console.log('Tabs:', index, last, event);
-            this.selectedTabIndex = index;
-            return true;
-          }}>
+            this.selectedTabIndex.set(index);
+          })}>
           <TabList className="MainMenu" >
             <Tab className="KeyChainList">KeyChainList</Tab>
             <Tab className="CardStatusList">CardStatusList</Tab>
             <Tab className="Assistent">Assistent</Tab>
             <a title="add new key"
               onClick={() => {
-                this.appState.progressorState.open = !this.appState.progressorState.open;
+                this.appState.progressorState.open.set(!this.appState.progressorState.open);
               }}
               className="closeBox">
               <i className="fa fa-comment"></i>
@@ -76,7 +76,7 @@ export class App extends React.Component<{}, {}> {
           </TabList>
           <TabPanel>
             <a title="add new key"
-              onClick={() => this.createKeyDialog = true }
+              onClick={action(() => this.createKeyDialog.set(true))}
               className="closeBox">
               <i className="fa fa-plus"></i>
             </a>

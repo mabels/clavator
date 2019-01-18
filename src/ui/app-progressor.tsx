@@ -17,7 +17,7 @@ export const AppProgressor = observer(
     */
     return (
       <ReactModal
-        isOpen={props.progressState.open}
+        isOpen={props.progressState.open.get()}
         closeTimeoutMS={150}
         onAfterOpen={() => {
           /* */
@@ -27,7 +27,7 @@ export const AppProgressor = observer(
       >
         <i
           onClick={() => {
-            props.progressState.open = false;
+            props.progressState.open.set(false);
           }}
           className="closeBox fa fa-close"
         />

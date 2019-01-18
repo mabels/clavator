@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { GpgKey, GpgUid } from '../../../gpg';
+import { GpgUid } from '../../../gpg/types';
 
 export interface KeyChainListUidProps {
     uid: GpgUid;

@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 import classnames from 'classnames';
 
-import { KeyToYubiKey } from '../../../gpg';
+import { KeyToYubiKey } from '../../../gpg/types';
 import { Message } from '../../../model';
 import { ButtonToProgressor } from '../controls';
 import { AppState } from '../../model';

@@ -3,7 +3,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 
 import { NestedFlag } from '../../../model';
-import { KeyGen, KeyGenUid, SecretKey } from '../../../gpg';
+import { KeyGen, KeyGenUid, SecretKey } from '../../../gpg/types';
 import {
   PassPhrase,
   AppState
@@ -59,7 +59,9 @@ export class CreateKey extends React.Component<CreateKeyProps, {}> {
   public render(): JSX.Element {
     return (
       <div className="row CreateKey" >
-        <CreateKeyForm 
+        <CreateKeyForm
+          appState={this.props.appState}
+          createKey={this}
           renderSubmit={this.props.renderSubmit}
           transaction={this.transaction}
           compact={this.props.compact}

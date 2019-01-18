@@ -1,28 +1,30 @@
-import { observable, ObservableMap } from 'mobx';
+import { observable, ObservableMap, action } from 'mobx';
 import { WsChannel, Dispatch } from './ws-channel';
-import { Gpg2CardStatus } from '../../gpg';
+import { Gpg2CardStatus } from '../../gpg/types';
 import { Message } from '../../model';
 
 // import DevTools from 'mobx-react-devtools';
 
 export class CardStatusListState implements WsChannel {
   // @observable timer = 0;
-  @observable public cardStatusList: Gpg2CardStatus[] = [];
-  @observable public adminPins: ObservableMap<string> = observable.map<string>();
+  public readonly cardStatusList: Gpg2CardStatus[] = observable.array([]);
+  public readonly adminPins: ObservableMap<string> = observable.map<string>();
 
   constructor(channel: Dispatch) {
     channel.register(this);
   }
+
   public onOpen(e: Event): void {
     return;
   }
 
-  public onMessage(action: Message.Header, data: string): void {
-    if (action.action == 'CardStatusList') {
-      let pdata = JSON.parse(data);
+  @action
+  public onMessage(header: Message.Header, data: string): void {
+    if (header.action == 'CardStatusList') {
+      const pdata = JSON.parse(data);
       pdata.forEach((a: any, idx: number) => {
         let found = false;
-        let n = Gpg2CardStatus.jsfill(a);
+        const n = Gpg2CardStatus.jsfill(a);
         this.cardStatusList.forEach((csl) => {
           if (csl.reader.eq(n.reader)) {
             csl.jsfill(a);
@@ -42,6 +44,7 @@ export class CardStatusListState implements WsChannel {
       // console.log("DATA", this.cardStatusList, data)
     }
   }
+
   public onClose(e: CloseEvent): void {
     this.cardStatusList.length = 0; // = [];
   }

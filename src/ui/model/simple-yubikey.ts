@@ -4,7 +4,7 @@ import { PassPhrase } from './pass-phrase';
 import { SimpleKeyCommon } from './simple-key-common';
 import { DiceWare } from '../../dice-ware';
 import { CharFormat } from './char-format';
-import { KeyGen, KeyInfo, KeyToYubiKey } from '../../gpg';
+import { KeyGen, KeyInfo, KeyToYubiKey } from '../../gpg/types';
 
 // import { assignOnError } from '../../model/helper';
 
@@ -21,7 +21,7 @@ export class SimpleYubikey {
   public static createDiceWare(warrents: Warrents): Warrents {
     const ret = new Warrents();
     for (let i = 0; i < 8; ++i) {
-      ret.add(warrents.get(i % warrents.length()));
+      ret.add(warrents.get(i % warrents.length));
     }
     return ret;
   }
@@ -87,7 +87,7 @@ export class SimpleYubikey {
       ki.type.value = this.common.keyParams.type.value;
       ki.length.value = this.common.keyParams.subLen.value;
     });
-    kg.password.value = this.passPhrase.getPassPhrase();
+    kg.password.value.set(this.passPhrase.getPassPhrase());
     return kg;
   }
 

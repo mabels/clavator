@@ -3,7 +3,8 @@ import * as WebSocket from 'ws';
 // import * as Message from './message';
 import { Observer } from './observer';
 
-import { Gpg, Gpg2CardStatus } from '../../gpg';
+import { Gpg2CardStatus } from '../../gpg/types';
+import { Gpg } from '../../gpg';
 import { WssUpdate } from '../wss-update';
 
 export class GpgCardStatusObserver {

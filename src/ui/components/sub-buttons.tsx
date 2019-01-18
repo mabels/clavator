@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { SecretKey, GpgKey } from '../../gpg';
+import { SecretKey, GpgKey } from '../../gpg/types';
 import { Dialogs } from './key-chain-list';
 
 function sendToCard(

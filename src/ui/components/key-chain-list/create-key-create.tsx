@@ -5,19 +5,19 @@ import { ButtonToProgressor } from '../controls';
 import { CreateKey } from './create-key';
 import { AppState } from '../../model';
 import { Message } from '../../../model';
-import { KeyGen } from '../../../gpg';
+import { KeyGen } from '../../../gpg/types';
 
 export interface CreateKeyCreateProps {
   readonly renderSubmit?: (ck: CreateKey) => JSX.Element;
   readonly appState: AppState;
-  createDialog: boolean;
+  // createDialog: boolean;
   transaction: Message.Transaction<KeyGen>;
   createKey: CreateKey;
 }
 
 function create_key(props: CreateKeyCreateProps): void {
-  let transaction = Message.newTransaction('CreateKeySet.Request', this.keyGen);
-  props.createDialog = true;
+  const transaction = Message.newTransaction('CreateKeySet.Request', this.keyGen);
+  // props.createDialog = true;
   props.appState.channel.send(transaction.asMsg());
 }
 

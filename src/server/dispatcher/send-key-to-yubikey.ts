@@ -2,7 +2,8 @@ import * as WebSocket from 'ws';
 import { Dispatcher } from '../dispatcher';
 
 import { Message, Progress } from '../../model';
-import { Result, Gpg, SecretKey } from '../../gpg';
+import { Result, Gpg } from '../../gpg';
+import { SecretKey } from '../../gpg/types';
 
 import { SimpleYubikey } from '../../ui/model';
 import { CreateKeySetTask } from '../tasks/create-key-set-task';

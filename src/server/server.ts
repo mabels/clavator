@@ -8,7 +8,7 @@ import * as ws from 'ws';
 import * as yargs from 'yargs';
 
 import { Observer } from './observer';
-import { startDispatch } from './dispatch';
+import { Dispatch } from './dispatch';
 import { Gpg } from '../gpg/gpg';
 
 import { Message } from '../model';
@@ -68,7 +68,7 @@ async function starter(cfg: Config): Promise<void> {
   console.log('Created Gpg:', gi);
 
   const observer = Observer.start(gpg);
-  const dispatch = startDispatch(gpg);
+  const dispatch = Dispatch.start(gpg);
 
   app.get('/', (req: express.Request, res: express.Response) =>
     res.redirect('/index.html')

@@ -8,7 +8,7 @@ export class ViewWarrents extends Container<ViewWarrent> {
   public static from(warrents: Warrents, strReg?: string): ViewWarrents {
     const ret = new ViewWarrents();
     warrents.map(w => ret.add(new ViewWarrent(w/*, strReg*/)));
-    if (warrents.length() == 1) {
+    if (warrents.length == 1) {
       // single warrents are approved per default
       ret.first().approved = true;
     }

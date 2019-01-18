@@ -4,22 +4,28 @@ import * as rimraf from 'rimraf';
 import * as fsPromise from 'fs-extra';
 import * as uuid from 'uuid';
 
-import { SecretKey, runSecretKeys } from './list-secret-keys';
 // import { CardStatus } from './card-status';
-import { AgentConf, AgentLine } from './agent-conf';
+import { AgentConf } from './agent-conf';
 
-import { KeyToYubiKey } from './key-to-yubikey';
-
-import { KeyGen, KeyInfo } from './key-gen';
-import { ChangeCard } from './change-card';
+import {
+  Gpg2CardStatus,
+  runCardStatus,
+  ChangeCard,
+  AgentLine,
+  AgentConfType,
+  SecretKey,
+  runSecretKeys,
+  KeyToYubiKey,
+  KeyGen,
+  KeyInfo,
+  RequestChangePin,
+  KeyGenUid
+} from './types';
 import {
   RequestAscii,
   format_date
 } from '../model';
-import { RequestChangePin } from './request-change-pin';
-import { KeyGenUid } from './key-gen-uid';
 import { Result, Mixed } from './result';
-import { Gpg2CardStatus, runCardStatus } from './card-status';
 
 interface GpgCmd {
   cmd: string[];
@@ -333,7 +339,7 @@ export class Gpg {
 
   public write_agent_conf(pinentryPath: string, cb: (err: any) => void): void {
     let gpgAgentFname = path.join(this.homeDir, 'gpg-agent.conf');
-    AgentConf.read_file(gpgAgentFname, (err: any, ag: AgentConf) => {
+    AgentConf.read_file(gpgAgentFname, (err: any, ag: AgentConfType) => {
       if (err) {
         cb(err);
         return;
@@ -419,7 +425,7 @@ export class Gpg {
       'loopback',
       '--passphrase-fd',
       () => {
-        return kg.password.value;
+        return kg.password.value.get();
       },
       '--quick-adduid',
       fpr,
@@ -449,7 +455,7 @@ export class Gpg {
       fpr,
       ki.type.value.toLowerCase() + ki.length.value,
       ki.usage.values.join(','),
-      format_date(kg.expireDate.value)
+      format_date(kg.expireDate.value.get())
     ];
     console.log('createSubkey', args);
     this.run(args, null, cb);

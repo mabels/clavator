@@ -3,7 +3,7 @@ import * as ReactModal from 'react-modal';
 import { observer } from 'mobx-react';
 
 import { Dispatch } from '../../model';
-import { GpgKey } from '../../../gpg';
+import { GpgKey } from '../../../gpg/types';
 import { ReadAsciiRespond } from '../controls';
 
 interface DialogRenderAsciiProps {

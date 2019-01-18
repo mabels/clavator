@@ -3,15 +3,15 @@ import { observable, computed } from 'mobx';
 import { assignOnError } from './helper';
 
 export class Container<T extends Pallet> {
-  @observable
-  protected pallets: T[] = [];
-  public factory: () => T;
+  protected readonly pallets: T[] = observable.array([]);
+  public readonly factory: () => T;
+
   constructor(factory: () => T) {
     this.factory = factory;
   }
 
   @computed
-  public length(): number {
+  public get length(): number {
     return this.pallets.filter(i => i).length;
   }
 
@@ -99,10 +99,10 @@ export class Container<T extends Pallet> {
   }
 
   public fill(js: any): void {
-    this.pallets = [];
+    this.pallets.splice(0, this.pallets.length);
     for (let i of js['pallets']) {
       if (i) {
-        let t: T = this.factory();
+        const t: T = this.factory();
         t.fill(i);
         this.add(t);
       }

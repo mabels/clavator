@@ -1,6 +1,6 @@
 import * as React from 'react';
 import classnames from 'classnames';
-import { RequestChangePin } from '../../../gpg';
+import { RequestChangePin } from '../../../gpg/types';
 import { Message } from '../../../model';
 import { ButtonToProgressor } from '../controls';
 import { AppState } from '../../model';

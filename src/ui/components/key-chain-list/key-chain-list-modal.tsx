@@ -3,7 +3,7 @@ import { Dialogs } from './key-chain-list';
 import { DialogRenderAscii } from './dialog-render-ascii';
 import { DialogAskRenderAscii } from './dialog-ask-render-ascii';
 import { DialogSendToCard } from './dialog-send-to-card';
-import { GpgKey } from '../../../gpg';
+import { GpgKey } from '../../../gpg/types';
 import { AppState } from '../../model';
 
 export interface KeyChainListModalProps {

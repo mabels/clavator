@@ -38,7 +38,7 @@ export const LabelWithDice = observer(
         />
       );
     }
-    if (props.passPhrase.warrents.length() > 1) {
+    if (props.passPhrase.warrents.length > 1) {
       return props.label as JSX.Element;
     }
     return (

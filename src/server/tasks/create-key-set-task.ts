@@ -1,6 +1,7 @@
 import * as WebSocket from 'ws';
 import { Message, Progress } from '../../model';
-import { KeyGen, Gpg, Result, SecretKey } from '../../gpg';
+import { Gpg, Result } from '../../gpg';
+import { KeyGen, SecretKey } from '../../gpg/types';
 
 export class CreateKeySetTask {
   public static run(
@@ -114,7 +115,7 @@ export class CreateKeySetTask {
     cb: () => void
   ): void {
     // console.log('createSubKeys:1', cnt, ki.subKeys.subKeys.length);
-    if (cnt >= ki.subKeys.length()) {
+    if (cnt >= ki.subKeys.length) {
       // console.log('createSubKeys:2');
       cb();
       return;
@@ -140,7 +141,7 @@ export class CreateKeySetTask {
     cb: () => void
   ): void {
     // console.log('createSubKeys:1', cnt, ki.subKeys.subKeys.length);
-    if (cnt >= ki.uids.length()) {
+    if (cnt >= ki.uids.length) {
       cb();
       return;
     }

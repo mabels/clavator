@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as ReactModal from 'react-modal';
 import { AskKeyToYubiKey } from '../card-status-list/ask-key-to-yubi-key';
 import { AppState } from '../../model';
-import { GpgKey } from '../../../gpg';
+import { GpgKey } from '../../../gpg/types';
 
 interface DialogSendToCardProps {
   onClose: () => void;

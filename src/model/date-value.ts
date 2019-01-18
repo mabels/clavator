@@ -1,24 +1,23 @@
 import { ObjectId } from './object-id';
-import { observable } from 'mobx';
+import { IObservableValue, observable } from 'mobx';
 
 export class DateValue extends ObjectId {
-  @observable
-  public value: Date;
+  public value: IObservableValue<Date>;
   public errText: string;
 
   public static fill(js: any, dv: DateValue): void {
-    dv.value = new Date(js['value']) || dv.value;
+    dv.value.set(new Date(js['value']) || dv.value.get());
   }
 
   public constructor(v: Date, e: string) {
     super('DateValue');
-    this.value = v;
+    this.value = observable.box(v);
     this.errText = e;
   }
 
   public valid(): boolean {
     let tomorrow = new Date(Date.now());
     tomorrow.setHours(tomorrow.getHours() + 24);
-    return this.value.getTime() > tomorrow.getTime();
+    return this.value.get().getTime() > tomorrow.getTime();
   }
 }

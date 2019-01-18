@@ -1,14 +1,14 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
 
-import { KeyState, ChangeCard, Gpg2CardStatus } from '../../gpg';
+import { KeyState, Gpg2CardStatus } from '../../gpg/types';
 import { FormatDate } from './controls';
 import { AppState } from '../model';
-import { Message } from '../../model';
+// import { Message } from '../../model';
 import { DialogChangePin } from './card-status-list/dialog-change-pin';
 import { DialogChangeAttributes } from './card-status-list/dialog-change-attributes';
 import { DialogResetYubiKey } from './card-status-list/dialog-reset-yubikey';
-import { observable } from 'mobx';
+import { observable, IObservableValue } from 'mobx';
 
 export enum Dialogs {
   closed,
@@ -24,12 +24,9 @@ interface CardStatusListProps extends React.Props<CardStatusList> {
 
 @observer
 export class CardStatusList extends React.Component<CardStatusListProps, {}> {
-  @observable
-  public dialog: Dialogs = Dialogs.closed;
+  public dialog: IObservableValue<Dialogs> = observable(Dialogs.closed);
 
-  @observable
-  public cardStatus?: Gpg2CardStatus;
-  private transaction?: Message.Transaction<ChangeCard>;
+  public cardStatus?: IObservableValue<Gpg2CardStatus> = observable(undefined);
 
   constructor(props: CardStatusListProps) {
     super(props);
@@ -41,20 +38,20 @@ export class CardStatusList extends React.Component<CardStatusListProps, {}> {
     cs: Gpg2CardStatus
   ): ((e: any) => void) => {
     return (e: any) => {
-      this.dialog = dialog;
-      this.cardStatus = cs;
+      this.dialog.set(dialog);
+      this.cardStatus.set(cs);
     };
   }
 
   public closeModal = (): void => {
-    this.dialog = Dialogs.closed;
+    this.dialog.set(Dialogs.closed);
   }
 
   public changeToAttributesDialog = (
     cs: Gpg2CardStatus
   ): ((e: any) => void) => {
     return (e: any) => {
-      this.cardStatus = cs;
+      this.cardStatus.set(cs);
     };
   }
 
@@ -90,14 +87,14 @@ export class CardStatusList extends React.Component<CardStatusListProps, {}> {
   }
 
   public render_dialog(): JSX.Element {
-    switch (this.dialog) {
+    switch (this.dialog.get()) {
       case Dialogs.changeAdminPin:
         return (
           <DialogChangePin
             appState={this.props.appState}
-            cardStatus={this.cardStatus}
+            cardStatus={this.cardStatus.get()}
             onClose={() => {
-              this.dialog = Dialogs.closed;
+              this.dialog.set(Dialogs.closed);
             }}
             type={'admin'}
           />
@@ -106,9 +103,9 @@ export class CardStatusList extends React.Component<CardStatusListProps, {}> {
         return (
           <DialogChangePin
             appState={this.props.appState}
-            cardStatus={this.cardStatus}
+            cardStatus={this.cardStatus.get()}
             onClose={() => {
-              this.dialog = Dialogs.closed;
+              this.dialog.set(Dialogs.closed);
             }}
             type={'unblock'}
           />
@@ -117,9 +114,9 @@ export class CardStatusList extends React.Component<CardStatusListProps, {}> {
         return (
           <DialogChangeAttributes
             appState={this.props.appState}
-            cardStatus={this.cardStatus}
+            cardStatus={this.cardStatus.get()}
             onClose={() => {
-              this.dialog = Dialogs.closed;
+              this.dialog.set(Dialogs.closed);
             }}
           />
         );
@@ -127,9 +124,9 @@ export class CardStatusList extends React.Component<CardStatusListProps, {}> {
         return (
           <DialogResetYubiKey
             appState={this.props.appState}
-            cardStatus={this.cardStatus}
+            cardStatus={this.cardStatus.get()}
             onClose={() => {
-              this.dialog = Dialogs.closed;
+              this.dialog.set(Dialogs.closed);
             }}
           />
         );

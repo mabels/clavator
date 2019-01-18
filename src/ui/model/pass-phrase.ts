@@ -34,10 +34,10 @@ export class PassPhrase extends ObjectId implements Validatable {
     minLen: number,
     maxLen?: number
   ): PassPhrase {
-    const minMaxs = MinMax.create(warrents.length(), contReg, minLen, maxLen);
+    const minMaxs = MinMax.create(warrents.length, contReg, minLen, maxLen);
     return new PassPhrase(
       warrents,
-      new Array(warrents.length())
+      new Array(warrents.length)
         .fill(42)
         .map(
           (_, idx) =>
@@ -71,7 +71,7 @@ export class PassPhrase extends ObjectId implements Validatable {
         .map(
           (_, idx) =>
             new DoublePassword(
-              new Warrents([warrents.get(idx % warrents.length())]),
+              new Warrents([warrents.get(idx % warrents.length)]),
               errText,
               minMax,
               diceWares

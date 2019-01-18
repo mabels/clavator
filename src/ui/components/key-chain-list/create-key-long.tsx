@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
 
-import { KeyGen, KeyInfo } from '../../../gpg';
+import { KeyGen, KeyInfo } from '../../../gpg/types';
 import { CreateKeyOption } from './create-key-option';
 import { CreateKeyMultioption } from './create-key-multioption';
 

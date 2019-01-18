@@ -3,7 +3,7 @@ import * as React from 'react';
 import * as ReactModal from 'react-modal';
 import { observer } from 'mobx-react';
 
-import { Gpg2CardStatus } from '../../../gpg';
+import { Gpg2CardStatus } from '../../../gpg/types';
 import { AppState } from '../../model';
 import { ChangePin } from './change-pin';
 

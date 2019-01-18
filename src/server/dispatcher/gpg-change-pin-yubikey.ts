@@ -3,7 +3,8 @@ import * as WebSocket from 'ws';
 import { Message, Progress } from '../../model';
 import { Dispatcher } from '../dispatcher';
 
-import { Gpg, RequestChangePin, Result } from '../../gpg';
+import { Gpg, Result } from '../../gpg';
+import { RequestChangePin } from '../../gpg/types';
 import { Observer } from '../observer';
 
 export class GpgChangePinYubikey implements Dispatcher {

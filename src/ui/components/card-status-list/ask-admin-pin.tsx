@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { CardStatusListState } from '../../model/card-status-list-state';
+import { CardStatusListState } from '../../model';
 
 export interface AskAdminPinProps {
   serialNo: string;

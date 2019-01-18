@@ -3,13 +3,13 @@
 // import * as ReactDOM from 'react-dom';
 import { observable, ObservableMap } from 'mobx';
 
-import { SecretKey }  from '../../gpg';
+import { SecretKey }  from '../../gpg/types';
 import { WsChannel, Dispatch } from './ws-channel';
 import { Message } from '../../model';
 
 export class KeyChainListState implements WsChannel {
-  @observable public keyChainList: SecretKey[] = [];
-  @observable public adminPins: ObservableMap<string> = observable.map<string>();
+  public keyChainList: SecretKey[] = observable([]);
+  public adminPins: ObservableMap<string> = observable.map<string>();
 
   constructor(channel: Dispatch) {
     channel.register(this);

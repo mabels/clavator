@@ -1,11 +1,11 @@
 import * as React from 'react';
-import * as KeyGen from '../../../gpg/key-gen';
+import { KeyGen, KeyInfo } from '../../../gpg/types';
 import { CreateKeyOption } from './create-key-option';
 import { observer } from 'mobx-react';
 
 export interface CreateKeyCompactProps {
   compact: boolean;
-  keyGen: KeyGen.KeyGen;
+  keyGen: KeyGen;
 }
 
 export const CreateKeyCompact = observer((props: CreateKeyCompactProps): JSX.Element => {
@@ -25,7 +25,7 @@ export const CreateKeyCompact = observer((props: CreateKeyCompactProps): JSX.Ele
         <label>Slave-Key-Length:</label>
         <CreateKeyOption
           name="subkeys.all.length"
-          ops={props.keyGen.subKeys.map((sb: KeyGen.KeyInfo, i: number) => {
+          ops={props.keyGen.subKeys.map((sb: KeyInfo, i: number) => {
             return sb.length;
           })}
         />

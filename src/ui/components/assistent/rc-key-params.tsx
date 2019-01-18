@@ -3,7 +3,7 @@ import classnames from 'classnames';
 import {
   NestedFlag
 } from '../../../model';
-import { KeyParams } from '../../../gpg';
+import { KeyParams } from '../../../gpg/types';
 import { RcOption } from '../controls';
 
 export interface RcKeyParamsProps {

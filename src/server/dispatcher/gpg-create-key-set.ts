@@ -3,12 +3,10 @@ import * as WebSocket from 'ws';
 import { Message, Progress } from '../../model';
 import { Dispatcher } from '../dispatcher';
 
-import { KeyGen, Gpg } from '../../gpg';
-// import * as ListSecretKeys from '../../gpg/list-secret-keys';
+import { Gpg } from '../../gpg';
+import { KeyGen } from '../../gpg/types';
 import { CreateKeySetTask } from '../tasks';
 import { Observer } from '../observer';
-
-// import * as Progress from '../../model/progress';
 
 export class GpgCreateKeySet implements Dispatcher {
   public gpg: Gpg;

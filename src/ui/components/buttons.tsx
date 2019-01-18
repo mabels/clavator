@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
 
-import { SecretKey, GpgKey } from '../../gpg';
+import { SecretKey, GpgKey } from '../../gpg/types';
 import { SubButtons } from './sub-buttons';
-import { SecButtons } from './sec_buttons';
+import { SecButtons } from './sec-buttons';
 
 export interface BottonsProps {
   clazz: string;

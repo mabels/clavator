@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, IObservableValue } from 'mobx';
 import { ObjectId, Validatable, StringValue, Warrents } from '../../model';
 import { MinMax } from './min-max';
 
@@ -12,19 +12,19 @@ import { CharFormat } from './char-format';
 
 export class DoublePassword extends ObjectId implements Validatable {
   // @observable public approved: BooleanValue;
-  @observable public first: PasswordControl;
-  @observable public second: PasswordControl;
-  @observable public diceValue: StringValue;
-  @observable public readOnly: boolean;
-  @observable public readable: boolean;
+  public readonly first: PasswordControl;
+  public readonly second: PasswordControl;
+  public readonly diceValue: StringValue;
+  public readOnly: IObservableValue<boolean>;
+  public readable: IObservableValue<boolean>;
   // public passPhrase: PassPhrase;
   public readonly warrents: ViewWarrents;
   public readonly diceWares: DiceWare[];
-  private currentDiceWare: DiceWare;
   private passPhrase: PassPhrase;
   private readableTimer: any;
-  private readableCb: (v: boolean) => void;
+  private readableCb?: (v: boolean) => void;
   public inputDiceWare: InputDiceWare;
+  private currentDiceWare: DiceWare;
 
   constructor(warrents: Warrents, errText: string, minmaxs: MinMax, diceWares: DiceWare[]) {
     super('DoublePassword');
@@ -40,8 +40,8 @@ export class DoublePassword extends ObjectId implements Validatable {
             new RegExp(`^[1-6]{${this.diceWare().dicesCount()},${this.diceWare().dicesCount()}}$`),
             'dices should be between 1-6');
     }
-    this.readOnly = false;
-    this.readable = false;
+    this.readOnly = observable.box(false);
+    this.readable = observable.box(false);
     // this.passPhrase = passPhrase;
     this.warrents = new ViewWarrents();
     warrents.forEach(w => this.warrents.add(new ViewWarrent(w)));
@@ -69,10 +69,10 @@ export class DoublePassword extends ObjectId implements Validatable {
   // }
 
   public setReadableWithTimeout(v: boolean, timeout: number, cb?: (v: boolean) => void): void {
-    this.readable = v;
+    this.readable.set(v);
     if (this.readableTimer) {
       if (this.readableCb) {
-        this.readableCb(this.readable);
+        this.readableCb(this.readable.get());
       }
       clearTimeout(this.readableTimer);
     }
@@ -80,19 +80,21 @@ export class DoublePassword extends ObjectId implements Validatable {
     if (timeout) {
       this.readableCb = cb;
       this.readableTimer = setTimeout(() => {
-        this.readable = !v;
+        this.readable.set(!v);
         if (cb) {
-          cb(this.readable);
+          cb(this.readable.get());
         }
       }, timeout);
     } else {
-      this.readable = v;
+      this.readable.set(v);
     }
   }
 
   public setPassword(value: string): void {
-    this.first.prevPassword = this.first.password.value = value;
-    this.second.prevPassword = this.second.password.value = value;
+    this.first.password.value.set(value);
+    this.second.password.value.set(value);
+    this.first.prevPassword = value;
+    this.second.prevPassword = value;
   }
 
   public generateRandom(): void {
@@ -105,10 +107,10 @@ export class DoublePassword extends ObjectId implements Validatable {
       .map(_ => vector[DiceWare.oneThrow(0, vector.length - 1)]).join('');
     const dp = this;
     if (
-        (dp.first.password.value.length == 0 &&
-         dp.second.password.value.length == 0) ||
-        (dp.first.password.value == dp.first.prevPassword &&
-         dp.second.password.value == dp.second.prevPassword)) {
+        (dp.first.password.length == 0 &&
+         dp.second.password.length == 0) ||
+        (dp.first.password.value.get() == dp.first.prevPassword &&
+         dp.second.password.value.get() == dp.second.prevPassword)) {
       dp.setPassword(random);
       dp.setReadableWithTimeout(true, 10000, (v) => { /* */ });
     }
@@ -127,7 +129,7 @@ export class DoublePassword extends ObjectId implements Validatable {
   }
 
   public showWarrent(): boolean {
-    return this.passPhrase.warrents.length() > 1;
+    return this.passPhrase.warrents.length > 1;
   }
 
   // @computed public get isValid(): boolean {

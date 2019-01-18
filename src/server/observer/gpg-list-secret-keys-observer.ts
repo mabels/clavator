@@ -1,7 +1,8 @@
 import * as WebSocket from 'ws';
 import { Observer } from './observer';
 
-import { Gpg, SecretKey } from '../../gpg';
+import { Gpg } from '../../gpg';
+import { SecretKey } from '../../gpg/types';
 import { WssUpdate } from '../wss-update';
 
 export class GpgListSecretKeysObserver {

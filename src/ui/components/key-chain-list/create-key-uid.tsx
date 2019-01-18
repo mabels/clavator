@@ -1,6 +1,6 @@
 import * as React from 'react';
 import classnames from 'classnames';
-import { KeyGen, KeyGenUid } from '../../../gpg';
+import { KeyGen, KeyGenUid } from '../../../gpg/types';
 import { observer } from 'mobx-react';
 
 export interface CreateKeyUidProps {
