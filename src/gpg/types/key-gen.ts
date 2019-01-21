@@ -148,7 +148,6 @@ export class KeyGen {
     expireDate(),
     'expireDate error'
   );
-  @observable
   public uids: Container<KeyGenUid> = new Container<KeyGenUid>(() => {
     return new KeyGenUid();
   });
@@ -212,10 +211,10 @@ export class KeyGen {
       'Name-Real: ' + this.uids.first().name.value,
       'Name-Email: ' + this.uids.first().email.value
     ];
-    if (this.uids.first().comment.value.length > 0) {
-      ret.push('Name-Comment: ' + this.uids.first().comment.value);
+    if (this.uids.first().comment.value.get().length > 0) {
+      ret.push('Name-Comment: ' + this.uids.first().comment.value.get());
     }
-    ret.push('Expire-Date: ' + format_date(this.expireDate.value));
+    ret.push('Expire-Date: ' + format_date(this.expireDate.value.get()));
     ret.push('%commit');
     ret.push('%echo done');
     return ret.join('\n');

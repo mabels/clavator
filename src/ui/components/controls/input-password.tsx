@@ -61,7 +61,7 @@ export class InputPassword extends
           value={this.props.passwordControl.password.value}
           placeholder={this.props.passwordControl.password.match.source}
           onChange={(e: any) => {
-            this.props.passwordControl.password.value = e.target.value;
+            this.props.passwordControl.password._value.set(e.target.value);
           }} />{this.renderReadable()}
       </div>
     );

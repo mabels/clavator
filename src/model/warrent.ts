@@ -3,7 +3,7 @@ import { Pallet } from './pallet';
 import { StringValue } from './string-value';
 
 export class Warrent extends ObjectId implements Pallet {
-  public warrent: StringValue;
+  public readonly warrent: StringValue;
 
   constructor(name?: string) {
     super('Warrent');
@@ -11,7 +11,7 @@ export class Warrent extends ObjectId implements Pallet {
   }
 
   public value(): string {
-    return this.warrent.value;
+    return this.warrent.value.get();
   }
 
   public valid(): boolean {

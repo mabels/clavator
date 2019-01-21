@@ -49,9 +49,9 @@ export class GpgUid {
 
   public toKeyGenUid(): KeyGenUid {
     let ret = new KeyGenUid();
-    ret.comment.value = this.comment;
-    ret.email.value = this.email;
-    ret.name.value = this.name;
+    ret.comment.value.set(this.comment);
+    ret.email.value.set(this.email);
+    ret.name.value.set(this.name);
     return ret;
   }
 
@@ -251,9 +251,9 @@ export class SecretKey extends GpgKey {
     ret.keyInfo.type.value = this.cipher || 'RSA';
     ret.keyInfo.usage.values = ['cert'];
     if (this.expires != null && this.expires > 0) {
-      ret.expireDate.value = new Date(this.expires * 1000);
+      ret.expireDate.value.set(new Date(this.expires * 1000));
     } else {
-      ret.expireDate.value = expireDate();
+      ret.expireDate.value.set(expireDate());
     }
     for (let sb of this.subKeys) {
       ret.subKeys.push(sb.toKeyGenInfo());

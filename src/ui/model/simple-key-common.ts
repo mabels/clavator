@@ -27,7 +27,7 @@ export class SimpleKeyCommon {
     });
     const kgu = new KeyGenUid();
     if (warrents.length > 1) {
-      kgu.comment.value.set(`Warrents ${warrents
+      kgu.comment._value.set(`Warrents ${warrents
         .tail()
         .map(i => `[${i.warrent.value}]`)
         .join(',')}`);
@@ -54,7 +54,7 @@ export class SimpleKeyCommon {
   }
 
   public fill(warrents: Warrents, obj: any): void {
-    this.expireDate.value = new Date(obj['expireDate']);
+    this.expireDate._value.set(new Date(obj['expireDate']));
     this.keyParams.fill(obj['keyParams']);
     this.uids.fill({ pallets: obj['uids'] });
   }

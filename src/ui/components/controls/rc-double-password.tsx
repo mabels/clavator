@@ -21,7 +21,7 @@ interface RcDoublePasswordProps extends React.Props<RcDoublePassword> {
 export class RcDoublePassword extends
   React.Component<RcDoublePasswordProps, {}> {
 
-  @observable public readOnly: NestedFlag;
+  public readOnly: NestedFlag;
 
   constructor(props: RcDoublePasswordProps) {
     super(props);
@@ -71,7 +71,7 @@ export class RcDoublePassword extends
         viewWarrents={dp.warrents}
         showWarrents={dp.showWarrent()}
         approved={(vw: ViewWarrent) => {
-          dp.readable = false;
+          dp.readable.set(false);
           // console.log('RcApproveWarrents:approved');
         }}
       />

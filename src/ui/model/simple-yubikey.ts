@@ -79,7 +79,7 @@ export class SimpleYubikey {
   public asKeyGen(): KeyGen {
     const kg = KeyGen.withSubKeys(3);
     this.common.uids.forEach(k => kg.uids.add(k));
-    kg.expireDate.value = this.common.expireDate.value;
+    kg.expireDate._value.set(this.common.expireDate.value);
     kg.keyInfo = new KeyInfo(this.common.keyParams.type.value,
                              this.common.keyParams.masterLen.value,
                              ['cert']);
@@ -87,7 +87,7 @@ export class SimpleYubikey {
       ki.type.value = this.common.keyParams.type.value;
       ki.length.value = this.common.keyParams.subLen.value;
     });
-    kg.password.value.set(this.passPhrase.getPassPhrase());
+    kg.password._value.set(this.passPhrase.getPassPhrase());
     return kg;
   }
 

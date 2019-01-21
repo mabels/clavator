@@ -11,7 +11,7 @@ export interface CreateKeyUidProps {
 
 function handleAddUid(props: CreateKeyUidProps): void {
   const uid = new KeyGenUid();
-  uid.name.value = props.keyGen.uids.last().name.value;
+  uid.name._value.set(props.keyGen.uids.last().name.value);
   props.keyGen.uids.add(uid);
 }
 
@@ -31,7 +31,7 @@ export const CreateKeyUid = observer((props: CreateKeyUidProps): JSX.Element => 
             })}
             name={`uid.name.{idx}`}
             onChange={(e: any) => {
-              keyGenUid.name.value = e.target.value;
+              keyGenUid.name._value.set(e.target.value);
             }}
             value={keyGenUid.name.value}
           />
@@ -47,7 +47,7 @@ export const CreateKeyUid = observer((props: CreateKeyUidProps): JSX.Element => 
             autoComplete="on"
             name="email"
             onChange={(e: any) => {
-              keyGenUid.email.value = e.target.value;
+              keyGenUid.email._value.set(e.target.value);
             }}
             value={keyGenUid.email.value}
           />
@@ -67,7 +67,7 @@ export const CreateKeyUid = observer((props: CreateKeyUidProps): JSX.Element => 
             required={true}
             name="nameComment"
             onChange={(e: any) => {
-              keyGenUid.comment.value = e.target.value;
+              keyGenUid.comment._value.set(e.target.value);
             }}
             value={keyGenUid.comment.value}
           />

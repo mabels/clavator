@@ -91,8 +91,8 @@ export class DoublePassword extends ObjectId implements Validatable {
   }
 
   public setPassword(value: string): void {
-    this.first.password.value.set(value);
-    this.second.password.value.set(value);
+    this.first.password._value.set(value);
+    this.second.password._value.set(value);
     this.first.prevPassword = value;
     this.second.prevPassword = value;
   }
@@ -109,8 +109,8 @@ export class DoublePassword extends ObjectId implements Validatable {
     if (
         (dp.first.password.length == 0 &&
          dp.second.password.length == 0) ||
-        (dp.first.password.value.get() == dp.first.prevPassword &&
-         dp.second.password.value.get() == dp.second.prevPassword)) {
+        (dp.first.password.value == dp.first.prevPassword &&
+         dp.second.password.value == dp.second.prevPassword)) {
       dp.setPassword(random);
       dp.setReadableWithTimeout(true, 10000, (v) => { /* */ });
     }

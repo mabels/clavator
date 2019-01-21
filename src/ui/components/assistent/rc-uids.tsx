@@ -29,7 +29,7 @@ export class RcUids extends
 
   private handleAddUid = (/*idx: number */): void => {
     let uid = new KeyGenUid();
-    uid.name.value = this.props.uids.last().name.value;
+    uid.name._value.set(this.props.uids.last().name.value);
     this.props.uids.add(uid);
   }
 
@@ -62,7 +62,7 @@ export class RcUids extends
             pattern={uid.name.match.source}
             name={`uid.name.${idx}`}
             onChange={(e: any) => {
-              uid.name.value = e.target.value;
+              uid.name._value.set(e.target.value);
             }}
             value={uid.name.value} />
         </div>
@@ -78,7 +78,7 @@ export class RcUids extends
             pattern={uid.email.match.source}
             name={`email.${idx}`}
             onChange={(e: any) => {
-              uid.email.value = e.target.value;
+              uid.email._value.set(e.target.value);
             }}
             value={uid.email.value} />
         </div>
@@ -99,7 +99,7 @@ export class RcUids extends
             pattern={uid.comment.match.source}
             name={`nameComment.${idx}`}
             onChange={(e: any) => {
-              uid.comment.value = e.target.value;
+              uid.comment._value.set(e.target.value);
             }}
             value={uid.comment.value} />
         </div>

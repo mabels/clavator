@@ -1,8 +1,8 @@
-import { computed, observable } from 'mobx';
+import { computed, observable, IObservableValue } from 'mobx';
 import { ObjectId } from './object-id';
 
 export class NestedFlag extends ObjectId {
-  @observable private value: boolean;
+  private value: IObservableValue<boolean>;
   private parent?: NestedFlag;
   private children: NestedFlag[];
 
@@ -11,11 +11,11 @@ export class NestedFlag extends ObjectId {
     this.children = [];
     if (typeof(val) == 'boolean' || !val) {
       this.parent = undefined;
-      this.value = !!val;
+      this.value = observable.box(!!val);
     } else {
       this.parent = val;
       this.parent.children.push(this);
-      this.value = undefined;
+      this.value = observable.box(undefined);
     }
   }
 
@@ -25,11 +25,11 @@ export class NestedFlag extends ObjectId {
     if (this.value === undefined) {
       return this.parent.is;
     }
-    return this.value;
+    return this.value.get();
   }
 
   public set is(v: boolean) {
-    this.value = v;
+    this.value.set(v);
     // console.log(`SET:${this.objectId()}:`, this.value);
     this.resetChildren();
   }

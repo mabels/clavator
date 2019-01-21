@@ -425,7 +425,7 @@ export class Gpg {
       'loopback',
       '--passphrase-fd',
       () => {
-        return kg.password.value.get();
+        return kg.password.value;
       },
       '--quick-adduid',
       fpr,
@@ -455,7 +455,7 @@ export class Gpg {
       fpr,
       ki.type.value.toLowerCase() + ki.length.value,
       ki.usage.values.join(','),
-      format_date(kg.expireDate.value.get())
+      format_date(kg.expireDate.value)
     ];
     console.log('createSubkey', args);
     this.run(args, null, cb);

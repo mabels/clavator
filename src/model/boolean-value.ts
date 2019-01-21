@@ -1,23 +1,28 @@
-import { observable, IObservableValue } from 'mobx';
+import { observable, IObservableValue, computed } from 'mobx';
 import { Validatable } from './validatable';
 import { ObjectId } from './object-id';
 
 export class BooleanValue extends ObjectId implements Validatable {
   public errorText: string;
-  public value: IObservableValue<boolean> = observable.box(true);
+  public readonly _value: IObservableValue<boolean> = observable.box(true);
 
   public static fill(js: any, dv: BooleanValue): void {
-    dv.value.set(js['value'] || dv.value);
+    dv._value.set(js['value'] || dv.value);
   }
 
   public constructor(errorText: string) {
     super('BooleanValue');
     this.errorText = errorText;
-    this.value.set(true);
+    this._value.set(true);
+  }
+
+  @computed
+  public get value(): boolean {
+    return this._value.get();
   }
 
   public set(b: boolean): BooleanValue {
-    this.value.set(b);
+    this._value.set(b);
     return this;
   }
 
@@ -30,6 +35,6 @@ export class BooleanValue extends ObjectId implements Validatable {
   }
 
   public fill(js: any): void {
-    this.value = js['value'];
+    this._value.set(js['value']);
   }
 }

@@ -1,10 +1,10 @@
 import * as React from 'react';
-import { observer, propTypes } from 'mobx-react';
+import { observer } from 'mobx-react';
+import { IObservable, observable, IObservableValue } from 'mobx';
 import classnames from 'classnames';
 import {
   Warrents,
   Warrent } from '../../../model';
-import { observable } from 'mobx';
 
 export interface RcWarrentsProps extends React.Props<RcWarrents> {
   warrents: Warrents;
@@ -68,7 +68,7 @@ function Input(props: InputProps): JSX.Element {
       value={props.warrents.last().warrent.value}
       onKeyPress={(e) => handlePressEnter(e, props)}
       onChange={(e: any) => {
-        props.warrents.last().warrent.value = e.target.value;
+        props.warrents.last().warrent._value.set(e.target.value);
       }}
     /><Button {...props} />
   </li>;
@@ -77,8 +77,7 @@ function Input(props: InputProps): JSX.Element {
 @observer export class RcWarrents extends
   React.Component<RcWarrentsProps, {}> {
 
-  @observable
-  public done: boolean;
+  public readonly done: IObservableValue<boolean> = observable.box(false);
 
   public render(): JSX.Element {
     console.log('RC-Warrents:', this);
@@ -88,7 +87,7 @@ function Input(props: InputProps): JSX.Element {
             if (idx == this.props.warrents.length - 1) {
               // console.log(`Input:Warrents:${idx}:${this.props.warrents.length}`);
               return <Input
-                done={this.done}
+                done={this.done.get()}
                 completed={this.props.completed}
                 warrents={this.props.warrents} />;
             } else {

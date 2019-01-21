@@ -56,7 +56,7 @@ export class InputDiceWare extends
 
   private setDice(val: string): void {
     const diceValue = this.props.doublePassword.diceValue;
-    diceValue.value = val;
+    diceValue._value.set(val);
     // this.state.diceValue.setDicedValue(val);
     // console.log('diceWare:1:', this.state.diceValue.dicedValue());
     if (diceValue.valid()) {

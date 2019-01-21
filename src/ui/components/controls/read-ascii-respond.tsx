@@ -10,7 +10,7 @@ import {
   MutableString,
   Message,
 } from '../../../model';
-import { observable } from 'mobx';
+import { observable, IObservableValue } from 'mobx';
 
 export interface ReadAsciiRespondProps extends React.Props<ReadAsciiRespond> {
   action: string;
@@ -23,8 +23,7 @@ export class ReadAsciiRespond extends React.Component<
   ReadAsciiRespondProps,
   {}
 > {
-  @observable
-  public data: string;
+  public data: IObservableValue<string>;
   public receiver: (action: Message.Header, data: string) => void;
   public transaction: Message.Transaction<RequestAscii>;
 
@@ -59,7 +58,7 @@ export class ReadAsciiRespond extends React.Component<
             return;
           }
           console.log('Got: Respond:', pem);
-          this.data = pem.data;
+          this.data.set(pem.data);
         }
       );
     this.props.channel.send(this.transaction.asMsg(ra));
@@ -76,7 +75,7 @@ export class ReadAsciiRespond extends React.Component<
       console.log('Render:', this.state);
       return (
         <div>
-          <CopyToClipboard text={this.data}>
+          <CopyToClipboard text={this.data.get()}>
             <button>Copy to clipboard</button>
           </CopyToClipboard>
           <pre style={{ backgroundColor: '#ccc' }}>{this.data}</pre>

@@ -14,12 +14,12 @@ const EmailRegExp = new RegExp(
 );
 
 export class KeyGenUid extends ObjectId implements Pallet {
-  public name: StringValue = new StringValue(
+  public readonly name: StringValue = new StringValue(
     /^([A-Z][a-z]*\s*)+$/,
     'name error'
   );
-  public email: StringValue = new StringValue(EmailRegExp, 'email error');
-  public comment: StringValue = new StringValue(/.*/, 'comment error');
+  public readonly email: StringValue = new StringValue(EmailRegExp, 'email error');
+  public readonly comment: StringValue = new StringValue(/.*/, 'comment error');
 
   constructor() {
     super('KeyGenUid');
@@ -47,9 +47,9 @@ export class KeyGenUid extends ObjectId implements Pallet {
   }
 
   public toString(): string {
-    const name = this.name.value.get().trim();
-    const email = this.email.value.get().trim();
-    const comment = this.comment.value.get().trim();
+    const name = this.name.value.trim();
+    const email = this.email.value.trim();
+    const comment = this.comment.value.trim();
     let tmp = name + ' (' + comment + ') <' + email + '>';
     if (comment == '') {
       tmp = name + ' <' + email + '>';
