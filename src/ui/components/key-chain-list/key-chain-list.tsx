@@ -7,9 +7,9 @@ import { AppState } from '../../model';
 import { KeyChainListModal } from './key-chain-list-modal';
 import { KeyChainListUid } from './key-chain-list-uid';
 import { KeyChainListKey } from './key-chain-list-key';
-import { observable } from 'mobx';
+import { observable, IObservableValue } from 'mobx';
 
-export enum Dialogs {
+export enum KeyChainListDialogs {
   closed,
   openAscii,
   askPassPhraseAscii,
@@ -26,18 +26,16 @@ export class KeyChainList extends React.Component<
   {}
 > {
 
-  @observable
-  public dialog: Dialogs;
+  public readonly dialogs: IObservableValue<KeyChainListDialogs>;
   public secKey: GpgKey;
   public appState: AppState;
   public idx: number;
-  public action: string;
-  @observable
+  public action: IObservableValue<string>;
   public respondAscii?: RespondAscii;
 
   constructor(props: KeyChainListProps) {
     super(props);
-    this.dialog = Dialogs.closed;
+    this.dialogs = observable.box(KeyChainListDialogs.closed);
   }
 
   /*
@@ -66,7 +64,7 @@ export class KeyChainList extends React.Component<
     return (
       <div className="KeyChainList">
         <KeyChainListModal
-          dialog={this.dialog}
+          dialogs={this.dialogs}
           secKey={this.secKey}
           appState={this.props.appState}
           idx={this.idx}
@@ -76,12 +74,28 @@ export class KeyChainList extends React.Component<
           (sk: SecretKey, idx: number) => {
             return (
               <div key={sk.key}>
-                <table>{sk.uids.map(uid => <KeyChainListUid uid={uid} />)}</table>
+                <table>{sk.uids.map(uid => <KeyChainListUid uid={uid} key={uid.id} />)}</table>
                 <table>
                   <tbody>
-                    <KeyChainListKey clazz="sec" sk={sk} gpgKey={sk} idx={-1} />
+                    <KeyChainListKey
+                      key={-1}
+                      appState={this.appState}
+                      dialogs={this.dialogs}
+                      action={this.action}
+                      clazz="sec"
+                      sk={sk}
+                      gpgKey={sk}
+                      idx={-1} />
                     {sk.subKeys.map((ssb, idxx) =>
-                      <KeyChainListKey clazz="ssb" sk={sk} gpgKey={ssb} idx={idxx} />
+                      <KeyChainListKey
+                        key={idxx}
+                        appState={this.appState}
+                        dialogs={this.dialogs}
+                        action={this.action}
+                        clazz="ssb"
+                        sk={sk}
+                        gpgKey={ssb}
+                        idx={idxx} />
                     )}
                   </tbody>
                 </table>

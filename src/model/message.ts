@@ -60,7 +60,6 @@ export namespace Message {
 
   export class Transaction<T> {
     public header: Header;
-    @observable
     public data: T;
 
     public asMsg(data?: T): string {
@@ -73,7 +72,7 @@ export namespace Message {
     action: string,
     data: T = null
   ): Transaction<T> {
-    let t = new Transaction<T>();
+    const t = new Transaction<T>();
     t.header = new Header();
     t.header.action = action;
     t.data = data;
@@ -82,14 +81,14 @@ export namespace Message {
   }
 
   export function broadcast(action: string): Header {
-    let h = new Header();
+    const h = new Header();
     h.action = action;
     h.transaction = undefined;
     return h;
   }
 
   export function toHeader(m: Message, action: string = null): Header {
-    let h = new Header();
+    const h = new Header();
     h.action = action ? action : m.header.action;
     h.transaction = m.header.transaction;
     return h;

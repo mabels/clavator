@@ -21,7 +21,7 @@ export interface RcApproveWarrentsProps {
 
 function checkWarrents(ap: ViewWarrent): void {
   // console.log('checkWarrents:', this.props, ap);
-  ap.approved = true;
+  ap._approved.set(true);
   this.props.readOnly.is = true;
   if (this.props.approved) {
     this.props.approved(ap);

@@ -2,6 +2,7 @@ import * as React from 'react';
 import classnames from 'classnames';
 import { KeyGen, KeyGenUid } from '../../../gpg/types';
 import { observer } from 'mobx-react';
+import { CreateKeyDelete } from './create-key-delete';
 
 export interface CreateKeyUidProps {
   readonly idx: number;
@@ -52,7 +53,9 @@ export const CreateKeyUid = observer((props: CreateKeyUidProps): JSX.Element => 
             value={keyGenUid.email.value}
           />
         </div>
-        <div className="two columns">{this.render_delete_button(idx)}</div>
+        <div className="two columns"><CreateKeyDelete
+          keyGen={props.keyGen}
+          idx={idx} /></div>
       </div>
       <div className="row">
         <div className="ten columns">

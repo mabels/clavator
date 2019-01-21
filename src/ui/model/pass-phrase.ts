@@ -17,7 +17,6 @@ import { CharFormat } from './char-format';
 
 export class PassPhrase extends ObjectId implements Validatable {
   public readonly readOnly: BooleanValue;
-  @observable
   public readonly warrents: Warrents;
   // public errorText: string;
   public readonly doublePasswords: DoublePassword[];

@@ -1,4 +1,4 @@
-import { observable, ObservableMap, action } from 'mobx';
+import { observable, ObservableMap, action, IObservableArray } from 'mobx';
 import { WsChannel, Dispatch } from './ws-channel';
 import { Gpg2CardStatus } from '../../gpg/types';
 import { Message } from '../../model';
@@ -6,8 +6,7 @@ import { Message } from '../../model';
 // import DevTools from 'mobx-react-devtools';
 
 export class CardStatusListState implements WsChannel {
-  // @observable timer = 0;
-  public readonly cardStatusList: Gpg2CardStatus[] = observable.array([]);
+  public readonly cardStatusList: IObservableArray<Gpg2CardStatus> = observable.array([]);
   public readonly adminPins: ObservableMap<string> = observable.map<string>();
 
   constructor(channel: Dispatch) {

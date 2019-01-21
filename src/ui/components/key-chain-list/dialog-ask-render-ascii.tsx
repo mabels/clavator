@@ -7,25 +7,24 @@ import { MutableString } from '../../../model';
 
 import { AskPassphrase } from './ask-passphrase';
 import { ReadAsciiRespond } from '../controls';
-import { observable } from 'mobx';
+import { observable, IObservableValue } from 'mobx';
 
 interface DialogAskRenderAsciiProps extends React.Props<DialogAskRenderAscii> {
   onClose: () => void;
   secKey: GpgKey;
   channel: Dispatch;
-  action: string;
+  action: IObservableValue<string>;
 }
 
 export class DialogAskRenderAscii extends React.Component<DialogAskRenderAsciiProps, {}> {
 
-  public passPhrase: MutableString;
-  @observable
-  public doRead: boolean;
+  public readonly passPhrase: MutableString;
+  public readonly doRead: IObservableValue<boolean>;
 
   constructor(props: DialogAskRenderAsciiProps) {
     super(props);
     this.passPhrase = new MutableString();
-    this.doRead = false;
+    this.doRead = observable.box(false);
   }
 
   public render(): JSX.Element {
@@ -41,7 +40,7 @@ export class DialogAskRenderAscii extends React.Component<DialogAskRenderAsciiPr
         <AskPassphrase
           passphrase={this.passPhrase}
           fingerprint={this.props.secKey.fingerPrint.fpr}
-          completed={(pp) => this.doRead = true}
+          completed={(pp) => this.doRead.set(true)}
           />
         {this.doRead ? <ReadAsciiRespond
           action="pem-private"

@@ -4,17 +4,18 @@ import { RequestChangePin } from '../../../gpg/types';
 import { Message } from '../../../model';
 import { ButtonToProgressor } from '../controls';
 import { AppState } from '../../model';
+import { action } from 'mobx';
 
 interface ChangePinState {
-  pin: RequestChangePin;
-  transaction: Message.Transaction<RequestChangePin>;
+  readonly pin: RequestChangePin;
+  readonly transaction: Message.Transaction<RequestChangePin>;
 }
 
 interface ChangePinProps extends React.Props<ChangePin> {
-  completed?: () => {};
-  type: string;
-  app_id: string;
-  appState: AppState;
+  readonly completed?: () => {};
+  readonly type: string;
+  readonly app_id: string;
+  readonly appState: AppState;
 }
 
 export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
@@ -33,7 +34,7 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
   }
 
   public doPinChange = (): void => {
-    this.state.pin.app_id = this.props.app_id;
+    this.state.pin._app_id.set(this.props.app_id);
     this.state.transaction.data = this.state.pin;
     this.props.appState.channel.send(this.state.transaction.asMsg());
   }
@@ -47,24 +48,24 @@ export class ChangePin extends React.Component<ChangePinProps, ChangePinState> {
           <label>AdminPin:</label><input type="password"
             name="admin-pin"
             className={classnames({ good: this.state.pin.admin_pin.verify() })}
-            onChange={(e: any) => {
-              this.state.pin.admin_pin.pin = e.target.value;
-            }} />
+            onChange={action((e: any) => {
+              this.state.pin.admin_pin._pin.set(e.target.value);
+            })} />
         </div>
 
         <div className="row">
           <label>NewPin{this.props.type}:</label><input type="password"
             name="new-pin"
             className={classnames({ good: this.state.pin.new_pin.verify() })}
-            onChange={(e: any) => {
-              this.state.pin.new_pin.pin = e.target.value;
-            }} />
+            onChange={action((e: any) => {
+              this.state.pin.new_pin._pin.set(e.target.value);
+            })} />
           <input type="password"
             name="verify-new-pin"
             className={classnames({ good: this.state.pin.new_pin_verify.verify() })}
-            onChange={(e: any) => {
-              this.state.pin.new_pin_verify.pin = e.target.value;
-            }} />
+            onChange={action((e: any) => {
+              this.state.pin.new_pin_verify._pin.set(e.target.value);
+            })} />
         </div>
 
         <ButtonToProgressor

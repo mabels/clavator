@@ -11,7 +11,7 @@ export class Warrent extends ObjectId implements Pallet {
   }
 
   public value(): string {
-    return this.warrent.value.get();
+    return this.warrent.value;
   }
 
   public valid(): boolean {

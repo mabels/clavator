@@ -3,6 +3,7 @@ import { observer } from 'mobx-react';
 
 import { AppState } from '../../model';
 import { KeyToYubiKey, KeyState } from '../../../gpg/types';
+import { action } from 'mobx';
 
 export interface CardSlotProps {
   readonly appState: AppState;
@@ -17,10 +18,10 @@ export const CardSlot = observer(
         <select
           className="three columns"
           value={this.state.keyToYubiKey.slot_id}
-          onChange={(e: any) => {
-            props.keyToYubiKey.slot_id = ~~e.target.value;
+          onChange={action((e: any) => {
+            props.keyToYubiKey._slot_id.set(~~e.target.value);
             console.log('this.state.keyToYubiKey:', this.state.keyToYubiKey);
-          }}
+          })}
         >
           {props.appState.cardStatusListState.cardStatusList.map(cardstatus => {
             return cardstatus.keyStates.map((ks: KeyState, idx: number) => {

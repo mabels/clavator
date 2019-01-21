@@ -36,7 +36,7 @@ export function CreateKeyMultioption<T>(
                   if (ofs >= 0) {
                     props.op.values[ofs] =
                       props.op.values[props.op.values.length - 1];
-                    props.op.values = props.op.values.slice(0, -1);
+                    props.op.values.replace(props.op.values.slice(0, -1));
                   }
                 }
               }}

@@ -1,4 +1,6 @@
 import * as React from 'react';
+import * as ReactDOM from 'react-dom';
+import * as ReactModal from 'react-modal';
 import { observable, configure, action, IObservableValue } from 'mobx';
 import { observer } from 'mobx-react';
 
@@ -33,15 +35,22 @@ export class App extends React.Component<{}, {}> {
     this.appState = AppState.create();
   }
 
+  public componentDidMount(): void {
+    const el = ReactDOM.findDOMNode(this).parentElement;
+    console.log(`ParentElement:${el}`);
+    ReactModal.setAppElement(el);
+  }
+
   public componentWillUnmount(): void {
     this.appState.channel.close();
   }
 
   public render_createKey(): JSX.Element {
-    if (!this.createKeyDialog) {
+    if (!this.createKeyDialog.get()) {
       return null;
     }
-    return <DialogCreateKey appState={this.appState}
+    return <DialogCreateKey
+      appState={this.appState}
       onClose={action(() => this.createKeyDialog.set(false))} />;
   }
 
@@ -67,9 +76,10 @@ export class App extends React.Component<{}, {}> {
             <Tab className="CardStatusList">CardStatusList</Tab>
             <Tab className="Assistent">Assistent</Tab>
             <a title="add new key"
-              onClick={() => {
-                this.appState.progressorState.open.set(!this.appState.progressorState.open);
-              }}
+              onClick={action(() => {
+                this.appState.progressorState.open.set(!this.appState.progressorState.open.get());
+                console.log(`open: progressor ${this.appState.progressorState.open.get()}`);
+              })}
               className="closeBox">
               <i className="fa fa-comment"></i>
             </a>

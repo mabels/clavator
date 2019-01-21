@@ -3,7 +3,7 @@ import * as ReactModal from 'react-modal';
 // import * as classnames from 'classnames';
 import { Message } from '../../../model';
 import { Dispatch } from '../../model';
-import { observable } from 'mobx';
+import { observable, IObservableValue, computed, action } from 'mobx';
 
 interface ChannelStatusState {
   status: string;
@@ -16,22 +16,29 @@ interface ChannelStatusProps extends React.Props<ChannelStatus> {
 export class ChannelStatus extends
   React.Component<ChannelStatusProps, {}> implements ChannelStatusState {
 
-  @observable public status: string;
+  public readonly _status: IObservableValue<string>;
 
   constructor(props: ChannelStatusProps) {
     super(props);
-    this.status = 'not started';
+    this._status = observable.box('not started');
   }
 
+  @action
   public onOpen(e: Event): void {
-    this.status = 'connected';
+    this._status.set('connected');
   }
 
+  @action
   public onClose(e: CloseEvent): void {
-    this.status = 'not connected';
+    this._status.set('not connected');
   }
 
-  public onMessage(action: Message.Header, data: string): void {
+  @computed
+  public get status(): string {
+    return this._status.get();
+  }
+
+  public onMessage(_: Message.Header, data: string): void {
     /* */
   }
 

@@ -96,7 +96,7 @@ export class Result {
     stdio = stdio.concat(writables);
     // console.log('STDIO:', stdio);
     this.execTransaction = { transaction: uuid.v4() };
-    console.log('run=', cmd, attrs);
+    // console.log('run=', cmd, attrs);
     const c = spawn(cmd, attrs, {
       env: Object.assign(
         {

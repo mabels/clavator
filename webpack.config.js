@@ -17,17 +17,17 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 module.exports = [{
   mode: 'development',
   target: 'web',
-  entry: './src/ui/client.js',
+  entry: './src/ui/client.tsx',
   output: {
     path: __dirname + '/dist',
     filename: 'client.js'
   },
   module: {
     rules: [
-      // {
-      //   test: /\.tsx?$/,
-      //   loader: 'ts-loader'
-      // },
+      {
+        test: /\.tsx?$/,
+        loader: 'ts-loader'
+      },
       {
         test: /\.css$/,
         loader: ExtractTextPlugin.extract('css-loader?sourceMap!less-loader?sourceMap')
@@ -38,7 +38,7 @@ module.exports = [{
       },
       {
         test: /\.(jpe?g|png|gif|svg)$/i,
-        loaders: [ 'url-loader?limit=10000', 'img-loader?minimize' ],
+        loader: [ 'url-loader?limit=10000', 'img-loader?minimize' ],
       },
       {
         test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
@@ -52,7 +52,7 @@ module.exports = [{
   },
   devtool: 'source-map',
   resolve: {
-    extensions: [/* '.tsx', '.ts', */ '.webpack.js', '.web.js', '.js']
+    extensions: ['.tsx', '.ts', '.webpack.js', '.web.js', '.js']
   },
   plugins: [
     new ExtractTextPlugin('styles.css'),
@@ -60,4 +60,50 @@ module.exports = [{
       template: './src/ui/index.ejs'
     })
   ]
-}];
+}, {
+  mode: 'development',
+  target: 'node',
+  entry: './src/server/server',
+  output: {
+    path: __dirname + '/dist',
+    filename: 'server.js',
+    libraryTarget: 'commonjs2'
+  },
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        loader: 'ts-loader'
+      }
+    ]
+  },
+  externals: node_modules,
+  devtool: 'source-map',
+  resolve: {
+    extensions: ['.tsx', '.ts', '.webpack.js', '.web.js', '.js']
+  }
+}, {
+  mode: 'development',
+  target: 'node',
+  entry: './src/gpg-mock/gpg-mock',
+  output: {
+    path: __dirname + '/dist',
+    filename: 'gpg-mock.js',
+    libraryTarget: 'commonjs2'
+  },
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        loader: 'ts-loader'
+      }
+    ]
+  },
+  externals: node_modules,
+  devtool: 'source-map',
+  resolve: {
+    extensions: ['.tsx', '.ts', '.webpack.js', '.web.js', '.js']
+  }
+}
+
+];

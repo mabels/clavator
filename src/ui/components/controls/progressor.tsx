@@ -1,13 +1,14 @@
 import * as React from 'react';
 // import { observer } from 'mobx-react';
-import { observable, IObservableValue } from 'mobx';
+import { observable, IObservableValue, IObservableArray, action } from 'mobx';
 
 import { Progress, Message } from '../../../model';
 import { Dispatch } from '../../model';
+import { observer } from 'mobx-react';
 
 export class ProgressorState {
   public open: IObservableValue<boolean> = observable.box(false);
-  public progressList: Progress.Progress[] = observable.array([]);
+  public progressList: IObservableArray<Progress.Progress> = observable.array([]);
   private channel: Dispatch;
 
   constructor(channel: Dispatch) {
@@ -23,8 +24,9 @@ export class ProgressorState {
     return;
   }
 
-  public onMessage(action: Message.Header, data: string): void {
-    if (action.action.startsWith('Progressor.')) {
+  @action
+  public onMessage(header: Message.Header, data: string): void {
+    if (header.action.startsWith('Progressor.')) {
       // if (!this.props.transaction || action.transaction == this.props.transaction) {
         // console.log('Progressor.', this.props, action, data);
         const js = JSON.parse(data);
@@ -52,14 +54,14 @@ function Controls(props: ProgressorProps): JSX.Element {
     return (<div className="action">
       <a title="reset-log"
         onClick={() => {
-          props.progressor.progressList = [];
+          props.progressor.progressList.clear();
         }}>
         <i className="fa fa-trash"></i>
       </a>
     </div>);
   }
 
-export const Progressor = (props: ProgressorProps): JSX.Element => {
+export const Progressor = observer((props: ProgressorProps): JSX.Element => {
     return (
       <div className="Progressor">
         <Controls {...props} />
@@ -74,4 +76,4 @@ export const Progressor = (props: ProgressorProps): JSX.Element => {
         </pre>
       </div>
     );
-};
+});

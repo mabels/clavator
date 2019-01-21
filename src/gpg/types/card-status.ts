@@ -86,7 +86,7 @@ export class Gpg2CardStatus {
       2D32339F24A537406437181A28E66F405F1BE34D:
   fprtime:1465218501:1465218921:1464700773:
   */
-  public reader: Reader = new Reader();
+  public readonly reader: Reader = new Reader();
   public version: string;
   public vendor: string;
   public serial: string;
@@ -117,11 +117,11 @@ export class Gpg2CardStatus {
   private static actors(): { [id: string]: ActionFunc } {
     return {
       Reader: (gcs: Gpg2CardStatus, strs: string[]): boolean => {
-        let reader = Reader.fill(strs);
+        const reader = Reader.fill(strs);
         if (!reader) {
           return false;
         }
-        gcs.reader = reader;
+        gcs.reader.jsfill(reader);
         return true;
       },
       version: (gcs: Gpg2CardStatus, strs: string[]): boolean => {

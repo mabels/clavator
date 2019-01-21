@@ -7,6 +7,7 @@ import { Message } from '../../../model';
 import { ButtonToProgressor } from '../controls';
 import { AppState } from '../../model';
 import { CardSlot } from './card-slot';
+import { action } from 'mobx';
 
 interface AskKeyToYubiKeyState {
   keyToYubiKey: KeyToYubiKey;
@@ -34,9 +35,9 @@ export class AskKeyToYubiKey
   }
 
   public componentWillMount(): void {
-    this.state.keyToYubiKey.fingerprint = this.props.fingerprint;
-    this.state.keyToYubiKey.slot_id = this.props.slot_id;
-    this.state.keyToYubiKey.card_id = this.props.appState.cardStatusListState.cardStatusList[0].reader.cardid;
+    this.state.keyToYubiKey._fingerprint.set(this.props.fingerprint);
+    this.state.keyToYubiKey._slot_id.set(this.props.slot_id);
+    this.state.keyToYubiKey._card_id.set(this.props.appState.cardStatusListState.cardStatusList[0].reader.cardid);
   }
 
   public sendKeyToYubiKey(): void {
@@ -58,18 +59,18 @@ export class AskKeyToYubiKey
           <label>Passphrase:</label><input type="password"
             className={classnames({ good: this.state.keyToYubiKey.verify() })}
             name={`aktyk-${this.props.fingerprint}`}
-            onChange={(e: any) => {
-              this.state.keyToYubiKey.passphrase.value = e.target.value;
-            }} />
+            onChange={action((e: any) => {
+              this.state.keyToYubiKey.passphrase._value.set(e.target.value);
+            })} />
         </div>
 
         <div className="row">
           <label>AdminPin:</label><input type="password"
             className={classnames({ good: this.state.keyToYubiKey.admin_pin.verify() })}
             name={`aktyk-${this.props.fingerprint}`}
-            onChange={(e: any) => {
-              this.state.keyToYubiKey.admin_pin.pin = e.target.value;
-            }} />
+            onChange={action((e: any) => {
+              this.state.keyToYubiKey.admin_pin._pin.set(e.target.value);
+            })} />
         </div>
 
         <ButtonToProgressor

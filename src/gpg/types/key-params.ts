@@ -1,9 +1,9 @@
 import { Option, ObjectId, Validatable, assignOnError } from '../../model';
 
 export class KeyParams extends ObjectId implements Validatable {
-  public type: Option<string>;
-  public masterLen: Option<number>;
-  public subLen: Option<number>;
+  public readonly type: Option<string>;
+  public readonly masterLen: Option<number>;
+  public readonly subLen: Option<number>;
 
   constructor() {
     super('KeyParams');
@@ -33,9 +33,9 @@ export class KeyParams extends ObjectId implements Validatable {
   }
 
   public fill(js: any): void {
-    this.type.value = js['type'];
-    this.masterLen.value = js['masterLen'];
-    this.subLen.value = js['subLen'];
+    this.type._value.set(js['type']);
+    this.masterLen._value.set(js['masterLen']);
+    this.subLen._value.set(js['subLen']);
   }
 
   public toObj(): any {

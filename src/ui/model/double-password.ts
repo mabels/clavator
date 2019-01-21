@@ -11,13 +11,11 @@ import { InputDiceWare } from '../components/controls';
 import { CharFormat } from './char-format';
 
 export class DoublePassword extends ObjectId implements Validatable {
-  // @observable public approved: BooleanValue;
   public readonly first: PasswordControl;
   public readonly second: PasswordControl;
   public readonly diceValue: StringValue;
   public readOnly: IObservableValue<boolean>;
   public readable: IObservableValue<boolean>;
-  // public passPhrase: PassPhrase;
   public readonly warrents: ViewWarrents;
   public readonly diceWares: DiceWare[];
   private passPhrase: PassPhrase;

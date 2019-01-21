@@ -1,36 +1,41 @@
 import * as React from 'react';
+import { IObservableValue, action } from 'mobx';
+import { propTypes } from 'mobx-react';
 
 import { SecretKey, GpgKey } from '../../gpg/types';
-import { Dialogs } from './key-chain-list';
+import { KeyChainListDialogs } from './key-chain-list';
 import {
-  MutableString,
   RequestAscii,
   Message,
-  RespondAscii
 } from '../../model';
+import { AppState } from '../model';
 
 export interface SecButtonsProps {
-  sk: SecretKey;
-  gpgKey: GpgKey;
+  readonly appState: AppState;
+  readonly sk: SecretKey;
+  readonly gpgKey: GpgKey;
+  readonly dialogs: IObservableValue<KeyChainListDialogs>;
+  readonly pp?: string;
 }
 
-function processAscii(
-  key: GpgKey,
-  action: string,
-  dialog: Dialogs,
-  pp: string = null
+function processAscii(props: SecButtonsProps,
+  act: string,
+  dialog: KeyChainListDialogs,
+  pp: string = undefined
 ): void {
-  const ra = new RequestAscii();
-  ra.action = action;
-  ra.fingerprint = key.fingerPrint.fpr;
-  ra.passphrase = new MutableString();
-  ra.passphrase.value = pp;
-  this.setState(
-    Object.assign({}, this.state, {
-      dialog: dialog,
-      action: action,
+  const ra = new RequestAscii({
+    fingerprint: props.gpgKey.fingerPrint.fpr,
+    passphrase: pp,
+    action: act
+  });
+
+  props.dialogs.set(dialog);
+  // props.action.set(action);
+  /*
       key: key,
+  props.key.set(props.gpgKey);
       respondAscii: null,
+
       receiver: this.props.appState.channel.onMessage(
         (actionx: Message.Header, data: string) => {
           console.log('processAscii:', actionx);
@@ -47,31 +52,36 @@ function processAscii(
       )
     })
   );
-  this.props.appState.channel.send(
+  */
+  props.appState.channel.send(
     Message.newTransaction('RequestAscii', ra).asMsg()
   );
 }
 
-function requestAscii(key: GpgKey, action: string): void {
-  processAscii(key, action, Dialogs.openAscii);
+function requestAscii(props: SecButtonsProps, act: string): () => void {
+  return action(() => {
+    processAscii(props, act, KeyChainListDialogs.openAscii);
+  });
 }
 
-function requestAsciiWithPassphrase(key: GpgKey, action: string): void {
-  this.setState(
-    Object.assign({}, this.state, {
-      dialog: Dialogs.askPassPhraseAscii,
-      action: action,
-      key: key,
-      passPhrase: new MutableString(),
-      respondAscii: null
-    })
-  );
+function requestAsciiWithPassphrase(props: SecButtonsProps, act: string): () => void {
+  return action(() => {
+    props.dialogs.set(KeyChainListDialogs.askPassPhraseAscii);
+    // props.action.set(action);
+    /*
+        key: key,
+        passPhrase: new MutableString(),
+        respondAscii: null
+      })
+    );
+    */
+  });
 }
 
-function deleteSecretKey(key: SecretKey): void {
-  if (confirm(`Really delete ${key.keyId} <${key.uids[0].email}>?`)) {
-    this.props.appState.channel.send(
-      Message.newTransaction('DeleteSecretKey', key.fingerPrint).asMsg()
+function deleteSecretKey(props: SecButtonsProps): void {
+  if (confirm(`Really delete ${props.sk.keyId} <${props.sk.uids[0].email}>?`)) {
+    props.appState.channel.send(
+      Message.newTransaction('DeleteSecretKey', props.sk.fingerPrint).asMsg()
     );
   }
 }
@@ -81,29 +91,29 @@ export function SecButtons(props: SecButtonsProps): JSX.Element {
     <td className="action">
       <a
         title="pem-private"
-        onClick={() => requestAsciiWithPassphrase(props.gpgKey, 'pem-private')}
+        onClick={requestAsciiWithPassphrase(props, 'pem-private')}
       >
         <i className="fa fa-key" />
       </a>
       <a
         title="pem-public"
-        onClick={() => requestAscii(props.gpgKey, 'pem-public')}
+        onClick={requestAscii(props, 'pem-public')}
       >
         <i className="fa fa-bullhorn" />
       </a>
       <a
         title="ssh-public"
-        onClick={() => requestAscii(props.gpgKey, 'ssh-public')}
+        onClick={requestAscii(props, 'ssh-public')}
       >
         <i className="fa fa-terminal" />
       </a>
       <a
         title="pem-revoke"
-        onClick={() => requestAscii(props.gpgKey, 'pem-revoke')}
+        onClick={requestAscii(props, 'pem-revoke')}
       >
         <i className="fa fa-bug" />
       </a>
-      <a title="delete" onClick={() => deleteSecretKey(props.sk)}>
+      <a title="delete" onClick={() => deleteSecretKey(props)}>
         <i className="fa fa-trash" />
       </a>
     </td>

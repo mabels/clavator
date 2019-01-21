@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactModal from 'react-modal';
 import { observer } from 'mobx-react';
-import { observable } from 'mobx';
+import { observable, action } from 'mobx';
 import classnames from 'classnames';
 
 import {
@@ -21,7 +21,6 @@ interface DialogChangeAttributesProps extends React.Props<DialogChangeAttributes
 @observer
 export class DialogChangeAttributes extends React.Component<DialogChangeAttributesProps, {}> {
 
-  @observable
   public changeCard: ChangeCard;
   public transaction: Message.Transaction<ChangeCard>;
 
@@ -56,9 +55,9 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
         <label>AdminPin:</label><input type="password"
           name="admin-pin"
           className={classnames({ good: this.changeCard.adminPin.verify() })}
-          onChange={(e: any) => {
-            this.changeCard.adminPin.pin = e.target.value;
-          }} />
+          onChange={action((e: any) => {
+            this.changeCard.adminPin._pin.set(e.target.value);
+          })} />
         <label>Name of cardholder:</label><input type="text"
           onChange={(e: any) => {
             this.changeCard.name = e.target.value;

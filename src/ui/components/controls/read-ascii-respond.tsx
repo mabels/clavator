@@ -13,10 +13,10 @@ import {
 import { observable, IObservableValue } from 'mobx';
 
 export interface ReadAsciiRespondProps extends React.Props<ReadAsciiRespond> {
-  action: string;
-  passPhrase?: MutableString;
-  channel: Dispatch;
-  secKey: GpgKey;
+  readonly action: string;
+  readonly passPhrase?: MutableString;
+  readonly channel: Dispatch;
+  readonly secKey: GpgKey;
 }
 
 export class ReadAsciiRespond extends React.Component<
@@ -37,10 +37,11 @@ export class ReadAsciiRespond extends React.Component<
   }
 
   public componentWillMount(): void {
-    let ra = new RequestAscii();
-    ra.action = this.props.action;
-    ra.fingerprint = this.props.secKey.fingerPrint.fpr;
-    ra.passphrase = this.props.passPhrase;
+    let ra = new RequestAscii({
+      action: this.props.action,
+      fingerprint: this.props.secKey.fingerPrint.fpr,
+      passphrase: this.props.passPhrase.value
+    });
     this.transaction = Message.newTransaction<RequestAscii>('RequestAscii');
     this.receiver = this.props.channel.onMessage(
         (action: Message.Header, data: string) => {

@@ -5,12 +5,13 @@ import { observer } from 'mobx-react';
 import { Dispatch } from '../../model';
 import { GpgKey } from '../../../gpg/types';
 import { ReadAsciiRespond } from '../controls';
+import { IObservableValue } from 'mobx';
 
 interface DialogRenderAsciiProps {
-  onClose: () => void;
-  channel: Dispatch;
-  secKey: GpgKey;
-  action: string;
+  readonly onClose: () => void;
+  readonly channel: Dispatch;
+  readonly secKey: GpgKey;
+  readonly action: IObservableValue<string>;
 }
 
 export const DialogRenderAscii = observer((props: DialogRenderAsciiProps) => {
@@ -24,7 +25,7 @@ export const DialogRenderAscii = observer((props: DialogRenderAsciiProps) => {
         <i onClick={props.onClose} className="closeBox fa fa-close"></i>
         <h4>{props.action}:{props.secKey.fingerPrint.fpr}</h4>
         <ReadAsciiRespond
-          action={props.action}
+          action={props.action.get()}
           channel={props.channel}
           secKey={props.secKey}
          />

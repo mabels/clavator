@@ -1,17 +1,29 @@
 
 import { MutableString } from '../model/mutable-string';
 
+export interface RequestAsciiProps {
+  readonly passphrase: string;
+  readonly fingerprint: string;
+  readonly action?: string;
+}
+
 export class RequestAscii {
-  public passphrase: MutableString = new MutableString();
-  public action: string;
-  public fingerprint: string;
+  public readonly passphrase: MutableString = new MutableString();
+  public readonly action?: string;
+  public readonly fingerprint: string;
 
   public static fill(js: any): RequestAscii {
-    let ra = new RequestAscii();
-    ra.action = js['action'];
-    ra.passphrase = MutableString.fill(js['passphrase']);
-    ra.fingerprint = js['fingerprint'];
-    return ra;
+    return new RequestAscii({
+      action: js['action'],
+      passphrase: js['passphrase'],
+      fingerprint: js['fingerprint']
+    });
   }
 
+  public constructor(props: RequestAsciiProps) {
+    this.action = props.action;
+    this.passphrase._value.set(props.passphrase);
+    this.fingerprint = props.fingerprint;
+
+  }
 }

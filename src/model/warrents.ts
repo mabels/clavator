@@ -17,7 +17,7 @@ export class Warrents extends Container<Warrent> {
       // console.log('Warrents:elements:!valid');
       return false;
     }
-    const reduced = this.pallets
+    const reduced = this.pallets.map(i => i)
       .sort((a, b) => {
         if (a.warrent.value < b.warrent.value) {
           return -1;

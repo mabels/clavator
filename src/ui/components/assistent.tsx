@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react';
-import { observable } from 'mobx';
+import { observable, action } from 'mobx';
 import classnames from 'classnames';
 
 import { Dispatch, AppState, SimpleYubikey } from '../model';
@@ -18,11 +18,11 @@ export class AssistentState {
   // public completed: Actions.Steps;
   // public secretKey: ListSecretKeys.SecretKey;
 
-  @observable public warrents: Warrents;
-  @observable public simpleYubiKey: SimpleYubikey;
+  public warrents: Warrents;
+  public simpleYubiKey: SimpleYubikey;
   public diceWareTransaction: Message.Transaction<DiceWare>;
   public simpleYubiKeyTransaction: Message.Transaction<SimpleYubikey>;
-  @observable public diceWares: DiceWare[];
+  public diceWares: DiceWare[] = observable.array([]);
   public diceWareLoading: boolean;
 
   constructor() {
@@ -30,7 +30,6 @@ export class AssistentState {
     this.simpleYubiKey = null;
     this.diceWareTransaction = Message.newTransaction('DiceWares.Request');
     this.simpleYubiKeyTransaction = Message.newTransaction<SimpleYubikey>('SimpleYubiKey.run');
-    this.diceWares = [];
     this.diceWareLoading = false;
   }
 
@@ -39,17 +38,17 @@ export class AssistentState {
       return;
     }
     this.diceWareLoading = true;
-    channel.onMessage((cb, data) => {
+    channel.onMessage(action((header: Message.Header, data: string) => {
       // debugger;
       // console.log('DiceWare:', cb.action);
-      if (cb.action == 'DiceWares.Response') {
+      if (header.action == 'DiceWares.Response') {
         const diceWares = JSON.parse(data);
         this.diceWares.push.apply(
           this.diceWares, diceWares.map((dw: any) => (DiceWare.fill(dw))));
         console.log('DiceWares.Response', this.diceWares);
         this.diceWareLoading = false;
       }
-    });
+    }));
     channel.send(this.diceWareTransaction.asMsg());
   }
 
@@ -63,20 +62,21 @@ interface AssistentProps extends React.Props<Assistent> {
 export class Assistent extends React.Component<AssistentProps> {
   constructor(props: AssistentProps) {
     super(props);
-    this.state = {
+    // this.state = {
       // warrents: (new Warrents()).add(new Warrent()),
       // simpleYubiKey: null,
       // diceWareTransaction: Message.newTransaction('DiceWares.Request'),
       // simpleYubiKeyTransaction: Message.newTransaction<SimpleYubiKey>('SimpleYubiKey.run'),
       // diceWares: null
-    };
-    this.handleReady = this.handleReady.bind(this);
+    // };
+    // this.handleReady = this.handleReady.bind(this);
   }
 
   public componentDidMount(): void {
     this.props.appState.assistentState.load(this.props.appState.channel);
   }
 
+  @action
   private handleReady(): void {
     console.log('ready:', this.props.appState.assistentState.simpleYubiKey.toObj());
     this.props.appState.assistentState.simpleYubiKeyTransaction.data =
@@ -96,7 +96,7 @@ export class Assistent extends React.Component<AssistentProps> {
             this.props.appState.assistentState.simpleYubiKey.smartCardId = value;
           }}
           option={new Option<String>(ops[0], ops, 'unknown error')}/>
-      <button onClick={this.handleReady}>testing</button>
+      <button onClick={() => this.handleReady()}>testing</button>
     </div>;
   }
 
@@ -149,7 +149,8 @@ export class Assistent extends React.Component<AssistentProps> {
         warrents={assistentState.warrents}
         completed={() => {
           assistentState.simpleYubiKey = new SimpleYubikey(assistentState.warrents,
-            assistentState.diceWares, this.props.appState.cardStatusListState.cardStatusList[0].reader.cardid);
+            assistentState.diceWares,
+            this.props.appState.cardStatusListState.cardStatusList[0].reader.cardid);
         }} />
     </div>;
   }

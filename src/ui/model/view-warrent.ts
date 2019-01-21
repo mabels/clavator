@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, IObservableValue, computed } from 'mobx';
 import {
   ObjectId,
   Pallet,
@@ -10,8 +10,7 @@ export class ViewWarrent extends ObjectId implements Pallet {
   // public readonly contentReg: string;
   // public min: number;
   // public max: number;
-  @observable
-  public approved: boolean;
+  public _approved: IObservableValue<boolean>;
 
   public static fill(o: any): ViewWarrent {
     let ret = new ViewWarrent(new Warrent() /*, o['contentReg'] */);
@@ -25,9 +24,14 @@ export class ViewWarrent extends ObjectId implements Pallet {
     super('ViewWarrent');
     this.warrent = warrent;
     // this.contentReg = contentReg;
-    this.approved = false;
+    this._approved = observable.box(false);
     // this.min = 0;
     // this.max = 0;
+  }
+
+  @computed
+  public get approved(): boolean {
+    return this._approved.get();
   }
 
   // public createReg(): RegExp {

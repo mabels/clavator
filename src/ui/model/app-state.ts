@@ -2,9 +2,8 @@
 import * as WsChannel from '../model/ws-channel';
 import { CardStatusListState } from './card-status-list-state';
 import { KeyChainListState } from './key-chain-list-state';
-import { ProgressorState } from '../components/controls/progressor';
+import { ProgressorState } from '../components/controls';
 import { AssistentState } from '../components/assistent';
-import { observable } from 'mobx';
 
 export class AppState {
       public readonly channel: WsChannel.Dispatch;

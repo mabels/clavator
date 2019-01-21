@@ -33,10 +33,6 @@ import { DoublePassword } from '../../model';
 
 // }
 
-class InputDiceWareState {
-  // @observable public diceValue: StringValue;
-}
-
 export interface InputDiceWareProps extends InputPassPhraseProps {
   // value: StringValue;
   // diceWare: DiceWare;

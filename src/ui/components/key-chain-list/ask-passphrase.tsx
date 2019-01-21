@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react';
-import { observable } from 'mobx';
+import { observable, IObservableValue, computed, action } from 'mobx';
 
 import { MutableString } from '../../../model';
 
@@ -15,11 +15,15 @@ interface AskPassphraseProps extends React.Props<AskPassphrase> {
 export class AskPassphrase
   extends React.Component<AskPassphraseProps, {}> {
 
-  @observable
-  public value: string;
+  public _value: IObservableValue<string> = observable.box(undefined);
 
   constructor(props: AskPassphraseProps) {
     super(props);
+  }
+
+  @computed
+  public get value(): string {
+    return this._value.get();
   }
 
   public render(): JSX.Element {
@@ -29,13 +33,13 @@ export class AskPassphrase
         className="AskPassphrase" key={this.props.fingerprint}>
         <label>Passphrase:</label><input type="password"
           name={`ap-${this.props.key}`}
-          onChange={(e: any) => {
+          onChange={action((e: any) => {
             if (this.value) {
-              this.value = e.target.value;
+              this._value.set(e.target.value);
             } else {
-              this.props.passphrase.value = e.target.value;
+              this.props.passphrase._value.set(e.target.value);
             }
-          }} />
+          })} />
         <button type="button" onClick={(e: any) => {
           if (this.props.completed) {
             this.props.completed(this.value || this.props.passphrase.value);

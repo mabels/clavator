@@ -1,9 +1,10 @@
 import { Pallet } from './pallet';
-import { observable, computed } from 'mobx';
+import { observable, computed, action, IObservableArray } from 'mobx';
 import { assignOnError } from './helper';
+import { access } from 'fs-extra';
 
 export class Container<T extends Pallet> {
-  protected readonly pallets: T[] = observable.array([]);
+  protected readonly pallets: IObservableArray<T> = observable.array([]);
   public readonly factory: () => T;
 
   constructor(factory: () => T) {
@@ -24,6 +25,8 @@ export class Container<T extends Pallet> {
     }
     return ret;
   }
+
+  @action
   public add(i: T): Container<T> {
     this.pallets.push(i);
     // console.log('Container:Pallets:Push', this.pallets);
@@ -46,6 +49,7 @@ export class Container<T extends Pallet> {
     });
   }
 
+  @action
   public push(t: T): T {
     this.pallets.push(t);
     return t;
@@ -60,19 +64,26 @@ export class Container<T extends Pallet> {
   }
 
   public last(): T {
-    // uncool
-    return this.pallets.reverse().find(i => !!i);
+    let my = undefined;
+    this.pallets.forEach(i => {
+      if (i) {
+        my = i;
+      }
+    });
+    return my;
   }
 
   public get(idx: number): T {
     return this.pallets[idx];
   }
 
+  @action
   public del(idx: number): void {
     // delete this.pallets[idx];
     this.pallets[idx] = undefined;
   }
 
+  @action
   public pop(): void {
     // console.log('i-delLast:', this.length());
     this.pallets.pop();

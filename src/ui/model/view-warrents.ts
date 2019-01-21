@@ -10,7 +10,7 @@ export class ViewWarrents extends Container<ViewWarrent> {
     warrents.map(w => ret.add(new ViewWarrent(w/*, strReg*/)));
     if (warrents.length == 1) {
       // single warrents are approved per default
-      ret.first().approved = true;
+      ret.first()._approved.set(true);
     }
     return ret;
   }

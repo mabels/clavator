@@ -16,7 +16,7 @@ export class SimpleYubikey {
   public readonly passPhrase: PassPhrase;
   public readonly adminKey: PassPhrase;
   public readonly userKey: PassPhrase;
-  @observable public readonly readOnly: NestedFlag;
+  public readonly readOnly: NestedFlag;
 
   public static createDiceWare(warrents: Warrents): Warrents {
     const ret = new Warrents();
@@ -84,8 +84,8 @@ export class SimpleYubikey {
                              this.common.keyParams.masterLen.value,
                              ['cert']);
     kg.subKeys.forEach(ki => {
-      ki.type.value = this.common.keyParams.type.value;
-      ki.length.value = this.common.keyParams.subLen.value;
+      ki.type._value.set(this.common.keyParams.type.value);
+      ki.length._value.set(this.common.keyParams.subLen.value);
     });
     kg.password._value.set(this.passPhrase.getPassPhrase());
     return kg;
@@ -93,11 +93,11 @@ export class SimpleYubikey {
 
   public asKeyToYubiKey(fpr: string, slot_id: number): KeyToYubiKey {
     const ktyk = new KeyToYubiKey();
-    ktyk.card_id = this.smartCardId;
-    ktyk.admin_pin.pin = '12345678';
-    ktyk.fingerprint = fpr;
-    ktyk.slot_id = slot_id;
-    ktyk.passphrase.value = this.passPhrase.getPassPhrase();
+    ktyk._card_id.set(this.smartCardId);
+    ktyk.admin_pin._pin.set('12345678');
+    ktyk._fingerprint.set(fpr);
+    ktyk._slot_id.set(slot_id);
+    ktyk.passphrase._value.set(this.passPhrase.getPassPhrase());
     return ktyk;
   }
 

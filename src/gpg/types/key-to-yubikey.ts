@@ -1,28 +1,37 @@
 import { Pin } from './pin';
 import { MutableString } from '../../model';
-import { observable } from 'mobx';
+import { observable, IObservableValue, computed } from 'mobx';
 
 export class KeyToYubiKey {
-  public fingerprint: string;
-  public card_id: string;
-  @observable
-  public slot_id: number = null;
+  public readonly _fingerprint: IObservableValue<string> = observable.box('');
+  public readonly _card_id: IObservableValue<string> = observable.box('');
+  public readonly _slot_id: IObservableValue<number> = observable.box(undefined);
   public admin_pin: Pin = new Pin();
   public passphrase: MutableString = new MutableString();
 
   public static fill(js: any): KeyToYubiKey {
-    let ra = new KeyToYubiKey();
-    ra.fingerprint = js['fingerprint'];
-    ra.card_id = js['card_id'];
-    ra.slot_id = js['slot_id'];
-    ra.admin_pin.pin = js['admin_pin']['pin'];
+    const ra = new KeyToYubiKey();
+    ra._fingerprint.set(js['fingerprint']);
+    ra._card_id.set(js['card_id']);
+    ra._slot_id.set(js['slot_id']);
+    ra.admin_pin._pin.set(js['admin_pin']['pin']);
     ra.passphrase = MutableString.fill(js['passphrase']);
     return ra;
   }
 
-  constructor() {
-    this.fingerprint = '';
-    this.card_id = '';
+  @computed
+  public get slot_id(): number {
+    return this._slot_id.get();
+  }
+
+  @computed
+  public get card_id(): string {
+    return this._card_id.get();
+  }
+
+  @computed
+  public get fingerprint(): string {
+    return this._fingerprint.get();
   }
 
   public verify(): boolean {

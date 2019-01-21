@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
-import { IObservable, observable, IObservableValue } from 'mobx';
+import { IObservable, observable, IObservableValue, action } from 'mobx';
 import classnames from 'classnames';
 import {
   Warrents,
@@ -12,7 +12,7 @@ export interface RcWarrentsProps extends React.Props<RcWarrents> {
 }
 
 interface InputProps extends RcWarrentsProps {
-  done: boolean;
+  done: IObservableValue<boolean>;
 }
 
 function handlePressEnter(e: any, props: InputProps): void {
@@ -30,7 +30,7 @@ function Button(props: InputProps): JSX.Element {
   const clazz: any = { };
   clazz[coc] = true;
   return <button className={classnames(clazz)}
-    onClick={() => addClick(props)}>{coc}</button>;
+    onClick={action(() => addClick(props))}>{coc}</button>;
 }
 
 function checkOrComplete(warrents: Warrents, warrent: Warrent): string {
@@ -48,14 +48,14 @@ function addClick(props: InputProps): void {
       break;
     case 'done':
       props.warrents.pop();
-      props.done = true;
+      props.done.set(true);
       props.completed();
       break;
   }
 }
 
-function Input(props: InputProps): JSX.Element {
-  if (props.done) {
+const Input = observer((props: InputProps): JSX.Element  => {
+  if (props.done.get()) {
     return null ;
   }
   // console.log('-2-', this.props.warrents.last().key);
@@ -66,13 +66,15 @@ function Input(props: InputProps): JSX.Element {
          good: props.warrents.valid()
       })}
       value={props.warrents.last().warrent.value}
-      onKeyPress={(e) => handlePressEnter(e, props)}
-      onChange={(e: any) => {
+      onKeyPress={action((e) => handlePressEnter(e, props))}
+      onChange={action((e: any) => {
+        // console.log(`Warrent:Pre:${e.target.value}`, props.warrents.last().warrent.value);
         props.warrents.last().warrent._value.set(e.target.value);
-      }}
+        // console.log(`Warrent:Pos:${e.target.value}`, props.warrents.last().warrent.value);
+      })}
     /><Button {...props} />
   </li>;
-}
+});
 
 @observer export class RcWarrents extends
   React.Component<RcWarrentsProps, {}> {
@@ -87,7 +89,8 @@ function Input(props: InputProps): JSX.Element {
             if (idx == this.props.warrents.length - 1) {
               // console.log(`Input:Warrents:${idx}:${this.props.warrents.length}`);
               return <Input
-                done={this.done.get()}
+                key={i.objectId()}
+                done={this.done}
                 completed={this.props.completed}
                 warrents={this.props.warrents} />;
             } else {

@@ -16,21 +16,21 @@ export interface InputExpireDateProps {
 
 export const InputExpireDate = observer((props: InputExpireDateProps) => {
     return (
-      <div className={classnames({row: true, completed: this.props.completed})}>
+      <div className={classnames({row: true, completed: props.completed})}>
           <div className="three columns">
-            <label>{this.props.title}:</label><input type="date" name="expireDate"
+            <label>{props.title}:</label><input type="date" name="expireDate"
               className={classnames({
                  InputExpireDate: true,
-                 good: this.props.expireDate.valid(),
-                 readonly:  this.props.readOnly.is })}
-              disabled={this.props.readOnly.is}
-              readOnly={this.props.readOnly.is}
+                 good: props.expireDate.valid(),
+                 readonly:  props.readOnly.is })}
+              disabled={props.readOnly.is}
+              readOnly={props.readOnly.is}
               autoComplete="on"
               min={Date.now()}
               onChange={(e: any) => {
-                props.expireDate.value = new Date(e.target.value);
+                props.expireDate._value.set(new Date(e.target.value));
               }}
-              defaultValue={format_date(this.props.expireDate.value)}
+              defaultValue={format_date(props.expireDate.value)}
             />
           </div>
         </div>

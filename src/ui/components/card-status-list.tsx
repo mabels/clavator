@@ -8,9 +8,9 @@ import { AppState } from '../model';
 import { DialogChangePin } from './card-status-list/dialog-change-pin';
 import { DialogChangeAttributes } from './card-status-list/dialog-change-attributes';
 import { DialogResetYubiKey } from './card-status-list/dialog-reset-yubikey';
-import { observable, IObservableValue } from 'mobx';
+import { observable, IObservableValue, action } from 'mobx';
 
-export enum Dialogs {
+export enum CardStatusListDialogs {
   closed,
   changeAttributes,
   changeAdminPin,
@@ -24,35 +24,36 @@ interface CardStatusListProps extends React.Props<CardStatusList> {
 
 @observer
 export class CardStatusList extends React.Component<CardStatusListProps, {}> {
-  public dialog: IObservableValue<Dialogs> = observable(Dialogs.closed);
+  public readonly dialog: IObservableValue<CardStatusListDialogs> = observable.box(CardStatusListDialogs.closed);
 
-  public cardStatus?: IObservableValue<Gpg2CardStatus> = observable(undefined);
+  public readonly cardStatus?: IObservableValue<Gpg2CardStatus> = observable.box(undefined);
 
   constructor(props: CardStatusListProps) {
     super(props);
-    this.closeModal = this.closeModal.bind(this);
   }
 
   public changeDialog = (
-    dialog: Dialogs,
+    dialog: CardStatusListDialogs,
     cs: Gpg2CardStatus
   ): ((e: any) => void) => {
-    return (e: any) => {
+    return action((e: any) => {
       this.dialog.set(dialog);
       this.cardStatus.set(cs);
-    };
+    });
   }
 
+  /*
   public closeModal = (): void => {
     this.dialog.set(Dialogs.closed);
   }
+  */
 
   public changeToAttributesDialog = (
     cs: Gpg2CardStatus
   ): ((e: any) => void) => {
-    return (e: any) => {
+    return action((e: any) => {
       this.cardStatus.set(cs);
-    };
+    });
   }
 
   public render_actions(cs: Gpg2CardStatus): JSX.Element {
@@ -60,13 +61,13 @@ export class CardStatusList extends React.Component<CardStatusListProps, {}> {
       <td className="action">
         <a
           title="change-user-pin"
-          onClick={this.changeDialog(Dialogs.changeUserPin, cs)}
+          onClick={this.changeDialog(CardStatusListDialogs.changeUserPin, cs)}
         >
           <i className="fa fa-user" />
         </a>
         <a
           title="change-admin-pin"
-          onClick={this.changeDialog(Dialogs.changeAdminPin, cs)}
+          onClick={this.changeDialog(CardStatusListDialogs.changeAdminPin, cs)}
         >
           <i className="fa fa-superpowers" />
         </a>
@@ -78,7 +79,7 @@ export class CardStatusList extends React.Component<CardStatusListProps, {}> {
         </a>
         <a
           title="reset-yubikey"
-          onClick={this.changeDialog(Dialogs.resetYubikey, cs)}
+          onClick={this.changeDialog(CardStatusListDialogs.resetYubikey, cs)}
         >
           <i className="fa fa-trash" />
         </a>
@@ -88,46 +89,46 @@ export class CardStatusList extends React.Component<CardStatusListProps, {}> {
 
   public render_dialog(): JSX.Element {
     switch (this.dialog.get()) {
-      case Dialogs.changeAdminPin:
+      case CardStatusListDialogs.changeAdminPin:
         return (
           <DialogChangePin
             appState={this.props.appState}
             cardStatus={this.cardStatus.get()}
-            onClose={() => {
-              this.dialog.set(Dialogs.closed);
-            }}
+            onClose={action(() => {
+              this.dialog.set(CardStatusListDialogs.closed);
+            })}
             type={'admin'}
           />
         );
-      case Dialogs.changeUserPin:
+      case CardStatusListDialogs.changeUserPin:
         return (
           <DialogChangePin
             appState={this.props.appState}
             cardStatus={this.cardStatus.get()}
-            onClose={() => {
-              this.dialog.set(Dialogs.closed);
-            }}
+            onClose={action(() => {
+              this.dialog.set(CardStatusListDialogs.closed);
+            })}
             type={'unblock'}
           />
         );
-      case Dialogs.changeAttributes:
+      case CardStatusListDialogs.changeAttributes:
         return (
           <DialogChangeAttributes
             appState={this.props.appState}
             cardStatus={this.cardStatus.get()}
-            onClose={() => {
-              this.dialog.set(Dialogs.closed);
-            }}
+            onClose={action(() => {
+              this.dialog.set(CardStatusListDialogs.closed);
+            })}
           />
         );
-      case Dialogs.resetYubikey:
+      case CardStatusListDialogs.resetYubikey:
         return (
           <DialogResetYubiKey
             appState={this.props.appState}
             cardStatus={this.cardStatus.get()}
-            onClose={() => {
-              this.dialog.set(Dialogs.closed);
-            }}
+            onClose={action(() => {
+              this.dialog.set(CardStatusListDialogs.closed);
+            })}
           />
         );
     }
@@ -140,7 +141,7 @@ export class CardStatusList extends React.Component<CardStatusListProps, {}> {
       <div className="CardStatusList">
         {this.props.appState.cardStatusListState.cardStatusList.map(
           (cs: Gpg2CardStatus, idx: number) => {
-            console.log('card-status-list:map');
+            // console.log('card-status-list:map');
             return (
               <table key={cs.serial}>
                 <tbody>

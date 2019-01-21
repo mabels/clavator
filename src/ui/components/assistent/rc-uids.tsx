@@ -27,12 +27,6 @@ export class RcUids extends
     }
   }
 
-  private handleAddUid = (/*idx: number */): void => {
-    let uid = new KeyGenUid();
-    uid.name._value.set(this.props.uids.last().name.value);
-    this.props.uids.add(uid);
-  }
-
   private render_delete_button(idx: number): JSX.Element {
     if (this.props.uids.length > 1) {
       return (
@@ -40,6 +34,12 @@ export class RcUids extends
       );
     }
     return null;
+  }
+
+  private handleAddUid = (/*idx: number */): void => {
+    let uid = new KeyGenUid();
+    uid.name._value.set(this.props.uids.last().name.value);
+    this.props.uids.add(uid);
   }
 
   private renderUid(idx: number, uid: KeyGenUid): JSX.Element {

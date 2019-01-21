@@ -24,7 +24,7 @@ function actionCreateKeyOption<T>(props: CreateKeyOptionProps<T>): JSX.Element {
       defaultValue={value}
       onChange={(e: any) => {
         props.ops.forEach(op => {
-          op.value = e.target.value;
+          op._value.set(e.target.value);
         });
       }}
     >

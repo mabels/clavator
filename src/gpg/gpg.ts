@@ -539,9 +539,10 @@ export class Gpg {
     ktyk: KeyToYubiKey,
     cb: (gpgYubiKey: Gpg, res: Result) => void
   ): void {
-    let rqa = new RequestAscii();
-    rqa.fingerprint = ktyk.fingerprint;
-    rqa.passphrase = ktyk.passphrase;
+    const rqa = new RequestAscii({
+      fingerprint: ktyk.fingerprint,
+      passphrase: ktyk.passphrase.value,
+    });
     this.pemPrivateKey(rqa, async (res: Result) => {
       if (res.exitCode != 0) {
         cb(null, res);

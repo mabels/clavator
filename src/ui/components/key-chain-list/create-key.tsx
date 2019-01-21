@@ -2,11 +2,12 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
 
-import { NestedFlag } from '../../../model';
+import { NestedFlag, Warrents, Warrent } from '../../../model';
 import { KeyGen, KeyGenUid, SecretKey } from '../../../gpg/types';
 import {
   PassPhrase,
-  AppState
+  AppState,
+  CharFormat
 } from '../../model';
 import { Message } from '../../../model';
 import { CreateKeyForm } from './create-key-form';
@@ -24,21 +25,28 @@ interface CreateKeyProps extends React.Props<CreateKey> {
 @observer
 export class CreateKey extends React.Component<CreateKeyProps, {}> {
 
-  @observable
-  public keyGen: KeyGen;
+  public readonly keyGen: KeyGen;
+  public readonly passPhrase: PassPhrase;
   public transaction: Message.Transaction<KeyGen>;
 
   constructor(props: CreateKeyProps) {
     super(props);
-    this.keyGen = KeyGen.withSubKeys(3);
-    this.keyGen.uids.add(new KeyGenUid());
+    if (props.secretKey) {
+      this.keyGen = props.secretKey.toKeyGen(3);
+    } else {
+      this.keyGen = KeyGen.withSubKeys(3);
+      this.keyGen.uids.add(new KeyGenUid());
+    }
+    this.passPhrase = PassPhrase.createPerWarrent(
+      new Warrents([new Warrent('me')]), [], CharFormat.wildcard(),
+      'password error', '', 1);
+
   }
 
   public componentWillMount(): void {
-    if (this.props.secretKey) {
-      this.keyGen = this.props.secretKey.toKeyGen(3);
-      console.log('CreateKey:componentWillMount', this.props.secretKey);
-    }
+    // if (this.props.secretKey) {
+    //   console.log('CreateKey:componentWillMount', this.props.secretKey);
+    // }
     this.props.appState.channel.onMessage((h: Message.Header, data: string) => {
 // console.log('CreateKey:', h, this.state.transaction.header)
       if (this.transaction &&
@@ -61,6 +69,7 @@ export class CreateKey extends React.Component<CreateKeyProps, {}> {
       <div className="row CreateKey" >
         <CreateKeyForm
           appState={this.props.appState}
+          passPhrase={this.passPhrase}
           createKey={this}
           renderSubmit={this.props.renderSubmit}
           transaction={this.transaction}

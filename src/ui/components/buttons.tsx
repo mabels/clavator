@@ -4,20 +4,25 @@ import { observer } from 'mobx-react';
 import { SecretKey, GpgKey } from '../../gpg/types';
 import { SubButtons } from './sub-buttons';
 import { SecButtons } from './sec-buttons';
+import { IObservableValue } from 'mobx';
+import { KeyChainListDialogs } from './key-chain-list';
+import { AppState } from '../model';
 
 export interface BottonsProps {
-  clazz: string;
-  sk: SecretKey;
-  gpgKey: GpgKey;
-  idx: number;
+  readonly appState: AppState;
+  readonly clazz: string;
+  readonly sk: SecretKey;
+  readonly gpgKey: GpgKey;
+  readonly dialogs: IObservableValue<KeyChainListDialogs>;
+  readonly idx: number;
 }
 
 export const Buttons = observer(
   (props: BottonsProps): JSX.Element => {
     if (props.clazz == 'ssb') {
-      return <SubButtons sk={props.sk} gpgKey={props.gpgKey} idx={props.idx} />;
+      return <SubButtons dialogs={props.dialogs} sk={props.sk} gpgKey={props.gpgKey} idx={props.idx} />;
     } else {
-      return <SecButtons sk={props.sk} gpgKey={props.gpgKey} />;
+      return <SecButtons appState={props.appState} dialogs={props.dialogs} sk={props.sk} gpgKey={props.gpgKey} />;
     }
   }
 );

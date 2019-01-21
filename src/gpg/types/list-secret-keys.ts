@@ -49,9 +49,9 @@ export class GpgUid {
 
   public toKeyGenUid(): KeyGenUid {
     let ret = new KeyGenUid();
-    ret.comment.value.set(this.comment);
-    ret.email.value.set(this.email);
-    ret.name.value.set(this.name);
+    ret.comment._value.set(this.comment);
+    ret.email._value.set(this.email);
+    ret.name._value.set(this.name);
     return ret;
   }
 
@@ -154,8 +154,8 @@ export class GpgKey {
 
   public toKeyGenInfo(): KeyInfo {
     let ret = new KeyInfo();
-    ret.length.value = this.bits;
-    ret.type.value = this.cipher;
+    ret.length._value.set(this.bits);
+    ret.type._value.set(this.cipher);
     // ret.usage.values = this.
     return ret;
   }
@@ -247,13 +247,13 @@ export class SecretKey extends GpgKey {
 
   public toKeyGen(subKeys = 3): KeyGen {
     let ret = new KeyGen();
-    ret.keyInfo.length.value = this.bits || 4096;
-    ret.keyInfo.type.value = this.cipher || 'RSA';
-    ret.keyInfo.usage.values = ['cert'];
+    ret.keyInfo.length._value.set(this.bits || 4096);
+    ret.keyInfo.type._value.set(this.cipher || 'RSA');
+    ret.keyInfo.usage.values.replace(['cert']);
     if (this.expires != null && this.expires > 0) {
-      ret.expireDate.value.set(new Date(this.expires * 1000));
+      ret.expireDate._value.set(new Date(this.expires * 1000));
     } else {
-      ret.expireDate.value.set(expireDate());
+      ret.expireDate._value.set(expireDate());
     }
     for (let sb of this.subKeys) {
       ret.subKeys.push(sb.toKeyGenInfo());

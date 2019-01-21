@@ -13,7 +13,6 @@ export class BooleanValue extends ObjectId implements Validatable {
   public constructor(errorText: string) {
     super('BooleanValue');
     this.errorText = errorText;
-    this._value.set(true);
   }
 
   @computed

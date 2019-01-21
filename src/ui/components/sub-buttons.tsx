@@ -1,25 +1,22 @@
 import * as React from 'react';
 import { SecretKey, GpgKey } from '../../gpg/types';
-import { Dialogs } from './key-chain-list';
+import { KeyChainListDialogs } from './key-chain-list';
+import { IObservableValue, action } from 'mobx';
 
 function sendToCard(
-  gpgKey: GpgKey,
-  idx: number
+  dialog: IObservableValue<KeyChainListDialogs>
 ): React.EventHandler<React.MouseEvent<HTMLAnchorElement>> {
-  return (() => {
+  return action(() => {
     console.log('sendToCard:Activate');
-    this.setState(
-      Object.assign({}, this.state, {
-        dialog: Dialogs.sendToCard,
-      })
-    );
-  }).bind(this);
+    dialog.set(KeyChainListDialogs.sendToCard);
+  });
 }
 
 export interface SubButtonsProps {
-  sk: SecretKey;
-  gpgKey: GpgKey;
-  idx: number;
+  readonly sk: SecretKey;
+  readonly gpgKey: GpgKey;
+  readonly dialogs: IObservableValue<KeyChainListDialogs>;
+  readonly idx: number;
 }
 
 export function SubButtons(props: SubButtonsProps): JSX.Element {
@@ -27,8 +24,7 @@ export function SubButtons(props: SubButtonsProps): JSX.Element {
     <td className="action">
       <a
         title="Send Key to Smartcard"
-        onClick={() => sendToCard(props.gpgKey, props.idx)}
-      >
+        onClick={sendToCard(props.dialogs)}>
         <i className="fa fa-credit-card" />
       </a>
     </td>

@@ -3,12 +3,9 @@ import { ObjectId, StringValue, Validatable } from '../../model';
 import { MinMax } from './min-max';
 
 export class PasswordControl extends ObjectId implements Validatable {
-  @observable public readonly password: StringValue;
-  // @observable public readonly: boolean;
-  // @observable public readable: boolean;
+  public readonly password: StringValue;
   public prevPassword: string;
   public readonly minMax: MinMax;
-  // public readonly match: RegExp;
 
   constructor(minMax: MinMax, e: string) {
     super('PasswordControl');

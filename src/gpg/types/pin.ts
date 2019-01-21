@@ -1,18 +1,18 @@
-import { observable } from 'mobx';
+import { observable, computed, IObservableValue } from 'mobx';
 
 export class Pin {
-  @observable
-  public pin: string;
+  public readonly _pin: IObservableValue<string> = observable.box('');
   public match: RegExp = /.+/;
 
   public static fill(js: any): Pin {
-    let pin = new Pin();
-    pin.pin = js['pin'];
+    const pin = new Pin();
+    pin._pin.set(js['pin']);
     return pin;
   }
 
-  constructor() {
-    this.pin = '';
+  @computed
+  public get pin(): string {
+    return this._pin.get();
   }
 
   public verify(): boolean {
@@ -28,7 +28,7 @@ export class Pin {
 }
 
 export function AdminPin(): Pin {
-  let ret = new Pin();
+  const ret = new Pin();
   ret.match = /[0-9]{8}/;
   return ret;
 }

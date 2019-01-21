@@ -3,13 +3,13 @@ import * as ReactModal from 'react-modal';
 import { AppState } from './model/app-state';
 import { observer } from 'mobx-react';
 import { Progressor, ProgressorState } from './components/controls/progressor';
+import { action } from 'mobx';
 
 export interface ProgressorProps {
   progressState: ProgressorState;
 }
 
-export const AppProgressor = observer(
-  (props: ProgressorProps): JSX.Element => {
+export const AppProgressor = observer((props: ProgressorProps): JSX.Element => {
     /*
     if (!this.state.openProgressor) {
       return null;
@@ -26,9 +26,9 @@ export const AppProgressor = observer(
         shouldCloseOnOverlayClick={true}
       >
         <i
-          onClick={() => {
+          onClick={action(() => {
             props.progressState.open.set(false);
-          }}
+          })}
           className="closeBox fa fa-close"
         />
         <Progressor

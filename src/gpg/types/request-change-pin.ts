@@ -1,10 +1,9 @@
 import { Pin } from './pin';
-import { computed, observable } from 'mobx';
+import { computed, observable, IObservableValue } from 'mobx';
 
 export class RequestChangePin {
   public action: string;
-  @observable
-  public app_id: string;
+  public readonly _app_id: IObservableValue<string> = observable.box(undefined);
   public admin_pin: Pin = new Pin();
   public new_pin: Pin = new Pin();
   public new_pin_verify: Pin = new Pin();
@@ -12,14 +11,18 @@ export class RequestChangePin {
   public static fill(js: any): RequestChangePin {
     let ra = new RequestChangePin();
     ra.changeAction(js['action']);
-    ra.app_id = js['app_id'];
-    ra.admin_pin.pin = js['admin_pin']['pin'];
-    ra.new_pin.pin = js['new_pin']['pin'];
-    ra.new_pin_verify.pin = js['new_pin_verify']['pin'];
+    ra._app_id.set(js['app_id']);
+    ra.admin_pin._pin.set(js['admin_pin']['pin']);
+    ra.new_pin._pin.set(js['new_pin']['pin']);
+    ra.new_pin_verify._pin.set(js['new_pin_verify']['pin']);
     return ra;
   }
 
   @computed
+  public get app_id(): string {
+    return this._app_id.get();
+  }
+
   public changeAction(action: string): RequestChangePin {
     this.action = action;
     this.admin_pin.match = /^[0-9]{8}$/;
