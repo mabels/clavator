@@ -44,7 +44,8 @@ export class CardStatusListState implements WsChannel {
     }
   }
 
+  @action
   public onClose(e: CloseEvent): void {
-    this.cardStatusList.length = 0; // = [];
+    this.cardStatusList.clear(); // = [];
   }
 }

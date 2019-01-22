@@ -17,7 +17,7 @@ export enum KeyChainListDialogs {
 }
 
 export interface KeyChainListProps extends React.Props<KeyChainList> {
-  appState: AppState;
+  readonly appState: AppState;
 }
 
 @observer
@@ -28,7 +28,6 @@ export class KeyChainList extends React.Component<
 
   public readonly dialogs: IObservableValue<KeyChainListDialogs>;
   public secKey: GpgKey;
-  public appState: AppState;
   public idx: number;
   public action: IObservableValue<string>;
   public respondAscii?: RespondAscii;
@@ -79,7 +78,7 @@ export class KeyChainList extends React.Component<
                   <tbody>
                     <KeyChainListKey
                       key={-1}
-                      appState={this.appState}
+                      appState={this.props.appState}
                       dialogs={this.dialogs}
                       action={this.action}
                       clazz="sec"
@@ -89,7 +88,7 @@ export class KeyChainList extends React.Component<
                     {sk.subKeys.map((ssb, idxx) =>
                       <KeyChainListKey
                         key={idxx}
-                        appState={this.appState}
+                        appState={this.props.appState}
                         dialogs={this.dialogs}
                         action={this.action}
                         clazz="ssb"

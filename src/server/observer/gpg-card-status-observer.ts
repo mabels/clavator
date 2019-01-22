@@ -47,12 +47,14 @@ export class GpgCardStatusObserver {
 
   public action(wss = this.observer.wss): void {
     this.actionCount++;
+    /*
     console.log(
       'Card-Status: actionCount:',
       this.actionCount,
       this.observer.wss.length,
       this.gpg
     );
+    */
     if (!wss.length) {
       return;
     }

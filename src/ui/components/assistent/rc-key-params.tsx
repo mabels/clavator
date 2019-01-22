@@ -8,9 +8,9 @@ import { RcOption } from '../controls';
 
 export interface RcKeyParamsProps {
   // extends React.Props<RcKeyParams> {
-  keyParams: KeyParams;
-  readOnly: NestedFlag;
-  completed: boolean;
+  readonly keyParams: KeyParams;
+  readonly readOnly: NestedFlag;
+  readonly completed: boolean;
 }
 
 export function RcKeyParams(props: RcKeyParamsProps): JSX.Element {
@@ -19,31 +19,31 @@ export function RcKeyParams(props: RcKeyParamsProps): JSX.Element {
       className={classnames({
         row: true,
         RcKeyParams: true,
-        completed: this.props.completed
+        completed: props.completed
       })}
     >
       <div className="three columns">
         <RcOption
           name="KeyType"
           label="Key-Type"
-          option={this.props.keyParams.type}
-          readOnly={this.props.readOnly}
+          option={props.keyParams.type}
+          readOnly={props.readOnly}
         />
       </div>
       <div className="three columns">
         <RcOption
           name="MasterKeyLength"
           label="Master-Key-Length"
-          option={this.props.keyParams.masterLen}
-          readOnly={this.props.readOnly}
+          option={props.keyParams.masterLen}
+          readOnly={props.readOnly}
         />
       </div>
       <div className="three columns">
         <RcOption
           name="SubKeyLength"
           label="Sub-Key-Length"
-          option={this.props.keyParams.subLen}
-          readOnly={this.props.readOnly}
+          option={props.keyParams.subLen}
+          readOnly={props.readOnly}
         />
       </div>
     </div>
