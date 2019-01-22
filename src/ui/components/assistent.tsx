@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 import { observer } from 'mobx-react';
-import { observable, action } from 'mobx';
+import { observable, action, IObservableArray, IObservableValue } from 'mobx';
 import classnames from 'classnames';
 
 import { Dispatch, AppState, SimpleYubikey } from '../model';
@@ -18,38 +18,47 @@ export class AssistentState {
   // public completed: Actions.Steps;
   // public secretKey: ListSecretKeys.SecretKey;
 
-  public warrents: Warrents;
-  public simpleYubiKey: SimpleYubikey;
+  public readonly warrents: Warrents;
+  public readonly _simpleYubiKey: IObservableValue<SimpleYubikey>;
   public diceWareTransaction: Message.Transaction<DiceWare>;
   public simpleYubiKeyTransaction: Message.Transaction<SimpleYubikey>;
-  public diceWares: DiceWare[] = observable.array([]);
-  public diceWareLoading: boolean;
+  public readonly diceWares: IObservableArray<DiceWare> = observable.array([]);
+  public readonly diceWareLoading: IObservableValue<boolean>;
 
   constructor() {
     this.warrents = (new Warrents()).add(new Warrent());
-    this.simpleYubiKey = null;
+    this._simpleYubiKey = observable.box();
     this.diceWareTransaction = Message.newTransaction('DiceWares.Request');
     this.simpleYubiKeyTransaction = Message.newTransaction<SimpleYubikey>('SimpleYubiKey.run');
-    this.diceWareLoading = false;
+    this.diceWareLoading = observable.box(false);
   }
 
+  public get simpleYubiKey(): SimpleYubikey {
+    return this._simpleYubiKey.get();
+  }
+
+  @action
   public load(channel: Dispatch): void {
-    if (this.diceWares.length || this.diceWareLoading) {
+    console.log(`load-DiceWare:1`);
+    if (this.diceWares.length || this.diceWareLoading.get()) {
       return;
     }
-    this.diceWareLoading = true;
+    this.diceWareLoading.set(true);
     channel.onMessage(action((header: Message.Header, data: string) => {
       // debugger;
-      // console.log('DiceWare:', cb.action);
+      console.log('DiceWare:Action:1:', header.action);
       if (header.action == 'DiceWares.Response') {
+        console.log('DiceWare:Action:2:', header.action);
         const diceWares = JSON.parse(data);
         this.diceWares.push.apply(
           this.diceWares, diceWares.map((dw: any) => (DiceWare.fill(dw))));
         console.log('DiceWares.Response', this.diceWares);
-        this.diceWareLoading = false;
+        this.diceWareLoading.set(false);
       }
     }));
+    console.log(`load-DiceWare:2`);
     channel.send(this.diceWareTransaction.asMsg());
+    console.log(`load-DiceWare:3`);
   }
 
 }
@@ -102,7 +111,7 @@ export class Assistent extends React.Component<AssistentProps> {
 
   private renderSimpleCreateKey(assistentState: AssistentState): JSX.Element {
     // console.log(this.state.warrents.length(), this.state.warrents.valid());
-    if (!(assistentState.simpleYubiKey && assistentState.diceWares)) {
+    if (!(assistentState.simpleYubiKey && assistentState.diceWares.length)) {
       return;
     }
     // console.log('renderSimpleCreateKey', this.state.simpleYubiKey.common.approvableWarrents.non());
@@ -140,18 +149,18 @@ export class Assistent extends React.Component<AssistentProps> {
   }
 
   private renderWarrents(assistentState: AssistentState): JSX.Element {
-    if (assistentState.simpleYubiKey && assistentState.diceWares) {
+    if (assistentState.simpleYubiKey && assistentState.diceWares.length) {
       return;
     }
     return <div>
       <label>WarrentsList:</label>
       <RcWarrents
         warrents={assistentState.warrents}
-        completed={() => {
-          assistentState.simpleYubiKey = new SimpleYubikey(assistentState.warrents,
+        completed={action(() => {
+          assistentState._simpleYubiKey.set(new SimpleYubikey(assistentState.warrents,
             assistentState.diceWares,
-            this.props.appState.cardStatusListState.cardStatusList[0].reader.cardid);
-        }} />
+            this.props.appState.cardStatusListState.cardStatusList[0].reader.cardid));
+        })} />
     </div>;
   }
 

@@ -30,6 +30,7 @@ export const DiceWareInputPassPhrase = observer(
             label={props.label}
             diceWares={props.diceWares}
             passPhrase={props.passPhrase}
+            readOnly={props.readOnly}
           />
         }
         passPhrase={props.passPhrase}

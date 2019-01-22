@@ -23,7 +23,7 @@ export class DiceWareDispatcher implements Dispatcher {
   }
 
   private static moduleToDiceWare(): DiceWare[] {
-    if (DiceWareDispatcher.diceWares) {
+    if (DiceWareDispatcher.diceWares.length > 0) {
       return DiceWareDispatcher.diceWares;
     }
     Array.prototype.push.apply(
@@ -57,7 +57,7 @@ export class DiceWareDispatcher implements Dispatcher {
       // ws.send(Message.prepare('Progressor.Clavator', Progress.fail('Ohh')))
       return false;
     }
-    let header = Message.toHeader(m, 'Progressor.Clavator');
+    const header = Message.toHeader(m, 'Progressor.Clavator');
     DiceWareDispatcher.get()
       .then(diceWares => {
         console.log(JSON.stringify(diceWares[0]));

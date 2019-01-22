@@ -5,13 +5,17 @@ import { observer } from 'mobx-react';
 import { Dispatch } from '../../model';
 import { GpgKey } from '../../../gpg/types';
 import { ReadAsciiRespond } from '../controls';
-import { IObservableValue } from 'mobx';
+import { IObservableValue, IObservableArray } from 'mobx';
+import { MutableString } from '../../../model';
+import { KeyChainDialogQItem } from './key-chain-list';
 
 interface DialogRenderAsciiProps {
   readonly onClose: () => void;
   readonly channel: Dispatch;
-  readonly secKey: GpgKey;
-  readonly action: IObservableValue<string>;
+  readonly dialogQ: IObservableArray<KeyChainDialogQItem>;
+  readonly current: KeyChainDialogQItem;
+  // readonly action: IObservableValue<string>;
+  readonly passPhrase: MutableString;
 }
 
 export const DialogRenderAscii = observer((props: DialogRenderAsciiProps) => {
@@ -23,11 +27,12 @@ export const DialogRenderAscii = observer((props: DialogRenderAsciiProps) => {
         contentLabel="Modal"
       >
         <i onClick={props.onClose} className="closeBox fa fa-close"></i>
-        <h4>{props.action}:{props.secKey.fingerPrint.fpr}</h4>
+        <h4>{props.current.action}:{props.current.secKey.fingerPrint.fpr}</h4>
         <ReadAsciiRespond
-          action={props.action.get()}
+          action={props.current.action}
           channel={props.channel}
-          secKey={props.secKey}
+          secKey={props.current.secKey}
+          passPhrase={props.passPhrase}
          />
       </ReactModal>
     );

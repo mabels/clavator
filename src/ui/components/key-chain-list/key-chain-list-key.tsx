@@ -1,43 +1,44 @@
 import * as React from 'react';
 import { SecretKey, GpgKey } from '../../../gpg/types';
-import { Buttons } from '../buttons';
 import { FormatDate } from '../controls';
-import { IObservableValue } from 'mobx';
-import { KeyChainListDialogs } from './key-chain-list';
+import { IObservableValue, IObservableArray } from 'mobx';
+import { KeyChainListDialogs, KeyChainDialogQItem } from './key-chain-list';
 import { AppState } from '../../model';
+import { Buttons } from './buttons';
 
 export interface KeyChainListKeyProps {
   readonly appState: AppState;
   readonly clazz: string;
-  readonly sk: SecretKey;
-  readonly gpgKey: GpgKey;
+  readonly selectedKey: SecretKey | GpgKey;
   readonly idx: number;
-  readonly dialogs: IObservableValue<KeyChainListDialogs>;
-  readonly action: IObservableValue<string>;
+  readonly dialogQ: IObservableArray<KeyChainDialogQItem>;
+  // readonly dialogs: IObservableValue<KeyChainListDialogs>;
+  // readonly dialogSecKey: IObservableValue<SecretKey | GpgKey>;
+  // readonly action: IObservableValue<string>;
 }
 
 export function KeyChainListKey(props: KeyChainListKeyProps): JSX.Element {
     return (
-      <tr className={props.clazz} key={props.gpgKey.key}>
+      <tr className={props.clazz} key={props.selectedKey.key}>
         <Buttons
           appState={props.appState}
-          dialogs={props.dialogs}
+          dialogQ={props.dialogQ}
           clazz={props.clazz}
-          sk={props.sk}
+          // dialogSecKey={props.dialogSecKey}
           idx={props.idx}
-          gpgKey={props.gpgKey} />
-        <td>{props.gpgKey.type}</td>
-        <td>{props.gpgKey.trust}</td>
-        <td>{props.gpgKey.cipher}</td>
-        <td>{props.gpgKey.bits}</td>
-        <td>{props.gpgKey.keyId}</td>
+          selectedKey={props.selectedKey} />
+        <td>{props.selectedKey.type}</td>
+        <td>{props.selectedKey.trust}</td>
+        <td>{props.selectedKey.cipher}</td>
+        <td>{props.selectedKey.bits}</td>
+        <td>{props.selectedKey.keyId}</td>
         <td>
-          <FormatDate ticks={props.gpgKey.created} />
+          <FormatDate ticks={props.selectedKey.created} />
         </td>
         <td>
-          <FormatDate ticks={props.gpgKey.expires} />
+          <FormatDate ticks={props.selectedKey.expires} />
         </td>
-        <td>{props.gpgKey.uses}</td>
+        <td>{props.selectedKey.uses}</td>
       </tr>
     );
   }

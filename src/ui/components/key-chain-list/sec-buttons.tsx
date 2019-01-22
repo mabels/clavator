@@ -1,20 +1,21 @@
 import * as React from 'react';
-import { IObservableValue, action } from 'mobx';
+import { IObservableValue, action, IObservableArray } from 'mobx';
 import { propTypes } from 'mobx-react';
 
-import { SecretKey, GpgKey } from '../../gpg/types';
-import { KeyChainListDialogs } from './key-chain-list';
+import { SecretKey, GpgKey } from '../../../gpg/types';
+import { KeyChainListDialogs, KeyChainDialogQItem } from './key-chain-list';
 import {
   RequestAscii,
   Message,
-} from '../../model';
-import { AppState } from '../model';
+} from '../../../model';
+import { AppState } from '../../model';
 
 export interface SecButtonsProps {
+  // readonly action: IObservableValue<string>;
   readonly appState: AppState;
-  readonly sk: SecretKey;
-  readonly gpgKey: GpgKey;
-  readonly dialogs: IObservableValue<KeyChainListDialogs>;
+  readonly dialogQ: IObservableArray<KeyChainDialogQItem>;
+  readonly selectedKey: SecretKey;
+  // readonly dialogs: IObservableValue<KeyChainListDialogs>;
   readonly pp?: string;
 }
 
@@ -24,13 +25,21 @@ function processAscii(props: SecButtonsProps,
   pp: string = undefined
 ): void {
   const ra = new RequestAscii({
-    fingerprint: props.gpgKey.fingerPrint.fpr,
+    fingerprint: props.selectedKey.fingerPrint.fpr,
     passphrase: pp,
     action: act
   });
 
-  props.dialogs.set(dialog);
-  // props.action.set(action);
+  props.dialogQ.push({
+    dialogs: dialog,
+    action: act,
+    secKey: props.selectedKey
+  });
+  // props.dialogSecKey.set(props.selectedKey);
+  // props.action.set(act);
+  // props.appState.channel.send(
+  //  Message.newTransaction('RequestAscii', ra).asMsg()
+  // );
   /*
       key: key,
   props.key.set(props.gpgKey);
@@ -53,9 +62,6 @@ function processAscii(props: SecButtonsProps,
     })
   );
   */
-  props.appState.channel.send(
-    Message.newTransaction('RequestAscii', ra).asMsg()
-  );
 }
 
 function requestAscii(props: SecButtonsProps, act: string): () => void {
@@ -66,22 +72,18 @@ function requestAscii(props: SecButtonsProps, act: string): () => void {
 
 function requestAsciiWithPassphrase(props: SecButtonsProps, act: string): () => void {
   return action(() => {
-    props.dialogs.set(KeyChainListDialogs.askPassPhraseAscii);
-    // props.action.set(action);
-    /*
-        key: key,
-        passPhrase: new MutableString(),
-        respondAscii: null
-      })
-    );
-    */
+    props.dialogQ.push({
+      dialogs: KeyChainListDialogs.askPassPhraseAscii,
+      action: act,
+      secKey: props.selectedKey
+    });
   });
 }
 
 function deleteSecretKey(props: SecButtonsProps): void {
-  if (confirm(`Really delete ${props.sk.keyId} <${props.sk.uids[0].email}>?`)) {
+  if (confirm(`Really delete ${props.selectedKey.keyId} <${props.selectedKey.uids[0].email}>?`)) {
     props.appState.channel.send(
-      Message.newTransaction('DeleteSecretKey', props.sk.fingerPrint).asMsg()
+      Message.newTransaction('DeleteSecretKey', props.selectedKey.fingerPrint).asMsg()
     );
   }
 }

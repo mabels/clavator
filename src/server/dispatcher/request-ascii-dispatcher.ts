@@ -22,13 +22,12 @@ export class RequestAsciiDispatcher implements Dispatcher {
   ): (res: Result) => void {
     return (res: Result) => {
       // ws.send(Message.prepare('Progressor.Clavator', Progress.ok(res.stdOut)));
-      console.log('send:RespondAscii');
-      ws.send(
-        Message.prepare(
+      const msg = Message.prepare(
           header.setAction('RespondAscii'),
           new RespondAscii(req.action, req.fingerprint, res.stdOut)
-        )
-      );
+        );
+      console.log('send:RespondAscii:', msg);
+      ws.send(msg);
     };
   }
 

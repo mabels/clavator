@@ -2,12 +2,12 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 
 import { GpgKey, SecretKey } from '../../../gpg/types';
-import { RespondAscii } from '../../../model';
+import { RespondAscii, MutableString } from '../../../model';
 import { AppState } from '../../model';
 import { KeyChainListModal } from './key-chain-list-modal';
 import { KeyChainListUid } from './key-chain-list-uid';
 import { KeyChainListKey } from './key-chain-list-key';
-import { observable, IObservableValue } from 'mobx';
+import { observable, IObservableValue, IObservableArray } from 'mobx';
 
 export enum KeyChainListDialogs {
   closed,
@@ -20,21 +20,33 @@ export interface KeyChainListProps extends React.Props<KeyChainList> {
   readonly appState: AppState;
 }
 
+export interface KeyChainDialogQItem {
+  readonly dialogs: KeyChainListDialogs;
+  readonly action: string;
+  readonly secKey?: SecretKey | GpgKey;
+  readonly idx?: number;
+}
+
 @observer
 export class KeyChainList extends React.Component<
   KeyChainListProps,
   {}
 > {
 
-  public readonly dialogs: IObservableValue<KeyChainListDialogs>;
-  public secKey: GpgKey;
-  public idx: number;
-  public action: IObservableValue<string>;
-  public respondAscii?: RespondAscii;
+  public dialogQ: IObservableArray<KeyChainDialogQItem> = observable.array();
+  // public readonly dialogs: IObservableValue<KeyChainListDialogs>;
+  // public readonly dialogSecKey: IObservableValue<SecretKey>;
+  // public idx: number;
+  // public readonly action: IObservableValue<string>;
+  // public respondAscii?: RespondAscii;
+  public readonly passPhrase: MutableString;
 
   constructor(props: KeyChainListProps) {
     super(props);
-    this.dialogs = observable.box(KeyChainListDialogs.closed);
+    // this.dialogs = observable.box(KeyChainListDialogs.closed);
+    // this.dialogSecKey = observable.box(undefined);
+    // this.action = observable.box();
+    this.passPhrase = new MutableString();
   }
 
   /*
@@ -63,37 +75,36 @@ export class KeyChainList extends React.Component<
     return (
       <div className="KeyChainList">
         <KeyChainListModal
-          dialogs={this.dialogs}
-          secKey={this.secKey}
+          dialogQ={this.dialogQ}
           appState={this.props.appState}
+          /*
+          dialogSecKey={this.dialogSecKey}
           idx={this.idx}
           action={this.action}
+          */
+          passPhrase={this.passPhrase}
         />
         {this.props.appState.keyChainListState.keyChainList.map(
-          (sk: SecretKey, idx: number) => {
+          (secKey: SecretKey, idx: number) => {
             return (
-              <div key={sk.key}>
-                <table>{sk.uids.map(uid => <KeyChainListUid uid={uid} key={uid.id} />)}</table>
+              <div key={secKey.key}>
+                <table>{secKey.uids.map(uid => <KeyChainListUid uid={uid} key={uid.id} />)}</table>
                 <table>
                   <tbody>
                     <KeyChainListKey
                       key={-1}
                       appState={this.props.appState}
-                      dialogs={this.dialogs}
-                      action={this.action}
+                      dialogQ={this.dialogQ}
                       clazz="sec"
-                      sk={sk}
-                      gpgKey={sk}
+                      selectedKey={secKey}
                       idx={-1} />
-                    {sk.subKeys.map((ssb, idxx) =>
+                    {secKey.subKeys.map((ssb, idxx) =>
                       <KeyChainListKey
                         key={idxx}
                         appState={this.props.appState}
-                        dialogs={this.dialogs}
-                        action={this.action}
+                        dialogQ={this.dialogQ}
                         clazz="ssb"
-                        sk={sk}
-                        gpgKey={ssb}
+                        selectedKey={ssb}
                         idx={idxx} />
                     )}
                   </tbody>

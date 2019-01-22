@@ -24,6 +24,12 @@ export const DialogChangePin = observer((props: DialogChangePinProps) => {
       >
         <i style={{ float: 'right' }}
            onClick={props.onClose}
+           onKeyPress={(e) => {
+             console.log(`DialogChangePin`, e.key);
+              if (e.key === 'ESC') {
+                props.onClose();
+              }
+           }}
            className="fa fa-close"></i>
         <h4>ChangePin:{props.type}</h4>
         <h5>{props.cardStatus.name}({props.cardStatus.reader.cardid})</h5>

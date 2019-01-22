@@ -21,7 +21,7 @@ export class KeyChainListState implements WsChannel {
   public onMessage(header: Message.Header, data: string): void {
     if (header.action == 'KeyChainList') {
       let ret = JSON.parse(data);
-      console.log(`set KeyChainList:{ret.length}`);
+      console.log(`set KeyChainList:${ret.length}`);
       this.keyChainList.replace(ret);
     }
   }

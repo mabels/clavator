@@ -21,12 +21,13 @@ interface DialogChangeAttributesProps extends React.Props<DialogChangeAttributes
 @observer
 export class DialogChangeAttributes extends React.Component<DialogChangeAttributesProps, {}> {
 
-  public changeCard: ChangeCard;
-  public transaction: Message.Transaction<ChangeCard>;
+  public readonly changeCard: ChangeCard;
+  public readonly transaction: Message.Transaction<ChangeCard>;
 
   constructor(props: DialogChangeAttributesProps) {
     super(props);
     this.transaction = Message.newTransaction<ChangeCard>('ChangeCard.Request');
+    this.changeCard = ChangeCard.fromCardStatus(this.props.cardStatus);
   }
 
  public updateAttributes(): () => void {
@@ -34,10 +35,6 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
       this.transaction.data = this.changeCard;
       this.props.appState.channel.send(this.transaction.asMsg());
     }).bind(this);
-  }
-
-  public componentWillMount(): void {
-    this.changeCard = ChangeCard.fromCardStatus(this.props.cardStatus);
   }
 
   public render(): JSX.Element {
@@ -50,7 +47,7 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
       >
         <i style={{ float: 'right' }} onClick={this.props.onClose} className="closeBox fa fa-close"></i>
         <h4>ChangeAttributes:</h4>
-        <h5>{this.changeCard.name}({this.changeCard.serialNo})</h5>
+        <h5>{this.changeCard.name.get()}({this.changeCard.serialNo.get()})</h5>
         {/*<form>*/}
         <label>AdminPin:</label><input type="password"
           name="admin-pin"
@@ -59,32 +56,32 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
             this.changeCard.adminPin._pin.set(e.target.value);
           })} />
         <label>Name of cardholder:</label><input type="text"
-          onChange={(e: any) => {
-            this.changeCard.name = e.target.value;
-          }}
-          value={this.changeCard.name} />
+          onChange={action((e: any) => {
+            this.changeCard.name.set(e.target.value);
+          })}
+          value={this.changeCard.name.get()} />
         <label>Language prefs:</label><input type="text"
-          onChange={(e: any) => {
-            this.changeCard.lang = e.target.value;
-          }}
-          value={this.changeCard.lang} />
-        <label>Sex:</label><select value={this.changeCard.sex[0]}
-          onChange={(e) => {
-            this.changeCard.sex = e.target.value[0];
-          }}>
+          onChange={action((e: any) => {
+            this.changeCard.lang.set(e.target.value);
+          })}
+          value={this.changeCard.lang.get()} />
+        <label>Sex:</label><select value={this.changeCard.sex.get()[0]}
+          onChange={action((e: any) => {
+            this.changeCard.sex.set(e.target.value[0]);
+          })}>
           <option value={'f'}>Female</option>
           <option value={'m'}>Male</option>
         </select>
         <label>Login data:</label><input type="text"
-          onChange={(e: any) => {
-            this.changeCard.login = e.target.value;
-          }}
-          value={this.changeCard.login} />
+          onChange={action((e: any) => {
+            this.changeCard.login.set(e.target.value);
+          })}
+          value={this.changeCard.login.get()} />
         <label>Url:</label><input type="text"
-          onChange={(e: any) => {
-            this.changeCard.url = e.target.value;
-          }}
-          value={this.changeCard.url} />
+          onChange={action((e: any) => {
+            this.changeCard.url.set(e.target.value);
+          })}
+          value={this.changeCard.url.get()} />
         <br />
         <ButtonToProgressor
           appState={this.props.appState}

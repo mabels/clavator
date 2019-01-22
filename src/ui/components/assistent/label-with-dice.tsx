@@ -3,13 +3,14 @@ import { observer } from 'mobx-react';
 
 import { RcOption } from '../controls';
 import { PassPhrase } from '../../model';
-import { Option } from '../../../model';
+import { Option, NestedFlag } from '../../../model';
 import { DiceWare } from '../../../dice-ware';
 
 export interface LabelWithDiceProps {
   readonly label: string | JSX.Element;
   readonly passPhrase: PassPhrase;
   readonly diceWares: DiceWare[];
+  readonly readOnly: NestedFlag;
 }
 
 export const LabelWithDice = observer(
@@ -21,7 +22,7 @@ export const LabelWithDice = observer(
         dp.selectDiceWare(props.diceWares[0].fname)
       );
     }
-    if (this.props.diceWares.length > 1) {
+    if (props.diceWares.length > 1) {
       const fnames = props.diceWares.map(dw => dw.fname);
       diceWareOption = (
         <RcOption
@@ -34,7 +35,7 @@ export const LabelWithDice = observer(
           name="DiceWare.Fname"
           label=""
           option={new Option(fnames[0], fnames, '')}
-          readOnly={this.props.readOnly}
+          readOnly={props.readOnly}
         />
       );
     }

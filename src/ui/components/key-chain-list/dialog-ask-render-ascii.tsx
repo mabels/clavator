@@ -7,13 +7,15 @@ import { MutableString } from '../../../model';
 
 import { AskPassphrase } from './ask-passphrase';
 import { ReadAsciiRespond } from '../controls';
-import { observable, IObservableValue } from 'mobx';
+import { observable, IObservableValue, IObservableArray } from 'mobx';
+import { KeyChainDialogQItem } from './key-chain-list';
 
 interface DialogAskRenderAsciiProps extends React.Props<DialogAskRenderAscii> {
   onClose: () => void;
-  secKey: GpgKey;
+  dialogQ: IObservableArray<KeyChainDialogQItem>;
   channel: Dispatch;
-  action: IObservableValue<string>;
+  current: KeyChainDialogQItem;
+  // action: IObservableValue<string>;
 }
 
 export class DialogAskRenderAscii extends React.Component<DialogAskRenderAsciiProps, {}> {
@@ -36,15 +38,15 @@ export class DialogAskRenderAscii extends React.Component<DialogAskRenderAsciiPr
         contentLabel="Modal"
       >
         <i style={{ float: 'right' }} onClick={this.props.onClose} className="closeBox fa fa-close"></i>
-        <h4>{this.props.action}:{this.props.secKey.fingerPrint.fpr}</h4>
+        <h4>{this.props.current.action}:{this.props.current.secKey.fingerPrint.fpr}</h4>
         <AskPassphrase
           passphrase={this.passPhrase}
-          fingerprint={this.props.secKey.fingerPrint.fpr}
+          fingerprint={this.props.current.secKey.fingerPrint.fpr}
           completed={(pp) => this.doRead.set(true)}
           />
         {this.doRead ? <ReadAsciiRespond
           action="pem-private"
-          secKey={this.props.secKey}
+          secKey={this.props.current.secKey}
           channel={this.props.channel}
           passPhrase={this.passPhrase}
         /> : null}

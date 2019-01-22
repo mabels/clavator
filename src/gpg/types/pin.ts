@@ -1,9 +1,10 @@
-import { observable, computed, IObservableValue } from 'mobx';
+import { observable, computed, IObservableValue, action } from 'mobx';
 
 export class Pin {
   public readonly _pin: IObservableValue<string> = observable.box('');
   public match: RegExp = /.+/;
 
+  @action
   public static fill(js: any): Pin {
     const pin = new Pin();
     pin._pin.set(js['pin']);

@@ -654,13 +654,13 @@ export class Gpg {
   }
 
   public changeCard(cc: ChangeCard, cb: (res: Result) => void): void {
-    let sname = cc.name.split(/\s+/);
+    let sname = cc.name.get().split(/\s+/);
     let actions = [
       ['name', [sname.slice(1).join(' '), sname[0]]],
-      ['language', [cc.lang]],
-      ['sex', [cc.sex[0] == 'f' ? 2 : 1]],
-      ['login', [cc.login]],
-      ['url', [cc.url]]
+      ['language', [cc.lang.get()]],
+      ['sex', [cc.sex.get()[0] == 'f' ? 2 : 1]],
+      ['login', [cc.login.get()]],
+      ['url', [cc.url.get()]]
     ];
     this._changeCard(cc, actions, cb, []);
   }
@@ -686,7 +686,7 @@ export class Gpg {
       cc.adminPin.pin,
       current[0],
       current[1],
-      cc.serialNo,
+      cc.serialNo.get(),
       res => {
         results.push(res);
         this._changeCard(cc, actions, cb, results);

@@ -8,60 +8,58 @@ import {
   RequestAscii,
   RespondAscii,
   MutableString,
-  Message,
+  Message
 } from '../../../model';
-import { observable, IObservableValue } from 'mobx';
+import { IObservableValue, action, observable } from 'mobx';
+import { observer } from 'mobx-react';
 
 export interface ReadAsciiRespondProps extends React.Props<ReadAsciiRespond> {
   readonly action: string;
-  readonly passPhrase?: MutableString;
+  readonly passPhrase: MutableString;
   readonly channel: Dispatch;
   readonly secKey: GpgKey;
 }
 
+@observer
 export class ReadAsciiRespond extends React.Component<
   ReadAsciiRespondProps,
   {}
 > {
-  public data: IObservableValue<string>;
+  public readonly data: IObservableValue<string>;
+  public readonly transaction: Message.Transaction<RequestAscii>;
   public receiver: (action: Message.Header, data: string) => void;
-  public transaction: Message.Transaction<RequestAscii>;
 
   constructor(props: ReadAsciiRespondProps) {
     super(props);
-    this.state = {
-      data: null,
-      receiver: null,
-      transaction: null
-    };
+    this.data = observable.box();
+    this.transaction = Message.newTransaction<RequestAscii>('RequestAscii');
   }
 
+  @action
   public componentWillMount(): void {
-    let ra = new RequestAscii({
+    console.log(`init ReadAsciiRespond`);
+    this.receiver = this.props.channel.onMessage(
+      action((header: Message.Header, data: string) => {
+        if (
+          !(
+            header.action == 'RespondAscii' &&
+            header.transaction == this.transaction.header.transaction
+          )
+        ) {
+          return;
+        }
+        const pem = RespondAscii.fill(JSON.parse(data));
+        if (this.props.secKey.fingerPrint.fpr != pem.fingerprint) {
+          return;
+        }
+        this.data.set(pem.data);
+      }
+    ));
+    const ra = new RequestAscii({
       action: this.props.action,
       fingerprint: this.props.secKey.fingerPrint.fpr,
       passphrase: this.props.passPhrase.value
     });
-    this.transaction = Message.newTransaction<RequestAscii>('RequestAscii');
-    this.receiver = this.props.channel.onMessage(
-        (action: Message.Header, data: string) => {
-          console.log('processAscii:', action, this.transaction);
-          if (
-            !(
-              action.action == 'RespondAscii' &&
-              action.transaction == this.transaction.header.transaction
-            )
-          ) {
-            return;
-          }
-          let pem = RespondAscii.fill(JSON.parse(data));
-          if (this.props.secKey.fingerPrint.fpr != pem.fingerprint) {
-            return;
-          }
-          console.log('Got: Respond:', pem);
-          this.data.set(pem.data);
-        }
-      );
     this.props.channel.send(this.transaction.asMsg(ra));
   }
 
@@ -70,16 +68,15 @@ export class ReadAsciiRespond extends React.Component<
   }
 
   public render(): JSX.Element {
-    if (!this.data) {
+    if (!this.data.get()) {
       return <span>loading...</span>;
     } else {
-      console.log('Render:', this.state);
       return (
         <div>
           <CopyToClipboard text={this.data.get()}>
             <button>Copy to clipboard</button>
           </CopyToClipboard>
-          <pre style={{ backgroundColor: '#ccc' }}>{this.data}</pre>
+          <pre style={{ backgroundColor: '#ccc' }}>{this.data.get()}</pre>
         </div>
       );
     }

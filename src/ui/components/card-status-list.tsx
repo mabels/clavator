@@ -26,7 +26,7 @@ interface CardStatusListProps extends React.Props<CardStatusList> {
 export class CardStatusList extends React.Component<CardStatusListProps, {}> {
   public readonly dialog: IObservableValue<CardStatusListDialogs> = observable.box(CardStatusListDialogs.closed);
 
-  public readonly cardStatus?: IObservableValue<Gpg2CardStatus> = observable.box(undefined);
+  public readonly cardStatus: IObservableValue<Gpg2CardStatus> = observable.box(undefined);
 
   constructor(props: CardStatusListProps) {
     super(props);
@@ -48,10 +48,9 @@ export class CardStatusList extends React.Component<CardStatusListProps, {}> {
   }
   */
 
-  public changeToAttributesDialog = (
-    cs: Gpg2CardStatus
-  ): ((e: any) => void) => {
+  public changeToAttributesDialog = (cs: Gpg2CardStatus): ((e: any) => void) => {
     return action((e: any) => {
+      this.dialog.set(CardStatusListDialogs.changeAttributes);
       this.cardStatus.set(cs);
     });
   }

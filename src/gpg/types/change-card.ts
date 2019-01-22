@@ -1,27 +1,36 @@
 import { Pin } from './pin';
 import { Gpg2CardStatus } from './card-status';
+import { action, IObservableValue, observable } from 'mobx';
+
+export interface ChangeCardProps {
+  readonly adminPin: Pin;
+  readonly serialNo: string;
+  readonly lang: string;
+  readonly name: string;
+  readonly login: string;
+  readonly sex: string;
+  readonly url: string;
+}
 
 export class ChangeCard {
-  public adminPin: Pin = new Pin();
-  public serialNo: string;
-
-  public lang: string;
-  public name: string;
-  public login: string;
-  public sex: string;
-  public url: string;
+  public readonly adminPin: Pin = new Pin();
+  public readonly serialNo: IObservableValue<string>;
+  public readonly lang: IObservableValue<string>;
+  public readonly name: IObservableValue<string>;
+  public readonly login: IObservableValue<string>;
+  public readonly sex: IObservableValue<string>;
+  public readonly url: IObservableValue<string>;
 
   public static fill(js: any): ChangeCard {
-    let cc = new ChangeCard();
-    cc.adminPin = Pin.fill(js['adminPin']);
-    cc.serialNo = js['serialNo'];
-    cc.lang = js['lang'];
-    cc.name = js['name'];
-    cc.login = js['login'];
-    cc.sex = js['sex'];
-    cc.url = js['url'];
-    return cc;
-    // return new ChangeCard(js['action'], js['params']);
+    return new ChangeCard({
+      adminPin: Pin.fill(js['adminPin']),
+      serialNo: js['serialNo'],
+      lang: js['lang'],
+      name: js['name'],
+      login: js['login'],
+      sex: js['sex'],
+      url: js['url']
+    });
   }
 
   public static fromCardStatus(
@@ -40,10 +49,20 @@ export class ChangeCard {
     });
   }
 
+  constructor(props: ChangeCardProps) {
+    this.adminPin = props.adminPin;
+    this.serialNo = observable.box(props.serialNo);
+    this.lang = observable.box(props.lang);
+    this.name = observable.box(props.name);
+    this.login = observable.box(props.login);
+    this.sex = observable.box(props.sex);
+    this.url = observable.box(props.url);
+  }
+
   public valid(): boolean {
     return (
       this.adminPin.verify() &&
-      this.serialNo.length > 0 &&
+      this.serialNo.get().length > 0 &&
       typeof this.lang == 'string' &&
       typeof this.name == 'string' &&
       typeof this.login == 'string' &&

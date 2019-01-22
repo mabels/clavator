@@ -1,49 +1,63 @@
 import * as React from 'react';
-import { KeyChainListDialogs } from './key-chain-list';
+import { KeyChainListDialogs, KeyChainDialogQItem } from './key-chain-list';
 import { DialogRenderAscii } from './dialog-render-ascii';
 import { DialogAskRenderAscii } from './dialog-ask-render-ascii';
 import { DialogSendToCard } from './dialog-send-to-card';
-import { GpgKey } from '../../../gpg/types';
+import { GpgKey, SecretKey } from '../../../gpg/types';
 import { AppState } from '../../model';
-import { IObservableValue } from 'mobx';
+import { IObservableValue, action, IObservableArray } from 'mobx';
+import { observer } from 'mobx-react';
+import { MutableString } from '../../../model';
+import { resetIdCounter } from 'react-tabs';
 
 export interface KeyChainListModalProps {
-  readonly dialogs: IObservableValue<KeyChainListDialogs>;
-  readonly action: IObservableValue<string>;
-  readonly secKey: GpgKey;
+  readonly dialogQ: IObservableArray<KeyChainDialogQItem>;
+  // readonly dialogs: IObservableValue<KeyChainListDialogs>;
+  // readonly action: IObservableValue<string>;
+  // readonly selectedKey: SecretKey;
   readonly appState: AppState;
-  idx: number;
+  readonly passPhrase: MutableString;
+  // readonly idx: number;
 }
 
-export function KeyChainListModal(props: KeyChainListModalProps): JSX.Element {
-  switch (props.dialogs.get()) {
+export const KeyChainListModal = observer((props: KeyChainListModalProps): JSX.Element => {
+  if (props.dialogQ.length <= 0) {
+    return <></>;
+  }
+  const first = props.dialogQ[0];
+  const toClose = action(() => {
+    props.dialogQ.shift();
+  });
+  switch (first.dialogs) {
     case KeyChainListDialogs.openAscii:
       return (
         <DialogRenderAscii
-          action={props.action}
-          secKey={props.secKey}
-          onClose={() => this.dialog = KeyChainListDialogs.closed}
+          dialogQ={props.dialogQ}
+          onClose={toClose}
+          current={first}
           channel={props.appState.channel}
+          passPhrase={props.passPhrase}
         />
       );
     case KeyChainListDialogs.askPassPhraseAscii:
       return (
         <DialogAskRenderAscii
-          action={props.action}
-          secKey={props.secKey}
-          onClose={() => this.dialog = KeyChainListDialogs.closed}
+          dialogQ={props.dialogQ}
+          onClose={toClose}
           channel={props.appState.channel}
+          current={first}
         />
       );
     case KeyChainListDialogs.sendToCard:
       return (
         <DialogSendToCard
-          idx={props.idx}
-          onClose={() => this.dialog = KeyChainListDialogs.closed}
-          secKey={props.secKey}
+          // idx={props.idx}
+          onClose={toClose}
+          dialogQ={props.dialogQ}
+          current={first}
           appState={props.appState}
         />
       );
   }
   return null;
-}
+});
