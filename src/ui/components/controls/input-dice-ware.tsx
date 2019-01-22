@@ -4,6 +4,7 @@ import classnames from 'classnames';
 import { Diced } from '../../../dice-ware/dice-ware';
 import { InputPassPhraseProps } from '../controls';
 import { DoublePassword } from '../../model';
+import { action } from 'mobx';
 
 // class ResetOnUnreadable {
 //     private _dicedValue: StringValue;
@@ -50,6 +51,7 @@ export class InputDiceWare extends
     super(props);
   }
 
+  @action
   private setDice(val: string): void {
     const diceValue = this.props.doublePassword.diceValue;
     diceValue._value.set(val);

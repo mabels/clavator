@@ -9,6 +9,7 @@ import {
 import {
   PasswordControl,
   DoublePassword } from '../../model';
+import { action } from 'mobx';
 
 interface InputPasswordProps extends React.Props<InputPassword> {
   passwordControl: PasswordControl;
@@ -60,9 +61,9 @@ export class InputPassword extends
           pattern={this.props.passwordControl.password.match.source}
           value={this.props.passwordControl.password.value}
           placeholder={this.props.passwordControl.password.match.source}
-          onChange={(e: any) => {
+          onChange={action((e: any) => {
             this.props.passwordControl.password._value.set(e.target.value);
-          }} />{this.renderReadable()}
+          })} />{this.renderReadable()}
       </div>
     );
   }

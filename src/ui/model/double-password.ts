@@ -1,4 +1,4 @@
-import { observable, IObservableValue } from 'mobx';
+import { observable, IObservableValue, action, computed } from 'mobx';
 import { ObjectId, Validatable, StringValue, Warrents } from '../../model';
 import { MinMax } from './min-max';
 
@@ -14,8 +14,8 @@ export class DoublePassword extends ObjectId implements Validatable {
   public readonly first: PasswordControl;
   public readonly second: PasswordControl;
   public readonly diceValue: StringValue;
-  public readOnly: IObservableValue<boolean>;
-  public readable: IObservableValue<boolean>;
+  public readonly _readOnly: IObservableValue<boolean>;
+  public readonly _readable: IObservableValue<boolean>;
   public readonly warrents: ViewWarrents;
   public readonly diceWares: DiceWare[];
   private passPhrase: PassPhrase;
@@ -38,11 +38,21 @@ export class DoublePassword extends ObjectId implements Validatable {
             new RegExp(`^[1-6]{${this.diceWare().dicesCount()},${this.diceWare().dicesCount()}}$`),
             'dices should be between 1-6');
     }
-    this.readOnly = observable.box(false);
-    this.readable = observable.box(false);
+    this._readOnly = observable.box(false);
+    this._readable = observable.box(false);
     // this.passPhrase = passPhrase;
     this.warrents = new ViewWarrents();
     warrents.forEach(w => this.warrents.add(new ViewWarrent(w)));
+  }
+
+  @computed
+  public get readOnly(): boolean {
+    return this._readOnly.get();
+  }
+
+  @computed
+  public get readable(): boolean {
+    return this._readable.get();
   }
 
   public diceWare(): DiceWare {
@@ -66,25 +76,26 @@ export class DoublePassword extends ObjectId implements Validatable {
   //   console.log('add diceWare:', this.objectId());
   // }
 
+  @action
   public setReadableWithTimeout(v: boolean, timeout: number, cb?: (v: boolean) => void): void {
-    this.readable.set(v);
+    this._readable.set(v);
     if (this.readableTimer) {
       if (this.readableCb) {
-        this.readableCb(this.readable.get());
+        this.readableCb(this.readable);
       }
       clearTimeout(this.readableTimer);
     }
     // console.log('setReadableWithTimeout:', v, timeout);
     if (timeout) {
       this.readableCb = cb;
-      this.readableTimer = setTimeout(() => {
-        this.readable.set(!v);
+      this.readableTimer = setTimeout(action(() => {
+        this._readable.set(!v);
         if (cb) {
-          cb(this.readable.get());
+          cb(this.readable);
         }
-      }, timeout);
+      }), timeout);
     } else {
-      this.readable.set(v);
+      this._readable.set(v);
     }
   }
 
