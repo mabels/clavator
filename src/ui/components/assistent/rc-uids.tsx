@@ -3,11 +3,12 @@ import classnames from 'classnames';
 import { observer } from 'mobx-react';
 import { Container, NestedFlag } from '../../../model';
 import { KeyGenUid } from '../../../gpg/types';
+import { action } from 'mobx';
 
 interface RcUidsProps extends React.Props<RcUids> {
-  uids: Container<KeyGenUid>;
-  readOnly: NestedFlag;
-  completed?: boolean;
+  readonly uids: Container<KeyGenUid>;
+  readonly readOnly: NestedFlag;
+  readonly completed?: boolean;
 }
 
 @observer
@@ -36,8 +37,9 @@ export class RcUids extends
     return null;
   }
 
-  private handleAddUid = (/*idx: number */): void => {
-    let uid = new KeyGenUid();
+  @action
+  private handleAddUid(/*idx: number */): void {
+    const uid = new KeyGenUid();
     uid.name._value.set(this.props.uids.last().name.value);
     this.props.uids.add(uid);
   }
@@ -61,9 +63,9 @@ export class RcUids extends
             readOnly={this.props.readOnly.is}
             pattern={uid.name.match.source}
             name={`uid.name.${idx}`}
-            onChange={(e: any) => {
+            onChange={action((e: any) => {
               uid.name._value.set(e.target.value);
-            }}
+            })}
             value={uid.name.value} />
         </div>
         <div className="five columns">
@@ -77,9 +79,9 @@ export class RcUids extends
             autoComplete="on"
             pattern={uid.email.match.source}
             name={`email.${idx}`}
-            onChange={(e: any) => {
+            onChange={action((e: any) => {
               uid.email._value.set(e.target.value);
-            }}
+            })}
             value={uid.email.value} />
         </div>
         <div className="two columns">
@@ -98,9 +100,9 @@ export class RcUids extends
             autoComplete="on"
             pattern={uid.comment.match.source}
             name={`nameComment.${idx}`}
-            onChange={(e: any) => {
+            onChange={action((e: any) => {
               uid.comment._value.set(e.target.value);
-            }}
+            })}
             value={uid.comment.value} />
         </div>
         <div className="two columns">
@@ -110,7 +112,7 @@ export class RcUids extends
                     'bad': uid.valid()
                   })}
                   disabled={this.props.readOnly.is || !uid.valid()}
-                  onClick={this.handleAddUid/*.bind(this)*/}>Add Uid</button>
+                  onClick={action(() => this.handleAddUid())}>Add Uid</button>
         </div>
 
       </div>
