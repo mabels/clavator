@@ -161,7 +161,8 @@ export class Result {
     c.on('close', (code: number) => {
       // console.log('result:close', this.execTransaction.transaction, code);
       if (code) {
-        console.error(`SPAWN CLOSE:`, this.execTransaction.transaction, cmd, attrs, code);
+        console.error(`SPAWN CLOSE:`, this.execTransaction.transaction,
+          cmd, attrs, code, this.stdOut, this.stdErr);
       }
       this.exitCode = code;
       this.readExectransactionDump(cb);

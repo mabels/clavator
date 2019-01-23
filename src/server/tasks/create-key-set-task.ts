@@ -11,8 +11,9 @@ export class CreateKeySetTask {
     kg: KeyGen
   ): Promise<SecretKey> {
     return new Promise((resolve, reject) => {
-      let header = Message.toHeader(m, 'Progressor.Clavator');
+      const header = Message.toHeader(m, 'Progressor.Clavator');
       if (!kg.valid()) {
+        console.log('RUN:', JSON.stringify(kg));
         const err = `Failed send KeyGen is not valid ${kg
           .errText()
           .join('\n')}`;

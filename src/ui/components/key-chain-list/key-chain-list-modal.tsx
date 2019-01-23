@@ -3,12 +3,12 @@ import { KeyChainListDialogs, KeyChainDialogQItem } from './key-chain-list';
 import { DialogRenderAscii } from './dialog-render-ascii';
 import { DialogAskRenderAscii } from './dialog-ask-render-ascii';
 import { DialogSendToCard } from './dialog-send-to-card';
-import { GpgKey, SecretKey } from '../../../gpg/types';
+// import { GpgKey, SecretKey } from '../../../gpg/types';
 import { AppState } from '../../model';
-import { IObservableValue, action, IObservableArray } from 'mobx';
+import { /* IObservableValue, */ action, IObservableArray, IObservableValue } from 'mobx';
 import { observer } from 'mobx-react';
-import { MutableString } from '../../../model';
-import { resetIdCounter } from 'react-tabs';
+// import { MutableString } from '../../../model';
+// import { resetIdCounter } from 'react-tabs';
 
 export interface KeyChainListModalProps {
   readonly dialogQ: IObservableArray<KeyChainDialogQItem>;
@@ -16,7 +16,7 @@ export interface KeyChainListModalProps {
   // readonly action: IObservableValue<string>;
   // readonly selectedKey: SecretKey;
   readonly appState: AppState;
-  readonly passPhrase: MutableString;
+  readonly passPhrase: IObservableValue<string>;
   // readonly idx: number;
 }
 

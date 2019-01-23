@@ -81,11 +81,12 @@ export class KeyInfo extends ObjectId implements Pallet {
       'keyUsage Error'
     );
   }
+
   public fill(js: any): void {
     Option.fill(js['type'] || {}, this.type);
     Option.fill(js['length'] || {}, this.length);
     MultiOption.fill(js['usage'] || {}, this.usage);
-    // console.log("<<<<", ki)
+    console.log('FILL:', js, this.usage);
     // return ki;
   }
 

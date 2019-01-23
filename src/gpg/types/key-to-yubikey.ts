@@ -1,13 +1,13 @@
 import { Pin } from './pin';
-import { MutableString } from '../../model';
+// import { MutableString } from '../../model';
 import { observable, IObservableValue, computed } from 'mobx';
 
 export class KeyToYubiKey {
   public readonly _fingerprint: IObservableValue<string> = observable.box('');
   public readonly _card_id: IObservableValue<string> = observable.box('');
   public readonly _slot_id: IObservableValue<number> = observable.box(undefined);
-  public admin_pin: Pin = new Pin();
-  public passphrase: MutableString = new MutableString();
+  public readonly admin_pin: Pin = new Pin();
+  public readonly passphrase: IObservableValue<string> = observable.box(); // MutableString = new MutableString();
 
   public static fill(js: any): KeyToYubiKey {
     const ra = new KeyToYubiKey();
@@ -15,7 +15,7 @@ export class KeyToYubiKey {
     ra._card_id.set(js['_card_id'] || js['card_id']);
     ra._slot_id.set(js['_slot_id'] || js['slot_id']);
     ra.admin_pin._pin.set(js['admin_pin']['pin']);
-    ra.passphrase = MutableString.fill(js['passphrase']);
+    ra.passphrase.set(js['passphrase']);
     return ra;
   }
 

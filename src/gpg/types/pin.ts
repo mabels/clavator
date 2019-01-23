@@ -20,7 +20,7 @@ export class Pin {
     return this.verifyText().length == 0;
   }
   public verifyText(): string[] {
-    let ret: string[] = [];
+    const ret: string[] = [];
     if (!this.match.test(this.pin)) {
       ret.push(`Pin does not match:${this.match.toString()}`);
     }

@@ -6,16 +6,16 @@ import { observable, IObservableValue, computed, action } from 'mobx';
 import { MutableString } from '../../../model';
 
 interface AskPassphraseProps extends React.Props<AskPassphrase> {
-  passphrase?: MutableString;
-  fingerprint: string;
-  completed: (pp: string) => void;
+  readonly passphrase?: MutableString;
+  readonly fingerprint: string;
+  readonly completed: (pp: string) => void;
 }
 
 @observer
 export class AskPassphrase
   extends React.Component<AskPassphraseProps, {}> {
 
-  public _value: IObservableValue<string> = observable.box(undefined);
+  public readonly _value: IObservableValue<string> = observable.box(undefined);
 
   constructor(props: AskPassphraseProps) {
     super(props);
@@ -40,11 +40,12 @@ export class AskPassphrase
               this.props.passphrase._value.set(e.target.value);
             }
           })} />
-        <button type="button" onClick={(e: any) => {
+        <button type="button" onClick={action((e: any) => {
+          console.log('Button-AskPassphrase:', this.props.completed, this.value, this.props.passphrase.value);
           if (this.props.completed) {
             this.props.completed(this.value || this.props.passphrase.value);
           }
-        }}>Ready</button>
+        })}>Ready</button>
       </form>
     );
   }

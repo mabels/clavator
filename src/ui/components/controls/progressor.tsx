@@ -7,9 +7,11 @@ import { Dispatch } from '../../model';
 import { observer } from 'mobx-react';
 
 export class ProgressorState {
-  public open: IObservableValue<boolean> = observable.box(false);
-  public progressList: IObservableArray<Progress.Progress> = observable.array([]);
-  private channel: Dispatch;
+  public readonly open: IObservableValue<boolean> = observable.box(false);
+  public readonly progressList: IObservableArray<Progress.Progress> = observable.array(
+    []
+  );
+  private readonly channel: Dispatch;
 
   constructor(channel: Dispatch) {
     this.channel = channel;
@@ -28,9 +30,9 @@ export class ProgressorState {
   public onMessage(header: Message.Header, data: string): void {
     if (header.action.startsWith('Progressor.')) {
       // if (!this.props.transaction || action.transaction == this.props.transaction) {
-        // console.log('Progressor.', this.props, action, data);
-        const js = JSON.parse(data);
-        this.progressList.push(Progress.fill(js));
+      // console.log('Progressor.', this.props, action, data);
+      const js = JSON.parse(data);
+      this.progressList.push(Progress.fill(js));
       // }
     }
   }
@@ -40,40 +42,56 @@ export class ProgressorState {
   }
 }
 
-interface ProgressorProps {
-  progressor: ProgressorState;
-  msg?: string;
-  transaction?: string;
-  controls?: boolean;
+export interface ProgressorProps {
+  readonly progressor: ProgressorState;
+  readonly msg?: string;
+  readonly transaction?: string;
+  readonly controls?: boolean;
 }
 
-function Controls(props: ProgressorProps): JSX.Element {
+const Controls = observer((props: ProgressorProps): JSX.Element => {
     if (!props.controls) {
       return null;
     }
-    return (<div className="action">
-      <a title="reset-log"
-        onClick={() => {
-          props.progressor.progressList.clear();
-        }}>
-        <i className="fa fa-trash"></i>
-      </a>
-    </div>);
+    return (
+      <div className="action">
+        <a
+          title="reset-log"
+          onClick={action(() => {
+            props.progressor.progressList.clear();
+          })}
+        >
+          <i className="fa fa-trash" />
+        </a>
+      </div>
+    );
   }
+);
 
 export const Progressor = observer((props: ProgressorProps): JSX.Element => {
     return (
       <div className="Progressor">
         <Controls {...props} />
-        <pre><code>
-          {props.progressor.progressList.map((ps: Progress.Progress, _: number) => {
-            return (ps.msgs.map((msg: string, idx: number) => {
-              return (<div key={ps.id + ':' + idx}
-                  className={ps.isOk ? 'ok' : 'fail'}>{msg}{ps.isEndOfMessages ? '<EOM>' : ''}</div>);
-            }));
-          })}
-        </code>
+        <pre>
+          <code>
+            {props.progressor.progressList.map(
+              (ps: Progress.Progress, _: number) => {
+                return ps.msgs.map((msg: string, idx: number) => {
+                  return (
+                    <div
+                      key={ps.id + ':' + idx}
+                      className={ps.isOk ? 'ok' : 'fail'}
+                    >
+                      {msg}
+                      {ps.isEndOfMessages ? '<EOM>' : ''}
+                    </div>
+                  );
+                });
+              }
+            )}
+          </code>
         </pre>
       </div>
     );
-});
+  }
+);

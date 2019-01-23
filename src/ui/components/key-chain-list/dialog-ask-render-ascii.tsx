@@ -7,8 +7,9 @@ import { MutableString } from '../../../model';
 
 import { AskPassphrase } from './ask-passphrase';
 import { ReadAsciiRespond } from '../controls';
-import { observable, IObservableValue, IObservableArray } from 'mobx';
+import { observable, IObservableValue, IObservableArray, action } from 'mobx';
 import { KeyChainDialogQItem } from './key-chain-list';
+import { observer } from 'mobx-react';
 
 interface DialogAskRenderAsciiProps extends React.Props<DialogAskRenderAscii> {
   onClose: () => void;
@@ -18,6 +19,7 @@ interface DialogAskRenderAsciiProps extends React.Props<DialogAskRenderAscii> {
   // action: IObservableValue<string>;
 }
 
+@observer
 export class DialogAskRenderAscii extends React.Component<DialogAskRenderAsciiProps, {}> {
 
   public readonly passPhrase: MutableString;
@@ -44,7 +46,7 @@ export class DialogAskRenderAscii extends React.Component<DialogAskRenderAsciiPr
           fingerprint={this.props.current.secKey.fingerPrint.fpr}
           completed={(pp) => this.doRead.set(true)}
           />
-        {this.doRead ? <ReadAsciiRespond
+        {this.doRead.get() ? <ReadAsciiRespond
           action="pem-private"
           secKey={this.props.current.secKey}
           channel={this.props.channel}

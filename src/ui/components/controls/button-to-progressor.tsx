@@ -4,19 +4,19 @@ import { observer } from 'mobx-react';
 import { Message } from '../../../model';
 import { Progressor } from './progressor';
 import { AppState } from '../../model';
-import { observable, IObservableValue } from 'mobx';
+import { observable, IObservableValue, action } from 'mobx';
 
 interface ButtonToProgressorProps extends React.Props<ButtonToProgressor> {
-  onClick: () => void;
-  appState: AppState;
-  transaction: Message.Transaction<any>;
-  disabled?: boolean;
+  readonly onClick: () => void;
+  readonly appState: AppState;
+  readonly transaction: Message.Transaction<any>;
+  readonly disabled?: boolean;
 }
 
 @observer
 export class ButtonToProgressor extends React.Component<ButtonToProgressorProps, {}> {
 
-  public running: IObservableValue<boolean>;
+  public readonly running: IObservableValue<boolean>;
 
   constructor(props: ButtonToProgressorProps) {
     super(props);
@@ -31,10 +31,10 @@ export class ButtonToProgressor extends React.Component<ButtonToProgressorProps,
         transaction={this.props.transaction.header.transaction}
         controls={true} />;
     } else {
-      return <button onClick={() => {
+      return <button onClick={action(() => {
           this.running.set(true);
-          this.props.onClick(); }
-        }
+          this.props.onClick();
+        })}
         disabled={this.props.disabled}
         >{this.props.children}</button>;
     }

@@ -404,10 +404,12 @@ export class Gpg {
       'loopback',
       '--passphrase-fd',
       () => {
+        console.log('createMasterKey:1:', keyGen.password.value);
         return keyGen.password.value + '\n';
       },
       '--passphrase-fd',
       () => {
+        console.log('createMasterKey:2:', keyGen.password.value);
         return keyGen.password.value + '\n';
       },
       '--full-gen-key',
@@ -424,6 +426,7 @@ export class Gpg {
       'loopback',
       '--passphrase-fd',
       () => {
+        console.log('pemPrivateKey:', JSON.stringify(rqa.passphrase));
         return rqa.passphrase.value + '\n';
       },
       '-a',
@@ -668,12 +671,12 @@ export class Gpg {
         'loopback',
         '--passphrase-fd',
         () => {
-          // console.log('>>keyToYubiKey:passphrase[', ktyk.passphrase.value, ']');
+          console.log('>>keyToYubiKey:passphrase[', ktyk.passphrase.value, ']');
           return ktyk.passphrase.value + '\n';
         },
         '--passphrase-fd',
         () => {
-          // console.log('>>keyToYubiKey:admin[', ktyk.admin_pin.pin, ']');
+          console.log('>>keyToYubiKey:admin[', ktyk.admin_pin.pin, ']');
           return ktyk.admin_pin.pin + '\n';
         },
         '--quick-keytocard',
@@ -764,12 +767,12 @@ export class Gpg {
 
 function findGpgMock(): Promise<string[]> {
   let dirname: string;
-  let pname = 'gpg-mock';
+  let pname = 'gpg-mock.js';
   let execPath = process.execPath;
   if (process.env.PACKED === 'true') {
     dirname = __filename;
   } else {
-    pname = 'index';
+    pname = 'index.ts';
     dirname = path.join(__dirname, '../gpg-mock/index');
     execPath = 'ts-node';
   }
@@ -781,7 +784,7 @@ function findGpgMock(): Promise<string[]> {
     do {
       prevDirname = dirname;
       dirname = path.dirname(dirname);
-      gm = require.resolve(path.join(dirname, pname));
+      gm = path.resolve(path.join(dirname, pname));
       // console.log('findGpgMock:GM:', dirname, pname, gm);
       gmExists = await fsPromise.pathExists(gm);
     } while (prevDirname != dirname && !gmExists);

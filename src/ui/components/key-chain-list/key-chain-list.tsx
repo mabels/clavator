@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 
 import { GpgKey, SecretKey } from '../../../gpg/types';
-import { RespondAscii, MutableString } from '../../../model';
+// import { RespondAscii, MutableString } from '../../../model';
 import { AppState } from '../../model';
 import { KeyChainListModal } from './key-chain-list-modal';
 import { KeyChainListUid } from './key-chain-list-uid';
@@ -39,14 +39,14 @@ export class KeyChainList extends React.Component<
   // public idx: number;
   // public readonly action: IObservableValue<string>;
   // public respondAscii?: RespondAscii;
-  public readonly passPhrase: MutableString;
+  public readonly passPhrase: IObservableValue<string>;
 
   constructor(props: KeyChainListProps) {
     super(props);
     // this.dialogs = observable.box(KeyChainListDialogs.closed);
     // this.dialogSecKey = observable.box(undefined);
     // this.action = observable.box();
-    this.passPhrase = new MutableString();
+    this.passPhrase = observable.box(); // new MutableString();
   }
 
   /*

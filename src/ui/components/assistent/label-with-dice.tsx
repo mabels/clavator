@@ -5,12 +5,17 @@ import { RcOption } from '../controls';
 import { PassPhrase } from '../../model';
 import { Option, NestedFlag } from '../../../model';
 import { DiceWare } from '../../../dice-ware';
+import { action } from 'mobx';
 
 export interface LabelWithDiceProps {
   readonly label: string | JSX.Element;
   readonly passPhrase: PassPhrase;
   readonly diceWares: DiceWare[];
   readonly readOnly: NestedFlag;
+}
+
+function diceAll(props: LabelWithDiceProps): void {
+  props.passPhrase.doublePasswords.forEach(dp => dp.inputDiceWare.randomDice());
 }
 
 export const LabelWithDice = observer(
@@ -26,12 +31,12 @@ export const LabelWithDice = observer(
       const fnames = props.diceWares.map(dw => dw.fname);
       diceWareOption = (
         <RcOption
-          onChange={(fname: string) => {
+          onChange={action((fname: string) => {
             console.log('Switch:DiceWare:', fname);
             props.passPhrase.doublePasswords.forEach(dp =>
               dp.selectDiceWare(fname)
             );
-          }}
+          })}
           name="DiceWare.Fname"
           label=""
           option={new Option(fnames[0], fnames, '')}
@@ -46,7 +51,7 @@ export const LabelWithDice = observer(
       <span>
         {props.label}
         {diceWareOption}
-        <button className="fa fa-random" onClick={this.diceAll} />
+        <button className="fa fa-random" onClick={action(() => diceAll(props))} />
       </span>
     );
   }

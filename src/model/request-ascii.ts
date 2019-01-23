@@ -24,6 +24,6 @@ export class RequestAscii {
     this.action = props.action;
     this.passphrase._value.set(props.passphrase);
     this.fingerprint = props.fingerprint;
-
   }
+
 }

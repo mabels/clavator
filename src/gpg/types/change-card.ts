@@ -63,11 +63,11 @@ export class ChangeCard {
     return (
       this.adminPin.verify() &&
       this.serialNo.get().length > 0 &&
-      typeof this.lang == 'string' &&
-      typeof this.name == 'string' &&
-      typeof this.login == 'string' &&
-      typeof this.sex == 'string' &&
-      typeof this.url == 'string'
+      typeof this.lang.get() == 'string' &&
+      typeof this.name.get() == 'string' &&
+      typeof this.login.get() == 'string' &&
+      typeof this.sex.get() == 'string' &&
+      typeof this.url.get() == 'string'
     );
   }
 }

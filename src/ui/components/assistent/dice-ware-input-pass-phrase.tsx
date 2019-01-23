@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
 import { DoublePassword } from '../../model';
-import { RcOption, InputDiceWare, InputDiceWareProps } from '../controls';
+import { InputDiceWare, InputDiceWareProps } from '../controls';
 import { DiceWare, Diced } from '../../../dice-ware';
 import {
   InputPassPhrase,
@@ -10,7 +10,7 @@ import {
 import { LabelWithDice } from './label-with-dice';
 
 export interface DiceWareInputPassPhraseProps extends InputPassPhraseProps {
-  diceWares: DiceWare[];
+  readonly diceWares: DiceWare[];
 }
 
 /*
