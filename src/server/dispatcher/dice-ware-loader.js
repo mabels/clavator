@@ -1,8 +1,10 @@
 const path = require('path');
+const fs = require('fs');
 const request = require('request');
 const cachedRequest = require('cached-request')(request)
 
 function resolveUrls(urls, callback) {
+  // console.log('resolveUrls', urls);
   Promise.all(urls.map((url, idx) => {
     return new Promise((resolve, reject) => {
       const options = {
@@ -26,7 +28,7 @@ function resolveUrls(urls, callback) {
     .catch((error) => callback(error, null));
 }
 
-module.exports = function(content) {
+function loader(content) {
   // console.log(path.resolve(__dirname, 'dist'));
   cachedRequest.setCacheDirectory(
     path.join(path.resolve(__dirname), '.dice-req-cache')
@@ -43,6 +45,19 @@ module.exports = function(content) {
     callback(err, resolved.join('\n'))
   });
 }
+
+loader.testLoader = function(stopWebPack) {
+  return new Promise((rs, rj) => {
+    loader.apply({
+      async: () => { return function(_err, js) {
+        eval(js);
+        rs(module.exports);
+      }; },
+    }, [fs.readFileSync(require.resolve(stopWebPack)).toString()]);
+  });
+}
+
+module.exports = loader;
 
 // module.exports.raw = true;
 

@@ -1,6 +1,6 @@
 import { assert } from 'chai';
 
-import NestedFlag from '../../src/model/nested-flag';
+import { NestedFlag } from '../../src/model';
 
 describe('NestedFlag', () => {
 

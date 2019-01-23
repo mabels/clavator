@@ -6,7 +6,7 @@ export class MutableString {
   public static fill(js: any): MutableString {
     let m = new MutableString();
     if (js) {
-      m._value.set(js['value']);
+      m._value.set(js['_value'] || js['value']);
     }
     return m;
   }

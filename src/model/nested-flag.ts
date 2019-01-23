@@ -2,9 +2,9 @@ import { computed, observable, IObservableValue } from 'mobx';
 import { ObjectId } from './object-id';
 
 export class NestedFlag extends ObjectId {
-  private value: IObservableValue<boolean>;
-  private parent?: NestedFlag;
-  private children: NestedFlag[];
+  private readonly value: IObservableValue<boolean>;
+  private readonly parent?: NestedFlag;
+  private readonly children: NestedFlag[];
 
   constructor(val?: boolean|NestedFlag, value = false) {
     super('NestedFlag');
@@ -22,7 +22,7 @@ export class NestedFlag extends ObjectId {
   @computed
   public get is(): boolean {
     // console.log(`GET:${this.objectId()}:`, this.value);
-    if (this.value === undefined) {
+    if (this.value.get() === undefined) {
       return this.parent.is;
     }
     return this.value.get();
@@ -36,7 +36,7 @@ export class NestedFlag extends ObjectId {
 
   private resetChildren(): void {
     this.children.forEach(nf => {
-      nf.value = undefined;
+      nf.value.set(undefined);
       nf.resetChildren();
     });
   }

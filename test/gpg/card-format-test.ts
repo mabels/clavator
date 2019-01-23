@@ -1,6 +1,6 @@
 import { assert } from 'chai';
 
-import CharFormat from '../../src/ui/model/char-format';
+import { CharFormat } from '../../src/ui/model';
 
 describe('CardFormat', async () => {
 

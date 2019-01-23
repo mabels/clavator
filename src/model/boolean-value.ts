@@ -7,7 +7,7 @@ export class BooleanValue extends ObjectId implements Validatable {
   public readonly _value: IObservableValue<boolean> = observable.box(true);
 
   public static fill(js: any, dv: BooleanValue): void {
-    dv._value.set(js['value'] || dv.value);
+    dv._value.set(js['_value'] || js['value'] || dv.value);
   }
 
   public constructor(errorText: string) {

@@ -4,11 +4,11 @@ import { ObjectId } from './object-id';
 
 export class StringValue extends ObjectId implements Validatable {
   public match: RegExp;
-  public _value: IObservableValue<string>;
-  public errorText: string;
+  public readonly _value: IObservableValue<string>;
+  public readonly errorText: string;
 
   public static fill(js: any, dv: StringValue): void {
-    dv._value.set(js['value'] || dv.value);
+    dv._value.set(js['_value'] || js['value'] || dv.value);
     // console.log(`StringValue:${dv.value}:${js['value']}`);
   }
 

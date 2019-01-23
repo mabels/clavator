@@ -7,7 +7,7 @@ export class Pin {
   @action
   public static fill(js: any): Pin {
     const pin = new Pin();
-    pin._pin.set(js['pin']);
+    pin._pin.set(js['_pin'] || js['pin']);
     return pin;
   }
 

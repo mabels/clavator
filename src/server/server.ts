@@ -47,22 +47,12 @@ async function starter(cfg: Config): Promise<void> {
   const app = express();
   app.use(express.static(path.join(process.cwd(), 'dist')));
 
-  const gpg = await Gpg.create();
+  let gpg = await Gpg.create();
   if (cfg.useMock) {
-    const cmd = [
-      process.execPath,
-      path.join(
-        // path.dirname(process.argv[process.argv.length - 1]),
-        __dirname,
-        '../gpg-mock/gpg-mock.js'
-      )
-    ];
+    const cmd: string[] = gpg.mockCmd;
     const cmdAgent = cmd.concat(['connect-agent']);
-
-    gpg.setGpgCmd(cmd);
-    gpg.setGpgAgentCmd(cmdAgent);
-
-    gpg.setGpgCmd(cmd);
+    gpg = gpg.setGpgCmd(cmd);
+    gpg = gpg.setGpgAgentCmd(cmdAgent);
   }
   const gi = await gpg.info();
   console.log('Created Gpg:', gi);

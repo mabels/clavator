@@ -1,6 +1,6 @@
 import * as React from 'react';
 import classnames from 'classnames';
-import { observable } from 'mobx';
+import { observable, action } from 'mobx';
 import { observer } from 'mobx-react';
 import { NestedFlag, } from '../../../model';
 import {
@@ -70,10 +70,10 @@ export class RcDoublePassword extends
         valid={dp.valid()}
         viewWarrents={dp.warrents}
         showWarrents={dp.showWarrent()}
-        approved={(vw: ViewWarrent) => {
-          dp.readable.set(false);
+        approved={action((vw: ViewWarrent) => {
+          dp._readable.set(false);
           // console.log('RcApproveWarrents:approved');
-        }}
+        })}
       />
     </div>;
   }

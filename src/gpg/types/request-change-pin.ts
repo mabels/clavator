@@ -11,7 +11,7 @@ export class RequestChangePin {
   public static fill(js: any): RequestChangePin {
     let ra = new RequestChangePin();
     ra.changeAction(js['action']);
-    ra._app_id.set(js['app_id']);
+    ra._app_id.set(js['_app_id'] || js['app_id']);
     ra.admin_pin._pin.set(js['admin_pin']['pin']);
     ra.new_pin._pin.set(js['new_pin']['pin']);
     ra.new_pin_verify._pin.set(js['new_pin_verify']['pin']);

@@ -1,60 +1,59 @@
 
 import { assert } from 'chai';
-
-import * as Gpg from '../../src/gpg/gpg';
-import { Result } from '../../src/gpg/result';
-
-import * as ListSecretKeys from '../../src/gpg/list-secret-keys';
-
-import KeyGenUid from '../../src/gpg/key-gen-uid';
-import { KeyGen, KeyInfo } from '../../src/gpg/key-gen';
-
 import * as Rimraf from 'rimraf';
 
-import { RequestAscii } from '../../src/model/request-ascii';
-import KeyToYubiKey from '../../src/gpg/key-to-yubikey';
+import { Result, Gpg, createTest } from '../../src/gpg';
+
+import {
+  KeyGenUid,
+  KeyGen,
+  KeyInfo,
+  KeyToYubiKey,
+  SecretKey
+} from '../../src/gpg/types';
+
+import { RequestAscii } from '../../src/model';
 // import { findDOMNode } from 'react-dom';
 // import { dirname } from 'path';
 
 function expireDate(): Date {
-  let now = new Date();
+  const now = new Date();
   now.setFullYear(now.getFullYear() + 5);
   return now;
 }
 
 function keyGen(): KeyGen {
   let keygen = new KeyGen();
-  keygen.expireDate.value = expireDate();
-  keygen.password.value = 'Gpg Test Jojo Akzu Luso';
+  keygen.expireDate._value.set(expireDate());
+  keygen.password._value.set('Gpg Test Jojo Akzu Luso');
   let keyInfo = new KeyInfo();
-  keyInfo.type.value = 'RSA';
-  keyInfo.usage.values = ['sign', 'encr', 'auth'];
+  keyInfo.type._value.set('RSA');
+  keyInfo.usage.values.replace(['sign', 'encr', 'auth']);
   keygen.subKeys.add(keyInfo);
   let uid = new KeyGenUid();
-  uid.email.value = 'gpg.sock@lodke.gpg';
-  uid.name.value = 'Gpg Test Master';
+  uid.email._value.set('gpg.sock@lodke.gpg');
+  uid.name._value.set('Gpg Test Master');
   keygen.uids.add(uid);
   return keygen;
 }
 
-function createMasterKey(gpg: Gpg.Gpg, cb: (res: Result) => void): void {
+function createMasterKey(gpg: Gpg, cb: (res: Result) => void): void {
   gpg.createMasterKey(keyGen(), cb);
 }
 
 describe('Gpg', () => {
-  let gpg: Gpg.Gpg;
-  let key: ListSecretKeys.SecretKey;
+  let gpg: Gpg;
+  let key: SecretKey;
 
-  before(async function (): Promise<void> {
-    this.timeout(100000);
+  beforeAll(async function (): Promise<void> {
     return new Promise<void>(async (resolve, rej) => {
       try {
-        gpg = await Gpg.createTest();
-        // console.log('============');
+        gpg = await createTest();
+        // console.log('============', gpg.info());
         createMasterKey(gpg, (res: Result) => {
-          assert.equal(0, res.exitCode);
           // console.log('------------', res);
-          gpg.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
+          assert.equal(0, res.exitCode);
+          gpg.list_secret_keys((err: string, keys: SecretKey[]) => {
             assert.isNull(err);
             let uid = keys[0].uids[0];
             assert.equal(uid.name, 'Gpg Test Master');
@@ -73,14 +72,14 @@ describe('Gpg', () => {
         rej(e);
       }
     });
-  });
+  }, 10000);
 
-  after((done) => {
+  afterAll((done) => {
     gpg.deleteSecretKey(key.fingerPrint.fpr, (res: Result) => {
       assert.equal(res.exitCode, 0, 'delete secret key');
       gpg.deletePublicKey(key.fingerPrint.fpr, (_res: Result) => {
         assert.equal(_res.exitCode, 0, 'delete pub key');
-        gpg.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
+        gpg.list_secret_keys((err: string, keys: SecretKey[]) => {
           assert.equal(keys.length, 0);
           gpg.runAgent(['killagent', '/bye'], null, (__res: Result) => {
             Rimraf.sync(gpg.homeDir);
@@ -121,14 +120,14 @@ describe('Gpg', () => {
   // })
 
   it('prepareToYubiKey', function (done: any): void {
-    this.timeout(100000);
+    // this.timeout(100000);
     let kytk = new KeyToYubiKey();
-    kytk.fingerprint = key.keyId;
-    kytk.passphrase.value = 'Gpg Test Jojo Akzu Luso';
-    gpg.prepareKeyToYubiKey(kytk, (mygpg: Gpg.Gpg, res: Result) => {
+    kytk._fingerprint.set(key.keyId);
+    kytk.passphrase._value.set('Gpg Test Jojo Akzu Luso');
+    gpg.prepareKeyToYubiKey(kytk, (mygpg: Gpg, res: Result) => {
       assert.equal(0, res.exitCode, `unknown exit code ${res.stdErr}`);
       assert.isNotNull(mygpg, 'Gpg should be set');
-      mygpg.list_secret_keys((err: string, keys: ListSecretKeys.SecretKey[]) => {
+      mygpg.list_secret_keys((err: string, keys: SecretKey[]) => {
         assert.equal(1, keys.length, 'len should be one');
         assert.equal('gpg.sock@lodke.gpg', keys[0].uids[0].email);
         // mygpg.runAgent(['killagent', '/bye'], null, (res: Result) => {
@@ -141,14 +140,14 @@ describe('Gpg', () => {
   });
 
   it('keyToSmartCard with Mock', function (done: any): void {
-    this.timeout(100000);
+    // this.timeout(100000);
     const mygpg = gpg.useMock();
     let kytk = new KeyToYubiKey();
-    kytk.fingerprint = key.keyId;
-    kytk.passphrase.value = 'Gpg Test Jojo Akzu Luso';
-    kytk.admin_pin.pin = '12345678';
-    kytk.card_id = 'Smarte-Karte';
-    kytk.slot_id = 4711;
+    kytk._fingerprint.set(key.keyId);
+    kytk.passphrase._value.set('Gpg Test Jojo Akzu Luso');
+    kytk.admin_pin._pin.set('12345678');
+    kytk._card_id.set('Smarte-Karte');
+    kytk._slot_id.set(4711);
     mygpg.keyToYubiKey(kytk, (res: Result) => {
       assert.equal(0, res.exitCode, `unknown exit code ${res.stdErr}`);
       assert.equal(res.execTransaction.data.readFds[0].value, `${kytk.passphrase.value}\n`);
@@ -169,9 +168,10 @@ describe('Gpg', () => {
 
   it('pemPrivateKey', function (done: any): void {
     // this.timeout(10000);
-    let rqa: RequestAscii = new RequestAscii();
-    rqa.fingerprint = key.keyId;
-    rqa.passphrase.value = 'Gpg Test Jojo Akzu Luso';
+    const rqa: RequestAscii = new RequestAscii({
+      fingerprint: key.keyId
+    });
+    rqa.passphrase._value.set('Gpg Test Jojo Akzu Luso');
     gpg.useMock().pemPrivateKey(rqa, (res: Result) => {
       assert.equal(true, res.stdOut.startsWith('-----BEGIN PGP PRIVATE KEY BLOCK-----'), res.stdOut);
       done();
@@ -179,8 +179,9 @@ describe('Gpg', () => {
   });
 
   it('pemPublicKey', (done) => {
-    let rqa: RequestAscii = new RequestAscii();
-    rqa.fingerprint = key.keyId;
+    const rqa: RequestAscii = new RequestAscii({
+      fingerprint: key.keyId
+    });
     gpg.useMock().pemPublicKey(rqa, (res: Result) => {
       assert.equal(true, res.stdOut.startsWith('-----BEGIN PGP PUBLIC KEY BLOCK-----'), res.stdOut);
       done();
@@ -197,8 +198,9 @@ describe('Gpg', () => {
   // })
 
   it('sshPublic', (done) => {
-    let rqa: RequestAscii = new RequestAscii();
-    rqa.fingerprint = key.keyId;
+    const rqa: RequestAscii = new RequestAscii({
+      fingerprint: key.keyId
+    });
     gpg.useMock().sshPublic(rqa, (res: Result) => {
       // console.log(res);
       assert.equal(true, res.stdOut.startsWith('ssh-rsa '), res.stdOut);

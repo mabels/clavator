@@ -99,6 +99,7 @@ export class DoublePassword extends ObjectId implements Validatable {
     }
   }
 
+  @action
   public setPassword(value: string): void {
     this.first.password._value.set(value);
     this.second.password._value.set(value);

@@ -24,7 +24,7 @@ export class GpgUid {
   public key: string;
 
   public static jsfill(js: any): GpgUid {
-    let ret = new GpgUid();
+    const ret = new GpgUid();
     ret.trust = js['trust'];
     ret.name = js['name'];
     ret.email = js['email'];

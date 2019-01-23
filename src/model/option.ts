@@ -8,7 +8,7 @@ export class Option<T> extends ObjectId {
 
   public static fill<U>(js: any, dv: Option<U>): void {
     // console.log(">>>>Option>>>", js)
-    dv._value.set(js['value'] || dv.value);
+    dv._value.set(js['_value'] || js['value'] || dv.value);
     // console.log("<<<<<<Option<<<<", dv)
   }
 

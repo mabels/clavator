@@ -1,12 +1,12 @@
 import { assert } from 'chai';
 
-import * as gpg from '../../src/gpg/gpg';
-import * as lsk from '../../src/gpg/list-secret-keys';
+import { createMock }  from '../../src/gpg';
+import { SecretKey, runSecretKeys } from '../../src/gpg/types';
 
 describe('ListSecretKeys', () => {
 
-  function createKeyFromString(): lsk.SecretKey[] {
-    return lsk.run(`
+  function createKeyFromString(): SecretKey[] {
+    return runSecretKeys(`
 sec:-:2048:1:1A5D93796CF70ADF:1333149072:1493647783::-:::escaESCA:::+::::
 fpr:::::::::547484819BCCDBDA0E73858F1A5D93796CF70ADF:
 grp:::::::::71AA10F2E9194FF66E3FD4AE883B4CB9180CF977:
@@ -37,7 +37,7 @@ grp:::::::::2DC62D282D308E58A8C7C4F7652955AC146860D2:
           `.replace(/\t/g, ''));
   }
 
-  function testListSecretKeys(s: lsk.SecretKey[]): void {
+  function testListSecretKeys(s: SecretKey[]): void {
     assert.equal(s.length, 3);
     assert.equal(s[0].keyId, '1A5D93796CF70ADF');
     assert.equal(s[1].keyId, '23C4790FEF6E173F');
@@ -67,8 +67,8 @@ grp:::::::::2DC62D282D308E58A8C7C4F7652955AC146860D2:
   it('externListSecretKeys', async () => {
     return new Promise<void>(async (res, rej) => {
       try {
-        const mock = await gpg.createMock();
-        mock.list_secret_keys((err: string, keys: lsk.SecretKey[]) => {
+        const mock = await createMock();
+        mock.list_secret_keys((err: string, keys: SecretKey[]) => {
           assert.equal(err, null);
           testListSecretKeys(keys);
           res();

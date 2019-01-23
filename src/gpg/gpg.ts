@@ -27,9 +27,10 @@ import {
 } from '../model';
 import { Result, Mixed } from './result';
 
-interface GpgCmd {
+export interface GpgCmd {
   cmd: string[];
   cmdAgent: string[];
+  agent?: string[];
 }
 
 function gpgCmd(gc: GpgCmd): void {
@@ -50,54 +51,72 @@ function gpgCmd(gc: GpgCmd): void {
     gc.cmdAgent = ['/usr/local/bin/gpg-connect-agent'];
   }
   if (fs.existsSync('../gpg/gnupg/g10/gpg')) {
-    gc.cmd = ['../gpg/gnupg/g10/gpg'];
-    gc.cmdAgent = ['../gpg/gnupg/tools/gpg-connect-agent'];
+    gc.cmd = [path.resolve('../gpg/gnupg/g10/gpg')];
+    gc.cmdAgent = [path.resolve('../gpg/gnupg/tools/gpg-connect-agent')];
+    gc.agent = [path.resolve('../gpg/gnupg/agent/gpg-agent')];
   }
   if (fs.existsSync('/gnupg/g10/gpg')) {
     gc.cmd = ['/gnupg/g10/gpg'];
     gc.cmdAgent = ['/gnupg/tools/gpg-connect-agent'];
+    gc.agent = ['/gnupg/agent/gpg-agent'];
   }
+}
+
+export interface GpgProps {
+  readonly homeDir?: string;
+  readonly gpgCmd?: string;
+  readonly gpgCmdArgs?: string[];
+  readonly gpgAgentCmd?: string;
+  readonly gpgAgentCmdArgs?: string[];
+  readonly gpgAgent?: string;
+  readonly gpgAgentArgs?: string[];
+  readonly mockCmd: string[];
+  readonly version?: string;
 }
 
 export class Gpg {
   public homeDir: string = path.join(process.env.HOME, '.gnupg');
-  // pinEntryServer: pse.PinEntryServer;
-  public gpgCmd: string;
-  public gpgCmdArgs: string[] = [];
-  public gpgAgentCmd: string;
-  public gpgAgentCmdArgs: string[] = [];
-  public readonly mockCmd: string[];
   public version: string;
+  // pinEntryServer: pse.PinEntryServer;
+  public readonly gpgCmd: string;
+  public readonly gpgCmdArgs: string[] = [];
+  public readonly gpgAgentCmd: string;
+  public readonly gpgAgentCmdArgs: string[] = [];
+  public readonly gpgAgent: string;
+  public readonly gpgAgentArgs: string[] = [];
+  public readonly mockCmd: string[];
 
   public static _create(mockCmd: string[]): Gpg {
-    return new Gpg(mockCmd);
+    return new Gpg({ mockCmd });
   }
   public static async create(selectGpgCmd = gpgCmd): Promise<Gpg> {
     const gpg = await internalCreate(selectGpgCmd);
     return gpg;
   }
 
-  private constructor(mockCmd: string[]) {
+  private constructor(props: GpgProps) {
     this.gpgCmd = 'gpg2';
     this.gpgAgentCmd = 'gpg-connect-agent';
-    this.mockCmd = mockCmd;
+    this.mockCmd = props.mockCmd;
+    this.homeDir = props.homeDir || path.join(process.env.HOME, '.gnupg');
+    // pinEntryServer: pse.PinEntryServer;
+    this.gpgCmd = props.gpgCmd || 'tbd-gpg';
+    this.gpgCmdArgs = props.gpgCmdArgs || [];
+    this.gpgAgentCmd = props.gpgAgentCmd;
+    this.gpgAgentCmdArgs = props.gpgAgentCmdArgs || [];
+    this.gpgAgent = props.gpgAgent;
+    this.gpgAgentArgs = props.gpgAgentArgs || [];
+    this.version = props.version || 'unkown';
   }
 
   public clone(): Gpg {
-    let ret = new Gpg(this.mockCmd);
-    ret.homeDir = this.homeDir;
-    ret.gpgCmd = this.gpgCmd;
-    ret.gpgCmdArgs = this.gpgCmdArgs;
-    ret.gpgAgentCmd = this.gpgAgentCmd;
-    ret.gpgAgentCmdArgs = this.gpgAgentCmdArgs;
-    return ret;
+    return new Gpg(this);
   }
 
   public useMock(): Gpg {
     const mock = this.clone();
-    mock.setGpgCmd(mock.mockCmd);
-    mock.setGpgAgentCmd(mock.mockCmd.concat(['connect-agent']));
-    return mock;
+    return mock.setGpgCmd(mock.mockCmd)
+      .setGpgAgentCmd(mock.mockCmd.concat(['connect-agent']));
   }
 
   public getVersion(): Promise<string> {
@@ -118,11 +137,10 @@ export class Gpg {
         [
           `GpgVersion:[${this.version}]`,
           `Exec:[${[this.gpgCmd].concat(this.gpgCmdArgs).join('][')}]`,
-          `Agent:[${[this.gpgAgentCmd]
-            .concat(this.gpgAgentCmdArgs)
-            .join('][')}]`,
+          (this.gpgAgent && `Agent:[${[this.gpgAgent].concat(this.gpgAgentArgs).join('][')}]`),
+          `AgentConnect:[${[this.gpgAgentCmd].concat(this.gpgAgentCmdArgs).join('][')}]`,
           `HomeDir:[${this.homeDir}]`
-        ].join(`\n`)
+        ].filter(i => i).join(`\n`)
       );
     });
   }
@@ -140,15 +158,30 @@ export class Gpg {
   }
 
   public setGpgCmd(cmd: string[]): Gpg {
-    this.gpgCmd = cmd[0];
-    this.gpgCmdArgs = cmd.slice(1);
-    return this;
+    return new Gpg({
+      ...this,
+      gpgCmd: cmd[0],
+      gpgCmdArgs: cmd.slice(1),
+    });
   }
 
   public setGpgAgentCmd(cmd: string[]): Gpg {
-    this.gpgAgentCmd = cmd[0];
-    this.gpgAgentCmdArgs = cmd.slice(1);
-    return this;
+    return new Gpg({
+      ...this,
+      gpgAgentCmd: cmd[0],
+      gpgAgentCmdArgs: cmd.slice(1)
+    });
+  }
+
+  public setGpgAgent(cmd?: string[]): Gpg {
+    if (!cmd) {
+      return this;
+    }
+    return new Gpg({
+      ...this,
+      gpgAgent: cmd[0],
+      gpgAgentArgs: cmd.slice(1)
+    });
   }
 
   public started(cb: (s: Result) => void): void {
@@ -156,7 +189,7 @@ export class Gpg {
   }
 
   public getSocketName(cb: (sname: string) => void): void {
-    console.log('getSocketName', this);
+    // console.log('getSocketName', this);
     this.runAgent(['GETINFO socket_name', '/bye'], null, (res: Result) => {
       if (res.exitCode != 0) {
         // console.log("getSocketName-1:", res);
@@ -183,6 +216,10 @@ export class Gpg {
     if (this.homeDir) {
       attributes.splice(0, 0, this.homeDir);
       attributes.splice(0, 0, '--homedir');
+    }
+    if (this.gpgAgent) {
+      attributes.splice(0, 0, this.gpgAgent);
+      attributes.splice(0, 0, '--agent-program');
     }
     // console.log(attributes);
     const result = new Result(this).setStdIn(stdIn);
@@ -328,7 +365,7 @@ export class Gpg {
         '--delete-secret-key',
         fingerPrint
       );
-      console.log('deleteSecretKey:', args);
+      // console.log('deleteSecretKey:', args);
       this.run(args, null, cb);
     });
   }
@@ -383,7 +420,7 @@ export class Gpg {
       '--full-gen-key',
       '--batch'
     ];
-    console.log('createMasterKey:', this.gpgCmd, this.gpgCmdArgs, args);
+    // console.log('createMasterKey:', this.gpgCmd, this.gpgCmdArgs, args, keyGen.masterCommand());
     this.run(args, keyGen.masterCommand(), cb);
   }
 
@@ -457,7 +494,7 @@ export class Gpg {
       ki.usage.values.join(','),
       format_date(kg.expireDate.value)
     ];
-    console.log('createSubkey', args);
+    // console.log('createSubkey', args);
     this.run(args, null, cb);
   }
 
@@ -723,7 +760,17 @@ export class Gpg {
 }
 
 function findGpgMock(): Promise<string[]> {
-  let dirname = process.argv[process.argv.length - 1];
+  let dirname: string;
+  let pname = 'gpg-mock';
+  let execPath = process.execPath;
+  if (process.env.PACKED === 'true') {
+    dirname = __filename;
+  } else {
+    pname = 'index';
+    dirname = path.join(__dirname, '../gpg-mock/index');
+    execPath = 'ts-node';
+  }
+  // console.log('findGpgMock:Init', pname, dirname);
   let gm = '';
   let prevDirname = '';
   return new Promise<string[]>(async (res, rej) => {
@@ -731,11 +778,12 @@ function findGpgMock(): Promise<string[]> {
     do {
       prevDirname = dirname;
       dirname = path.dirname(dirname);
-      gm = path.join(dirname, 'gpg-mock.js');
-      // console.log(gm);
+      gm = require.resolve(path.join(dirname, pname));
+      // console.log('findGpgMock:GM:', dirname, pname, gm);
       gmExists = await fsPromise.pathExists(gm);
     } while (prevDirname != dirname && !gmExists);
-    res([process.execPath, gm]);
+    // console.log('findGpgMock:', __filename, execPath, gm);
+    res([execPath, gm]);
   });
 }
 
@@ -744,14 +792,16 @@ export async function internalCreate(
 ): Promise<Gpg> {
   return new Promise<Gpg>(async (res, rej) => {
     const mockCmd = await findGpgMock();
-    const gpgcmd = {
+    const gpgcmd: GpgCmd = {
       cmd: mockCmd,
       cmdAgent: mockCmd.concat(['connect-agent'])
     };
     selectGpgCmd(gpgcmd);
-    const gpg = Gpg._create(mockCmd);
-    gpg.setGpgCmd(gpgcmd.cmd);
-    gpg.setGpgAgentCmd(gpgcmd.cmdAgent);
+    // console.log(`internalCreate:`, mockCmd, gpgCmd);
+    let gpg = Gpg._create(mockCmd);
+    gpg = gpg.setGpgCmd(gpgcmd.cmd);
+    gpg = gpg.setGpgAgentCmd(gpgcmd.cmdAgent);
+    gpg = gpg.setGpgAgent(gpgcmd.agent);
     res(gpg);
   });
 }
@@ -760,7 +810,7 @@ export function createTest(
   selectGpgCmd = gpgCmd,
   title = 'Test'
 ): Promise<Gpg> {
-  return new Promise<Gpg>(async (res, rej) => {
+  return new Promise<Gpg>(async (res, _rej) => {
     const gpg = await internalCreate(selectGpgCmd);
     const homedir = path.join(
       process.cwd(),

@@ -2,6 +2,7 @@ const fs = require('fs');
 const node_modules = fs.readdirSync('node_modules').filter(x => x !== '.bin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const webpack = require('webpack');
 // const WebpackShellPlugin = require('webpack-shell-plugin');
 
 
@@ -58,7 +59,8 @@ module.exports = [{
     new ExtractTextPlugin('styles.css'),
     new HtmlWebpackPlugin({
       template: './src/ui/index.ejs'
-    })
+    }),
+    new webpack.EnvironmentPlugin({ PACKED: 'true' })
   ]
 }, {
   mode: 'development',
@@ -77,15 +79,22 @@ module.exports = [{
       }
     ]
   },
+  node: {
+    __dirname: false,
+    __filename: false
+  },
   externals: node_modules,
   devtool: 'source-map',
   resolve: {
     extensions: ['.tsx', '.ts', '.webpack.js', '.web.js', '.js']
-  }
+  },
+  plugins: [
+    new webpack.EnvironmentPlugin({ PACKED: 'true' })
+  ]
 }, {
   mode: 'development',
   target: 'node',
-  entry: './src/gpg-mock/gpg-mock',
+  entry: './src/gpg-mock/index',
   output: {
     path: __dirname + '/dist',
     filename: 'gpg-mock.js',
@@ -99,11 +108,18 @@ module.exports = [{
       }
     ]
   },
+  node: {
+    __filename: false,
+    __dirname: false
+  },
   externals: node_modules,
   devtool: 'source-map',
   resolve: {
     extensions: ['.tsx', '.ts', '.webpack.js', '.web.js', '.js']
-  }
+  },
+  plugins: [
+    new webpack.EnvironmentPlugin({ PACKED: 'true' })
+  ]
 }
 
 ];

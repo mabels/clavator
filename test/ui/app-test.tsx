@@ -19,7 +19,7 @@ import * as React from 'react';
 import { expect } from 'chai';
 import * as Enzyme from 'enzyme';
 
-import App from '../../src/ui/app';
+import { App } from '../../src/ui/app';
 // import { TabList } from 'react-tabs';
 
 import * as Adapter from 'enzyme-adapter-react-16';

@@ -11,9 +11,9 @@ export class KeyToYubiKey {
 
   public static fill(js: any): KeyToYubiKey {
     const ra = new KeyToYubiKey();
-    ra._fingerprint.set(js['fingerprint']);
-    ra._card_id.set(js['card_id']);
-    ra._slot_id.set(js['slot_id']);
+    ra._fingerprint.set(js['_fingerprint'] || js['fingerprint']);
+    ra._card_id.set(js['_card_id'] || js['card_id']);
+    ra._slot_id.set(js['_slot_id'] || js['slot_id']);
     ra.admin_pin._pin.set(js['admin_pin']['pin']);
     ra.passphrase = MutableString.fill(js['passphrase']);
     return ra;

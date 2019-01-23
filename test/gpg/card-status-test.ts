@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import * as cs from '../../src/gpg/card-status';
+import { Gpg2CardStatus } from '../../src/gpg/types';
 
 function gpg_card_funny(): string {
   return [
@@ -57,7 +57,7 @@ function gpg_card_status(): string {
 describe('gpg_card_status', () => {
   it('read gpg_card_status', () => {
     let gcss = gpg_card_status();
-    let css = cs.Gpg2CardStatus.read(gcss);
+    let css = Gpg2CardStatus.read(gcss);
     assert.equal(css.length, 3, 'size');
     for (let mycs of css) {
       assert.equal(mycs.reader.model, 'Yubico Yubikey 4 OTP U2F CCID');
@@ -104,7 +104,7 @@ describe('gpg_card_status', () => {
 
   it('read gpg_funny_card', () => {
     let gcss = gpg_card_funny();
-    let css = cs.Gpg2CardStatus.read(gcss);
+    let css = Gpg2CardStatus.read(gcss);
     assert.equal(css.length, 1, 'size');
     for (let mycs of css) {
       assert.equal(mycs.reader.model, '1050:0407:X:0');
@@ -151,15 +151,15 @@ describe('gpg_card_status', () => {
 
   it('eq', () => {
     let gcss = gpg_card_status();
-    let css1 = cs.Gpg2CardStatus.read(gcss);
-    let css2 = cs.Gpg2CardStatus.read(gcss);
+    let css1 = Gpg2CardStatus.read(gcss);
+    let css2 = Gpg2CardStatus.read(gcss);
     assert.ok(css1[0].eq(css2[0]));
   });
 
    it('not eq', () => {
     let gcss = gpg_card_status();
-    let cs1 = cs.Gpg2CardStatus.read(gcss)[0];
-    let cs2 = cs.Gpg2CardStatus.read(gcss)[0];
+    let cs1 = Gpg2CardStatus.read(gcss)[0];
+    let cs2 = Gpg2CardStatus.read(gcss)[0];
 
     cs1.reader.model = 'Wurst';
     assert.isFalse(cs1.eq(cs2));

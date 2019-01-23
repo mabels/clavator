@@ -22,17 +22,21 @@ export class DiceWareDispatcher implements Dispatcher {
     return new DiceWare(fname, list);
   }
 
-  private static moduleToDiceWare(): DiceWare[] {
+  private static moduleToDiceWare(): Promise<DiceWare[]> {
     if (DiceWareDispatcher.diceWares.length > 0) {
-      return DiceWareDispatcher.diceWares;
+      return Promise.resolve(DiceWareDispatcher.diceWares);
     }
-    Array.prototype.push.apply(
-      DiceWareDispatcher.diceWares,
-      DICEWAREWORLDLISTS.map(wl =>
-        DiceWareDispatcher.listToDiceWare(wl.url, wl.body)
-      )
-    );
-    return DiceWareDispatcher.diceWares;
+    return new Promise((rs, rj) => {
+      DICEWAREWORLDLISTS.then(diceWordLists => {
+        Array.prototype.push.apply(
+          DiceWareDispatcher.diceWares,
+          diceWordLists.map(wl =>
+            DiceWareDispatcher.listToDiceWare(wl.url, wl.body)
+          )
+        );
+        rs(DiceWareDispatcher.diceWares);
+      }).catch(rj);
+    });
   }
 
   public static get(): Promise<DiceWare[]> {

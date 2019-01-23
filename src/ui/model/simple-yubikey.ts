@@ -80,9 +80,9 @@ export class SimpleYubikey {
     const kg = KeyGen.withSubKeys(3);
     this.common.uids.forEach(k => kg.uids.add(k));
     kg.expireDate._value.set(this.common.expireDate.value);
-    kg.keyInfo = new KeyInfo(this.common.keyParams.type.value,
+    kg.keyInfo.fill(JSON.stringify(new KeyInfo(this.common.keyParams.type.value,
                              this.common.keyParams.masterLen.value,
-                             ['cert']);
+                             ['cert'])));
     kg.subKeys.forEach(ki => {
       ki.type._value.set(this.common.keyParams.type.value);
       ki.length._value.set(this.common.keyParams.subLen.value);

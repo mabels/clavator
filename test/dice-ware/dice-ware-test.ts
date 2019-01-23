@@ -1,8 +1,8 @@
 
 import { assert } from 'chai';
 
-import DiceWareDispatcher from '../../src/server/dispatcher/dice-ware-dispatcher';
-import DiceWare from '../../src/dice-ware/dice-ware';
+import { DiceWareDispatcher } from '../../src/server/dispatcher/dice-ware-dispatcher';
+import { DiceWare } from '../../src/dice-ware';
 
 describe('DiceWare', () => {
   it('serialize', async () => {

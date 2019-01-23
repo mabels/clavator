@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import { SimpleYubikey } from '../../src/ui/model/simple-yubikey';
+import { SimpleYubikey } from '../../src/ui/model';
 
 describe('SimpleYubiKey', () => {
 

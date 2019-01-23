@@ -2,8 +2,8 @@
 import { MutableString } from '../model/mutable-string';
 
 export interface RequestAsciiProps {
-  readonly passphrase: string;
   readonly fingerprint: string;
+  readonly passphrase?: string;
   readonly action?: string;
 }
 

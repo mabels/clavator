@@ -15,9 +15,9 @@ import { KeyGenUid } from './key-gen-uid';
 import { observable } from 'mobx';
 
 export class ValidatableString {
-  public match: RegExp;
-  public value: string;
-  public errText: string;
+  public readonly match: RegExp;
+  public readonly value: string;
+  public readonly errText: string;
   public constructor(match: RegExp, e: string) {
     this.match = match;
     this.value = '';
@@ -59,9 +59,9 @@ export class ValidatableString {
 // }
 
 export class KeyInfo extends ObjectId implements Pallet {
-  public type: Option<string>;
-  public length: Option<number>;
-  public usage: MultiOption<string>;
+  public readonly type: Option<string>;
+  public readonly length: Option<number>;
+  public readonly usage: MultiOption<string>;
 
   public constructor(
     type = 'RSA',
@@ -139,19 +139,19 @@ export class KeyInfo extends ObjectId implements Pallet {
 // }
 
 export class KeyGen {
-  public password: StringValue = new StringValue(
+  public readonly password: StringValue = new StringValue(
     /^.{14,1024}$/,
     'Password Error'
   );
-  public keyInfo: KeyInfo = new KeyInfo('RSA', 4096, ['cert']);
-  public expireDate: DateValue = new DateValue(
+  public readonly keyInfo: KeyInfo = new KeyInfo('RSA', 4096, ['cert']);
+  public readonly expireDate: DateValue = new DateValue(
     expireDate(),
     'expireDate error'
   );
-  public uids: Container<KeyGenUid> = new Container<KeyGenUid>(() => {
+  public readonly uids: Container<KeyGenUid> = new Container<KeyGenUid>(() => {
     return new KeyGenUid();
   });
-  public subKeys: Container<KeyInfo> = new Container<KeyInfo>(() => {
+  public readonly subKeys: Container<KeyInfo> = new Container<KeyInfo>(() => {
     return new KeyInfo();
   });
 
@@ -177,7 +177,7 @@ export class KeyGen {
   }
 
   public errText(): string[] {
-    let ret: string[] = [];
+    const ret: string[] = [];
     assignOnError(this.password.valid(), ret, this.password.errText());
     // !this.adminPin.valid() && ret.push(this.adminPin.errText);
     // !this.userPin.valid() && ret.push(this.userPin.errText);
@@ -190,7 +190,7 @@ export class KeyGen {
 
   public valid(): boolean {
     // console.log(this.errText());
-    let ret =
+    const ret =
       this.password.valid() &&
       //  this.adminPin.valid() && this.userPin.valid() &&
       this.keyInfo.valid() &&
@@ -204,7 +204,7 @@ export class KeyGen {
   }
 
   public masterCommand(): string {
-    let ret = [
+    const ret = [
       'Key-Type: ' + this.keyInfo.type.value,
       'Key-Length: ' + this.keyInfo.length.value,
       'Key-Usage: ' + this.keyInfo.usage.values,
