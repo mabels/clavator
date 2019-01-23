@@ -243,7 +243,7 @@ export class Gpg {
     // console.log(attributes);
     let result = new Result(this).setStdIn(stdIn);
 
-    // console.log(this.gpgAgentCmd, attributes, stdIn);
+    console.log('runAgent:', this.gpgAgentCmd, this.gpgAgentCmdArgs, attributes, stdIn);
     result.run(this.gpgAgentCmd, this.gpgAgentCmdArgs, attributes, cb);
   }
 
@@ -580,20 +580,22 @@ export class Gpg {
       fingerprint: ktyk.fingerprint,
       passphrase: ktyk.passphrase.value,
     });
+    console.log('prepareKeyToYubiKey:1', this);
     this.pemPrivateKey(rqa, async (res: Result) => {
+      console.log('prepareKeyToYubiKey:2', res.exitCode);
       if (res.exitCode != 0) {
         cb(null, res);
         return;
       }
       let gpgSmartCard = this.clone();
-      let homedir = path.join(
+      const homedir = path.join(
         process.cwd(),
         `${uuid
           .v4()
           .toString()
           .slice(0, 16)}.ctr`
       );
-      console.log('keyToYubiKey:', homedir);
+      console.log('keyToYubiKey:', homedir, gpgSmartCard);
       gpgSmartCard.setHomeDir(homedir);
       try {
         await fsPromise.mkdir(homedir);
@@ -604,26 +606,32 @@ export class Gpg {
         cb(null, res);
         return;
       }
+      console.log('keyToYubiKey:1:', homedir);
       gpgSmartCard.importSecretKey(ktyk, res.stdOut, (ires: Result) => {
+        console.log('keyToYubiKey:2:', ires.exitCode);
         if (ires.exitCode != 0) {
           cb(null, ires);
+          return;
         }
-        this.getSocketNames(
-          this,
-          gpgSmartCard,
+        console.log('keyToYubiKey:2:');
+        this.getSocketNames(this, gpgSmartCard,
           (sres: Result, s1: string, s2: string) => {
+            console.log('keyToYubiKey:3:', s1, s2);
             if (sres) {
               cb(null, sres);
               return;
             }
+            console.log('keyToYubiKey:4:');
             gpgSmartCard.runAgent(
               ['killagent', '/bye'],
               null,
               async (ares: Result) => {
+                console.log('keyToYubiKey:5:');
                 if (ares.exitCode != 0) {
                   cb(null, ares);
                   return;
                 }
+                console.log('keyToYubiKey:6:');
                 try {
                   if (s1 != s2) {
                     try {
@@ -660,17 +668,17 @@ export class Gpg {
         cb(res);
         return;
       }
-      let args = [
+      const args = [
         '--pinentry-mode',
         'loopback',
         '--passphrase-fd',
         () => {
-          // console.log(">>keyToYubiKey:passphrase[", ktyk.passphrase.value, "]")
+          console.log('>>keyToYubiKey:passphrase[', ktyk.passphrase.value, ']');
           return ktyk.passphrase.value + '\n';
         },
         '--passphrase-fd',
         () => {
-          // console.log(">>keyToYubiKey:admin[", ktyk.admin_pin.pin, "]")
+          console.log('>>keyToYubiKey:admin[', ktyk.admin_pin.pin, ']');
           return ktyk.admin_pin.pin + '\n';
         },
         '--quick-keytocard',
@@ -678,13 +686,13 @@ export class Gpg {
         '' + ktyk.slot_id,
         ktyk.card_id
       ];
-      // console.log('keyToYubiKey', args);
+      console.log('keyToYubiKey', args);
       gpgYubiKey.run(args, null, (resx: Result) => {
         if (resx.exitCode == 0) {
           // console.error('keyToYubiKey:error:', resx);
           rimraf.sync(gpgYubiKey.homeDir);
         }
-        // console.log('keyToYubikey:transaction', resx.execTransaction);
+        console.log('keyToYubikey:transaction', resx.exitCode, resx.stdOut, res.stdErr);
         cb(resx);
       });
     });

@@ -58,10 +58,12 @@ export class Result {
     attributes: Mixed[],
     cb: (res: Result) => void
   ): void {
-    let args = cmdArgs.concat(attributes);
+    const args = cmdArgs.concat(attributes);
     this.runQueue.push({ cmd: cmd, attributes: args, cb: cb });
     if (this.runQueue.length == 1) {
       this._run(cmd, args, cb);
+    } else {
+      console.log(`Queued:${this.runQueue}`);
     }
   }
 
@@ -79,24 +81,24 @@ export class Result {
     cb: (res: Result) => void
   ): void {
     // console.log("run=["+cmd+"]", attributes);
-    let fds: (() => string)[] = [];
+    const fds: (() => string)[] = [];
     let freeFd = 3;
-    let attrs = attributes.map(i => {
+    const attrs = attributes.map(i => {
       if (typeof i == 'function') {
         fds.push(i);
         return '' + freeFd++;
       }
       return i;
     });
-    let writables: string[] = fds.map(func => {
+    const writables: string[] = fds.map(func => {
       return 'pipe';
     });
 
-    let stdio: any[] = ['pipe', 'pipe', 'pipe'];
-    stdio = stdio.concat(writables);
+    const stdio: any[] = ['pipe', 'pipe', 'pipe'];
+    stdio.push.apply(stdio, writables);
     // console.log('STDIO:', stdio);
     this.execTransaction = { transaction: uuid.v4() };
-    // console.log('run=', cmd, attrs);
+    console.log('run=', this.execTransaction.transaction, cmd, attrs);
     const c = spawn(cmd, attrs, {
       env: Object.assign(
         {
@@ -107,12 +109,12 @@ export class Result {
       stdio: stdio
     });
     c.on('error', (e: Event) => {
-      console.error(`SPAWN ERROR:`, cmd, attrs, e);
+      console.error(`SPAWN ERROR:`, this.execTransaction.transaction, cmd, attrs, e);
       cb(this);
       this.processQueue();
     });
     if (this.stdIn && this.stdIn.length > 0) {
-      let s = new stream.Readable();
+      const s = new stream.Readable();
       s.push(this.stdIn);
       s.push(null);
       s.pipe(c.stdin);
@@ -130,7 +132,7 @@ export class Result {
         c.stdio[i].on('end', () => {
           // console.log('stdio->'+i+"->end");
         });
-        let s = new stream.Readable();
+        const s = new stream.Readable();
         // console.log(">>>>>>", stdio.length, i, 1, fds[i-3]());
         s.push(fds[i - 3]());
         // console.log(">>>>>>", stdio.length, i, 2);
@@ -149,14 +151,17 @@ export class Result {
     }
 
     c.stdout.on('data', (data: string) => {
-      this.stdOut += data;
+      console.log('result:stdout:', this.execTransaction.transaction, data.toString());
+      this.stdOut += data.toString();
     });
     c.stderr.on('data', (data: string) => {
-      this.stdErr += data;
+      console.log('result:stderr:', this.execTransaction.transaction, data.toString());
+      this.stdErr += data.toString();
     });
     c.on('close', (code: number) => {
+      console.log('result:close', this.execTransaction.transaction, code);
       if (code) {
-        console.error(`SPAWN CLOSE:`, cmd, attrs, code);
+        console.error(`SPAWN CLOSE:`, this.execTransaction.transaction, cmd, attrs, code);
       }
       this.exitCode = code;
       this.readExectransactionDump(cb);
