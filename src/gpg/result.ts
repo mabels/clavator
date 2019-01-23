@@ -63,7 +63,7 @@ export class Result {
     if (this.runQueue.length == 1) {
       this._run(cmd, args, cb);
     } else {
-      console.log(`Queued:${this.runQueue}`);
+      // console.log(`Queued:${this.runQueue}`);
     }
   }
 
@@ -98,7 +98,7 @@ export class Result {
     stdio.push.apply(stdio, writables);
     // console.log('STDIO:', stdio);
     this.execTransaction = { transaction: uuid.v4() };
-    console.log('run=', this.execTransaction.transaction, cmd, attrs);
+    // console.log('run=', this.execTransaction.transaction, cmd, attrs);
     const c = spawn(cmd, attrs, {
       env: Object.assign(
         {
@@ -151,15 +151,15 @@ export class Result {
     }
 
     c.stdout.on('data', (data: string) => {
-      console.log('result:stdout:', this.execTransaction.transaction, data.toString());
+      // console.log('result:stdout:', this.execTransaction.transaction, data.toString());
       this.stdOut += data.toString();
     });
     c.stderr.on('data', (data: string) => {
-      console.log('result:stderr:', this.execTransaction.transaction, data.toString());
+      // console.log('result:stderr:', this.execTransaction.transaction, data.toString());
       this.stdErr += data.toString();
     });
     c.on('close', (code: number) => {
-      console.log('result:close', this.execTransaction.transaction, code);
+      // console.log('result:close', this.execTransaction.transaction, code);
       if (code) {
         console.error(`SPAWN CLOSE:`, this.execTransaction.transaction, cmd, attrs, code);
       }

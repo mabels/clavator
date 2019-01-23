@@ -66,11 +66,13 @@ describe('Gpg', () => {
               keyGen(),
               keyGen().subKeys.first(),
               (_res: Result) => {
+                /*
                 console.log(
                   `Use GPG ${_res.gpg.getGpgCmd()}:${_res.gpg.homeDir}:${
                     key.keyId
                   }`
                 );
+                */
                 assert.equal(0, _res.exitCode);
                 resolve();
               }
@@ -84,7 +86,7 @@ describe('Gpg', () => {
   }, timeout);
 
   afterAll(async () => {
-    console.log(`afterAll`);
+    // console.log(`afterAll`);
     return new Promise(rs => {
       gpg.deleteSecretKey(key.fingerPrint.fpr, (res: Result) => {
         assert.equal(res.exitCode, 0, 'delete secret key');
@@ -155,32 +157,32 @@ describe('Gpg', () => {
 
   it('keyToSmartCard with Mock', async () => {
     // this.timeout(100000);
-    console.log('-1');
+    // console.log('-1');
     const mygpg = gpg.useMock();
-    console.log('-2');
+    // console.log('-2');
     const kytk = new KeyToYubiKey();
     kytk._fingerprint.set(key.keyId);
     kytk.passphrase._value.set('Gpg Test Jojo Akzu Luso');
     kytk.admin_pin._pin.set('12345678');
     kytk._card_id.set('Smarte-Karte');
     kytk._slot_id.set(4711);
-    console.log('-3');
+    // console.log('-3');
     return new Promise((rs, rj) => {
       mygpg.keyToYubiKey(kytk, (res: Result) => {
         try {
-          console.log('-3.1');
+          // console.log('-3.1');
           assert.equal(0, res.exitCode, `unknown exit code ${res.stdErr}`);
-          console.log('-3.2');
+          // console.log('-3.2');
           assert.equal(
             res.execTransaction.data.readFds[0].value,
             `${kytk.passphrase.value}\n`
           );
-          console.log('-3.3');
+          // console.log('-3.3');
           assert.equal(
             res.execTransaction.data.readFds[1].value,
             `${kytk.admin_pin.pin}\n`
           );
-          console.log('-3.4');
+          // console.log('-3.4');
           rs();
         } catch (e) {
           rj(e);

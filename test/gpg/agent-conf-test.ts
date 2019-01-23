@@ -40,7 +40,7 @@ describe('AgentConf', () => {
     assert.equal(ac.find('start-key')[1].value, 'value multiple values 2');
     assert.equal(ac.find('murks').length, 0);
     assert.equal(ac.find('end-key')[0].value, 'value');
-    console.log(AgentConfString());
+    // console.log(AgentConfString());
     assert.equal(ac.asString(), AgentConfString());
     ac.find('end-key')[0].value = 'test update';
     ac.add(new AgentLine('test-value juhu'));

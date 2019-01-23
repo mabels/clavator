@@ -12,7 +12,7 @@ describe('PassPhrase', () => {
 
   beforeAll((done: any): void => {
     DiceWareDispatcher.get()
-      .then(dws => { diceWares = dws; console.log('diceWares loaded'); done(); })
+      .then(dws => { diceWares = dws; /* console.log('diceWares loaded'); */ done(); })
       .catch(err => { console.error(err); done(); });
   });
 
