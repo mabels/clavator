@@ -15,7 +15,7 @@ import { RequestAscii } from '../../src/model';
 // import { findDOMNode } from 'react-dom';
 // import { dirname } from 'path';
 
-const timeout = 30000;
+const timeout = 180 * 1000;
 
 function expireDate(): Date {
   const now = new Date();
