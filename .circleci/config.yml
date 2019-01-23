@@ -24,6 +24,7 @@ jobs:
 
       - run: npm install
       - run: npm audit
+      - run: find / -name "gpg*" -ls
 
       - save_cache:
           paths:
