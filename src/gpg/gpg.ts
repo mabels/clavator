@@ -21,10 +21,7 @@ import {
   RequestChangePin,
   KeyGenUid
 } from './types';
-import {
-  RequestAscii,
-  format_date
-} from '../model';
+import { RequestAscii, format_date } from '../model';
 import { Result, Mixed } from './result';
 
 export interface GpgCmd {
@@ -115,7 +112,8 @@ export class Gpg {
 
   public useMock(): Gpg {
     const mock = this.clone();
-    return mock.setGpgCmd(mock.mockCmd)
+    return mock
+      .setGpgCmd(mock.mockCmd)
       .setGpgAgentCmd(mock.mockCmd.concat(['connect-agent']));
   }
 
@@ -137,10 +135,15 @@ export class Gpg {
         [
           `GpgVersion:[${this.version}]`,
           `Exec:[${[this.gpgCmd].concat(this.gpgCmdArgs).join('][')}]`,
-          (this.gpgAgent && `Agent:[${[this.gpgAgent].concat(this.gpgAgentArgs).join('][')}]`),
-          `AgentConnect:[${[this.gpgAgentCmd].concat(this.gpgAgentCmdArgs).join('][')}]`,
+          this.gpgAgent &&
+            `Agent:[${[this.gpgAgent].concat(this.gpgAgentArgs).join('][')}]`,
+          `AgentConnect:[${[this.gpgAgentCmd]
+            .concat(this.gpgAgentCmdArgs)
+            .join('][')}]`,
           `HomeDir:[${this.homeDir}]`
-        ].filter(i => i).join(`\n`)
+        ]
+          .filter(i => i)
+          .join(`\n`)
       );
     });
   }
@@ -161,7 +164,7 @@ export class Gpg {
     return new Gpg({
       ...this,
       gpgCmd: cmd[0],
-      gpgCmdArgs: cmd.slice(1),
+      gpgCmdArgs: cmd.slice(1)
     });
   }
 
@@ -269,10 +272,7 @@ export class Gpg {
     ].join('\n');
   }
 
-  public getSecretKey(
-    fpr: string,
-    cb: (key: SecretKey) => void
-  ): void {
+  public getSecretKey(fpr: string, cb: (key: SecretKey) => void): void {
     this.list_secret_keys((err: string, keys: SecretKey[]) => {
       if (err) {
         cb(null);
@@ -291,9 +291,7 @@ export class Gpg {
     });
   }
 
-  public list_secret_keys(
-    cb: (err: string, keys: SecretKey[]) => void
-  ): void {
+  public list_secret_keys(cb: (err: string, keys: SecretKey[]) => void): void {
     this.run(
       ['--list-secret-keys', '--with-colons'],
       null,
@@ -315,9 +313,7 @@ export class Gpg {
     );
   }
 
-  public card_status(
-    cb: (err: string, keys: Gpg2CardStatus[]) => void
-  ): void {
+  public card_status(cb: (err: string, keys: Gpg2CardStatus[]) => void): void {
     this.run(['--card-status', '--with-colons'], null, (result: Result) => {
       if (result.exitCode != 0) {
         cb(
@@ -400,10 +396,7 @@ export class Gpg {
     });
   }
 
-  public createMasterKey(
-    keyGen: KeyGen,
-    cb: (res: Result) => void
-  ): void {
+  public createMasterKey(keyGen: KeyGen, cb: (res: Result) => void): void {
     //  '--enable-large-rsa',
     let args: Mixed[] = [
       '--no-tty',
@@ -578,7 +571,7 @@ export class Gpg {
   ): void {
     const rqa = new RequestAscii({
       fingerprint: ktyk.fingerprint,
-      passphrase: ktyk.passphrase.value,
+      passphrase: ktyk.passphrase.value
     });
     // console.log('prepareKeyToYubiKey:1', this);
     this.pemPrivateKey(rqa, async (res: Result) => {
@@ -614,7 +607,9 @@ export class Gpg {
           return;
         }
         // console.log('keyToYubiKey:2:');
-        this.getSocketNames(this, gpgSmartCard,
+        this.getSocketNames(
+          this,
+          gpgSmartCard,
           (sres: Result, s1: string, s2: string) => {
             // console.log('keyToYubiKey:3:', s1, s2);
             if (sres) {
