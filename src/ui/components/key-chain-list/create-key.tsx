@@ -11,7 +11,6 @@ import {
 } from '../../model';
 import { Message } from '../../../model';
 import { CreateKeyForm } from './create-key-form';
-import { observable } from 'mobx';
 
 interface CreateKeyProps extends React.Props<CreateKey> {
   readonly appState: AppState;

@@ -23,7 +23,7 @@ export interface KeyChainListProps extends React.Props<KeyChainList> {
 export interface KeyChainDialogQItem {
   readonly dialogs: KeyChainListDialogs;
   readonly action: string;
-  readonly secKey?: SecretKey | GpgKey;
+  readonly secKey: SecretKey | GpgKey;
   readonly idx?: number;
 }
 
@@ -33,20 +33,20 @@ export class KeyChainList extends React.Component<
   {}
 > {
 
-  public dialogQ: IObservableArray<KeyChainDialogQItem> = observable.array();
+  public readonly dialogQ: IObservableArray<KeyChainDialogQItem> = observable.array();
   // public readonly dialogs: IObservableValue<KeyChainListDialogs>;
   // public readonly dialogSecKey: IObservableValue<SecretKey>;
   // public idx: number;
   // public readonly action: IObservableValue<string>;
   // public respondAscii?: RespondAscii;
-  public readonly passPhrase: IObservableValue<string>;
+  // public readonly passPhrase: IObservableValue<string>;
 
   constructor(props: KeyChainListProps) {
     super(props);
     // this.dialogs = observable.box(KeyChainListDialogs.closed);
     // this.dialogSecKey = observable.box(undefined);
     // this.action = observable.box();
-    this.passPhrase = observable.box(); // new MutableString();
+    // this.passPhrase = observable.box(); // new MutableString();
   }
 
   /*
@@ -81,8 +81,8 @@ export class KeyChainList extends React.Component<
           dialogSecKey={this.dialogSecKey}
           idx={this.idx}
           action={this.action}
-          */
           passPhrase={this.passPhrase}
+          */
         />
         {this.props.appState.keyChainListState.keyChainList.map(
           (secKey: SecretKey, idx: number) => {

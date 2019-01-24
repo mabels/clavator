@@ -1,9 +1,7 @@
 import * as React from 'react';
 import * as  ReactModal from 'react-modal';
 
-import { GpgKey } from '../../../gpg/types';
 import { Dispatch } from '../../model';
-import { MutableString } from '../../../model';
 
 import { AskPassphrase } from './ask-passphrase';
 import { ReadAsciiRespond } from '../controls';
@@ -13,7 +11,7 @@ import { observer } from 'mobx-react';
 
 interface DialogAskRenderAsciiProps extends React.Props<DialogAskRenderAscii> {
   onClose: () => void;
-  dialogQ: IObservableArray<KeyChainDialogQItem>;
+  // dialogQ: IObservableArray<KeyChainDialogQItem>;
   channel: Dispatch;
   current: KeyChainDialogQItem;
   // action: IObservableValue<string>;
@@ -22,12 +20,12 @@ interface DialogAskRenderAsciiProps extends React.Props<DialogAskRenderAscii> {
 @observer
 export class DialogAskRenderAscii extends React.Component<DialogAskRenderAsciiProps, {}> {
 
-  public readonly passPhrase: MutableString;
+  public readonly passPhrase: IObservableValue<string>;
   public readonly doRead: IObservableValue<boolean>;
 
   constructor(props: DialogAskRenderAsciiProps) {
     super(props);
-    this.passPhrase = new MutableString();
+    this.passPhrase = observable.box();
     this.doRead = observable.box(false);
   }
 
@@ -50,7 +48,7 @@ export class DialogAskRenderAscii extends React.Component<DialogAskRenderAsciiPr
           action="pem-private"
           secKey={this.props.current.secKey}
           channel={this.props.channel}
-          passPhrase={this.passPhrase}
+          passPhrase={this.passPhrase.get()}
         /> : null}
       </ReactModal>
     );

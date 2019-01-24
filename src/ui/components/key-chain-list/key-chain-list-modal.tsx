@@ -16,7 +16,7 @@ export interface KeyChainListModalProps {
   // readonly action: IObservableValue<string>;
   // readonly selectedKey: SecretKey;
   readonly appState: AppState;
-  readonly passPhrase: IObservableValue<string>;
+  // readonly passPhrase: IObservableValue<string>;
   // readonly idx: number;
 }
 
@@ -24,25 +24,30 @@ export const KeyChainListModal = observer((props: KeyChainListModalProps): JSX.E
   if (props.dialogQ.length <= 0) {
     return <></>;
   }
+  debugger;
   const first = props.dialogQ[0];
+  console.log('KeyChainListModal:first:', first);
   const toClose = action(() => {
-    props.dialogQ.shift();
+    if (props.dialogQ[0] === first) {
+      console.log('KeyChainListModal:Close:', first);
+      props.dialogQ.shift();
+    }
   });
   switch (first.dialogs) {
     case KeyChainListDialogs.openAscii:
       return (
         <DialogRenderAscii
-          dialogQ={props.dialogQ}
+          // dialogQ={props.dialogQ}
           onClose={toClose}
           current={first}
           channel={props.appState.channel}
-          passPhrase={props.passPhrase}
+          // passPhrase={props.passPhrase}
         />
       );
     case KeyChainListDialogs.askPassPhraseAscii:
       return (
         <DialogAskRenderAscii
-          dialogQ={props.dialogQ}
+          // dialogQ={props.dialogQ}
           onClose={toClose}
           channel={props.appState.channel}
           current={first}
@@ -53,7 +58,7 @@ export const KeyChainListModal = observer((props: KeyChainListModalProps): JSX.E
         <DialogSendToCard
           // idx={props.idx}
           onClose={toClose}
-          dialogQ={props.dialogQ}
+          // dialogQ={props.dialogQ}
           current={first}
           appState={props.appState}
         />

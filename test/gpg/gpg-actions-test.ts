@@ -8,7 +8,8 @@ import {
   KeyGen,
   KeyInfo,
   KeyToYubiKey,
-  SecretKey
+  SecretKey,
+  Pin
 } from '../../src/gpg/types';
 
 import { RequestAscii } from '../../src/model';
@@ -135,9 +136,12 @@ describe('Gpg', () => {
 
   it('prepareToYubiKey', async () => {
     // this.timeout(100000);
-    let kytk = new KeyToYubiKey();
-    kytk._fingerprint.set(key.keyId);
-    kytk.passphrase._value.set('Gpg Test Jojo Akzu Luso');
+    const kytk = new KeyToYubiKey({
+      fingerprint: key.keyId,
+      passphrase: 'Gpg Test Jojo Akzu Luso',
+      card_id: 'TbdCardId',
+      slot_id: 42
+    });
     return new Promise(rs => {
       gpg.prepareKeyToYubiKey(kytk, (mygpg: Gpg, res: Result) => {
         assert.equal(0, res.exitCode, `unknown exit code ${res.stdErr}`);
@@ -160,12 +164,13 @@ describe('Gpg', () => {
     // console.log('-1');
     const mygpg = gpg.useMock();
     // console.log('-2');
-    const kytk = new KeyToYubiKey();
-    kytk._fingerprint.set(key.keyId);
-    kytk.passphrase._value.set('Gpg Test Jojo Akzu Luso');
-    kytk.admin_pin._pin.set('12345678');
-    kytk._card_id.set('Smarte-Karte');
-    kytk._slot_id.set(4711);
+    const kytk = new KeyToYubiKey({
+      fingerprint: key.keyId,
+      card_id: 'Smarte-Karte',
+      slot_id: 4711,
+      passphrase: 'Gpg Test Jojo Akzu Luso',
+      admin_pin: new Pin({pin: '12345678'}),
+    });
     // console.log('-3');
     return new Promise((rs, rj) => {
       mygpg.keyToYubiKey(kytk, (res: Result) => {
@@ -175,7 +180,7 @@ describe('Gpg', () => {
           // console.log('-3.2');
           assert.equal(
             res.execTransaction.data.readFds[0].value,
-            `${kytk.passphrase.value}\n`
+            `${kytk.passphrase}\n`
           );
           // console.log('-3.3');
           assert.equal(
@@ -205,9 +210,9 @@ describe('Gpg', () => {
   it('pemPrivateKey', async () => {
     // this.timeout(10000);
     const rqa: RequestAscii = new RequestAscii({
-      fingerprint: key.keyId
+      fingerprint: key.keyId,
+      passphrase: 'Gpg Test Jojo Akzu Luso'
     });
-    rqa.passphrase._value.set('Gpg Test Jojo Akzu Luso');
     return new Promise(rs => {
       gpg.useMock().pemPrivateKey(rqa, (res: Result) => {
         assert.equal(

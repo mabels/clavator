@@ -16,7 +16,9 @@ function sendToCard(props: SubButtonsProps): React.EventHandler<React.MouseEvent
     console.log('sendToCard:Activate');
     props.dialogQ.push({
       dialogs: KeyChainListDialogs.sendToCard,
-      action: 'SubButtons:SendToCard'
+      action: 'SubButtons:SendToCard',
+      secKey: props.selectedKey,
+      idx: props.idx
     });
     // props.dialogSecKey.set(props.selectedKey);
   });

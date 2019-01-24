@@ -9,74 +9,67 @@ import { AppState } from '../../model';
 import { CardSlot } from './card-slot';
 import { action } from 'mobx';
 
-interface AskKeyToYubiKeyState {
-  keyToYubiKey: KeyToYubiKey;
-  transaction: Message.Transaction<KeyToYubiKey>;
-}
-
-interface AskKeyToYubiKeyProps extends React.Props<AskKeyToYubiKey> {
-  fingerprint: string;
-  appState: AppState;
-  slot_id: number;
+export interface AskKeyToYubiKeyProps extends React.Props<AskKeyToYubiKey> {
+  readonly fingerprint: string;
+  readonly appState: AppState;
+  readonly slot_id: number;
 }
 
 @observer
 export class AskKeyToYubiKey
-  extends React.Component<AskKeyToYubiKeyProps, AskKeyToYubiKeyState> {
+  extends React.Component<AskKeyToYubiKeyProps, {}> {
+
+  public readonly keyToYubiKey: KeyToYubiKey;
+  public readonly transaction: Message.Transaction<KeyToYubiKey>;
+
   constructor(props: AskKeyToYubiKeyProps) {
     super(props);
-    let transaction = Message.newTransaction<KeyToYubiKey>('SendKeyToYubiKey.run');
-    transaction.data = new KeyToYubiKey();
-    this.state = {
-      keyToYubiKey: transaction.data,
-      transaction: transaction
-    };
-    this.sendKeyToYubiKey = this.sendKeyToYubiKey.bind(this);
+    this.keyToYubiKey = new KeyToYubiKey({
+      fingerprint: this.props.fingerprint,
+      slot_id: this.props.slot_id,
+      card_id: this.props.appState.cardStatusListState.cardStatusList[0].reader.cardid
+    });
+    this.transaction = Message.newTransaction<KeyToYubiKey>('SendKeyToYubiKey.run');
+    this.transaction.data = this.keyToYubiKey;
   }
 
-  public componentWillMount(): void {
-    this.state.keyToYubiKey._fingerprint.set(this.props.fingerprint);
-    this.state.keyToYubiKey._slot_id.set(this.props.slot_id);
-    this.state.keyToYubiKey._card_id.set(this.props.appState.cardStatusListState.cardStatusList[0].reader.cardid);
-  }
-
-  public sendKeyToYubiKey(): void {
+  public sendKeyToYubiKey = (): void => {
     // console.log('sendKeyToYubiKey', this.state.keyToYubiKey)
-    this.state.transaction.data = this.state.keyToYubiKey;
-    this.props.appState.channel.send(this.state.transaction.asMsg());
+    this.transaction.data = this.keyToYubiKey;
+    this.props.appState.channel.send(this.transaction.asMsg());
   }
 
   public render(): JSX.Element {
     return (
       <form
         onSubmit={(e) => e.preventDefault()}
-        className={classnames({ 'AskKeyToYubiKey': true, good: this.state.keyToYubiKey.verify() })}
+        className={classnames({ 'AskKeyToYubiKey': true, good: this.keyToYubiKey.verify() })}
         key={this.props.fingerprint}>
         <CardSlot
-          keyToYubiKey={this.state.keyToYubiKey}
+          keyToYubiKey={this.keyToYubiKey}
           appState={this.props.appState} />
         <div className="row">
           <label>Passphrase:</label><input type="password"
-            className={classnames({ good: this.state.keyToYubiKey.verify() })}
+            className={classnames({ good: this.keyToYubiKey.verify() })}
             name={`aktyk-${this.props.fingerprint}`}
             onChange={action((e: any) => {
-              this.state.keyToYubiKey.passphrase._value.set(e.target.value);
+              this.keyToYubiKey.passphrase.set(e.target.value);
             })} />
         </div>
 
         <div className="row">
           <label>AdminPin:</label><input type="password"
-            className={classnames({ good: this.state.keyToYubiKey.admin_pin.verify() })}
+            className={classnames({ good: this.keyToYubiKey.admin_pin.verify() })}
             name={`aktyk-${this.props.fingerprint}`}
             onChange={action((e: any) => {
-              this.state.keyToYubiKey.admin_pin._pin.set(e.target.value);
+              this.keyToYubiKey.admin_pin._pin.set(e.target.value);
             })} />
         </div>
 
         <ButtonToProgressor
           appState={this.props.appState}
           onClick={this.sendKeyToYubiKey}
-          transaction={this.state.transaction}
+          transaction={this.transaction}
         >Send</ButtonToProgressor>
 
       </form>

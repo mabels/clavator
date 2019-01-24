@@ -19,7 +19,7 @@ export const CardSlot = observer(
           className="three columns"
           value={this.state.keyToYubiKey.slot_id}
           onChange={action((e: any) => {
-            props.keyToYubiKey._slot_id.set(~~e.target.value);
+            props.keyToYubiKey.slot_id.set(~~e.target.value);
             console.log('this.state.keyToYubiKey:', this.state.keyToYubiKey);
           })}
         >

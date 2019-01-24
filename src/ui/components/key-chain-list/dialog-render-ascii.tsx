@@ -3,19 +3,17 @@ import * as ReactModal from 'react-modal';
 import { observer } from 'mobx-react';
 
 import { Dispatch } from '../../model';
-import { GpgKey } from '../../../gpg/types';
 import { ReadAsciiRespond } from '../controls';
 import { IObservableValue, IObservableArray } from 'mobx';
-import { MutableString } from '../../../model';
 import { KeyChainDialogQItem } from './key-chain-list';
 
 interface DialogRenderAsciiProps {
   readonly onClose: () => void;
   readonly channel: Dispatch;
-  readonly dialogQ: IObservableArray<KeyChainDialogQItem>;
+  // readonly dialogQ: IObservableArray<KeyChainDialogQItem>;
   readonly current: KeyChainDialogQItem;
   // readonly action: IObservableValue<string>;
-  readonly passPhrase: MutableString;
+  // readonly passPhrase: IObservableValue<string>;
 }
 
 export const DialogRenderAscii = observer((props: DialogRenderAsciiProps) => {
@@ -32,7 +30,7 @@ export const DialogRenderAscii = observer((props: DialogRenderAsciiProps) => {
           action={props.current.action}
           channel={props.channel}
           secKey={props.current.secKey}
-          passPhrase={props.passPhrase}
+          // passPhrase={props.passPhrase.get()}
          />
       </ReactModal>
     );

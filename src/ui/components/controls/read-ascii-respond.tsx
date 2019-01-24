@@ -1,5 +1,7 @@
 import * as React from 'react';
-// import * as ReactModal from 'react-modal';
+import { IObservableValue, action, observable } from 'mobx';
+import { observer } from 'mobx-react';
+
 import * as CopyToClipboard from 'react-copy-to-clipboard';
 
 import { Dispatch } from '../../model';
@@ -7,15 +9,12 @@ import { GpgKey } from '../../../gpg/types';
 import {
   RequestAscii,
   RespondAscii,
-  MutableString,
   Message
 } from '../../../model';
-import { IObservableValue, action, observable } from 'mobx';
-import { observer } from 'mobx-react';
 
 export interface ReadAsciiRespondProps extends React.Props<ReadAsciiRespond> {
   readonly action: string;
-  readonly passPhrase: MutableString;
+  readonly passPhrase?: string;
   readonly channel: Dispatch;
   readonly secKey: GpgKey;
 }
@@ -58,7 +57,7 @@ export class ReadAsciiRespond extends React.Component<
     const ra = new RequestAscii({
       action: this.props.action,
       fingerprint: this.props.secKey.fingerPrint.fpr,
-      passphrase: this.props.passPhrase.value
+      passphrase: this.props.passPhrase
     });
     this.props.channel.send(this.transaction.asMsg(ra));
   }

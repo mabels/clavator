@@ -1,5 +1,4 @@
-
-import { MutableString } from '../model/mutable-string';
+import { IObservableValue, observable } from 'mobx';
 
 export interface RequestAsciiProps {
   readonly fingerprint: string;
@@ -8,9 +7,9 @@ export interface RequestAsciiProps {
 }
 
 export class RequestAscii {
-  public readonly passphrase: MutableString = new MutableString();
-  public readonly action?: string;
+  public readonly passphrase: string; // IObservableValue<string> = observable.box();
   public readonly fingerprint: string;
+  public readonly action?: string;
 
   public static fill(js: any): RequestAscii {
     return new RequestAscii({
@@ -22,7 +21,7 @@ export class RequestAscii {
 
   public constructor(props: RequestAsciiProps) {
     this.action = props.action;
-    this.passphrase._value.set(props.passphrase);
+    this.passphrase = props.passphrase;
     this.fingerprint = props.fingerprint;
   }
 

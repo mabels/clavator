@@ -39,11 +39,15 @@ export function CreateKeyForm(props: CreateKeyFormProps): JSX.Element {
         title="Expire-Date"
         expireDate={props.keyGen.expireDate}
       />
+      <div className="row">
+      <div className="three columns">
       {props.keyGen.uids.map((sb: KeyGenUid, i: number) => {
         if (sb) {
           return <CreateKeyUid key={i} idx={i} keyGenUid={sb} keyGen={props.keyGen} />;
         }
       })}
+      </div>
+      </div>
       <RcDoublePassword
         readOnly={props.readOnly}
         key={props.passPhrase.objectId()}

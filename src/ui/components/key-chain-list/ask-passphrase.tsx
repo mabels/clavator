@@ -3,10 +3,8 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 import { observable, IObservableValue, computed, action } from 'mobx';
 
-import { MutableString } from '../../../model';
-
 interface AskPassphraseProps extends React.Props<AskPassphrase> {
-  readonly passphrase?: MutableString;
+  readonly passphrase?: IObservableValue<string>;
   readonly fingerprint: string;
   readonly completed: (pp: string) => void;
 }
@@ -37,13 +35,13 @@ export class AskPassphrase
             if (this.value) {
               this._value.set(e.target.value);
             } else {
-              this.props.passphrase._value.set(e.target.value);
+              this.props.passphrase.set(e.target.value);
             }
           })} />
         <button type="button" onClick={action((e: any) => {
-          console.log('Button-AskPassphrase:', this.props.completed, this.value, this.props.passphrase.value);
+          console.log('Button-AskPassphrase:', this.props.completed, this.value, this.props.passphrase.get());
           if (this.props.completed) {
-            this.props.completed(this.value || this.props.passphrase.value);
+            this.props.completed(this.value || this.props.passphrase.get());
           }
         })}>Ready</button>
       </form>

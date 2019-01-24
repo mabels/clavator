@@ -4,7 +4,7 @@ import { PassPhrase } from './pass-phrase';
 import { SimpleKeyCommon } from './simple-key-common';
 import { DiceWare } from '../../dice-ware';
 import { CharFormat } from './char-format';
-import { KeyGen, KeyInfo, KeyToYubiKey } from '../../gpg/types';
+import { KeyGen, KeyInfo, KeyToYubiKey, Pin } from '../../gpg/types';
 
 // import { assignOnError } from '../../model/helper';
 
@@ -92,12 +92,13 @@ export class SimpleYubikey {
   }
 
   public asKeyToYubiKey(fpr: string, slot_id: number): KeyToYubiKey {
-    const ktyk = new KeyToYubiKey();
-    ktyk._card_id.set(this.smartCardId);
-    ktyk.admin_pin._pin.set('12345678');
-    ktyk._fingerprint.set(fpr);
-    ktyk._slot_id.set(slot_id);
-    ktyk.passphrase._value.set(this.passPhrase.getPassPhrase());
+    const ktyk = new KeyToYubiKey({
+      slot_id,
+      card_id: this.smartCardId,
+      admin_pin: new Pin({ pin: '12345678'}),
+      fingerprint: fpr,
+      passphrase: this.passPhrase.getPassPhrase(),
+    });
     return ktyk;
   }
 

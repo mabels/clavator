@@ -427,7 +427,7 @@ export class Gpg {
       '--passphrase-fd',
       () => {
         console.log('pemPrivateKey:', JSON.stringify(rqa.passphrase));
-        return rqa.passphrase.value + '\n';
+        return rqa.passphrase + '\n';
       },
       '-a',
       '--export-secret-key',
@@ -559,7 +559,7 @@ export class Gpg {
       'loopback',
       '--passphrase-fd',
       () => {
-        return ktyk.passphrase.value + '\n';
+        return ktyk.passphrase + '\n';
       },
       '--import'
     ];
@@ -574,7 +574,7 @@ export class Gpg {
   ): void {
     const rqa = new RequestAscii({
       fingerprint: ktyk.fingerprint,
-      passphrase: ktyk.passphrase.value
+      passphrase: ktyk.passphrase.get()
     });
     // console.log('prepareKeyToYubiKey:1', this);
     this.pemPrivateKey(rqa, async (res: Result) => {
@@ -671,8 +671,8 @@ export class Gpg {
         'loopback',
         '--passphrase-fd',
         () => {
-          console.log('>>keyToYubiKey:passphrase[', ktyk.passphrase.value, ']');
-          return ktyk.passphrase.value + '\n';
+          console.log('>>keyToYubiKey:passphrase[', ktyk.passphrase, ']');
+          return ktyk.passphrase + '\n';
         },
         '--passphrase-fd',
         () => {

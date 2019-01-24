@@ -86,7 +86,7 @@ export class KeyInfo extends ObjectId implements Pallet {
     Option.fill(js['type'] || {}, this.type);
     Option.fill(js['length'] || {}, this.length);
     MultiOption.fill(js['usage'] || {}, this.usage);
-    console.log('FILL:', js, this.usage);
+    // console.log('FILL:', js, this.usage);
     // return ki;
   }
 
