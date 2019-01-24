@@ -11,6 +11,7 @@ import {
 import { Message } from '../../../model';
 import { AppState } from '../../model';
 import { ButtonToProgressor } from '../controls';
+import { Dialog, DialogActions, DialogContent, DialogTitle, Button } from '@material-ui/core';
 
 interface DialogChangeAttributesProps extends React.Props<DialogChangeAttributes> {
   onClose: () => void;
@@ -39,15 +40,15 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
 
   public render(): JSX.Element {
     return (
-      <ReactModal
-        isOpen={true}
-        closeTimeoutMS={150}
-        contentLabel="Modal"
-        shouldCloseOnOverlayClick={true}
+      <Dialog
+        open={true}
+        scroll={'paper'}
       >
-        <i style={{ float: 'right' }} onClick={this.props.onClose} className="closeBox fa fa-close"></i>
-        <h4>ChangeAttributes:</h4>
-        <h5>{this.changeCard.name.get()}({this.changeCard.serialNo.get()})</h5>
+      <DialogTitle>
+        ChangeAttributes:<br/>
+        {this.changeCard.name.get()}({this.changeCard.serialNo.get()})
+      </DialogTitle>
+          <DialogContent>
         {/*<form>*/}
         <label>AdminPin:</label><input type="password"
           name="admin-pin"
@@ -82,13 +83,16 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
             this.changeCard.url.set(e.target.value);
           })}
           value={this.changeCard.url.get()} />
-        <br />
+          </DialogContent>
+        <DialogActions>
+        <Button onClick={this.props.onClose}>close</Button>
         <ButtonToProgressor
           appState={this.props.appState}
           onClick={this.updateAttributes()}
           transaction={this.transaction}
           >Update</ButtonToProgressor>
-      </ReactModal>
+        </DialogActions>
+      </Dialog>
     );
   }
 }

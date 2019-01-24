@@ -1,19 +1,18 @@
 import * as React from 'react';
 import { GpgUid } from '../../../gpg/types';
+import { TableHead, TableRow, TableCell } from '@material-ui/core';
 
 export interface KeyChainListUidProps {
-    uid: GpgUid;
+  uid: GpgUid;
 }
 
 export function KeyChainListUid(props: KeyChainListUidProps): JSX.Element {
     return (
-      <tbody key={props.uid.key}>
-        <tr className="uid">
-          <td>{props.uid.trust}</td>
-          <td>{props.uid.name}</td>
-          <td>{props.uid.email}</td>
-          <td>{props.uid.comment}</td>
-        </tr>
-      </tbody>
+        <TableRow key={props.uid.key} className="uid">
+          <TableCell>{props.uid.trust}</TableCell>
+          <TableCell>{props.uid.name}</TableCell>
+          <TableCell>{props.uid.email}</TableCell>
+          <TableCell>{props.uid.comment}</TableCell>
+        </TableRow>
     );
   }

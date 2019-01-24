@@ -1,4 +1,5 @@
 import { Message } from '../../model';
+import { IObservableValue, observable, action } from 'mobx';
 
 export interface WsMessage {
   (h: Message.Header, data: string): void;
@@ -10,19 +11,20 @@ export interface WsChannel {
 }
 
 export class Dispatch {
-  private isActive: boolean;
-  private ws: WebSocket;
-  private wscs: WsChannel[] = [];
-  private onMessages: Set<WsMessage> = new Set<WsMessage>();
+  private readonly isActive: IObservableValue<boolean>;
+  private readonly ws: IObservableValue<WebSocket>;
+  private readonly wscs: WsChannel[] = [];
+  private readonly onMessages: Set<WsMessage> = new Set<WsMessage>();
 
   public static create(): Dispatch {
-    let wscd = new Dispatch();
+    const wscd = new Dispatch();
     wscd.connector();
     return wscd;
   }
 
   constructor() {
-    this.isActive = false;
+    this.isActive = observable.box(false);
+    this.ws = observable.box();
   }
 
   public register(wsc: WsChannel): void {
@@ -32,14 +34,27 @@ export class Dispatch {
     }
   }
   public unregister(wsc: WsChannel): void {
-    this.wscs = this.wscs.filter(item => item !== wsc);
-  }
-  public send(m: string): void {
-    this.ws.send(m);
+    const idx = this.wscs.indexOf(wsc);
+    if (idx >= 0) {
+      this.wscs.splice(idx, idx);
+    }
+    // this.wscs = this.wscs.filter(item => item !== wsc);
   }
 
+  public send(m: string): void {
+    if (this.ws.get()) {
+      this.ws.get().send(m);
+    } else {
+      throw new Error('ws socket not connected');
+    }
+  }
+
+  @action
   public close(): void {
-    this.ws.close();
+    const ws = this.ws.get();
+    if (ws) {
+      ws.close();
+    }
   }
 
   public onMessage(cb: WsMessage): WsMessage {
@@ -51,33 +66,35 @@ export class Dispatch {
     this.onMessages.delete(cb);
   }
 
+  @action
   public connector(): void {
     let wsproto = 'ws';
     if (window.location.protocol == 'https:') {
       wsproto = 'wss';
     }
     console.log('connector', `${wsproto}://${window.location.host}/`);
-    this.ws = new WebSocket(`${wsproto}://${window.location.host}/`);
-    this.ws.onopen = (e: Event) => {
+    const ws = new WebSocket(`${wsproto}://${window.location.host}/`);
+    ws.onopen = action((e: Event) => {
       // debugger
-      this.isActive = true;
+      this.isActive.set(true);
       this.wscs.forEach((wsc: WsChannel) => {
         if (wsc.onOpen) {
           wsc.onOpen(e);
         }
       });
-    };
-    this.ws.onclose = (e: CloseEvent) => {
+    });
+    ws.onclose = action((e: CloseEvent) => {
       // debugger
-      this.isActive = false;
+      this.isActive.set(false);
       this.wscs.forEach((wsc: WsChannel) => {
         if (wsc.onClose) {
           wsc.onClose(e);
         }
       });
+      this.ws.set(undefined);
       setTimeout(this.connector.bind(this), 1000);
-    };
-    this.ws.onmessage = (e: MessageEvent) => {
+    });
+    ws.onmessage = (e: MessageEvent) => {
       const msg = Message.fromData(e.data);
       // console.log('onmessage', msg);
       this.wscs.forEach((wsc: WsChannel) => {
@@ -87,6 +104,7 @@ export class Dispatch {
       });
       this.onMessages.forEach((cb) => { cb(msg.header, msg.data); });
     };
+    this.ws.set(ws);
   }
 
 }

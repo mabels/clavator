@@ -2,6 +2,8 @@ import * as React from 'react';
 import { SecretKey, GpgKey } from '../../../gpg/types';
 import { KeyChainListDialogs, KeyChainDialogQItem } from './key-chain-list';
 import { IObservableValue, action, IObservableArray } from 'mobx';
+import { TableCell } from '@material-ui/core';
+import CreditCard from '@material-ui/icons/CreditCard';
 
 export interface SubButtonsProps {
   // readonly dialogSecKey: IObservableValue<SecretKey | GpgKey>;
@@ -26,12 +28,12 @@ function sendToCard(props: SubButtonsProps): React.EventHandler<React.MouseEvent
 
 export function SubButtons(props: SubButtonsProps): JSX.Element {
   return (
-    <td className="action">
+    <TableCell className="action">
       <a
         title="Send Key to Smartcard"
         onClick={sendToCard(props)}>
-        <i className="fa fa-credit-card" />
+        <CreditCard />
       </a>
-    </td>
+    </TableCell>
   );
 }

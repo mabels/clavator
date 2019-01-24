@@ -6,6 +6,7 @@ import { Dispatch } from '../../model';
 import { ReadAsciiRespond } from '../controls';
 import { IObservableValue, IObservableArray } from 'mobx';
 import { KeyChainDialogQItem } from './key-chain-list';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@material-ui/core';
 
 interface DialogRenderAsciiProps {
   readonly onClose: () => void;
@@ -18,20 +19,21 @@ interface DialogRenderAsciiProps {
 
 export const DialogRenderAscii = observer((props: DialogRenderAsciiProps) => {
     return (
-      <ReactModal
-        isOpen={true}
-        closeTimeoutMS={150}
-        onAfterOpen={() => { /* */ }}
-        contentLabel="Modal"
+      <Dialog
+        open={true}
+        scroll={'paper'}
       >
-        <i onClick={props.onClose} className="closeBox fa fa-close"></i>
-        <h4>{props.current.action}:{props.current.secKey.fingerPrint.fpr}</h4>
+        <DialogActions>
+        <Button onClick={props.onClose}>close</Button>
+        </DialogActions>
+        <DialogTitle>{props.current.action}:{props.current.secKey.fingerPrint.fpr}</DialogTitle>
+        <DialogContent>
         <ReadAsciiRespond
           action={props.current.action}
           channel={props.channel}
           secKey={props.current.secKey}
           // passPhrase={props.passPhrase.get()}
-         />
-      </ReactModal>
+         /></DialogContent>
+      </Dialog>
     );
   });

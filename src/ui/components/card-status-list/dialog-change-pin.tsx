@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import * as ReactModal from 'react-modal';
 import { observer } from 'mobx-react';
@@ -6,6 +5,7 @@ import { observer } from 'mobx-react';
 import { Gpg2CardStatus } from '../../../gpg/types';
 import { AppState } from '../../model';
 import { ChangePin } from './change-pin';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@material-ui/core';
 
 export interface DialogChangePinProps {
   onClose: () => void;
@@ -15,27 +15,29 @@ export interface DialogChangePinProps {
 }
 
 export const DialogChangePin = observer((props: DialogChangePinProps) => {
-    return (
-      <ReactModal
-        isOpen={true}
-        closeTimeoutMS={150}
-        contentLabel="Modal"
-        shouldCloseOnOverlayClick={true}
-      >
-        <i style={{ float: 'right' }}
-           onClick={props.onClose}
-           onKeyPress={(e) => {
-             console.log(`DialogChangePin`, e.key);
-              if (e.key === 'ESC') {
-                props.onClose();
-              }
-           }}
-           className="fa fa-close"></i>
-        <h4>ChangePin:{props.type}</h4>
-        <h5>{props.cardStatus.name}({props.cardStatus.reader.cardid})</h5>
-        <ChangePin type={props.type}
+  return (
+    <Dialog
+      open={true}
+      scroll={'paper'}
+      onClose={props.onClose}
+    >
+      <DialogTitle>
+        ChangePin:{props.type}
+        <br />
+        {props.cardStatus.name}({props.cardStatus.reader.cardid})
+      </DialogTitle>
+      <DialogContent>
+        <ChangePin
+          type={props.type}
           appState={props.appState}
-          app_id={props.cardStatus.reader.cardid} />
-      </ReactModal>
-    );
+          app_id={props.cardStatus.reader.cardid}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={props.onClose} >
+            Close
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
 });

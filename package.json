@@ -74,6 +74,8 @@
     "@emotion/core": "10.0.6",
     "@emotion/styled": "10.0.6",
     "@material-ui/core": "3.9.0",
+    "@material-ui/icons": "3.0.2",
+    "@mdi/font": "3.3.92",
     "@types/chai": "4.1.7",
     "chai": "4.2.0",
     "classnames": "2.2.6",

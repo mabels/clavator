@@ -9,6 +9,13 @@ import { KeyChainListUid } from './key-chain-list-uid';
 import { KeyChainListKey } from './key-chain-list-key';
 import { observable, IObservableValue, IObservableArray } from 'mobx';
 
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import Paper from '@material-ui/core/Paper';
+
 export enum KeyChainListDialogs {
   closed,
   openAscii,
@@ -73,7 +80,7 @@ export class KeyChainList extends React.Component<
     // {/*{sk.subKeys.map((ssb, idx) => this.render_result(ssb, idx))}*/}
     // console.log("render.KeyChainList", this.props.keyChainListState.keyChainList.length)
     return (
-      <div className="KeyChainList">
+      <Paper>
         <KeyChainListModal
           dialogQ={this.dialogQ}
           appState={this.props.appState}
@@ -87,10 +94,14 @@ export class KeyChainList extends React.Component<
         {this.props.appState.keyChainListState.keyChainList.map(
           (secKey: SecretKey, idx: number) => {
             return (
-              <div key={secKey.key}>
-                <table>{secKey.uids.map(uid => <KeyChainListUid uid={uid} key={uid.id} />)}</table>
-                <table>
-                  <tbody>
+              <Table key={secKey.key}>
+                <Table key={secKey.key}>
+                  <TableHead>
+                  {secKey.uids.map(uid => <KeyChainListUid uid={uid} key={uid.id} />)}
+                  </TableHead>
+                </Table>
+                <Table>
+                  <TableBody>
                     <KeyChainListKey
                       key={-1}
                       appState={this.props.appState}
@@ -107,13 +118,13 @@ export class KeyChainList extends React.Component<
                         selectedKey={ssb}
                         idx={idxx} />
                     )}
-                  </tbody>
-                </table>
-              </div>
+                  </TableBody>
+                </Table>
+              </Table>
             );
           }
         )}
-      </div>
+      </Paper>
     );
   }
 }

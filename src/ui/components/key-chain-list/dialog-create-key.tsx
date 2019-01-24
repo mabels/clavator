@@ -5,6 +5,7 @@ import { NestedFlag } from '../../../model';
 import { CreateKey } from './create-key';
 import { AppState } from '../../model';
 import { propTypes } from 'mobx-react';
+import { Dialog, DialogActions, DialogTitle, DialogContent } from '@material-ui/core';
 
 interface DialogCreateKeyProps extends React.Props<DialogCreateKey> {
   appState: AppState;
@@ -22,23 +23,23 @@ export class DialogCreateKey extends React.Component<DialogCreateKeyProps, {}> {
 
   public render(): JSX.Element {
     return (
-      <ReactModal
-        isOpen={true}
-        closeTimeoutMS={150}
-        onAfterOpen={() => { /* */ }}
-        contentLabel="Modal"
-        shouldCloseOnOverlayClick={true}
-        // appElement={this.props.appElement}
+      <Dialog
+        open={true}
+        scroll={'paper'}
       >
+        <DialogActions>
         <i onClick={() => {
               this.props.onClose();
             }}
            className="closeBox fa fa-close"></i>
-        <h4>Creating Key:</h4>
+        </DialogActions>
+        <DialogTitle>Creating Key:</DialogTitle>
+        <DialogContent>
         <CreateKey
           readOnly={this.readOnly}
           appState={this.props.appState} />
-      </ReactModal>
+        </DialogContent>
+      </Dialog>
     );
   }
 }

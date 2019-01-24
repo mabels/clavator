@@ -10,6 +10,12 @@ import { DialogChangeAttributes } from './card-status-list/dialog-change-attribu
 import { DialogResetYubiKey } from './card-status-list/dialog-reset-yubikey';
 import { observable, IObservableValue, action } from 'mobx';
 
+import { Paper, Table, TableCell, TableRow, TableBody } from '@material-ui/core';
+import Build from '@material-ui/icons/Build';
+import Delete from '@material-ui/icons/Delete';
+import PersonPin from '@material-ui/icons/Person';
+import AccountBox from '@material-ui/icons/AccountBox';
+
 export enum CardStatusListDialogs {
   closed,
   changeAttributes,
@@ -57,32 +63,32 @@ export class CardStatusList extends React.Component<CardStatusListProps, {}> {
 
   public render_actions(cs: Gpg2CardStatus): JSX.Element {
     return (
-      <td className="action">
+      <TableCell className="action">
         <a
           title="change-user-pin"
           onClick={this.changeDialog(CardStatusListDialogs.changeUserPin, cs)}
         >
-          <i className="fa fa-user" />
+          <PersonPin />
         </a>
         <a
           title="change-admin-pin"
           onClick={this.changeDialog(CardStatusListDialogs.changeAdminPin, cs)}
         >
-          <i className="fa fa-superpowers" />
+          <AccountBox />
         </a>
         <a
           title="change-attributes"
           onClick={this.changeToAttributesDialog(cs)}
         >
-          <i className="fa fa-pencil" />
+          <Build />
         </a>
         <a
           title="reset-yubikey"
           onClick={this.changeDialog(CardStatusListDialogs.resetYubikey, cs)}
         >
-          <i className="fa fa-trash" />
+          <Delete />
         </a>
-      </td>
+      </TableCell>
     );
   }
 
@@ -135,70 +141,70 @@ export class CardStatusList extends React.Component<CardStatusListProps, {}> {
   }
 
   public render(): JSX.Element {
-    console.log('card-status-list:render');
+    // console.log('card-status-list:render');
     return (
-      <div className="CardStatusList">
+      <Paper>
         {this.props.appState.cardStatusListState.cardStatusList.map(
           (cs: Gpg2CardStatus, idx: number) => {
             // console.log('card-status-list:map');
             return (
-              <table key={cs.serial}>
-                <tbody>
-                  <tr key={cs.serial}>
+              <Table key={cs.serial}>
+                <TableBody>
+                  <TableRow key={cs.serial}>
                     {this.render_actions(cs)}
-                    <td>{cs.serial}</td>
-                    <td>{cs.name}</td>
-                    <td>{cs.login}</td>
-                    <td>{cs.lang}</td>
-                    <td>{cs.sex}</td>
-                  </tr>
-                  <tr>
-                    <td>{cs.url}</td>
-                    <td>{cs.version}</td>
-                    <td>{cs.vendor}</td>
-                    <td>
+                    <TableCell>{cs.serial}</TableCell>
+                    <TableCell>{cs.name}</TableCell>
+                    <TableCell>{cs.login}</TableCell>
+                    <TableCell>{cs.lang}</TableCell>
+                    <TableCell>{cs.sex}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell>{cs.url}</TableCell>
+                    <TableCell>{cs.version}</TableCell>
+                    <TableCell>{cs.vendor}</TableCell>
+                    <TableCell>
                       {cs.reader.cardid}
                       <br />
                       {cs.reader.model}
                       <br />
                       {cs.reader.type}
                       <br />
-                    </td>
-                    <td>{cs.forcepin}</td>
-                    <td>{cs.sigcount}</td>
-                  </tr>
-                  <tr>
-                    <td colSpan={11}>
-                      <table>
-                        <tbody>
+                    </TableCell>
+                    <TableCell>{cs.forcepin}</TableCell>
+                    <TableCell>{cs.sigcount}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell colSpan={11}>
+                      <Table>
+                        <TableBody>
                           {cs.keyStates.map((ks: KeyState, idxx: number) => {
                             return (
-                              <tr key={ks.id}>
-                                <td>{ks.id}</td>
-                                <td>{ks.mode}</td>
-                                <td>{ks.bits}</td>
-                                <td>{ks.maxpinlen}</td>
-                                <td>{ks.pinretry}</td>
-                                <td>{ks.sigcount}</td>
-                                <td>{ks.cafpr}</td>
-                                <td>{ks.fpr}</td>
-                                <td>
+                              <TableRow key={ks.id}>
+                                <TableCell>{ks.id}</TableCell>
+                                <TableCell>{ks.mode}</TableCell>
+                                <TableCell>{ks.bits}</TableCell>
+                                <TableCell>{ks.maxpinlen}</TableCell>
+                                <TableCell>{ks.pinretry}</TableCell>
+                                <TableCell>{ks.sigcount}</TableCell>
+                                <TableCell>{ks.cafpr}</TableCell>
+                                <TableCell>{ks.fpr}</TableCell>
+                                <TableCell>
                                   <FormatDate ticks={ks.fprtime} />
-                                </td>
-                              </tr>
+                                </TableCell>
+                              </TableRow>
                             );
                           })}
-                        </tbody>
-                      </table>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+                        </TableBody>
+                      </Table>
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
             );
           }
         )}
         {this.render_dialog()}
-      </div>
+      </Paper>
     );
   }
 }

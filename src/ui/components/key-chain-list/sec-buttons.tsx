@@ -9,6 +9,12 @@ import {
   Message,
 } from '../../../model';
 import { AppState } from '../../model';
+import { TableCell } from '@material-ui/core';
+import VpnKey from '@material-ui/icons/VpnKey';
+import Public from '@material-ui/icons/Public';
+import Code from '@material-ui/icons/Code';
+import Stop from '@material-ui/icons/Stop';
+import Delete from '@material-ui/icons/Delete';
 
 export interface SecButtonsProps {
   // readonly action: IObservableValue<string>;
@@ -90,34 +96,34 @@ function deleteSecretKey(props: SecButtonsProps): void {
 
 export function SecButtons(props: SecButtonsProps): JSX.Element {
   return (
-    <td className="action">
+    <TableCell className="action">
       <a
         title="pem-private"
         onClick={requestAsciiWithPassphrase(props, 'pem-private')}
       >
-        <i className="fa fa-key" />
+      <VpnKey />
       </a>
       <a
         title="pem-public"
         onClick={requestAscii(props, 'pem-public')}
       >
-        <i className="fa fa-bullhorn" />
+      <Public />
       </a>
       <a
         title="ssh-public"
         onClick={requestAscii(props, 'ssh-public')}
       >
-        <i className="fa fa-terminal" />
+        <Code />
       </a>
       <a
         title="pem-revoke"
         onClick={requestAscii(props, 'pem-revoke')}
       >
-        <i className="fa fa-bug" />
+        <Stop />
       </a>
       <a title="delete" onClick={() => deleteSecretKey(props)}>
-        <i className="fa fa-trash" />
+        <Delete />
       </a>
-    </td>
+    </TableCell>
   );
 }

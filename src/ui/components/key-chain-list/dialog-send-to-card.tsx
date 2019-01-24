@@ -6,6 +6,7 @@ import { AppState } from '../../model';
 // import { GpgKey, SecretKey } from '../../../gpg/types';
 import { IObservableArray } from 'mobx';
 import { KeyChainDialogQItem } from './key-chain-list';
+import { Dialog, DialogActions, DialogTitle, DialogContent, Button } from '@material-ui/core';
 
 interface DialogSendToCardProps {
   readonly onClose: () => void;
@@ -16,23 +17,25 @@ interface DialogSendToCardProps {
 
 export function DialogSendToCard(props: DialogSendToCardProps): JSX.Element {
     return (
-      <ReactModal
-        isOpen={true}
-        closeTimeoutMS={150}
-        onAfterOpen={() => { /* */ }}
-        contentLabel="Modal"
+      <Dialog
+        open={true}
+        scroll={'paper'}
       >
+      <DialogActions>
+        <Button>
         <i style={{ float: 'right' }}
            onClick={props.onClose}
            className="closeBox fa fa-close"></i>
-        <h4>SendKeyToCard</h4>
-        {props.current.secKey.fingerPrint.fpr}
+        </Button>
+      </DialogActions>
+        <DialogTitle>SendKeyToCard:{props.current.secKey.fingerPrint.fpr}</DialogTitle>
+        <DialogContent>
         <AskKeyToYubiKey
           slot_id={props.current.idx + 1}
           fingerprint={props.current.secKey.fingerPrint.fpr}
           appState={props.appState}
         />
-      </ReactModal>
-
+        </DialogContent>
+      </Dialog>
     );
   }

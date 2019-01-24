@@ -5,6 +5,7 @@ import { IObservableValue, IObservableArray } from 'mobx';
 import { KeyChainListDialogs, KeyChainDialogQItem } from './key-chain-list';
 import { AppState } from '../../model';
 import { Buttons } from './buttons';
+import { TableRow, TableCell } from '@material-ui/core';
 
 export interface KeyChainListKeyProps {
   readonly appState: AppState;
@@ -19,7 +20,7 @@ export interface KeyChainListKeyProps {
 
 export function KeyChainListKey(props: KeyChainListKeyProps): JSX.Element {
     return (
-      <tr className={props.clazz} key={props.selectedKey.key}>
+      <TableRow className={props.clazz} key={props.selectedKey.key}>
         <Buttons
           appState={props.appState}
           dialogQ={props.dialogQ}
@@ -27,18 +28,18 @@ export function KeyChainListKey(props: KeyChainListKeyProps): JSX.Element {
           // dialogSecKey={props.dialogSecKey}
           idx={props.idx}
           selectedKey={props.selectedKey} />
-        <td>{props.selectedKey.type}</td>
-        <td>{props.selectedKey.trust}</td>
-        <td>{props.selectedKey.cipher}</td>
-        <td>{props.selectedKey.bits}</td>
-        <td>{props.selectedKey.keyId}</td>
-        <td>
+        <TableCell>{props.selectedKey.type}</TableCell>
+        <TableCell>{props.selectedKey.trust}</TableCell>
+        <TableCell>{props.selectedKey.cipher}</TableCell>
+        <TableCell>{props.selectedKey.bits}</TableCell>
+        <TableCell>{props.selectedKey.keyId}</TableCell>
+        <TableCell>
           <FormatDate ticks={props.selectedKey.created} />
-        </td>
-        <td>
+        </TableCell>
+        <TableCell>
           <FormatDate ticks={props.selectedKey.expires} />
-        </td>
-        <td>{props.selectedKey.uses}</td>
-      </tr>
+        </TableCell>
+        <TableCell>{props.selectedKey.uses}</TableCell>
+      </TableRow>
     );
   }

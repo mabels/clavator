@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as  ReactModal from 'react-modal';
 
 import { Dispatch } from '../../model';
 
@@ -8,6 +7,7 @@ import { ReadAsciiRespond } from '../controls';
 import { observable, IObservableValue, IObservableArray, action } from 'mobx';
 import { KeyChainDialogQItem } from './key-chain-list';
 import { observer } from 'mobx-react';
+import { Dialog, DialogTitle, DialogActions, DialogContent, Button } from '@material-ui/core';
 
 interface DialogAskRenderAsciiProps extends React.Props<DialogAskRenderAscii> {
   onClose: () => void;
@@ -31,14 +31,13 @@ export class DialogAskRenderAscii extends React.Component<DialogAskRenderAsciiPr
 
   public render(): JSX.Element {
     return (
-      <ReactModal
-        isOpen={true}
-        closeTimeoutMS={150}
-        onAfterOpen={() => { /* */ }}
-        contentLabel="Modal"
+      <Dialog
+        open={true}
+        scroll={'paper'}
       >
-        <i style={{ float: 'right' }} onClick={this.props.onClose} className="closeBox fa fa-close"></i>
-        <h4>{this.props.current.action}:{this.props.current.secKey.fingerPrint.fpr}</h4>
+
+        <DialogTitle>{this.props.current.action}:{this.props.current.secKey.fingerPrint.fpr}</DialogTitle>
+        <DialogContent>
         <AskPassphrase
           passphrase={this.passPhrase}
           fingerprint={this.props.current.secKey.fingerPrint.fpr}
@@ -50,7 +49,11 @@ export class DialogAskRenderAscii extends React.Component<DialogAskRenderAsciiPr
           channel={this.props.channel}
           passPhrase={this.passPhrase.get()}
         /> : null}
-      </ReactModal>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={this.props.onClose}>close</Button>
+        </DialogActions>
+      </Dialog>
     );
   }
 }
