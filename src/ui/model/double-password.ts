@@ -7,7 +7,7 @@ import { ViewWarrents } from './view-warrents';
 import { PassPhrase } from './pass-phrase';
 import { PasswordControl } from './password-control';
 import { DiceWare } from '../../dice-ware';
-import { InputDiceWare } from '../components/controls';
+import { InputDiceWare, InputType } from '../components/controls';
 import { CharFormat } from './char-format';
 
 export class DoublePassword extends ObjectId implements Validatable {
@@ -20,9 +20,10 @@ export class DoublePassword extends ObjectId implements Validatable {
   public readonly diceWares: DiceWare[];
   private passPhrase: PassPhrase;
   private readableTimer: any;
-  private readableCb?: (v: boolean) => void;
+  // private readableCb?: (v: boolean) => void;
   public inputDiceWare: InputDiceWare;
   private currentDiceWare: DiceWare;
+  public passwordInputType: IObservableValue<InputType>;
 
   constructor(warrents: Warrents, errText: string, minmaxs: MinMax, diceWares: DiceWare[]) {
     super('DoublePassword');
@@ -43,6 +44,8 @@ export class DoublePassword extends ObjectId implements Validatable {
     // this.passPhrase = passPhrase;
     this.warrents = new ViewWarrents();
     warrents.forEach(w => this.warrents.add(new ViewWarrent(w)));
+    this.passwordInputType = observable.box(this.readOnly ? InputType.Password :
+      !this.readable ? InputType.Password : InputType.Text);
   }
 
   @computed
@@ -76,28 +79,28 @@ export class DoublePassword extends ObjectId implements Validatable {
   //   console.log('add diceWare:', this.objectId());
   // }
 
-  @action
-  public setReadableWithTimeout(v: boolean, timeout: number, cb?: (v: boolean) => void): void {
-    this._readable.set(v);
-    if (this.readableTimer) {
-      if (this.readableCb) {
-        this.readableCb(this.readable);
-      }
-      clearTimeout(this.readableTimer);
-    }
-    // console.log('setReadableWithTimeout:', v, timeout);
-    if (timeout) {
-      this.readableCb = cb;
-      this.readableTimer = setTimeout(action(() => {
-        this._readable.set(!v);
-        if (cb) {
-          cb(this.readable);
-        }
-      }), timeout);
-    } else {
-      this._readable.set(v);
-    }
-  }
+  // @action
+  // public setReadableWithTimeout(v: boolean, timeout: number, cb?: (v: boolean) => void): void {
+  //   this._readable.set(v);
+  //   if (this.readableTimer) {
+  //     if (this.readableCb) {
+  //       this.readableCb(this.readable);
+  //     }
+  //     clearTimeout(this.readableTimer);
+  //   }
+  //   // console.log('setReadableWithTimeout:', v, timeout);
+  //   if (timeout) {
+  //     this.readableCb = cb;
+  //     this.readableTimer = setTimeout(action(() => {
+  //       this._readable.set(!v);
+  //       if (cb) {
+  //         cb(this.readable);
+  //       }
+  //     }), timeout);
+  //   } else {
+  //     this._readable.set(v);
+  //   }
+  // }
 
   @action
   public setPassword(value: string): void {
@@ -122,20 +125,13 @@ export class DoublePassword extends ObjectId implements Validatable {
         (dp.first.password.value == dp.first.prevPassword &&
          dp.second.password.value == dp.second.prevPassword)) {
       dp.setPassword(random);
-      dp.setReadableWithTimeout(true, 10000, (v) => { /* */ });
+      // dp.setReadableWithTimeout(true, 10000, (v) => { /* */ });
     }
   }
 
   public setPassPhrase(pp: PassPhrase): DoublePassword {
     this.passPhrase = pp;
     return this;
-  }
-
-  public passwordInputType(): string {
-    if (this.readOnly) {
-      return 'password';
-    }
-    return !this.readable ? 'password' : 'text';
   }
 
   public showWarrent(): boolean {

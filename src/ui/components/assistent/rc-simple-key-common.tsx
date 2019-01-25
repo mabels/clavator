@@ -46,7 +46,7 @@ export class RcSimpleKeyCommon extends
           completed={this.props.simpleKeyCommon.completed}
           valid={this.props.simpleKeyCommon.valid()} >
         <InputExpireDate title="Expire-Date"
-          readOnly={this.props.simpleKeyCommon.readOnly}
+          readOnly={this.props.simpleKeyCommon.readOnly.is}
           expireDate={this.props.simpleKeyCommon.expireDate}
           completed={this.props.simpleKeyCommon.completed} />
         <RcUids uids={this.props.simpleKeyCommon.uids}

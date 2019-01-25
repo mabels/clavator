@@ -35,7 +35,6 @@ export class DialogAskRenderAscii extends React.Component<DialogAskRenderAsciiPr
         open={true}
         scroll={'paper'}
       >
-
         <DialogTitle>{this.props.current.action}:{this.props.current.secKey.fingerPrint.fpr}</DialogTitle>
         <DialogContent>
         <AskPassphrase

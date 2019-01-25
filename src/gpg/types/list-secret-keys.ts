@@ -251,9 +251,9 @@ export class SecretKey extends GpgKey {
     ret.keyInfo.type._value.set(this.cipher || 'RSA');
     ret.keyInfo.usage.values.replace(['cert']);
     if (this.expires != null && this.expires > 0) {
-      ret.expireDate._value.set(new Date(this.expires * 1000));
+      ret.expireDate.value.set((new Date(this.expires * 1000)).toISOString());
     } else {
-      ret.expireDate._value.set(expireDate());
+      ret.expireDate.value.set(expireDate().toISOString());
     }
     for (let sb of this.subKeys) {
       ret.subKeys.push(sb.toKeyGenInfo());

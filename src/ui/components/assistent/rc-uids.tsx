@@ -3,7 +3,9 @@ import classnames from 'classnames';
 import { observer } from 'mobx-react';
 import { Container, NestedFlag } from '../../../model';
 import { KeyGenUid } from '../../../gpg/types';
-import { action } from 'mobx';
+import { action, observable } from 'mobx';
+import { InputValid, InputType } from '../controls';
+import { Input } from '@material-ui/core';
 
 interface RcUidsProps extends React.Props<RcUids> {
   readonly uids: Container<KeyGenUid>;
@@ -52,37 +54,23 @@ export class RcUids extends
         'good': uid.valid() })} key={idx}>
       <div className="row">
         <div className="five columns">
-          <label>Name-Real:</label><input
-            type="text"
-            autoFocus
-            className={classnames({ 'u-full-width': true,
-              'good': uid.name.valid(),
-              'readonly': this.props.readOnly.is
-            })}
-            disabled={this.props.readOnly.is}
+          <InputValid
+            label="Name-Real"
+            type={observable.box(InputType.Text)}
             readOnly={this.props.readOnly.is}
-            pattern={uid.name.match.source}
+            valid={uid.name.valid}
             name={`uid.name.${idx}`}
-            onChange={action((e: any) => {
-              uid.name._value.set(e.target.value);
-            })}
-            value={uid.name.value} />
+            value={uid.name._value} />
         </div>
         <div className="five columns">
-          <label>Name-Email:</label><input type="email"
-            className={classnames({ 'u-full-width': true,
-              good: uid.email.valid(),
-              'readonly': this.props.readOnly.is
-            })}
-            disabled={this.props.readOnly.is}
+          <InputValid
+            label="Name-Email"
+            type={observable.box(InputType.Email)}
+            valid={uid.email.valid}
             readOnly={this.props.readOnly.is}
             autoComplete="on"
-            pattern={uid.email.match.source}
             name={`email.${idx}`}
-            onChange={action((e: any) => {
-              uid.email._value.set(e.target.value);
-            })}
-            value={uid.email.value} />
+            value={uid.email._value} />
         </div>
         <div className="two columns">
           {this.render_delete_button(idx)}

@@ -52,9 +52,9 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
         {/*<form>*/}
         <label>AdminPin:</label><input type="password"
           name="admin-pin"
-          className={classnames({ good: this.changeCard.adminPin.verify() })}
+          className={classnames({ good: this.changeCard.adminPin.valid })}
           onChange={action((e: any) => {
-            this.changeCard.adminPin._pin.set(e.target.value);
+            this.changeCard.adminPin.pin.set(e.target.value);
           })} />
         <label>Name of cardholder:</label><input type="text"
           onChange={action((e: any) => {

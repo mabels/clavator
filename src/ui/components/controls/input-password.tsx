@@ -1,71 +1,135 @@
 import * as React from 'react';
+import * as uuid from 'uuid';
 // import { observable } from 'mobx';
 import { observer } from 'mobx-react';
 import classnames from 'classnames';
 // import StringValue from '../../../model/string-value';
+import { NestedFlag } from '../../../model';
+import { PasswordControl, DoublePassword } from '../../model';
+import { action, IObservableValue, observable } from 'mobx';
 import {
-  NestedFlag,
-} from '../../../model';
-import {
-  PasswordControl,
-  DoublePassword } from '../../model';
-import { action } from 'mobx';
+  FormControl,
+  InputLabel,
+  Input,
+  InputAdornment,
+  IconButton
+} from '@material-ui/core';
+import Visibility from '@material-ui/icons/Visibility';
+import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import { InputType, InputValid } from './input-valid';
 
-interface InputPasswordProps extends React.Props<InputPassword> {
-  passwordControl: PasswordControl;
-  readOnly: NestedFlag;
-  doublePassword: DoublePassword;
-  onReadable?: (readable: boolean) => void;
+export interface InputPasswordProps extends React.Props<InputPassword> {
+  readonly label: string;
+  readonly value: IObservableValue<string>;
+  readonly name?: string;
+  readonly inputType?: IObservableValue<InputType>;
+  readonly readOnly?: IObservableValue<boolean>;
+  readonly valid?: IObservableValue<boolean>;
 }
 
 @observer
-export class InputPassword extends
-  React.Component<InputPasswordProps, {}> {
+export class InputPassword extends React.Component<InputPasswordProps, {}> {
+
+  private readonly readable: IObservableValue<boolean>;
+  private readonly inputType: IObservableValue<InputType>;
+  private readonly readOnly: IObservableValue<boolean>;
+  private readonly valid: IObservableValue<boolean>;
+  private readonly name: string;
+  private readableTimer: any = undefined;
 
   constructor(props: InputPasswordProps) {
     super(props);
+    this.readable = observable.box(true);
+    this.name = props.name || uuid.v4();
+    this.inputType = props.inputType || observable.box(InputType.Password);
+    this.readOnly = props.readOnly || observable.box(false);
+    this.valid = props.valid || observable.box(undefined);
   }
 
+  @action
   private lockUnlock = (e: any): void => {
     if (e) {
       e.preventDefault();
     }
     let timeout = null;
-    if (!this.props.doublePassword.readable) {
+    if (!this.readable.get()) {
       timeout = 2000;
+      this.readable.set(true);
+      this.inputType.set(InputType.Text);
+      this.readableTimer = setTimeout(action(() => {
+        this.readable.set(false);
+        this.inputType.set(InputType.Password);
+        this.readableTimer = undefined;
+      }), timeout);
+    } else {
+      if (this.readableTimer) {
+        clearTimeout(this.readableTimer);
+      }
+      this.readable.set(false);
+      this.inputType.set(InputType.Text);
     }
-    this.props.doublePassword.setReadableWithTimeout(!this.props.doublePassword.readable, timeout);
-  }
 
-  private renderReadable(): JSX.Element {
-    if (this.props.readOnly.is) {
-      return;
-    }
-    return <button className={classnames({
-      fa: true,
-      'fa-lock': !this.props.doublePassword.readable,
-      'fa-unlock': this.props.doublePassword.readable })}
-      onClick={this.lockUnlock}
-      tabIndex={10000}></button>;
+ // @action
+  // public setReadableWithTimeout(v: boolean, timeout: number, cb?: (v: boolean) => void): void {
+  //   this._readable.set(v);
+  //   if (this.readableTimer) {
+  //     if (this.readableCb) {
+  //       this.readableCb(this.readable);
+  //     }
+  //     clearTimeout(this.readableTimer);
+  //   }
+  //   // console.log('setReadableWithTimeout:', v, timeout);
+  //   if (timeout) {
+  //     this.readableCb = cb;
+  //     this.readableTimer = setTimeout(action(() => {
+  //       this._readable.set(!v);
+  //       if (cb) {
+  //         cb(this.readable);
+  //       }
+  //     }), timeout);
+  //   } else {
+  //     this._readable.set(v);
+  //   }
+  // }
+    // this.props.doublePassword.setReadableWithTimeout(
+    //   !this.props.doublePassword.readable,
+    //   timeout
+    // );
   }
 
   public render(): JSX.Element {
     return (
-      <div>
-        <input type={this.props.doublePassword.passwordInputType()}
-          name={this.props.passwordControl.objectId()}
-          className={classnames({ good: !this.props.readOnly.is &&
-                                        this.props.passwordControl.valid()})}
-          readOnly={this.props.readOnly.is}
-          disabled={this.props.readOnly.is}
-          pattern={this.props.passwordControl.password.match.source}
-          value={this.props.passwordControl.password.value}
-          placeholder={this.props.passwordControl.password.match.source}
-          onChange={action((e: any) => {
-            this.props.passwordControl.password._value.set(e.target.value);
-          })} />{this.renderReadable()}
-      </div>
+      <FormControl>
+        <InputLabel htmlFor="adornment-password">{this.props.label}</InputLabel>
+        <InputValid
+          label={this.props.label}
+          type={this.inputType}
+          name={this.props.name}
+          readOnly={this.props.readOnly}
+          // pattern={this.props.passwordControl.password.match.source}
+          value={this.props.value}
+          endAdornment={
+            <InputAdornment position="end">
+              <IconButton
+                aria-label="Toggle password visibility"
+                onClick={action(this.lockUnlock)}
+              >
+                {this.inputType.get() === InputType.Text ? (
+                  <Visibility />
+                ) : (
+                  <VisibilityOff />
+                )}
+              </IconButton>
+              {this.valid.get() !== undefined  ? <></> :
+                (this.valid.get() ? (
+                  <Visibility />
+                ) : (
+                  <VisibilityOff />
+                ))}
+            </InputAdornment>
+          }
+        />
+      </FormControl>
     );
   }
-
 }

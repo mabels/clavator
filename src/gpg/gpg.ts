@@ -488,7 +488,7 @@ export class Gpg {
       fpr,
       ki.type.value.toLowerCase() + ki.length.value,
       ki.usage.values.join(','),
-      format_date(kg.expireDate.value)
+      kg.expireDate.formatDate
     ];
     // console.log('createSubkey', args);
     this.run(args, null, cb);
@@ -726,7 +726,7 @@ export class Gpg {
     let current = actions.shift();
     // console.log('current:', current);
     this.changeAttribute(
-      cc.adminPin.pin,
+      cc.adminPin.pin.get(),
       current[0],
       current[1],
       cc.serialNo.get(),

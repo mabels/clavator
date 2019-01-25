@@ -59,10 +59,10 @@ export class AskKeyToYubiKey
 
         <div className="row">
           <label>AdminPin:</label><input type="password"
-            className={classnames({ good: this.keyToYubiKey.admin_pin.verify() })}
+            className={classnames({ good: this.keyToYubiKey.admin_pin.valid })}
             name={`aktyk-${this.props.fingerprint}`}
             onChange={action((e: any) => {
-              this.keyToYubiKey.admin_pin._pin.set(e.target.value);
+              this.keyToYubiKey.admin_pin.pin.set(e.target.value);
             })} />
         </div>
 

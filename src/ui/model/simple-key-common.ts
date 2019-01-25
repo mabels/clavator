@@ -54,14 +54,14 @@ export class SimpleKeyCommon {
   }
 
   public fill(warrents: Warrents, obj: any): void {
-    this.expireDate._value.set(new Date(obj['expireDate']));
+    this.expireDate.value.set((new Date(obj['expireDate'])).toISOString());
     this.keyParams.fill(obj['keyParams']);
     this.uids.fill({ pallets: obj['uids'] });
   }
 
   public toObj(): any {
     return {
-      expireDate: this.expireDate.value.toJSON(),
+      expireDate: this.expireDate.toObj(),
       approvedWarrents: this.viewWarrents.toObj(),
       keyParams: this.keyParams.toObj(),
       uids: this.uids.toObj()

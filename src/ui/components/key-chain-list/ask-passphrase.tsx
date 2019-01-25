@@ -2,49 +2,41 @@
 import * as React from 'react';
 import { observer } from 'mobx-react';
 import { observable, IObservableValue, computed, action } from 'mobx';
+import { TextField, FormControl, InputLabel, Input, Button } from '@material-ui/core';
+import { InputPassword } from '../controls/input-password';
+import { DoublePassword } from '../../model';
 
 interface AskPassphraseProps extends React.Props<AskPassphrase> {
   readonly passphrase?: IObservableValue<string>;
   readonly fingerprint: string;
-  readonly completed: (pp: string) => void;
+  readonly completed?: (pp: string) => void;
 }
 
 @observer
 export class AskPassphrase
   extends React.Component<AskPassphraseProps, {}> {
 
-  public readonly _value: IObservableValue<string> = observable.box(undefined);
+  public readonly value: IObservableValue<string>;
 
-  constructor(props: AskPassphraseProps) {
+  public constructor(props: AskPassphraseProps) {
     super(props);
-  }
-
-  @computed
-  public get value(): string {
-    return this._value.get();
+    this.value = props.passphrase || observable.box('');
   }
 
   public render(): JSX.Element {
+          // <form noValidate autoComplete="off"
+      //   onSubmit={(e) => e.preventDefault()}
+      //   className="AskPassphrase"
+      //   key={this.props.fingerprint}>
     return (
-      <form
-        onSubmit={(e) => e.preventDefault()}
-        className="AskPassphrase" key={this.props.fingerprint}>
-        <label>Passphrase:</label><input type="password"
-          name={`ap-${this.props.key}`}
-          onChange={action((e: any) => {
-            if (this.value) {
-              this._value.set(e.target.value);
-            } else {
-              this.props.passphrase.set(e.target.value);
-            }
-          })} />
-        <button type="button" onClick={action((e: any) => {
-          console.log('Button-AskPassphrase:', this.props.completed, this.value, this.props.passphrase.get());
+      <div key={this.props.fingerprint}>
+        <InputPassword label="Passphrase" value={this.value} />
+        <Button onClick={action((e: any) => {
           if (this.props.completed) {
-            this.props.completed(this.value || this.props.passphrase.get());
+            this.props.completed(this.value.get());
           }
-        })}>Ready</button>
-      </form>
+        })}>Ready</Button>
+      </div>
     );
   }
 }

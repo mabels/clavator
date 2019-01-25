@@ -79,7 +79,7 @@ export class SimpleYubikey {
   public asKeyGen(): KeyGen {
     const kg = KeyGen.withSubKeys(3);
     this.common.uids.forEach(k => kg.uids.add(k));
-    kg.expireDate._value.set(this.common.expireDate.value);
+    kg.expireDate.value.set(this.common.expireDate.value.get());
     kg.keyInfo.fill(JSON.stringify(new KeyInfo(this.common.keyParams.type.value,
                              this.common.keyParams.masterLen.value,
                              ['cert'])));

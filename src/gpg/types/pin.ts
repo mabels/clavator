@@ -1,4 +1,4 @@
-import { observable, computed, IObservableValue, action } from 'mobx';
+import { observable, computed, IObservableValue, action, isObservable, IValueDidChange } from 'mobx';
 
 export interface PinProps {
   readonly pin?: string;
@@ -8,7 +8,8 @@ export interface PinProps {
 
 const PinDefaultRegex = '/.+/';
 export class Pin {
-  public readonly _pin: IObservableValue<string>;
+  public readonly pin: IObservableValue<string>;
+  public readonly valid: IObservableValue<boolean>;
   public match: RegExp;
 
   @action
@@ -22,26 +23,22 @@ export class Pin {
 
   public constructor(props: PinProps = {}) {
     if (props.pin) {
-      this._pin = observable.box(props.pin);
+      this.pin = observable.box(props.pin);
     } else if (props._pin) {
-      this._pin = props._pin;
+      this.pin = props._pin;
     } else {
-      this._pin = observable.box('');
+      this.pin = observable.box('');
     }
+    this.valid = observable.box(false);
+    this.pin.observe(action((change: IValueDidChange<string>) => {
+      this.valid.set(change.newValue.length > 0);
+    }), true);
     this.match = props.match || new RegExp(PinDefaultRegex);
   }
 
-  @computed
-  public get pin(): string {
-    return this._pin.get();
-  }
-
-  public verify(): boolean {
-    return this.verifyText().length == 0;
-  }
   public verifyText(): string[] {
     const ret: string[] = [];
-    if (!this.match.test(this.pin)) {
+    if (!this.match.test(this.pin.get())) {
       ret.push(`Pin does not match:${this.match.toString()}`);
     }
     return ret;

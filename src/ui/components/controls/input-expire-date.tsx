@@ -6,33 +6,32 @@ import {
   NestedFlag,
   DateValue,
  format_date } from '../../../model';
+import { FormControl, InputLabel } from '@material-ui/core';
+import { InputValid, InputType } from './input-valid';
+import { IObservable, IObservableValue, observable } from 'mobx';
 
 export interface InputExpireDateProps {
   title: string;
   expireDate: DateValue;
-  readOnly: NestedFlag;
-  completed?: boolean;
+  readOnly: IObservableValue<boolean>;
+  // completed?: boolean;
 }
+
+const DateInputType = observable.box(InputType.Date);
 
 export const InputExpireDate = observer((props: InputExpireDateProps) => {
     return (
-      <div className={classnames({row: true, completed: props.completed})}>
-          <div className="three columns">
-            <label>{props.title}:</label><input type="date" name="expireDate"
-              className={classnames({
-                 InputExpireDate: true,
-                 good: props.expireDate.valid(),
-                 readonly:  props.readOnly.is })}
-              disabled={props.readOnly.is}
-              readOnly={props.readOnly.is}
+        <InputValid
+              label={props.title}
+              type={DateInputType}
+              name="expireDate"
+              readOnly={props.readOnly}
               autoComplete="on"
-              min={Date.now()}
-              onChange={(e: any) => {
-                props.expireDate._value.set(new Date(e.target.value));
-              }}
-              defaultValue={format_date(props.expireDate.value)}
+              value={props.expireDate.value}
+              // onChange={(e: any) => {
+              //   props.expireDate._value.set(new Date(e.target.value));
+              // }}
+              defaultValue={props.expireDate.formatDate}
             />
-          </div>
-        </div>
     );
   });

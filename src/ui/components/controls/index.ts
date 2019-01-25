@@ -5,6 +5,8 @@ export * from './input-dice-ware';
 export * from './input-expire-date';
 export * from './input-pass-phrase';
 export * from './input-password';
+export * from './input-valid';
+export * from './input-double-password';
 export * from './progressor';
 export * from './rc-approve-warrents';
 export * from './rc-double-password';

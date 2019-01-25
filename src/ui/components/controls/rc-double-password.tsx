@@ -6,7 +6,7 @@ import { NestedFlag, } from '../../../model';
 import {
   ViewWarrent,
   DoublePassword } from '../../model';
-import { InputPassword } from '../controls';
+import { InputDoublePassword } from '../controls';
 import { RcApproveWarrents } from './rc-approve-warrents';
 
 interface RcDoublePasswordProps extends React.Props<RcDoublePassword> {
@@ -54,12 +54,16 @@ export class RcDoublePassword extends
         good: dp.valid()
       })} >
       {this.renderIndexLabel(this.props.idx)}
-      <InputPassword onReadable={this.props.onReadable}
-        readOnly={this.readOnly}
+      <InputDoublePassword
+        label=""
+        onReadable={this.props.onReadable}
+        readOnly={this.readOnly.is}
         doublePassword={dp}
         passwordControl={dp.first} />
-      <InputPassword onReadable={this.props.onReadable}
-        readOnly={this.readOnly}
+      <InputDoublePassword
+        label=""
+        onReadable={this.props.onReadable}
+        readOnly={this.readOnly.is}
         doublePassword={dp}
         passwordControl={dp.second} />
       {React.Children.map(this.props.children, (child, i) => {

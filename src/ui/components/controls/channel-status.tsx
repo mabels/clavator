@@ -4,38 +4,32 @@ import * as ReactModal from 'react-modal';
 import { Message } from '../../../model';
 import { Dispatch } from '../../model';
 import { observable, IObservableValue, computed, action } from 'mobx';
-
-interface ChannelStatusState {
-  status: string;
-}
+import { Dialog, DialogTitle } from '@material-ui/core';
+import { observer } from 'mobx-react';
 
 interface ChannelStatusProps extends React.Props<ChannelStatus> {
-  channel: Dispatch;
+  readonly channel: Dispatch;
 }
 
+@observer
 export class ChannelStatus extends
-  React.Component<ChannelStatusProps, {}> implements ChannelStatusState {
+  React.Component<ChannelStatusProps, {}> {
 
-  public readonly _status: IObservableValue<string>;
+  public readonly status: IObservableValue<string>;
 
   constructor(props: ChannelStatusProps) {
     super(props);
-    this._status = observable.box('not started');
+    this.status = observable.box('not started');
   }
 
   @action
   public onOpen(e: Event): void {
-    this._status.set('connected');
+    this.status.set('connected');
   }
 
   @action
   public onClose(e: CloseEvent): void {
-    this._status.set('not connected');
-  }
-
-  @computed
-  public get status(): string {
-    return this._status.get();
+    this.status.set('not connected');
   }
 
   public onMessage(_: Message.Header, data: string): void {
@@ -50,37 +44,12 @@ export class ChannelStatus extends
     this.props.channel.unregister(this);
   }
 
-  private renderStatus(): JSX.Element {
-    if (this.status == 'connected' || this.status == 'not started') {
-      // console.log("NOT: renderStatus:", this.state.status);
-      return null;
-    }
-    console.log('renderStatus:', this.status);
-    return <ReactModal
-        className="waitForConnect"
-        isOpen={true}
-        closeTimeoutMS={150}
-        contentLabel="Modal"
-      >
-        <h3>Wait for Reconnect</h3>
-      </ReactModal>;
-  }
-
-  private renderChildren(): React.ReactNode {
-    if (this.status == 'connected' || this.status == 'not started') {
-      // console.log("NOT: renderStatus:", this.state.status);
-      return this.props.children;
-    }
-    return null;
-  }
-
   public render(): JSX.Element {
-    return (
-      <div className={this.status}>
-        {this.renderChildren()}
-        {this.renderStatus()}
-      </div>
-    );
+    return <Dialog
+        className="waitForConnect"
+        open={!(this.status.get() == 'connected' || this.status.get() == 'not started')}
+      >
+        <DialogTitle>Wait for Reconnect</DialogTitle>
+      </Dialog>;
   }
-
 }

@@ -15,6 +15,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
+import { Card, CardHeader, CardContent } from '@material-ui/core';
 
 export enum KeyChainListDialogs {
   closed,
@@ -35,12 +36,10 @@ export interface KeyChainDialogQItem {
 }
 
 @observer
-export class KeyChainList extends React.Component<
-  KeyChainListProps,
-  {}
-> {
-
-  public readonly dialogQ: IObservableArray<KeyChainDialogQItem> = observable.array();
+export class KeyChainList extends React.Component<KeyChainListProps, {}> {
+  public readonly dialogQ: IObservableArray<
+    KeyChainDialogQItem
+  > = observable.array();
   // public readonly dialogs: IObservableValue<KeyChainListDialogs>;
   // public readonly dialogSecKey: IObservableValue<SecretKey>;
   // public idx: number;
@@ -80,7 +79,7 @@ export class KeyChainList extends React.Component<
     // {/*{sk.subKeys.map((ssb, idx) => this.render_result(ssb, idx))}*/}
     // console.log("render.KeyChainList", this.props.keyChainListState.keyChainList.length)
     return (
-      <Paper>
+      <>
         <KeyChainListModal
           dialogQ={this.dialogQ}
           appState={this.props.appState}
@@ -94,37 +93,46 @@ export class KeyChainList extends React.Component<
         {this.props.appState.keyChainListState.keyChainList.map(
           (secKey: SecretKey, idx: number) => {
             return (
-              <Table key={secKey.key}>
-                <Table key={secKey.key}>
-                  <TableHead>
-                  {secKey.uids.map(uid => <KeyChainListUid uid={uid} key={uid.id} />)}
-                  </TableHead>
-                </Table>
-                <Table>
-                  <TableBody>
-                    <KeyChainListKey
-                      key={-1}
-                      appState={this.props.appState}
-                      dialogQ={this.dialogQ}
-                      clazz="sec"
-                      selectedKey={secKey}
-                      idx={-1} />
-                    {secKey.subKeys.map((ssb, idxx) =>
+              <Card>
+                <CardHeader key={secKey.key}>
+                  <Table>
+                    <TableHead>
+                      {secKey.uids.map(uid => (
+                        <KeyChainListUid uid={uid} key={uid.id} />
+                      ))}
+                    </TableHead>
+                  </Table>
+                </CardHeader>
+
+                <CardContent>
+                  <Table>
+                    <TableBody>
                       <KeyChainListKey
-                        key={idxx}
+                        key={-1}
                         appState={this.props.appState}
                         dialogQ={this.dialogQ}
-                        clazz="ssb"
-                        selectedKey={ssb}
-                        idx={idxx} />
-                    )}
-                  </TableBody>
-                </Table>
-              </Table>
+                        clazz="sec"
+                        selectedKey={secKey}
+                        idx={-1}
+                      />
+                      {secKey.subKeys.map((ssb, idxx) => (
+                        <KeyChainListKey
+                          key={idxx}
+                          appState={this.props.appState}
+                          dialogQ={this.dialogQ}
+                          clazz="ssb"
+                          selectedKey={ssb}
+                          idx={idxx}
+                        />
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
             );
           }
         )}
-      </Paper>
+      </>
     );
   }
 }

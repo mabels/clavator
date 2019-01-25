@@ -3,8 +3,7 @@ import {
     KeyGenUid,
     KeyGen } from '../../../gpg/types';
 import { NestedFlag } from '../../../model/nested-flag';
-import { RcDoublePassword,
-InputExpireDate } from '../controls';
+import { RcDoublePassword, InputExpireDate } from '../controls';
 
 import { CreateKeyCreate } from './create-key-create';
 import { CreateKeyUid } from './create-key-uid';
@@ -13,6 +12,7 @@ import { CreateKeyCompact } from './create-key-compact';
 import { AppState, PassPhrase } from '../../model';
 import { Message } from '../../../model';
 import { CreateKey } from './create-key';
+import { observable } from 'mobx';
 
 export interface CreateKeyFormProps {
   readonly compact: boolean;
@@ -35,7 +35,7 @@ export function CreateKeyForm(props: CreateKeyFormProps): JSX.Element {
       }}
     >
       <InputExpireDate
-        readOnly={props.readOnly}
+        readOnly={props.readOnly.is}
         title="Expire-Date"
         expireDate={props.keyGen.expireDate}
       />

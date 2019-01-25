@@ -57,12 +57,7 @@ export const DiceWareInputPassPhrase = observer(
                     dp.second.password.value == dp.second.prevPassword)
                 ) {
                   dp.setPassword(dd.password);
-                  dp.setReadableWithTimeout(true, 10000, v => {
-                    if (!v) {
-                      dp.diceValue._value.set('');
-                    }
-                    // console.log('readable reset', v);
-                  });
+                  dp._readable.set(true);
                 }
               }}
             />

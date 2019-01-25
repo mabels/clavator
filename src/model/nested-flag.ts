@@ -20,16 +20,16 @@ export class NestedFlag extends ObjectId {
   }
 
   @computed
-  public get is(): boolean {
+  public get is(): IObservableValue<boolean> {
     // console.log(`GET:${this.objectId()}:`, this.value);
     if (this.value.get() === undefined) {
       return this.parent.is;
     }
-    return this.value.get();
+    return this.value;
   }
 
-  public set is(v: boolean) {
-    this.value.set(v);
+  public set is(v: IObservableValue<boolean>) {
+    this.value.set(v.get());
     // console.log(`SET:${this.objectId()}:`, this.value);
     this.resetChildren();
   }

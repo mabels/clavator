@@ -5,6 +5,7 @@ import { Message } from '../../../model';
 import { Progressor } from './progressor';
 import { AppState } from '../../model';
 import { observable, IObservableValue, action } from 'mobx';
+import { Button } from '@material-ui/core';
 
 interface ButtonToProgressorProps extends React.Props<ButtonToProgressor> {
   readonly onClick: () => void;
@@ -31,12 +32,12 @@ export class ButtonToProgressor extends React.Component<ButtonToProgressorProps,
         transaction={this.props.transaction.header.transaction}
         controls={true} />;
     } else {
-      return <button onClick={action(() => {
+      return <Button onClick={action(() => {
           this.running.set(true);
           this.props.onClick();
         })}
         disabled={this.props.disabled}
-        >{this.props.children}</button>;
+        >{this.props.children}</Button>;
     }
   }
 }

@@ -61,7 +61,7 @@ export class ChangeCard {
 
   public valid(): boolean {
     return (
-      this.adminPin.verify() &&
+      this.adminPin.valid.get() &&
       this.serialNo.get().length > 0 &&
       typeof this.lang.get() == 'string' &&
       typeof this.name.get() == 'string' &&

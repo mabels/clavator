@@ -215,7 +215,7 @@ export class KeyGen {
     if (this.uids.first().comment.value.length > 0) {
       ret.push('Name-Comment: ' + this.uids.first().comment.value);
     }
-    ret.push('Expire-Date: ' + format_date(this.expireDate.value));
+    ret.push('Expire-Date: ' + this.expireDate.formatDate);
     ret.push('%commit');
     ret.push('%echo done');
     return ret.join('\n');

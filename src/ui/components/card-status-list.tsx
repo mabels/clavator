@@ -10,7 +10,7 @@ import { DialogChangeAttributes } from './card-status-list/dialog-change-attribu
 import { DialogResetYubiKey } from './card-status-list/dialog-reset-yubikey';
 import { observable, IObservableValue, action } from 'mobx';
 
-import { Paper, Table, TableCell, TableRow, TableBody } from '@material-ui/core';
+import { Paper, Table, TableCell, TableRow, TableBody, Card, CardActions, CardContent } from '@material-ui/core';
 import Build from '@material-ui/icons/Build';
 import Delete from '@material-ui/icons/Delete';
 import PersonPin from '@material-ui/icons/Person';
@@ -143,15 +143,19 @@ export class CardStatusList extends React.Component<CardStatusListProps, {}> {
   public render(): JSX.Element {
     // console.log('card-status-list:render');
     return (
-      <Paper>
+      <>
         {this.props.appState.cardStatusListState.cardStatusList.map(
           (cs: Gpg2CardStatus, idx: number) => {
             // console.log('card-status-list:map');
             return (
+            <Card>
+              <CardActions>
+                    {this.render_actions(cs)}
+              </CardActions>
+              <CardContent>
               <Table key={cs.serial}>
                 <TableBody>
                   <TableRow key={cs.serial}>
-                    {this.render_actions(cs)}
                     <TableCell>{cs.serial}</TableCell>
                     <TableCell>{cs.name}</TableCell>
                     <TableCell>{cs.login}</TableCell>
@@ -200,11 +204,13 @@ export class CardStatusList extends React.Component<CardStatusListProps, {}> {
                   </TableRow>
                 </TableBody>
               </Table>
+              </CardContent>
+      </Card>
             );
           }
         )}
         {this.render_dialog()}
-      </Paper>
+        </>
     );
   }
 }
