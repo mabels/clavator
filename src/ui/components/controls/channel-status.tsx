@@ -11,25 +11,31 @@ interface ChannelStatusProps extends React.Props<ChannelStatus> {
   readonly channel: Dispatch;
 }
 
+enum Status {
+  NotStarted = 'not started',
+  Connected = 'connected',
+  NotConnected = 'not connected',
+}
+
 @observer
 export class ChannelStatus extends
   React.Component<ChannelStatusProps, {}> {
 
-  public readonly status: IObservableValue<string>;
+  public readonly status: IObservableValue<Status>;
 
   constructor(props: ChannelStatusProps) {
     super(props);
-    this.status = observable.box('not started');
+    this.status = observable.box(Status.NotConnected);
   }
 
   @action
   public onOpen(e: Event): void {
-    this.status.set('connected');
+    this.status.set(Status.Connected);
   }
 
   @action
   public onClose(e: CloseEvent): void {
-    this.status.set('not connected');
+    this.status.set(Status.NotConnected);
   }
 
   public onMessage(_: Message.Header, data: string): void {
@@ -47,7 +53,8 @@ export class ChannelStatus extends
   public render(): JSX.Element {
     return <Dialog
         className="waitForConnect"
-        open={!(this.status.get() == 'connected' || this.status.get() == 'not started')}
+        open={!(this.status.get() === Status.Connected ||
+                this.status.get() == Status.NotConnected)}
       >
         <DialogTitle>Wait for Reconnect</DialogTitle>
       </Dialog>;

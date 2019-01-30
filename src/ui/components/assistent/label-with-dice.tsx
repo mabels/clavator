@@ -6,6 +6,7 @@ import { PassPhrase } from '../../model';
 import { Option, NestedFlag } from '../../../model';
 import { DiceWare } from '../../../dice-ware';
 import { action } from 'mobx';
+import { Button } from '@material-ui/core';
 
 export interface LabelWithDiceProps {
   readonly label: string | JSX.Element;
@@ -51,7 +52,7 @@ export const LabelWithDice = observer(
       <span>
         {props.label}
         {diceWareOption}
-        <button className="fa fa-random" onClick={action(() => diceAll(props))} />
+        <Button className="fa fa-random" onClick={action(() => diceAll(props))} />
       </span>
     );
   }

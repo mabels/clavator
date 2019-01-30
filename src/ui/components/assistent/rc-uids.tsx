@@ -5,7 +5,7 @@ import { Container, NestedFlag } from '../../../model';
 import { KeyGenUid } from '../../../gpg/types';
 import { action, observable } from 'mobx';
 import { InputValid, InputType } from '../controls';
-import { Input } from '@material-ui/core';
+import { Input, Button } from '@material-ui/core';
 
 interface RcUidsProps extends React.Props<RcUids> {
   readonly uids: Container<KeyGenUid>;
@@ -94,13 +94,13 @@ export class RcUids extends
             value={uid.comment.value} />
         </div>
         <div className="two columns">
-          <button type="button"
+          <Button type="button"
                   className={classnames({
                     AddUid: true,
                     'bad': uid.valid()
                   })}
                   disabled={this.props.readOnly.is || !uid.valid()}
-                  onClick={action(() => this.handleAddUid())}>Add Uid</button>
+                  onClick={action(() => this.handleAddUid())}>Add Uid</Button>
         </div>
 
       </div>

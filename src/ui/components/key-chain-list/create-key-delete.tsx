@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { KeyGen } from '../../../gpg/types';
+import { Button } from '@material-ui/core';
 
 export interface CreateKeyDeleteProps {
   readonly idx: number;
@@ -15,9 +16,9 @@ function handleDelUid(props: CreateKeyDeleteProps): void {
 export function CreateKeyDelete(props: CreateKeyDeleteProps): JSX.Element {
   if (props.keyGen.uids.length > 1) {
     return (
-      <button type="button" onClick={() => handleDelUid(props)}>
+      <Button type="button" onClick={() => handleDelUid(props)}>
         Delete Uid
-      </button>
+      </Button>
     );
   }
   return null;

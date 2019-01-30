@@ -37,19 +37,19 @@ import { action } from 'mobx';
 export interface InputDiceWareProps extends InputPassPhraseProps {
   // value: StringValue;
   // diceWare: DiceWare;
-  doublePassword: DoublePassword;
-  onDiceResult: (diced: Diced, props: InputDiceWareProps) => void;
-  readable: boolean;
+  readonly doublePassword: DoublePassword;
+  readonly onDiceResult: (diced: Diced, props: InputDiceWareProps) => void;
+  readonly readable: boolean;
 }
 
 @observer
 export class InputDiceWare extends
   React.Component<InputDiceWareProps, {}> {
-  private readonly key: string;
+  // private readonly key: string;
 
-  constructor(props: InputDiceWareProps) {
-    super(props);
-  }
+  // constructor(props: InputDiceWareProps) {
+  //   super(props);
+  // }
 
   @action
   private setDice(val: string): void {

@@ -25,7 +25,7 @@ export enum CardStatusListDialogs {
 }
 
 interface CardStatusListProps extends React.Props<CardStatusList> {
-  appState: AppState;
+  readonly appState: AppState;
 }
 
 @observer

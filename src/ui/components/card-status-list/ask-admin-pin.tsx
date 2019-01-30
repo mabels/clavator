@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import { CardStatusListState } from '../../model';
+import { Input } from '@material-ui/core';
 
 export interface AskAdminPinProps {
   serialNo: string;
@@ -18,7 +19,7 @@ export function AskAdminPin(props: AskAdminPinProps): JSX.Element {
   return (
     <span>
       <label>AdminPin:</label>
-      <input
+      <Input
         type="password"
         name={`ask-${this.props.serialNo}-pin`}
         onChange={e => {

@@ -1,17 +1,18 @@
 import * as WebSocket from 'ws';
 import { Message } from '../model/message';
+import { IObservableArray, observable } from 'mobx';
 
 export interface Equalizer<T> {
   eq(o: T): boolean;
 }
 
 export class WssUpdate<T extends Equalizer<T>> {
-  private prevWss: Set<WebSocket> = new Set<WebSocket>([]);
-  private prevT: T[] = [];
+  private readonly prevWss: Set<WebSocket> = new Set<WebSocket>([]);
+  private readonly prevT: IObservableArray<T> = observable.array([]);
 
   public run(action: string, wss: WebSocket[], t: T[], cb: () => void): void {
-    let wssChanged: WebSocket[] = [];
-    let wssUnChanged: WebSocket[] = [];
+    const wssChanged: WebSocket[] = [];
+    const wssUnChanged: WebSocket[] = [];
     wss.forEach(ws => {
       if (!this.prevWss.has(ws)) {
         this.prevWss.add(ws);
@@ -30,7 +31,7 @@ export class WssUpdate<T extends Equalizer<T>> {
         }
       }
     }
-    this.prevT = t;
+    this.prevT.replace(t);
     let needCb = false;
     if (wssChanged.length) {
       console.log(
@@ -56,7 +57,7 @@ export class WssUpdate<T extends Equalizer<T>> {
     cb: () => void
   ): boolean {
     let cnt = wss.length;
-    let header = Message.broadcast(action);
+    const header = Message.broadcast(action);
     wss.forEach((ws: WebSocket) => {
       console.log('header:', header);
       ws.send(Message.prepare(header, t), (error: any) => {

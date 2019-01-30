@@ -4,6 +4,7 @@ import { observer } from 'mobx-react';
 import { AppState } from '../../model';
 import { KeyToYubiKey, KeyState } from '../../../gpg/types';
 import { action } from 'mobx';
+import { Select, MenuItem } from '@material-ui/core';
 
 export interface CardSlotProps {
   readonly appState: AppState;
@@ -15,7 +16,7 @@ export const CardSlot = observer(
     // let selected = `${this.state.keyToYubiKey.card_id}:Slot${this.state.keyToYubiKey.slot_id}`;
     return (
       <div className="row">
-        <select
+        <Select
           className="three columns"
           value={this.state.keyToYubiKey.slot_id}
           onChange={action((e: any) => {
@@ -27,13 +28,13 @@ export const CardSlot = observer(
             return cardstatus.keyStates.map((ks: KeyState, idx: number) => {
               let key = `${cardstatus.reader.cardid}:Slot${idx + 1}`;
               return (
-                <option value={idx + 1} key={key}>
+                <MenuItem value={idx + 1} key={key}>
                   {key}
-                </option>
+                </MenuItem>
               );
             });
           })}
-        </select>
+        </Select>
       </div>
     );
   }

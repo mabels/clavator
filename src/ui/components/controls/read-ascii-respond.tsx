@@ -41,8 +41,8 @@ export class ReadAsciiRespond extends React.Component<
       action((header: Message.Header, data: string) => {
         if (
           !(
-            header.action == 'RespondAscii' &&
-            header.transaction == this.transaction.header.transaction
+            header.action === 'RespondAscii' &&
+            header.transaction === this.transaction.header.transaction
           )
         ) {
           return;

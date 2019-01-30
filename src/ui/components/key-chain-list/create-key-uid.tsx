@@ -3,6 +3,7 @@ import classnames from 'classnames';
 import { KeyGen, KeyGenUid } from '../../../gpg/types';
 import { observer } from 'mobx-react';
 import { CreateKeyDelete } from './create-key-delete';
+import { Input, Button } from '@material-ui/core';
 
 export interface CreateKeyUidProps {
   readonly idx: number;
@@ -23,8 +24,8 @@ export const CreateKeyUid = observer((props: CreateKeyUidProps): JSX.Element => 
     <div className={classnames({ good: keyGenUid.valid() })} key={idx}>
       <div className="row">
         <div className="five columns">
-          <label>Name-Real:</label>
-          <input
+          <Input
+            title="Name-Real"
             type="text"
             className={classnames({
               'u-full-width': true,
@@ -38,8 +39,8 @@ export const CreateKeyUid = observer((props: CreateKeyUidProps): JSX.Element => 
           />
         </div>
         <div className="five columns">
-          <label>Name-Email:</label>
-          <input
+          <Input
+            title="Name-Email"
             type="email"
             className={classnames({
               'u-full-width': true,
@@ -59,8 +60,8 @@ export const CreateKeyUid = observer((props: CreateKeyUidProps): JSX.Element => 
       </div>
       <div className="row">
         <div className="ten columns">
-          <label>Name-Comment:</label>
-          <input
+          <Input
+            title="Name-Comment"
             type="text"
             className={classnames({
               'u-full-width': true,
@@ -76,9 +77,9 @@ export const CreateKeyUid = observer((props: CreateKeyUidProps): JSX.Element => 
           />
         </div>
         <div className="two columns">
-          <button type="button" onClick={() => handleAddUid(props)}>
+          <Button type="button" onClick={() => handleAddUid(props)}>
             Add Uid
-          </button>
+          </Button>
         </div>
       </div>
     </div>

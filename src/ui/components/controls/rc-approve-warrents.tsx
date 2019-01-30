@@ -7,16 +7,17 @@ import {
   ViewWarrent } from '../../model';
 
 import { NestedFlag } from '../../../model';
+import { Button } from '@material-ui/core';
 
 export interface RcApproveWarrentsProps {
-  viewWarrents: ViewWarrents;
-  showWarrents: boolean;
-  classNames?: string[];
-  valid?: boolean;
-  completed?: boolean;
-  readOnly: NestedFlag;
-  approved?: (ap: ViewWarrent) => void;
-  children?: JSX.Element | JSX.Element[];
+  readonly viewWarrents: ViewWarrents;
+  readonly showWarrents: boolean;
+  readonly classNames?: string[];
+  readonly valid?: boolean;
+  readonly completed?: boolean;
+  readonly readOnly: NestedFlag;
+  readonly approved?: (ap: ViewWarrent) => void;
+  readonly children?: JSX.Element | JSX.Element[];
 }
 
 function checkWarrents(ap: ViewWarrent): void {
@@ -40,12 +41,12 @@ function Warrents(props: RcApproveWarrentsProps): JSX.Element {
         const good = i.approved;
         const disabled = !props.valid;
         // console.log('renderWarrents:', good, disabled, this.props);
-        return <button disabled={disabled || good}
+        return <Button disabled={disabled || good}
                 className={classnames({
                   fail: props.valid && !good,
                   good: good })}
                 key={i.objectId()} type="button"
-                onClick={() => checkWarrents(i)}>{i.warrent.value()}</button>;
+                onClick={() => checkWarrents(i)}>{i.warrent.value()}</Button>;
       })}
     </div>;
   }

@@ -11,9 +11,9 @@ import { InputValid, InputType } from './input-valid';
 import { IObservable, IObservableValue, observable } from 'mobx';
 
 export interface InputExpireDateProps {
-  title: string;
-  expireDate: DateValue;
-  readOnly: IObservableValue<boolean>;
+  readonly title: string;
+  readonly expireDate: DateValue;
+  readonly readOnly: IObservableValue<boolean>;
   // completed?: boolean;
 }
 

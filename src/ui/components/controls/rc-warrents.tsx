@@ -5,10 +5,11 @@ import classnames from 'classnames';
 import {
   Warrents,
   Warrent } from '../../../model';
+import { Button } from '@material-ui/core';
 
 export interface RcWarrentsProps extends React.Props<RcWarrents> {
-  warrents: Warrents;
-  completed: () => void;
+  readonly warrents: Warrents;
+  readonly completed: () => void;
 }
 
 interface InputProps extends RcWarrentsProps {
@@ -22,15 +23,15 @@ function handlePressEnter(e: any, props: InputProps): void {
   }
 }
 
-function Button(props: InputProps): JSX.Element {
+function MyButton(props: InputProps): JSX.Element {
   const coc = checkOrComplete(props.warrents, props.warrents.last());
   if (coc.length <= 1) {
     return null;
   }
   const clazz: any = { };
   clazz[coc] = true;
-  return <button className={classnames(clazz)}
-    onClick={action(() => addClick(props))}>{coc}</button>;
+  return <Button className={classnames(clazz)}
+    onClick={action(() => addClick(props))}>{coc}</Button>;
 }
 
 function checkOrComplete(warrents: Warrents, warrent: Warrent): string {
@@ -72,7 +73,7 @@ const Input = observer((props: InputProps): JSX.Element  => {
         props.warrents.last().warrent._value.set(e.target.value);
         // console.log(`Warrent:Pos:${e.target.value}`, props.warrents.last().warrent.value);
       })}
-    /><Button {...props} />
+    /><MyButton {...props} />
   </li>;
 });
 

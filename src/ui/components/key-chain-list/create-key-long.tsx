@@ -19,21 +19,21 @@ export const CreateKeyLong = observer((props: CreateKeyLongProps): JSX.Element =
       <div className="row">
         <div className="two columns">MasterKey</div>
         <div className="three columns">
-          <label>Key-Type:</label>
           <CreateKeyOption
+            title="Key-Type"
             name="keyType"
             ops={[props.keyGen.keyInfo.type]}
            />
         </div>
         <div className="three columns">
-          <label>Master-Key-Length:</label>
           <CreateKeyOption
+            title="Master-Key-Length"
             name="masterKeyLength"
             ops={[props.keyGen.keyInfo.length]} />
         </div>
         <div className="three columns">
-          <label>Key-Usage:</label>
           <CreateKeyMultioption
+            title="Key-Usage"
             name="keyUsage"
             op={props.keyGen.keyInfo.usage} />
         </div>

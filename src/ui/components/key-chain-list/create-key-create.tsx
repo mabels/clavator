@@ -11,8 +11,8 @@ export interface CreateKeyCreateProps {
   readonly renderSubmit?: (ck: CreateKey) => JSX.Element;
   readonly appState: AppState;
   // createDialog: boolean;
-  transaction: Message.Transaction<KeyGen>;
-  createKey: CreateKey;
+  readonly transaction: Message.Transaction<KeyGen>;
+  readonly createKey: CreateKey;
 }
 
 function create_key(props: CreateKeyCreateProps): void {

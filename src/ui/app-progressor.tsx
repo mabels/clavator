@@ -4,6 +4,7 @@ import { AppState } from './model/app-state';
 import { observer } from 'mobx-react';
 import { Progressor, ProgressorState } from './components/controls/progressor';
 import { action } from 'mobx';
+import { Dialog } from '@material-ui/core';
 
 export interface ProgressorProps {
   progressState: ProgressorState;
@@ -16,14 +17,8 @@ export const AppProgressor = observer((props: ProgressorProps): JSX.Element => {
     }
     */
     return (
-      <ReactModal
-        isOpen={props.progressState.open.get()}
-        closeTimeoutMS={150}
-        onAfterOpen={() => {
-          /* */
-        }}
-        contentLabel="Modal"
-        shouldCloseOnOverlayClick={true}
+      <Dialog
+        open={props.progressState.open.get()}
       >
         <i
           onClick={action(() => {
@@ -36,7 +31,7 @@ export const AppProgressor = observer((props: ProgressorProps): JSX.Element => {
           msg={'Clavator'}
           controls={true}
         />
-      </ReactModal>
+      </Dialog>
     );
   }
 );
