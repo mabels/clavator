@@ -24,7 +24,7 @@ function actionRcOption<T>(props: RcOptionProps<T>): JSX.Element {
         <Select name={props.name}
           className={classnames({ 'u-full-width': true, readonly: props.readOnly.is })}
           disabled={props.readOnly.is}
-          defaultValue={value}
+          value={value}
           onChange={(e: any) => {
             props.option.options.forEach((op) => {
               let murks = op as any;

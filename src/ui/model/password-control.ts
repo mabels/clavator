@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, computed } from 'mobx';
 import { ObjectId, StringValue, Validatable } from '../../model';
 import { MinMax } from './min-max';
 
@@ -18,12 +18,14 @@ export class PasswordControl extends ObjectId implements Validatable {
     return this.password.match;
   }
 
-  public valid(): boolean {
-    return this.password.valid();
+  @computed
+  public get valid(): boolean {
+    return this.password.valid;
   }
 
-  public errText(): string[] {
-    return this.password.errText();
+  @computed
+  public get errText(): string[] {
+    return this.password.errText;
   }
 
   public fill(o: any): PasswordControl {

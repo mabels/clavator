@@ -1,6 +1,7 @@
 import { ObjectId } from './object-id';
 import { Pallet } from './pallet';
 import { StringValue } from './string-value';
+import { computed } from 'mobx';
 
 export class Warrent extends ObjectId implements Pallet {
   public readonly warrent: StringValue;
@@ -14,12 +15,14 @@ export class Warrent extends ObjectId implements Pallet {
     return this.warrent.value;
   }
 
-  public valid(): boolean {
-    return this.warrent.valid();
+  @computed
+  public get valid(): boolean {
+    return this.warrent.valid;
   }
 
-  public errText(): string[] {
-    return this.warrent.errText();
+  @computed
+  public get errText(): string[] {
+    return this.warrent.errText;
   }
 
   public fill(js: any): void {

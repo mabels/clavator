@@ -9,7 +9,7 @@ export interface PinProps {
 const PinDefaultRegex = '/.+/';
 export class Pin {
   public readonly pin: IObservableValue<string>;
-  public readonly valid: IObservableValue<boolean>;
+  // public readonly valid: boolean;
   public match: RegExp;
 
   @action
@@ -29,11 +29,12 @@ export class Pin {
     } else {
       this.pin = observable.box('');
     }
-    this.valid = observable.box(false);
-    this.pin.observe(action((change: IValueDidChange<string>) => {
-      this.valid.set(change.newValue.length > 0);
-    }), true);
     this.match = props.match || new RegExp(PinDefaultRegex);
+  }
+
+  @computed
+  public get valid(): boolean {
+    return this.pin.get().length > 0;
   }
 
   public verifyText(): string[] {

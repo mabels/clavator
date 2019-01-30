@@ -25,11 +25,13 @@ export class BooleanValue extends ObjectId implements Validatable {
     return this;
   }
 
-  public errText(): string[] {
+  @computed
+  public get errText(): string[] {
     return [this.errorText];
   }
 
-  public valid(): boolean {
+  @computed
+  public get valid(): boolean {
     return true;
   }
 

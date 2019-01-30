@@ -51,7 +51,7 @@ export class ViewWarrents extends Container<ViewWarrent> {
       // this.pallets[0].approved.set(true);
     }
     // debugger;
-    const ret = this.valid();
+    const ret = this.valid;
     // console.log('AppWarrents:completed:', ret);
     return ret;
   }

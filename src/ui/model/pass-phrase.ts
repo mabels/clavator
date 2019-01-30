@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, computed } from 'mobx';
 
 import {
   ObjectId,
@@ -90,22 +90,25 @@ export class PassPhrase extends ObjectId implements Validatable {
     this.doublePasswords = dps.map(dp => dp.setPassPhrase(this));
   }
 
-  public valid(): boolean {
+  @computed
+  public get valid(): boolean {
     return (
-      this.doublePasswords.filter(p => p.valid()).length ==
+      this.doublePasswords.filter(p => p.valid).length ==
       this.doublePasswords.length
     );
   }
 
-  public completed(): boolean {
+  @computed
+  public get completed(): boolean {
     return (
-      this.valid() &&
+      this.valid &&
       this.doublePasswords.filter(i => i.warrents.approved()).length ==
         this.doublePasswords.length
     );
   }
 
-  public errText(): string[] {
+  @computed
+  public get errText(): string[] {
     const ret: string[] = [];
     // assignOnError(this.type.valid(), ret, this.type.errText);
     // assignOnError(this.masterLen.valid(), ret, this.masterLen.errText);
@@ -114,7 +117,7 @@ export class PassPhrase extends ObjectId implements Validatable {
   }
 
   public getPassPhrase(): string {
-    if (!this.valid()) {
+    if (!this.valid) {
       throw 'getPassPhrase only allowed on valid objects';
     }
     return this.doublePasswords

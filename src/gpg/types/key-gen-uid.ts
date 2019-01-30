@@ -3,6 +3,7 @@ import {
   Pallet,
   ObjectId,
   StringValue } from '../../model';
+import { computed } from 'mobx';
 
 const EmailRegExp = new RegExp(
   [
@@ -32,17 +33,19 @@ export class KeyGenUid extends ObjectId implements Pallet {
     // console.log(`KeyGenUid:${this.objectId()}:${js}:${this.name.value}:${this.email.value}:${this.comment.value}`);
   }
 
-  public valid(): boolean {
+  @computed
+  public get valid(): boolean {
     // console.log('KeyGenUid:', this.key, this.name.valid(),
     //    this.email.valid(), this.comment.valid());
-    return this.name.valid() && this.email.valid() && this.comment.valid();
+    return this.name.valid && this.email.valid && this.comment.valid;
   }
 
-  public errText(): string[] {
+  @computed
+  public get errText(): string[] {
     let ret: string[] = [];
-    assignOnError(this.name.valid(), ret, this.name.errText());
-    assignOnError(this.email.valid(), ret, this.email.errText());
-    assignOnError(this.comment.valid(), ret, this.comment.errText());
+    assignOnError(this.name.valid, ret, this.name.errText);
+    assignOnError(this.email.valid, ret, this.email.errText);
+    assignOnError(this.comment.valid, ret, this.comment.errText);
     return ret;
   }
 

@@ -1,4 +1,5 @@
 import { Option, ObjectId, Validatable, assignOnError } from '../../model';
+import { computed } from 'mobx';
 
 export class KeyParams extends ObjectId implements Validatable {
   public readonly type: Option<string>;
@@ -20,15 +21,17 @@ export class KeyParams extends ObjectId implements Validatable {
     );
   }
 
-  public valid(): boolean {
-    return this.type.valid() && this.masterLen.valid() && this.subLen.valid();
+  @computed
+  public get valid(): boolean {
+    return this.type.valid && this.masterLen.valid && this.subLen.valid;
   }
 
-  public errText(): string[] {
+  @computed
+  public get errText(): string[] {
     const ret: string[] = [];
-    assignOnError(this.type.valid(), ret, this.type.errText);
-    assignOnError(this.masterLen.valid(), ret, this.masterLen.errText);
-    assignOnError(this.subLen.valid(), ret, this.subLen.errText);
+    assignOnError(this.type.valid, ret, this.type.errText);
+    assignOnError(this.masterLen.valid, ret, this.masterLen.errText);
+    assignOnError(this.subLen.valid, ret, this.subLen.errText);
     return ret;
   }
 

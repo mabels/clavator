@@ -23,8 +23,8 @@ export interface InputPasswordProps extends React.Props<InputPassword> {
   readonly value: IObservableValue<string>;
   readonly name?: string;
   readonly inputType?: IObservableValue<InputType>;
-  readonly readOnly?: IObservableValue<boolean>;
-  readonly valid?: IObservableValue<boolean>;
+  readonly readOnly?: boolean;
+  readonly valid?: boolean;
 }
 
 @observer
@@ -32,8 +32,8 @@ export class InputPassword extends React.Component<InputPasswordProps, {}> {
 
   private readonly readable: IObservableValue<boolean>;
   private readonly inputType: IObservableValue<InputType>;
-  private readonly readOnly: IObservableValue<boolean>;
-  private readonly valid: IObservableValue<boolean>;
+  private readonly readOnly: boolean;
+  private readonly valid: boolean;
   private readonly name: string;
   private readableTimer: any = undefined;
 
@@ -42,8 +42,8 @@ export class InputPassword extends React.Component<InputPasswordProps, {}> {
     this.readable = observable.box(true);
     this.name = props.name || uuid.v4();
     this.inputType = props.inputType || observable.box(InputType.Password);
-    this.readOnly = props.readOnly || observable.box(false);
-    this.valid = props.valid || observable.box(undefined);
+    this.readOnly = props.readOnly || false;
+    this.valid = props.valid || undefined;
   }
 
   @action
@@ -120,8 +120,8 @@ export class InputPassword extends React.Component<InputPasswordProps, {}> {
                   <VisibilityOff />
                 )}
               </IconButton>
-              {this.valid.get() !== undefined  ? <></> :
-                (this.valid.get() ? (
+              {this.valid !== undefined  ? <></> :
+                (this.valid ? (
                   <Visibility />
                 ) : (
                   <VisibilityOff />

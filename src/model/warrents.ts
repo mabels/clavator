@@ -2,6 +2,7 @@
 // import StringValue from './string-value';
 import { Container } from './container';
 import { Warrent } from './warrent';
+import { computed } from 'mobx';
 
 export class Warrents extends Container<Warrent> {
   constructor(ws: Warrent[] = []) {
@@ -11,9 +12,10 @@ export class Warrents extends Container<Warrent> {
     ws.forEach(w => this.add(w));
   }
 
-  public valid(): boolean {
+  @computed
+  public get valid(): boolean {
     // debugger;
-    if (this.pallets.find(i => !i.valid())) {
+    if (this.pallets.find(i => !i.valid)) {
       // console.log('Warrents:elements:!valid');
       return false;
     }

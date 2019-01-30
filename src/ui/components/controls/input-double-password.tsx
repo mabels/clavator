@@ -20,7 +20,7 @@ import { InputPassword } from './input-password';
 interface InputDoublePasswordProps extends React.Props<InputDoublePassword> {
   readonly label: string;
   readonly passwordControl: PasswordControl;
-  readonly readOnly: IObservableValue<boolean>;
+  readonly readOnly: boolean;
   readonly doublePassword: DoublePassword;
   readonly onReadable?: (readable: boolean) => void;
 }

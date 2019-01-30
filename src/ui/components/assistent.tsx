@@ -101,9 +101,9 @@ export class Assistent extends React.Component<AssistentProps> {
           readOnly={this.props.appState.assistentState.simpleYubiKey.readOnly}
           name="SmartCards"
           label="SmartCards:"
-          onChange={(value: string) => {
-            this.props.appState.assistentState.simpleYubiKey.smartCardId = value;
-          }}
+          onChange={action((value: string) => {
+            this.props.appState.assistentState.simpleYubiKey.smartCardId.set(value);
+          })}
           option={new Option<String>(ops[0], ops, 'unknown error')}/>
       <button onClick={() => this.handleReady()}>testing</button>
     </div>;
@@ -120,7 +120,7 @@ export class Assistent extends React.Component<AssistentProps> {
     return <div className={classnames({
       SimpleCreateKey: true,
       readOnly: assistentState.simpleYubiKey.readOnly.is,
-      good: assistentState.simpleYubiKey.valid(),
+      good: assistentState.simpleYubiKey.valid,
       completed: assistentState.simpleYubiKey.completed()
     })}>
       <RcSimpleKeyCommon

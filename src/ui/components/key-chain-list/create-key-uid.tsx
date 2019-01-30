@@ -21,7 +21,7 @@ export const CreateKeyUid = observer((props: CreateKeyUidProps): JSX.Element => 
   const { idx, keyGenUid } = props;
   return (
     // <div className={classnames({ 'u-full-width': true, 'good': uid.valid() })} key={idx}>
-    <div className={classnames({ good: keyGenUid.valid() })} key={idx}>
+    <div className={classnames({ good: keyGenUid.valid })} key={idx}>
       <div className="row">
         <div className="five columns">
           <Input
@@ -29,7 +29,7 @@ export const CreateKeyUid = observer((props: CreateKeyUidProps): JSX.Element => 
             type="text"
             className={classnames({
               'u-full-width': true,
-              good: keyGenUid.name.valid()
+              good: keyGenUid.name.valid
             })}
             name={`uid.name.{idx}`}
             onChange={(e: any) => {
@@ -44,7 +44,7 @@ export const CreateKeyUid = observer((props: CreateKeyUidProps): JSX.Element => 
             type="email"
             className={classnames({
               'u-full-width': true,
-              good: keyGenUid.email.valid()
+              good: keyGenUid.email.valid
             })}
             autoComplete="on"
             name="email"
@@ -65,7 +65,7 @@ export const CreateKeyUid = observer((props: CreateKeyUidProps): JSX.Element => 
             type="text"
             className={classnames({
               'u-full-width': true,
-              good: keyGenUid.comment.valid()
+              good: keyGenUid.comment.valid
             })}
             autoComplete="on"
             required={true}

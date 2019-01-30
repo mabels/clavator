@@ -46,11 +46,13 @@ export class ViewWarrent extends ObjectId implements Pallet {
   //   return ;
   // }
 
-  public valid(): boolean {
-    return this.warrent && this.warrent.valid() && this.approved;
+  @computed
+  public get valid(): boolean {
+    return this.warrent && this.warrent.valid && this.approved;
   }
 
-  public errText(): string[] {
+  @computed
+  public get errText(): string[] {
     throw 'missing impl';
     // return ['WTF'];
   }

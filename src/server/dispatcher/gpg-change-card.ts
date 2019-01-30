@@ -31,7 +31,7 @@ export class GpgChangeCard implements Dispatcher {
     // console.log(kg.valid(), kg.errText())
     const header = Message.toHeader(m, 'Progressor.Clavator');
     console.log('run:-2', m.header.action);
-    if (!cc.valid()) {
+    if (!cc.valid) {
       console.log('run:-3', m.header.action, cc);
       ws.send(Message.prepare(header, Progress.fail('Failed received ChangeCard is not valid')));
       return;

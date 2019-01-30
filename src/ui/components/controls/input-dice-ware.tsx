@@ -37,6 +37,7 @@ import { action } from 'mobx';
 export interface InputDiceWareProps extends InputPassPhraseProps {
   // value: StringValue;
   // diceWare: DiceWare;
+  readonly id: string;
   readonly doublePassword: DoublePassword;
   readonly onDiceResult: (diced: Diced, props: InputDiceWareProps) => void;
   readonly readable: boolean;
@@ -57,7 +58,7 @@ export class InputDiceWare extends
     diceValue._value.set(val);
     // this.state.diceValue.setDicedValue(val);
     // console.log('diceWare:1:', this.state.diceValue.dicedValue());
-    if (diceValue.valid()) {
+    if (diceValue.valid) {
       // debugger;
       const diced = this.props.doublePassword.diceWare().dice(diceValue.value);
       // console.log('diceWare:2:', this.state.diceValue.dicedValue(), diced);
@@ -86,8 +87,8 @@ export class InputDiceWare extends
     return (
       <div className="InputDiceWare">
         <input type="text"
-          key={this.key}
-          name={this.key}
+          key={this.props.id}
+          name={this.props.id}
           className={classnames({ InputDiceWareValue: true })}
           readOnly={this.props.readOnly.is}
           disabled={this.props.readOnly.is}

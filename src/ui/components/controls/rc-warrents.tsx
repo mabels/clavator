@@ -35,7 +35,7 @@ function MyButton(props: InputProps): JSX.Element {
 }
 
 function checkOrComplete(warrents: Warrents, warrent: Warrent): string {
-  const text = warrents.valid() ? 'add' : '';
+  const text = warrents.valid ? 'add' : '';
   if (warrents.length > 1) {
     return warrent.warrent.value.length ? text : 'done';
   }
@@ -64,7 +64,7 @@ const Input = observer((props: InputProps): JSX.Element  => {
     <input type="text"
       autoFocus
       className={classnames({
-         good: props.warrents.valid()
+         good: props.warrents.valid
       })}
       value={props.warrents.last().warrent.value}
       onKeyPress={action((e) => handlePressEnter(e, props))}

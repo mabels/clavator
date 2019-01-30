@@ -35,7 +35,7 @@ function Warrents(props: RcApproveWarrentsProps): JSX.Element {
     }
     return <div className={classnames({
         row: true,
-        completed: props.completed || props.viewWarrents.valid()
+        completed: props.completed || props.viewWarrents.valid
       })} >
       {props.viewWarrents.map((i, idx) => {
         const good = i.approved;
@@ -53,7 +53,7 @@ function Warrents(props: RcApproveWarrentsProps): JSX.Element {
 
 export const RcApproveWarrents = observer((props: RcApproveWarrentsProps) => {
     const clazz: any = { good: props.valid,
-                         completed: props.completed || props.viewWarrents.valid() };
+                         completed: props.completed || props.viewWarrents.valid };
     if (props.classNames) {
       props.classNames.forEach(cz => { clazz[cz] = true; });
     }

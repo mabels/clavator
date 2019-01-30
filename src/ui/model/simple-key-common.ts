@@ -39,18 +39,19 @@ export class SimpleKeyCommon {
     return this.viewWarrents.length > 1;
   }
 
-  public valid(): boolean {
+  @computed
+  public get valid(): boolean {
     // console.log('SimpleKeyCommons:valid:', this.uids.length,
     // this.uids.valid());
     return (
-      this.expireDate.valid() && this.keyParams.valid() && this.uids.valid()
+      this.expireDate.valid && this.keyParams.valid && this.uids.valid
     );
   }
 
   @computed public get completed(): boolean {
     // console.log('SimpleKeyCommons:completed:', this.viewWarrents.map(i => i.approved),
     //  this.valid(), this.viewWarrents.completed());
-    return this.viewWarrents.completed() && this.valid();
+    return this.viewWarrents.completed() && this.valid;
   }
 
   public fill(warrents: Warrents, obj: any): void {

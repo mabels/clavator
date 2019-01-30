@@ -1,4 +1,4 @@
-import { observable, IObservableFactories, IObservableArray } from 'mobx';
+import { observable, IObservableFactories, IObservableArray, computed } from 'mobx';
 import { ObjectId } from './object-id';
 
 export class MultiOption<T> extends ObjectId {
@@ -21,7 +21,8 @@ export class MultiOption<T> extends ObjectId {
     return this.options.map((o) => cb(!!this.values.find((q: T) => q == o), o));
   }
 
-  public valid(): boolean {
+  @computed
+  public get valid(): boolean {
     return this.values.length == this.options.filter((q: T) => {
       return !!this.values.find((u: T) => u == q);
     }).length;

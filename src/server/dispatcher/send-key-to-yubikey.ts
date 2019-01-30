@@ -86,7 +86,7 @@ export class SendKeyToYubiKey implements Dispatcher {
       'SimpleYubiKey',
       syk.toObj(),
       syk.asKeyGen().password,
-      syk.asKeyGen().password.valid()
+      syk.asKeyGen().password.valid
     );
     ws.send(Message.prepare(header, Progress.ok(`SimpleYubiKey:${syk} ...`)));
     CreateKeySetTask.run(this.gpg, ws, m, syk.asKeyGen())

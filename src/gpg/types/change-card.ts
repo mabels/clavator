@@ -1,6 +1,6 @@
 import { Pin } from './pin';
 import { Gpg2CardStatus } from './card-status';
-import { action, IObservableValue, observable } from 'mobx';
+import { action, IObservableValue, observable, computed } from 'mobx';
 
 export interface ChangeCardProps {
   readonly adminPin: Pin;
@@ -59,9 +59,10 @@ export class ChangeCard {
     this.url = observable.box(props.url);
   }
 
-  public valid(): boolean {
+  @computed
+  public get valid(): boolean {
     return (
-      this.adminPin.valid.get() &&
+      this.adminPin.valid &&
       this.serialNo.get().length > 0 &&
       typeof this.lang.get() == 'string' &&
       typeof this.name.get() == 'string' &&

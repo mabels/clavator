@@ -51,7 +51,7 @@ export class RcUids extends
         'Uid': true,
         'u-full-width': true,
         'completed': this.props.completed,
-        'good': uid.valid() })} key={idx}>
+        'good': uid.valid })} key={idx}>
       <div className="row">
         <div className="five columns">
           <InputValid
@@ -80,7 +80,7 @@ export class RcUids extends
         <div className="ten columns">
           <label>Name-Comment:</label><input type="text"
             className={classnames({ 'u-full-width': true,
-              good: uid.comment.valid(),
+              good: uid.comment.valid,
               'readonly': this.props.readOnly.is
             })}
             disabled={this.props.readOnly.is}
@@ -95,11 +95,7 @@ export class RcUids extends
         </div>
         <div className="two columns">
           <Button type="button"
-                  className={classnames({
-                    AddUid: true,
-                    'bad': uid.valid()
-                  })}
-                  disabled={this.props.readOnly.is || !uid.valid()}
+                  disabled={this.props.readOnly.is || !uid.valid}
                   onClick={action(() => this.handleAddUid())}>Add Uid</Button>
         </div>
 
@@ -111,7 +107,7 @@ export class RcUids extends
     return (
       <div className={classnames({
         'Uids': true,
-        'good': this.props.uids.valid()
+        'good': this.props.uids.valid
       })}>
         {this.props.uids.map((sb: KeyGenUid, i: number) => {
           if (sb) {

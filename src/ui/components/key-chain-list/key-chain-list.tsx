@@ -93,7 +93,7 @@ export class KeyChainList extends React.Component<KeyChainListProps, {}> {
         {this.props.appState.keyChainListState.keyChainList.map(
           (secKey: SecretKey, idx: number) => {
             return (
-              <Card>
+              <Card key={secKey.keyId} >
                 <CardHeader key={secKey.key}>
                   <Table>
                     <TableHead>

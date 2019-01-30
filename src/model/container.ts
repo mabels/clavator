@@ -16,11 +16,12 @@ export class Container<T extends Pallet> {
     return this.pallets.filter(i => i).length;
   }
 
-  public errText(): string[] {
+  @computed
+  public get errText(): string[] {
     let ret: string[] = [];
     for (let i of this.pallets) {
       if (i) {
-        assignOnError(i.valid(), ret, i.errText());
+        assignOnError(i.valid, ret, i.errText);
       }
     }
     return ret;
@@ -99,11 +100,12 @@ export class Container<T extends Pallet> {
     // console.log('o-delLast:', this.length());
   }
 
-  public valid(): boolean {
+  @computed
+  public get valid(): boolean {
     let ret = true;
     for (let sk of this.pallets) {
       if (sk) {
-        ret = ret && sk.valid();
+        ret = ret && sk.valid;
       }
     }
     return ret;

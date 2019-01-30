@@ -15,15 +15,15 @@ export const CreateKeyCompact = observer((props: CreateKeyCompactProps): JSX.Ele
   return (
     <div className="row">
       <div className="three columns">
-        <label>Master-Key-Length:</label>
         <CreateKeyOption
+          title="Master-Key-Length"
           name="masterKeyLength"
           ops={[props.keyGen.keyInfo.length]}
         />
       </div>
       <div className="three columns">
-        <label>Slave-Key-Length:</label>
         <CreateKeyOption
+          title="Slave-Key-Length"
           name="subkeys.all.length"
           ops={props.keyGen.subKeys.map((sb: KeyInfo, i: number) => {
             return sb.length;

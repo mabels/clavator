@@ -49,9 +49,9 @@ export class RcDoublePassword extends
         RcDoublePassword: true,
         four: true,
         readonly: this.readOnly.is,
-        completed: dp.warrents.valid(),
+        completed: dp.warrents.valid,
         columns: true,
-        good: dp.valid()
+        good: dp.valid
       })} >
       {this.renderIndexLabel(this.props.idx)}
       <InputDoublePassword
@@ -71,7 +71,7 @@ export class RcDoublePassword extends
       })}
       <RcApproveWarrents
         readOnly={this.readOnly}
-        valid={dp.valid()}
+        valid={dp.valid}
         viewWarrents={dp.warrents}
         showWarrents={dp.showWarrent()}
         approved={action((vw: ViewWarrent) => {

@@ -12,11 +12,11 @@ export class StringValue extends ObjectId implements Validatable {
     // console.log(`StringValue:${dv.value}:${js['value']}`);
   }
 
-  public constructor(match: RegExp, e: string, value = '') {
+  public constructor(match: RegExp, errorText: string, value = '') {
     super('StringValue');
     this.match = match;
     this._value = observable.box(value ? value : '');
-    this.errorText = e;
+    this.errorText = errorText;
   }
 
   @computed
@@ -29,11 +29,12 @@ export class StringValue extends ObjectId implements Validatable {
     return this.value.length;
   }
 
-  public errText(): string[] {
+  public get errText(): string[] {
     return [ this.errorText ];
   }
 
-  public valid(): boolean {
+  @computed
+  public get valid(): boolean {
     return this.match.test(this.value);
   }
 

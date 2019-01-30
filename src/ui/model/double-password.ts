@@ -142,12 +142,14 @@ export class DoublePassword extends ObjectId implements Validatable {
   //   return this.valid();
   // }
 
-  public valid(): boolean {
-    return this.first.valid() && this.second.valid() &&
+  @computed
+  public get valid(): boolean {
+    return this.first.valid && this.second.valid &&
       this.first.password.value === this.second.password.value;
   }
 
-  public errText(): string[] {
+  @computed
+  public get errText(): string[] {
     return [];
   }
 

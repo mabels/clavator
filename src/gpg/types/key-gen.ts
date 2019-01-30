@@ -12,7 +12,7 @@ import {
 } from '../../model';
 
 import { KeyGenUid } from './key-gen-uid';
-import { observable } from 'mobx';
+import { observable, computed } from 'mobx';
 
 export class ValidatableString {
   public readonly match: RegExp;
@@ -90,15 +90,17 @@ export class KeyInfo extends ObjectId implements Pallet {
     // return ki;
   }
 
-  public valid(): boolean {
-    return this.type.valid() && this.length.valid() && this.usage.valid();
+  @computed
+  public get valid(): boolean {
+    return this.type.valid && this.length.valid && this.usage.valid;
   }
 
-  public errText(): string[] {
+  @computed
+  public get errText(): string[] {
     let ret: string[] = [];
-    assignOnError(this.type.valid(), ret, this.type.errText);
-    assignOnError(this.length.valid(), ret, this.length.errText);
-    assignOnError(this.usage.valid(), ret, this.usage.errText);
+    assignOnError(this.type.valid, ret, this.type.errText);
+    assignOnError(this.length.valid, ret, this.length.errText);
+    assignOnError(this.usage.valid, ret, this.usage.errText);
     return ret;
   }
 
@@ -179,25 +181,25 @@ export class KeyGen {
 
   public errText(): string[] {
     const ret: string[] = [];
-    assignOnError(this.password.valid(), ret, this.password.errText());
+    assignOnError(this.password.valid, ret, this.password.errText);
     // !this.adminPin.valid() && ret.push(this.adminPin.errText);
     // !this.userPin.valid() && ret.push(this.userPin.errText);
-    assignOnError(this.keyInfo.valid(), ret, this.keyInfo.errText());
-    assignOnError(this.subKeys.valid(), ret, this.subKeys.errText());
-    assignOnError(this.uids.valid(), ret, this.uids.errText());
-    assignOnError(this.expireDate.valid(), ret, this.expireDate.errText);
+    assignOnError(this.keyInfo.valid, ret, this.keyInfo.errText);
+    assignOnError(this.subKeys.valid, ret, this.subKeys.errText);
+    assignOnError(this.uids.valid, ret, this.uids.errText);
+    assignOnError(this.expireDate.valid, ret, this.expireDate.errText);
     return ret;
   }
 
   public valid(): boolean {
     // console.log(this.errText());
     const ret =
-      this.password.valid() &&
+      this.password.valid &&
       //  this.adminPin.valid() && this.userPin.valid() &&
-      this.keyInfo.valid() &&
-      this.uids.valid() &&
-      this.subKeys.valid() &&
-      this.expireDate.valid();
+      this.keyInfo.valid &&
+      this.uids.valid &&
+      this.subKeys.valid &&
+      this.expireDate.valid;
     // if (!ret) {
     //   console.log("keygen:", this.errText());
     // }

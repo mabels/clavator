@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, computed, IObservableValue } from 'mobx';
 import { NestedFlag, Warrents, Warrent } from '../../model';
 import { PassPhrase } from './pass-phrase';
 import { SimpleKeyCommon } from './simple-key-common';
@@ -12,7 +12,7 @@ export class SimpleYubikey {
   public readonly warrents: Warrents;
 
   public readonly common: SimpleKeyCommon;
-  public smartCardId: string;
+  public readonly smartCardId: IObservableValue<string>;
   public readonly passPhrase: PassPhrase;
   public readonly adminKey: PassPhrase;
   public readonly userKey: PassPhrase;
@@ -39,7 +39,7 @@ export class SimpleYubikey {
 
   constructor(warrents: Warrents, diceWares: DiceWare[], smartCardId: string) {
     this.warrents = warrents;
-    this.smartCardId = smartCardId;
+    this.smartCardId = observable.box(smartCardId);
     this.readOnly = new NestedFlag(false);
     this.common = new SimpleKeyCommon(warrents, this.readOnly);
     this.passPhrase = PassPhrase.createDoublePasswords(8, new Warrents(this.warrents.map(w => w)), diceWares,
@@ -54,12 +54,13 @@ export class SimpleYubikey {
   //   return this.common.viewWarrents.non();
   // }
 
-  public valid(): boolean {
-    return this.warrents.valid() &&
-      this.common.valid() &&
-      this.passPhrase.valid() &&
-      this.adminKey.valid() &&
-      this.userKey.valid();
+  @computed
+  public get valid(): boolean {
+    return this.warrents.valid &&
+      this.common.valid &&
+      this.passPhrase.valid &&
+      this.adminKey.valid &&
+      this.userKey.valid;
   }
 
   public completed(): boolean {
@@ -69,11 +70,11 @@ export class SimpleYubikey {
     //       this.passPhrase.completed(),
     //       this.adminKey.completed(),
     //       this.userKey.valid());
-    return this.valid() &&
+    return this.valid &&
            this.common.completed &&
-           this.passPhrase.completed() &&
-           this.adminKey.completed() &&
-           this.userKey.completed();
+           this.passPhrase.completed &&
+           this.adminKey.completed &&
+           this.userKey.completed;
   }
 
   public asKeyGen(): KeyGen {
@@ -94,7 +95,7 @@ export class SimpleYubikey {
   public asKeyToYubiKey(fpr: string, slot_id: number): KeyToYubiKey {
     const ktyk = new KeyToYubiKey({
       slot_id,
-      card_id: this.smartCardId,
+      card_id: this.smartCardId.get(),
       admin_pin: new Pin({ pin: '12345678'}),
       fingerprint: fpr,
       passphrase: this.passPhrase.getPassPhrase(),

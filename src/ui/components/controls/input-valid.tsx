@@ -23,8 +23,8 @@ export interface InputValidProps<T = void> {
   readonly value: IObservableValue<string>;
   readonly type: IObservableValue<InputType>;
   readonly name?: string;
-  readonly valid?: IObservableValue<boolean>;
-  readonly readOnly?: IObservableValue<boolean>;
+  readonly valid?: boolean;
+  readonly readOnly?: boolean;
   readonly autoComplete?: 'on' | 'off';
   readonly endAdornment?: React.ReactNode;
   readonly defaultValue?: string;
@@ -38,8 +38,8 @@ export const InputValid = observer((props: InputValidProps) => {
       <Input
         type={props.type.get()}
         name={props.name}
-        readOnly={!!(props.readOnly || props.readOnly.get())}
-        disabled={!!(props.readOnly || props.readOnly.get())}
+        readOnly={(typeof(props.readOnly) === 'boolean' && props.readOnly)}
+        disabled={(typeof(props.readOnly) === 'boolean' && props.readOnly)}
         autoComplete={props.autoComplete || 'on'}
         defaultValue={props.defaultValue || ''}
         onChange={props.onChange}
@@ -50,9 +50,9 @@ export const InputValid = observer((props: InputValidProps) => {
             {props.endAdornment}
             <InputAdornment position="end">
               {!!props.valid &&
-                (props.valid.get() !== undefined ? (
+                (props.valid !== undefined ? (
                   <></>
-                ) : props.valid.get() ? (
+                ) : props.valid ? (
                   <Done />
                 ) : (
                   <></>

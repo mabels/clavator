@@ -40,6 +40,7 @@ export const DiceWareInputPassPhrase = observer(
           // const readOnly = new NestedFlag(.props.readOnly);
           return (
             <InputDiceWare
+              id={dp.objectId()}
               label={null}
               readOnly={null}
               readable={null}

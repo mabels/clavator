@@ -16,7 +16,8 @@ export class DateValue extends ObjectId {
     this.errText = e;
   }
 
-  public valid(): boolean {
+  @computed
+  public get valid(): boolean {
     const tomorrow = new Date(Date.now());
     tomorrow.setHours(tomorrow.getHours() + 24);
     return (new Date(this.value.get())).getTime() > tomorrow.getTime();

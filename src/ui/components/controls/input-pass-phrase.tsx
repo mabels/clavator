@@ -38,7 +38,7 @@ export const InputPassPhrase = observer((props: InputPassPhraseProps) => {
         key={`InputPassPhrase.${props.passPhrase.objectId()}`}
         className={classnames({
           InputPassPhrase: true,
-          completed: props.passPhrase.completed(),
+          completed: props.passPhrase.completed,
           readonly:
             props.passPhrase.readOnly.value ||
             (props.approvedWarrents && props.approvedWarrents.non())

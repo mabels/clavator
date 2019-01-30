@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { MultiOption } from '../../../model';
-import { Input } from '@material-ui/core';
+import { Input, Checkbox } from '@material-ui/core';
 
 export interface CreateKeyMultioptionProps<T> {
   readonly title: string;
@@ -20,7 +20,7 @@ export function CreateKeyMultioption<T>(
             key={v.toString()}
             style={{ marginRight: '0.2em', float: 'left' }}
           >
-            <Input
+            <Checkbox
               title={v.toString()}
               className="u-full-width"
               type="checkbox"

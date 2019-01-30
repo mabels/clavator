@@ -13,7 +13,7 @@ import { IObservable, IObservableValue, observable } from 'mobx';
 export interface InputExpireDateProps {
   readonly title: string;
   readonly expireDate: DateValue;
-  readonly readOnly: IObservableValue<boolean>;
+  readonly readOnly: boolean;
   // completed?: boolean;
 }
 
@@ -27,7 +27,7 @@ export const InputExpireDate = observer((props: InputExpireDateProps) => {
               name="expireDate"
               readOnly={props.readOnly}
               autoComplete="on"
-              value={props.expireDate.value}
+              value={props.expireDate.formatDate}
               // onChange={(e: any) => {
               //   props.expireDate._value.set(new Date(e.target.value));
               // }}
