@@ -17,8 +17,8 @@ export class MultiOption<T> extends ObjectId {
     this.errText = e;
   }
 
-  public map(cb: (selected: boolean, o: T) => any): any {
-    return this.options.map((o) => cb(!!this.values.find((q: T) => q == o), o));
+  public map(cb: (selected: boolean, o: T, i?: number) => any): any {
+    return this.options.map((o, i) => cb(!!this.values.find((q: T) => q == o), o, i));
   }
 
   @computed

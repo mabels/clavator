@@ -26,12 +26,12 @@ export const InputExpireDate = observer((props: InputExpireDateProps) => {
               type={DateInputType}
               name="expireDate"
               readOnly={props.readOnly}
-              autoComplete="on"
+              // autoComplete="on"
               value={props.expireDate.formatDate}
               // onChange={(e: any) => {
               //   props.expireDate._value.set(new Date(e.target.value));
               // }}
-              defaultValue={props.expireDate.formatDate}
+              // defaultValue={props.expireDate.formatDate.get()}
             />
     );
   });

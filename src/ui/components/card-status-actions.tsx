@@ -33,33 +33,24 @@ function changeToAttributesDialog(props: CardStatusActionsProps): ((e: any) => v
 }
 
 export function CardStatusActions(props: CardStatusActionsProps): JSX.Element {
-  const cs = props.cardStatus;
   return (
-    <TableCell className="action">
-      <a
-        title="change-user-pin"
-        onClick={changeDialog(CardStatusListDialogs.changeUserPin, props)}
-      >
-        <PersonPin />
-      </a>
-      <a
-        title="change-admin-pin"
-        onClick={changeDialog(CardStatusListDialogs.changeAdminPin, props)}
-      >
-        <AccountBox />
-      </a>
-      <a
-        title="change-attributes"
-        onClick={changeToAttributesDialog(props)}
-      >
-        <Build />
-      </a>
-      <a
-        title="reset-yubikey"
-        onClick={changeDialog(CardStatusListDialogs.resetYubikey, props)}
-      >
-        <Delete />
-      </a>
-    </TableCell>
+    <>
+        <PersonPin
+          name="change-user-pin"
+          onClick={changeDialog(CardStatusListDialogs.changeUserPin, props)}
+        />
+        <AccountBox
+          name="change-admin-pin"
+          onClick={changeDialog(CardStatusListDialogs.changeAdminPin, props)}
+        />
+        <Build
+          name="change-attributes"
+          onClick={changeToAttributesDialog(props)}
+        />
+        <Delete
+          name="reset-yubikey"
+          onClick={changeDialog(CardStatusListDialogs.resetYubikey, props)}
+        />
+    </>
   );
 }

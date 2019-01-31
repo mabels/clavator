@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { MultiOption } from '../../../model';
-import { Input, Checkbox } from '@material-ui/core';
+import { Input, Checkbox, FormGroup } from '@material-ui/core';
+import { action } from 'mobx';
+import { observer } from 'mobx-react';
 
 export interface CreateKeyMultioptionProps<T> {
   readonly title: string;
@@ -8,27 +10,25 @@ export interface CreateKeyMultioptionProps<T> {
   readonly op: MultiOption<T>;
 }
 
-export function CreateKeyMultioption<T>(
+function actionCreateKeyMultioption<T>(
   props: CreateKeyMultioptionProps<T>
 ): JSX.Element {
   // <input type='checkbox' name={name} value={v} {s?'checked':''}>{v}</input>)}
   return (
     <div>
-      {props.op.map((s: boolean, v: T) => {
+      {props.op.map((s: boolean, v: T, i: number) => {
         return (
-          <span
-            key={v.toString()}
-            style={{ marginRight: '0.2em', float: 'left' }}
-          >
             <Checkbox
+              key={i}
               title={v.toString()}
               className="u-full-width"
               type="checkbox"
               checked={s}
               name={name}
               value={v.toString()}
-              onChange={(e: any) => {
+              onChange={action((e: any) => {
                 const ofs = props.op.values.findIndex(a => a == v);
+                console.log('create-key-multioption:', e.target.checked, props.op.values);
                 if (e.target.checked) {
                   if (ofs < 0) {
                     props.op.values.push(v);
@@ -41,11 +41,12 @@ export function CreateKeyMultioption<T>(
                     props.op.values.replace(props.op.values.slice(0, -1));
                   }
                 }
-              }}
+              })}
             />
-          </span>
         );
       })}
     </div>
   );
 }
+
+export const CreateKeyMultioption = observer(actionCreateKeyMultioption);

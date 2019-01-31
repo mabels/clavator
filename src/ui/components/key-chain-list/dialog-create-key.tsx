@@ -5,12 +5,20 @@ import { NestedFlag } from '../../../model';
 import { CreateKey } from './create-key';
 import { AppState } from '../../model';
 import { propTypes } from 'mobx-react';
-import { Dialog, DialogActions, DialogTitle, DialogContent } from '@material-ui/core';
+import {
+  Dialog,
+  DialogActions,
+  DialogTitle,
+  DialogContent,
+  Button
+} from '@material-ui/core';
+import { action } from 'mobx';
 
 interface DialogCreateKeyProps extends React.Props<DialogCreateKey> {
-  appState: AppState;
+  readonly appState: AppState;
+  readonly open: boolean;
   // appElement: JSX.Element;
-  onClose: () => void;
+  readonly onClose: () => void;
 }
 
 export class DialogCreateKey extends React.Component<DialogCreateKeyProps, {}> {
@@ -23,21 +31,19 @@ export class DialogCreateKey extends React.Component<DialogCreateKeyProps, {}> {
 
   public render(): JSX.Element {
     return (
-      <Dialog
-        open={true}
-        scroll={'paper'}
-      >
+      <Dialog open={this.props.open} scroll={'paper'}>
         <DialogActions>
-        <i onClick={() => {
+          <Button
+            onClick={action(() => {
               this.props.onClose();
-            }}
-           className="closeBox fa fa-close"></i>
+            })}
+          >
+            close
+          </Button>
         </DialogActions>
         <DialogTitle>Creating Key:</DialogTitle>
         <DialogContent>
-        <CreateKey
-          readOnly={this.readOnly}
-          appState={this.props.appState} />
+          <CreateKey readOnly={this.readOnly} appState={this.props.appState} />
         </DialogContent>
       </Dialog>
     );

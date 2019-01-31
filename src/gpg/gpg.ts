@@ -488,7 +488,7 @@ export class Gpg {
       fpr,
       ki.type.value.toLowerCase() + ki.length.value,
       ki.usage.values.join(','),
-      kg.expireDate.formatDate
+      kg.expireDate.formatDate.get()
     ];
     // console.log('createSubkey', args);
     this.run(args, null, cb);

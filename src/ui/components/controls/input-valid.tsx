@@ -7,7 +7,8 @@ import {
   InputLabel,
   Input,
   InputAdornment,
-  IconButton
+  IconButton,
+  TextField
 } from '@material-ui/core';
 import Done from '@material-ui/icons/Done';
 
@@ -27,7 +28,7 @@ export interface InputValidProps<T = void> {
   readonly readOnly?: boolean;
   readonly autoComplete?: 'on' | 'off';
   readonly endAdornment?: React.ReactNode;
-  readonly defaultValue?: string;
+  // readonly defaultValue?: string;
   readonly onChange?: (e: any) => void;
 }
 
@@ -41,8 +42,14 @@ export const InputValid = observer((props: InputValidProps) => {
         readOnly={(typeof(props.readOnly) === 'boolean' && props.readOnly)}
         disabled={(typeof(props.readOnly) === 'boolean' && props.readOnly)}
         autoComplete={props.autoComplete || 'on'}
-        defaultValue={props.defaultValue || ''}
-        onChange={props.onChange}
+        // defaultValue={props.defaultValue || ''}
+        onChange={action((e: any) => {
+          if (props.onChange) {
+            props.onChange(e);
+            return;
+          }
+          props.value.set(e.target.value);
+        })}
         // pattern={props.passwordControl.password.match.source}
         value={props.value}
         endAdornment={

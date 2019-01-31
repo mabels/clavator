@@ -24,7 +24,7 @@ export const KeyChainListModal = observer((props: KeyChainListModalProps): JSX.E
   if (props.dialogQ.length <= 0) {
     return <></>;
   }
-  debugger;
+  // debugger;
   const first = props.dialogQ[0];
   console.log('KeyChainListModal:first:', first);
   const toClose = action(() => {

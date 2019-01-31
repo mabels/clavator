@@ -25,12 +25,11 @@ export class ChannelStatus extends
 
   constructor(props: ChannelStatusProps) {
     super(props);
-    this.status = observable.box(Status.NotConnected);
+    this.status = observable.box(Status.NotStarted);
   }
 
-  @action
   public onOpen(e: Event): void {
-    this.status.set(Status.Connected);
+    setTimeout(action(() => this.status.set(Status.Connected)), 500);
   }
 
   @action
@@ -42,7 +41,7 @@ export class ChannelStatus extends
     /* */
   }
 
-  public componentWillMount(): void {
+  public componentDidMount(): void {
     this.props.channel.register(this);
   }
 
@@ -51,10 +50,10 @@ export class ChannelStatus extends
   }
 
   public render(): JSX.Element {
+    console.log(`ChannelStatus`, this.status.get());
     return <Dialog
         className="waitForConnect"
-        open={!(this.status.get() === Status.Connected ||
-                this.status.get() == Status.NotConnected)}
+        open={this.status.get() !== Status.Connected}
       >
         <DialogTitle>Wait for Reconnect</DialogTitle>
       </Dialog>;

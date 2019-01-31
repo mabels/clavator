@@ -13,8 +13,10 @@ import { AppState, PassPhrase } from '../../model';
 import { Message } from '../../../model';
 import { CreateKey } from './create-key';
 import { observable } from 'mobx';
+import { WithStyles, withStyles } from '@material-ui/core';
+import { AppStyles } from '../../app';
 
-export interface CreateKeyFormProps {
+export interface CreateKeyFormProps extends WithStyles<typeof AppStyles> {
   readonly compact: boolean;
   readonly keyGen: KeyGen;
   readonly readOnly: NestedFlag;
@@ -25,9 +27,11 @@ export interface CreateKeyFormProps {
   readonly renderSubmit?: (ck: CreateKey) => JSX.Element;
 }
 
-export function CreateKeyForm(props: CreateKeyFormProps): JSX.Element {
+export const CreateKeyForm = withStyles(AppStyles)((props: CreateKeyFormProps): JSX.Element => {
+  console.log('CreateKeyForm:', props.classes);
   return (
     <form
+      className={props.classes.container}
       onSubmit={e => {
         // debugger;
         e.stopPropagation();
@@ -39,15 +43,11 @@ export function CreateKeyForm(props: CreateKeyFormProps): JSX.Element {
         title="Expire-Date"
         expireDate={props.keyGen.expireDate}
       />
-      <div className="row">
-      <div className="three columns">
       {props.keyGen.uids.map((sb: KeyGenUid, i: number) => {
         if (sb) {
           return <CreateKeyUid key={i} idx={i} keyGenUid={sb} keyGen={props.keyGen} />;
         }
       })}
-      </div>
-      </div>
       <RcDoublePassword
         readOnly={props.readOnly}
         key={props.passPhrase.objectId()}
@@ -73,4 +73,4 @@ export function CreateKeyForm(props: CreateKeyFormProps): JSX.Element {
       </div>
     </form>
   );
-}
+});

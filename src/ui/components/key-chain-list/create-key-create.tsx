@@ -6,6 +6,7 @@ import { CreateKey } from './create-key';
 import { AppState } from '../../model';
 import { Message } from '../../../model';
 import { KeyGen } from '../../../gpg/types';
+import { DialogActions, Button } from '@material-ui/core';
 
 export interface CreateKeyCreateProps {
   readonly renderSubmit?: (ck: CreateKey) => JSX.Element;

@@ -2,6 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 import { Option } from '../../../model';
 import { MenuItem, Select } from '@material-ui/core';
+import { action } from 'mobx';
 
 export interface CreateKeyOptionProps<T> {
   readonly title: string;
@@ -24,12 +25,12 @@ function actionCreateKeyOption<T>(props: CreateKeyOptionProps<T>): JSX.Element {
       title={props.title}
       className="u-full-width"
       name={props.name}
-      defaultValue={value}
-      onChange={(e: any) => {
+      value={value}
+      onChange={action((e: any) => {
         props.ops.forEach(op => {
           op._value.set(e.target.value);
         });
-      }}
+      })}
     >
       {ret}
     </Select>

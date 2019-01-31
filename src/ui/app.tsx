@@ -18,11 +18,37 @@ import { DialogCreateKey } from './components/key-chain-list/dialog-create-key';
 import { Assistent } from './components/assistent';
 import { AppState } from './model/app-state';
 import { AppProgressor } from './app-progressor';
-import { Typography } from '@material-ui/core';
+import {
+  Typography,
+  Fab,
+  withStyles,
+  Theme,
+  WithStyles,
+  createStyles,
+  createMuiTheme
+} from '@material-ui/core';
+import AddIcon from '@material-ui/icons/Add';
+import { ThemeProvider } from 'emotion-theming';
 
 configure({
   enforceActions: 'always'
 });
+
+const AppTheme = createMuiTheme({ typography: { useNextVariants: true } });
+
+export const AppStyles = (theme: Theme) => {
+  return createStyles({
+    fab: {
+      position: 'absolute',
+      bottom: theme.spacing.unit * 2,
+      right: theme.spacing.unit * 2
+    },
+    container: {
+      display: 'flex',
+      flexWrap: 'wrap'
+    }
+  });
+};
 
 enum TabsEnum {
   KeyChainList = 'KeyChainList',
@@ -46,20 +72,20 @@ const TabPanel: React.SFC<TabsEnumProps> = observer((props: TabsEnumProps) => {
   );
 });
 
+interface MyAppProps extends WithStyles<typeof AppStyles> {}
+
 @observer
-export class App extends React.Component<{}, {}> {
-  private appState: AppState;
+class MyApp extends React.Component<MyAppProps, {}> {
+  private readonly appState: AppState;
   public readonly createKeyDialog: IObservableValue<boolean> = observable.box(
     false
   );
-
-  // public readonly selectedTabIndex: IObservableValue<number> = observable.box(0);
 
   public readonly selectedTab: IObservableValue<TabsEnum> = observable.box(
     TabsEnum.KeyChainList
   );
 
-  public constructor(props: {} = {}) {
+  public constructor(props: MyAppProps) {
     super(props);
     this.appState = AppState.create();
   }
@@ -74,27 +100,9 @@ export class App extends React.Component<{}, {}> {
     this.appState.channel.close();
   }
 
-  public render_createKey(): JSX.Element {
-    if (!this.createKeyDialog.get()) {
-      return null;
-    }
-    return (
-      <DialogCreateKey
-        appState={this.appState}
-        onClose={action(() => this.createKeyDialog.set(false))}
-      />
-    );
-  }
-
-  /*
-  private isSelectedTab(id: number): boolean {
-    return this.state.selectedTabIndex == id;
-  }
-  */
-
   public render(): JSX.Element {
     return (
-      <>
+      <ThemeProvider theme={AppTheme}>
         <ChannelStatus channel={this.appState.channel} />
         {/* <img src={Clavator} className="logo" /> */}
         <AppProgressor progressState={this.appState.progressorState} />
@@ -123,15 +131,19 @@ export class App extends React.Component<{}, {}> {
           selectedTab={this.selectedTab.get()}
           my={TabsEnum.KeyChainList}
         >
-          <a
+          <Fab
+            className={this.props.classes.fab}
             title="add new key"
             onClick={action(() => this.createKeyDialog.set(true))}
-            className="closeBox"
           >
-            <i className="fa fa-plus" />
-          </a>
+            <AddIcon />
+          </Fab>
           <KeyChainList appState={this.appState} />
-          {this.render_createKey()}
+          <DialogCreateKey
+            open={this.createKeyDialog.get()}
+            appState={this.appState}
+            onClose={action(() => this.createKeyDialog.set(false))}
+          />
         </TabPanel>
         <TabPanel
           selectedTab={this.selectedTab.get()}
@@ -142,7 +154,9 @@ export class App extends React.Component<{}, {}> {
         <TabPanel selectedTab={this.selectedTab.get()} my={TabsEnum.Assistent}>
           <Assistent appState={this.appState} />
         </TabPanel>
-      </>
+      </ThemeProvider>
     );
   }
 }
+
+export const App = MyApp;

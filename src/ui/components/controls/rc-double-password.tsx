@@ -21,21 +21,11 @@ interface RcDoublePasswordProps extends React.Props<RcDoublePassword> {
 export class RcDoublePassword extends
   React.Component<RcDoublePasswordProps, {}> {
 
-  public readOnly: NestedFlag;
+  public readonly readOnly: NestedFlag;
 
   constructor(props: RcDoublePasswordProps) {
     super(props);
-  }
-
-  public componentWillMount(): void {
     this.readOnly = new NestedFlag(this.props.readOnly);
-  }
-
-  private renderIndexLabel(idx: number): JSX.Element {
-    if (typeof(idx) != 'number') {
-      return null;
-    }
-    return <label>{this.props.idx + 1}</label>;
   }
 
   public render(): JSX.Element {
@@ -53,15 +43,14 @@ export class RcDoublePassword extends
         columns: true,
         good: dp.valid
       })} >
-      {this.renderIndexLabel(this.props.idx)}
       <InputDoublePassword
-        label=""
+        label="Password"
         onReadable={this.props.onReadable}
         readOnly={this.readOnly.is}
         doublePassword={dp}
         passwordControl={dp.first} />
       <InputDoublePassword
-        label=""
+        label="Repeat Password"
         onReadable={this.props.onReadable}
         readOnly={this.readOnly.is}
         doublePassword={dp}
