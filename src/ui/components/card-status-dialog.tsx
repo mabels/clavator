@@ -8,6 +8,7 @@ import { DialogResetYubiKey } from './card-status-list/dialog-reset-yubikey';
 import { action, IObservableValue } from 'mobx';
 import { Gpg2CardStatus } from '../../gpg/types';
 import { AppState } from '../model';
+import { observer } from 'mobx-react';
 
 export interface CardStatusDialogProps {
   readonly cardStatus: Gpg2CardStatus;
@@ -15,7 +16,11 @@ export interface CardStatusDialogProps {
   readonly dialog: IObservableValue<CardStatusListDialogs>;
 }
 
-export function CardStatusDialog(props: CardStatusDialogProps): JSX.Element {
+const cardStatusClose = action((props: CardStatusDialogProps) => {
+  props.dialog.set(CardStatusListDialogs.closed);
+});
+
+export const CardStatusDialog = observer((props: CardStatusDialogProps): JSX.Element => {
   const { cardStatus } = props;
   switch (props.dialog.get()) {
     case CardStatusListDialogs.changeAdminPin:
@@ -23,9 +28,7 @@ export function CardStatusDialog(props: CardStatusDialogProps): JSX.Element {
         <DialogChangePin
           appState={props.appState}
           cardStatus={cardStatus}
-          onClose={action(() => {
-            props.dialog.set(CardStatusListDialogs.closed);
-          })}
+          onClose={() => cardStatusClose(props)}
           type={'admin'}
         />
       );
@@ -34,9 +37,7 @@ export function CardStatusDialog(props: CardStatusDialogProps): JSX.Element {
         <DialogChangePin
           appState={props.appState}
           cardStatus={cardStatus}
-          onClose={action(() => {
-            props.dialog.set(CardStatusListDialogs.closed);
-          })}
+          onClose={() => cardStatusClose(props)}
           type={'unblock'}
         />
       );
@@ -45,9 +46,7 @@ export function CardStatusDialog(props: CardStatusDialogProps): JSX.Element {
         <DialogChangeAttributes
           appState={props.appState}
           cardStatus={cardStatus}
-          onClose={action(() => {
-            props.dialog.set(CardStatusListDialogs.closed);
-          })}
+          onClose={() => cardStatusClose(props)}
         />
       );
     case CardStatusListDialogs.resetYubikey:
@@ -55,11 +54,9 @@ export function CardStatusDialog(props: CardStatusDialogProps): JSX.Element {
         <DialogResetYubiKey
           appState={props.appState}
           cardStatus={cardStatus}
-          onClose={action(() => {
-            props.dialog.set(CardStatusListDialogs.closed);
-          })}
+          onClose={() => cardStatusClose(props)}
         />
       );
   }
   return <></>;
-}
+});

@@ -37,15 +37,15 @@ export class ChangePin extends React.Component<ChangePinProps, {}> {
         <InputPassword
           valid={this.pin.admin_pin.valid}
           label="current AdminPin"
-          value={this.pin.admin_pin.pin} />
+          activeValue={this.pin.admin_pin.pin} />
         <InputPassword
           valid={this.pin.new_pin.valid}
           label={`NewPin${this.props.type}`}
-          value={this.pin.new_pin.pin} />
+          activeValue={this.pin.new_pin.pin} />
         <InputPassword
           label="Repeat NewPin"
           valid={this.pin.new_pin_verify.valid}
-          value={this.pin.new_pin_verify.pin} />
+          activeValue={this.pin.new_pin_verify.pin} />
         <ButtonToProgressor
           appState={this.props.appState}
           onClick={this.doPinChange}

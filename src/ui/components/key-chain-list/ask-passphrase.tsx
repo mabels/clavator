@@ -30,7 +30,9 @@ export class AskPassphrase
       //   key={this.props.fingerprint}>
     return (
       <div key={this.props.fingerprint}>
-        <InputPassword label="Passphrase" value={this.value} />
+        <InputPassword
+          label="Passphrase"
+          activeValue={this.value} />
         <Button onClick={action((e: any) => {
           if (this.props.completed) {
             this.props.completed(this.value.get());

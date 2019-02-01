@@ -13,3 +13,5 @@ export * from './rc-double-password';
 export * from './rc-option';
 export * from './rc-warrents';
 export * from './read-ascii-respond';
+export * from './clavator-fab';
+export * from './clavator-form';

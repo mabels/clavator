@@ -17,17 +17,15 @@ export interface InputExpireDateProps {
   // completed?: boolean;
 }
 
-const DateInputType = observable.box(InputType.Date);
-
 export const InputExpireDate = observer((props: InputExpireDateProps) => {
     return (
         <InputValid
               label={props.title}
-              type={DateInputType}
+              type={InputType.Date}
               name="expireDate"
               readOnly={props.readOnly}
               // autoComplete="on"
-              value={props.expireDate.formatDate}
+              activeValue={props.expireDate.formatDate}
               // onChange={(e: any) => {
               //   props.expireDate._value.set(new Date(e.target.value));
               // }}

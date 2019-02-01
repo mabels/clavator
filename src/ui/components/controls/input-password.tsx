@@ -20,7 +20,7 @@ import { InputType, InputValid } from './input-valid';
 
 export interface InputPasswordProps extends React.Props<InputPassword> {
   readonly label: string;
-  readonly value: IObservableValue<string>;
+  readonly activeValue: IObservableValue<string>;
   readonly name?: string;
   readonly inputType?: IObservableValue<InputType>;
   readonly readOnly?: boolean;
@@ -103,11 +103,11 @@ export class InputPassword extends React.Component<InputPasswordProps, {}> {
         <InputLabel htmlFor="adornment-password">{this.props.label}</InputLabel>
         <InputValid
           label={this.props.label}
-          type={this.inputType}
+          activeType={this.inputType}
           name={this.props.name}
           readOnly={this.props.readOnly}
           // pattern={this.props.passwordControl.password.match.source}
-          value={this.props.value}
+          activeValue={this.props.activeValue}
           endAdornment={
             <InputAdornment position="end">
               <IconButton

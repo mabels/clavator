@@ -39,7 +39,7 @@ export const CreateKeyLong = observer(
 
         {props.keyGen.subKeys.map((sb: KeyInfo, i: number) => {
           return (
-            <FormControl>
+            <FormControl key={i}>
               <FormLabel>SubKey {i} Params</FormLabel>
               <CreateKeyOption
                 key={'key-type.' + i}

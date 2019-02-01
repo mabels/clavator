@@ -6,6 +6,7 @@ import {
 } from '../controls/input-pass-phrase';
 import { action } from 'mobx';
 import { DoublePassword } from '../../model';
+import { Button } from '@material-ui/core';
 
 interface RandomInputPassPhraseProps extends InputPassPhraseProps {}
 
@@ -20,10 +21,9 @@ interface LabelWithRandomProps extends RandomInputPassPhraseProps {
 
 const LabelWithRandom = observer((props: LabelWithRandomProps): JSX.Element => {
   return (
-    <span>
+    <Button onClick={action(() => randomize(props))}>
       {props.label}
-      <button className="fa fa-random" onClick={action(() => randomize(props))} />
-    </span>
+    </Button>
   );
 });
 

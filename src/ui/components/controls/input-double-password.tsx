@@ -36,7 +36,7 @@ export class InputDoublePassword extends React.Component<InputDoublePasswordProp
       <InputPassword
         label={this.props.label}
         inputType={this.props.doublePassword.passwordInputType}
-        value={this.props.passwordControl.password._value}
+        activeValue={this.props.passwordControl.password._value}
         readOnly={this.props.readOnly}
       />
       // <FormControl>

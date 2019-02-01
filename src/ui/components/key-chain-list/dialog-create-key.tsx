@@ -32,6 +32,7 @@ export class DialogCreateKey extends React.Component<DialogCreateKeyProps, {}> {
   public render(): JSX.Element {
     return (
       <Dialog open={this.props.open} scroll={'paper'}>
+        <DialogTitle>Creating Key:</DialogTitle>
         <DialogActions>
           <Button
             onClick={action(() => {
@@ -41,7 +42,6 @@ export class DialogCreateKey extends React.Component<DialogCreateKeyProps, {}> {
             close
           </Button>
         </DialogActions>
-        <DialogTitle>Creating Key:</DialogTitle>
         <DialogContent>
           <CreateKey readOnly={this.readOnly} appState={this.props.appState} />
         </DialogContent>

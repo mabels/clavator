@@ -6,11 +6,12 @@ import classnames from 'classnames';
 
 import { Dispatch, AppState, SimpleYubikey } from '../model';
 import { Option, Message, Warrent, Warrents } from '../../model';
-import { RcOption, RcWarrents } from './controls';
+import { RcOption, RcWarrents, ClavatorForm } from './controls';
 import { RcSimpleKeyCommon } from './assistent/rc-simple-key-common';
 import { DiceWareInputPassPhrase } from './assistent/dice-ware-input-pass-phrase';
 import { RandomInputPassPhrase } from './assistent/random-input-pass-phrase';
 import { DiceWare } from '../../dice-ware';
+import { Card, CardHeader, CardContent } from '@material-ui/core';
 // import Progressor from './controls/progressor';
 
 export class AssistentState {
@@ -117,7 +118,7 @@ export class Assistent extends React.Component<AssistentProps> {
     // console.log('renderSimpleCreateKey', this.state.simpleYubiKey.common.approvableWarrents.non());
     // this.state.simpleYubiKey.adminKey.readonly.set(this.state.simpleYubiKey.common.viewWarrents.non());
     // this.state.simpleYubiKey.userKey.readonly.set(this.state.simpleYubiKey.common.viewWarrents.non());
-    return <div className={classnames({
+    return <ClavatorForm className={classnames({
       SimpleCreateKey: true,
       readOnly: assistentState.simpleYubiKey.readOnly.is,
       good: assistentState.simpleYubiKey.valid,
@@ -145,14 +146,14 @@ export class Assistent extends React.Component<AssistentProps> {
           passPhrase={assistentState.simpleYubiKey.userKey} />
       </div>
       {this.renderReady()}
-    </div>;
+    </ClavatorForm>;
   }
 
   private renderWarrents(assistentState: AssistentState): JSX.Element {
     if (assistentState.simpleYubiKey && assistentState.diceWares.length) {
       return;
     }
-    return <div>
+    return <CardContent>
       <label>WarrentsList:</label>
       <RcWarrents
         warrents={assistentState.warrents}
@@ -161,25 +162,23 @@ export class Assistent extends React.Component<AssistentProps> {
             assistentState.diceWares,
             this.props.appState.cardStatusListState.cardStatusList[0].reader.cardid));
         })} />
-    </div>;
+    </CardContent>;
   }
 
   private renderLoadDiceWare(assistentState: AssistentState): JSX.Element {
     if (assistentState.diceWares && assistentState.diceWares.length) {
-      return;
+      return <CardHeader>Assistent</CardHeader>;
     }
-    return <div>
-      <label>Loading DiceWare....</label>
-    </div>;
+    return <CardHeader>Loading DiceWare....</CardHeader>;
   }
 
   public render(): JSX.Element {
     return (
-      <div>
-        {this.renderWarrents(this.props.appState.assistentState)}
+      <Card>
         {this.renderLoadDiceWare(this.props.appState.assistentState)}
+        {this.renderWarrents(this.props.appState.assistentState)}
         {this.renderSimpleCreateKey(this.props.appState.assistentState)}
-      </div>
+      </Card>
     );
   }
 }

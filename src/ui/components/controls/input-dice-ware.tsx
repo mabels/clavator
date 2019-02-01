@@ -2,9 +2,10 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 import classnames from 'classnames';
 import { Diced } from '../../../dice-ware/dice-ware';
-import { InputPassPhraseProps } from '../controls';
+import { InputPassPhraseProps, InputValid } from '../controls';
 import { DoublePassword } from '../../model';
 import { action } from 'mobx';
+import { Button } from '@material-ui/core';
 
 // class ResetOnUnreadable {
 //     private _dicedValue: StringValue;
@@ -86,18 +87,20 @@ export class InputDiceWare extends
     // const diceWare = this.props.doublePassword.diceWare();
     return (
       <div className="InputDiceWare">
-        <input type="text"
+        <InputValid
+          type="text"
+          actionValue={this.props.doublePassword.diceValue._value}
           key={this.props.id}
           name={this.props.id}
-          className={classnames({ InputDiceWareValue: true })}
+          // className={classnames({ InputDiceWareValue: true })}
           readOnly={this.props.readOnly.is}
           disabled={this.props.readOnly.is}
-          value={this.props.doublePassword.diceValue.value}
-          pattern={this.props.doublePassword.diceValue.match.source}
-          placeholder="enter diced value"
-          onChange={(e: any) => this.setDice(e.target.value)} />
-        <button className="fa fa-random"
-          onClick={this.randomDice}></button>
+          // pattern={this.props.doublePassword.diceValue.match.source}
+          label="enter diced value" />
+        <Button
+          onClick={this.randomDice}>
+          random
+        </Button>
       </div>
     );
   }

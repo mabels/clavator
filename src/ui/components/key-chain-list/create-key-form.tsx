@@ -3,7 +3,7 @@ import {
     KeyGenUid,
     KeyGen } from '../../../gpg/types';
 import { NestedFlag } from '../../../model/nested-flag';
-import { RcDoublePassword, InputExpireDate } from '../controls';
+import { RcDoublePassword, InputExpireDate, ClavatorForm } from '../controls';
 
 import { CreateKeyCreate } from './create-key-create';
 import { CreateKeyUid } from './create-key-uid';
@@ -14,9 +14,8 @@ import { Message } from '../../../model';
 import { CreateKey } from './create-key';
 import { observable } from 'mobx';
 import { WithStyles, withStyles } from '@material-ui/core';
-import { AppStyles } from '../../app';
 
-export interface CreateKeyFormProps extends WithStyles<typeof AppStyles> {
+export interface CreateKeyFormProps {
   readonly compact: boolean;
   readonly keyGen: KeyGen;
   readonly readOnly: NestedFlag;
@@ -27,11 +26,9 @@ export interface CreateKeyFormProps extends WithStyles<typeof AppStyles> {
   readonly renderSubmit?: (ck: CreateKey) => JSX.Element;
 }
 
-export const CreateKeyForm = withStyles(AppStyles)((props: CreateKeyFormProps): JSX.Element => {
-  console.log('CreateKeyForm:', props.classes);
+export const CreateKeyForm = ((props: CreateKeyFormProps): JSX.Element => {
   return (
-    <form
-      className={props.classes.container}
+    <ClavatorForm
       onSubmit={e => {
         // debugger;
         e.stopPropagation();
@@ -54,23 +51,16 @@ export const CreateKeyForm = withStyles(AppStyles)((props: CreateKeyFormProps): 
         doublePassword={props.passPhrase.doublePasswords[0]}
         idx={null}
       />
-      ;
-      {/*
-        <div className={classnames({ row: true, good: this.state.keyGen.password.valid() })}>
-          {this.render_password('Password', 'cq-password', this.state.keyGen.password)}
-          {this.render_verify_password('Password', 'cq-password', this.state.keyGen.password)}
-        </div>
-        */}
       <CreateKeyLong  compact={props.compact} keyGen={props.keyGen} />
+      {/*
       <CreateKeyCompact compact={props.compact} keyGen={props.keyGen} />
-      <div className="row">
       <CreateKeyCreate
           createKey={props.createKey}
           renderSubmit={props.renderSubmit}
           appState={props.appState}
           transaction={props.transaction}
         />
-      </div>
-    </form>
+        */}
+    </ClavatorForm>
   );
 });

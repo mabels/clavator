@@ -25,30 +25,16 @@ import {
   Theme,
   WithStyles,
   createStyles,
-  createMuiTheme
+  createMuiTheme,
+  MuiThemeProvider
 } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
-import { ThemeProvider } from 'emotion-theming';
+import { ClavatorFab } from './components/controls';
+import { CacheProvider } from '@emotion/core';
 
 configure({
   enforceActions: 'always'
 });
-
-const AppTheme = createMuiTheme({ typography: { useNextVariants: true } });
-
-export const AppStyles = (theme: Theme) => {
-  return createStyles({
-    fab: {
-      position: 'absolute',
-      bottom: theme.spacing.unit * 2,
-      right: theme.spacing.unit * 2
-    },
-    container: {
-      display: 'flex',
-      flexWrap: 'wrap'
-    }
-  });
-};
 
 enum TabsEnum {
   KeyChainList = 'KeyChainList',
@@ -72,7 +58,7 @@ const TabPanel: React.SFC<TabsEnumProps> = observer((props: TabsEnumProps) => {
   );
 });
 
-interface MyAppProps extends WithStyles<typeof AppStyles> {}
+interface MyAppProps {}
 
 @observer
 class MyApp extends React.Component<MyAppProps, {}> {
@@ -102,7 +88,7 @@ class MyApp extends React.Component<MyAppProps, {}> {
 
   public render(): JSX.Element {
     return (
-      <ThemeProvider theme={AppTheme}>
+      <MuiThemeProvider theme={this.appState.appTheme}>
         <ChannelStatus channel={this.appState.channel} />
         {/* <img src={Clavator} className="logo" /> */}
         <AppProgressor progressState={this.appState.progressorState} />
@@ -131,13 +117,12 @@ class MyApp extends React.Component<MyAppProps, {}> {
           selectedTab={this.selectedTab.get()}
           my={TabsEnum.KeyChainList}
         >
-          <Fab
-            className={this.props.classes.fab}
+          <ClavatorFab
             title="add new key"
             onClick={action(() => this.createKeyDialog.set(true))}
           >
             <AddIcon />
-          </Fab>
+          </ClavatorFab>
           <KeyChainList appState={this.appState} />
           <DialogCreateKey
             open={this.createKeyDialog.get()}
@@ -154,7 +139,7 @@ class MyApp extends React.Component<MyAppProps, {}> {
         <TabPanel selectedTab={this.selectedTab.get()} my={TabsEnum.Assistent}>
           <Assistent appState={this.appState} />
         </TabPanel>
-      </ThemeProvider>
+      </MuiThemeProvider>
     );
   }
 }

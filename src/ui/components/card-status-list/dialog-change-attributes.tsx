@@ -4,24 +4,42 @@ import { observer } from 'mobx-react';
 import { observable, action } from 'mobx';
 import classnames from 'classnames';
 
-import {
-  Gpg2CardStatus,
-  ChangeCard } from '../../../gpg/types';
+import { Gpg2CardStatus, ChangeCard } from '../../../gpg/types';
 
 import { Message } from '../../../model';
 import { AppState } from '../../model';
-import { ButtonToProgressor } from '../controls';
-import { Dialog, DialogActions, DialogContent, DialogTitle, Button } from '@material-ui/core';
+import {
+  ButtonToProgressor,
+  ClavatorForm,
+  InputPassword,
+  InputValid,
+  InputTypeObservable,
+  InputType
+} from '../controls';
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Button,
+  MenuItem,
+  FormControl,
+  Select,
+  InputLabel
+} from '@material-ui/core';
 
-interface DialogChangeAttributesProps extends React.Props<DialogChangeAttributes> {
-  onClose: () => void;
-  cardStatus: Gpg2CardStatus;
-  appState: AppState;
+interface DialogChangeAttributesProps
+  extends React.Props<DialogChangeAttributes> {
+  readonly onClose: () => void;
+  readonly cardStatus: Gpg2CardStatus;
+  readonly appState: AppState;
 }
 
 @observer
-export class DialogChangeAttributes extends React.Component<DialogChangeAttributesProps, {}> {
-
+export class DialogChangeAttributes extends React.Component<
+  DialogChangeAttributesProps,
+  {}
+> {
   public readonly changeCard: ChangeCard;
   public readonly transaction: Message.Transaction<ChangeCard>;
 
@@ -31,66 +49,71 @@ export class DialogChangeAttributes extends React.Component<DialogChangeAttribut
     this.changeCard = ChangeCard.fromCardStatus(this.props.cardStatus);
   }
 
- public updateAttributes(): () => void {
-    return (() => {
+  public updateAttributes(): () => void {
+    return () => {
       this.transaction.data = this.changeCard;
       this.props.appState.channel.send(this.transaction.asMsg());
-    }).bind(this);
+    };
   }
 
   public render(): JSX.Element {
     return (
-      <Dialog
-        open={true}
-        scroll={'paper'}
-      >
-      <DialogTitle>
-        ChangeAttributes:<br/>
-        {this.changeCard.name.get()}({this.changeCard.serialNo.get()})
-      </DialogTitle>
-          <DialogContent>
-        {/*<form>*/}
-        <label>AdminPin:</label><input type="password"
-          name="admin-pin"
-          className={classnames({ good: this.changeCard.adminPin.valid })}
-          onChange={action((e: any) => {
-            this.changeCard.adminPin.pin.set(e.target.value);
-          })} />
-        <label>Name of cardholder:</label><input type="text"
-          onChange={action((e: any) => {
-            this.changeCard.name.set(e.target.value);
-          })}
-          value={this.changeCard.name.get()} />
-        <label>Language prefs:</label><input type="text"
-          onChange={action((e: any) => {
-            this.changeCard.lang.set(e.target.value);
-          })}
-          value={this.changeCard.lang.get()} />
-        <label>Sex:</label><select value={this.changeCard.sex.get()[0]}
-          onChange={action((e: any) => {
-            this.changeCard.sex.set(e.target.value[0]);
-          })}>
-          <option value={'f'}>Female</option>
-          <option value={'m'}>Male</option>
-        </select>
-        <label>Login data:</label><input type="text"
-          onChange={action((e: any) => {
-            this.changeCard.login.set(e.target.value);
-          })}
-          value={this.changeCard.login.get()} />
-        <label>Url:</label><input type="text"
-          onChange={action((e: any) => {
-            this.changeCard.url.set(e.target.value);
-          })}
-          value={this.changeCard.url.get()} />
-          </DialogContent>
+      <Dialog open={true} scroll={'paper'}>
+        <DialogTitle>
+          ChangeAttributes:
+          <br />
+          {this.changeCard.name.get()}({this.changeCard.serialNo.get()})
+        </DialogTitle>
+        <DialogContent>
+          <ClavatorForm>
+            <InputPassword
+              label="AdminPin"
+              name="admin-pin"
+              activeValue={this.changeCard.adminPin.pin}
+            />
+            <InputValid
+              label="Name of cardholder"
+              type={InputType.Text}
+              activeValue={this.changeCard.name}
+            />
+            <InputValid
+              label="Language prefs"
+              type={InputType.Text}
+              activeValue={this.changeCard.lang}
+            />
+            <FormControl>
+              <InputLabel>Sex</InputLabel>
+              <Select
+                value={this.changeCard.sex.get()[0]}
+                onChange={action((e: any) => {
+                  this.changeCard.sex.set(e.target.value[0]);
+                })}
+              >
+                <MenuItem value={'f'}>Female</MenuItem>
+                <MenuItem value={'m'}>Male</MenuItem>
+              </Select>
+            </FormControl>
+            <InputValid
+              label="Login data"
+              type={InputType.Text}
+              activeValue={this.changeCard.login}
+            />
+            <InputValid
+              label="Url"
+              type={InputType.Text}
+              activeValue={this.changeCard.url}
+            />
+          </ClavatorForm>
+        </DialogContent>
         <DialogActions>
-        <Button onClick={this.props.onClose}>close</Button>
-        <ButtonToProgressor
-          appState={this.props.appState}
-          onClick={this.updateAttributes()}
-          transaction={this.transaction}
-          >Update</ButtonToProgressor>
+          <Button onClick={this.props.onClose}>close</Button>
+          <ButtonToProgressor
+            appState={this.props.appState}
+            onClick={this.updateAttributes()}
+            transaction={this.transaction}
+          >
+            Update
+          </ButtonToProgressor>
         </DialogActions>
       </Dialog>
     );

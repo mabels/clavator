@@ -56,21 +56,21 @@ export class RcUids extends
         <div className="five columns">
           <InputValid
             label="Name-Real"
-            type={observable.box(InputType.Text)}
+            type={InputType.Text}
             readOnly={this.props.readOnly.is}
             valid={uid.name.valid}
             name={`uid.name.${idx}`}
-            value={uid.name._value} />
+            activeValue={uid.name._value} />
         </div>
         <div className="five columns">
           <InputValid
             label="Name-Email"
-            type={observable.box(InputType.Email)}
+            type={InputType.Email}
             valid={uid.email.valid}
             readOnly={this.props.readOnly.is}
             autoComplete="on"
             name={`email.${idx}`}
-            value={uid.email._value} />
+            activeValue={uid.email._value} />
         </div>
         <div className="two columns">
           {this.render_delete_button(idx)}
@@ -78,20 +78,15 @@ export class RcUids extends
       </div>
       <div className="row">
         <div className="ten columns">
-          <label>Name-Comment:</label><input type="text"
-            className={classnames({ 'u-full-width': true,
-              good: uid.comment.valid,
-              'readonly': this.props.readOnly.is
-            })}
+          <InputValid
+            label="Name-Comment"
+            type={InputType.Text}
             disabled={this.props.readOnly.is}
             readOnly={this.props.readOnly.is}
             autoComplete="on"
-            pattern={uid.comment.match.source}
+            // pattern={uid.comment.match.source}
             name={`nameComment.${idx}`}
-            onChange={action((e: any) => {
-              uid.comment._value.set(e.target.value);
-            })}
-            value={uid.comment.value} />
+            activeValue={uid.comment._value} />
         </div>
         <div className="two columns">
           <Button type="button"

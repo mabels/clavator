@@ -11,6 +11,7 @@ import {
   TextField
 } from '@material-ui/core';
 import Done from '@material-ui/icons/Done';
+import { InputProps } from '@material-ui/core/Input';
 
 export enum InputType {
   Text = 'text',
@@ -19,17 +20,25 @@ export enum InputType {
   Email = 'Email'
 }
 
-export interface InputValidProps<T = void> {
+export const InputTypeObservable  = {
+  Text: observable.box(InputType.Text),
+  Password: observable.box(InputType.Password),
+  Date: observable.box(InputType.Date),
+  Email: observable.box(InputType.Email)
+};
+
+export interface InputValidProps<T = string | number> extends InputProps {
   readonly label: string;
-  readonly value: IObservableValue<string>;
-  readonly type: IObservableValue<InputType>;
+  readonly activeType?: IObservableValue<InputType>;
+  readonly activeValue: IObservableValue<T>;
+  readonly value?: string | number;
   readonly name?: string;
   readonly valid?: boolean;
   readonly readOnly?: boolean;
   readonly autoComplete?: 'on' | 'off';
   readonly endAdornment?: React.ReactNode;
   // readonly defaultValue?: string;
-  readonly onChange?: (e: any) => void;
+  // readonly onChange?: (e: any) => void;
 }
 
 export const InputValid = observer((props: InputValidProps) => {
@@ -37,21 +46,23 @@ export const InputValid = observer((props: InputValidProps) => {
     <FormControl>
       <InputLabel htmlFor="adornment-password">{props.label}</InputLabel>
       <Input
-        type={props.type.get()}
+        {...(props as InputProps)}
+        type={props.type || props.activeType.get()}
         name={props.name}
         readOnly={(typeof(props.readOnly) === 'boolean' && props.readOnly)}
         disabled={(typeof(props.readOnly) === 'boolean' && props.readOnly)}
         autoComplete={props.autoComplete || 'on'}
         // defaultValue={props.defaultValue || ''}
+        onKeyPress={props.onKeyPress}
         onChange={action((e: any) => {
           if (props.onChange) {
             props.onChange(e);
             return;
           }
-          props.value.set(e.target.value);
+          props.activeValue.set(e.target.value);
         })}
         // pattern={props.passwordControl.password.match.source}
-        value={props.value}
+        value={props.activeValue.get()}
         endAdornment={
           <>
             {props.endAdornment}
