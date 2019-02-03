@@ -6,6 +6,7 @@ import { InputPassPhraseProps, InputValid } from '../controls';
 import { DoublePassword } from '../../model';
 import { action } from 'mobx';
 import { Button } from '@material-ui/core';
+import { InputType } from './input-valid';
 
 // class ResetOnUnreadable {
 //     private _dicedValue: StringValue;
@@ -88,8 +89,8 @@ export class InputDiceWare extends
     return (
       <div className="InputDiceWare">
         <InputValid
-          type="text"
-          actionValue={this.props.doublePassword.diceValue._value}
+          type={InputType.Text}
+          activeValue={this.props.doublePassword.diceValue._value}
           key={this.props.id}
           name={this.props.id}
           // className={classnames({ InputDiceWareValue: true })}

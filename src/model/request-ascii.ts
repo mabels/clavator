@@ -7,9 +7,9 @@ export interface RequestAsciiProps {
 }
 
 export class RequestAscii {
-  public readonly passphrase: string; // IObservableValue<string> = observable.box();
-  public readonly fingerprint: string;
+  public readonly passphrase: IObservableValue<string>;
   public readonly action?: string;
+  public readonly fingerprint: string;
 
   public static fill(js: any): RequestAscii {
     return new RequestAscii({
@@ -21,7 +21,7 @@ export class RequestAscii {
 
   public constructor(props: RequestAsciiProps) {
     this.action = props.action;
-    this.passphrase = props.passphrase;
+    this.passphrase = observable.box(props.passphrase || '');
     this.fingerprint = props.fingerprint;
   }
 

@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as ReactModal from 'react-modal';
 // import * as classnames from 'classnames';
 import { Message } from '../../../model';
 import { Dispatch } from '../../model';

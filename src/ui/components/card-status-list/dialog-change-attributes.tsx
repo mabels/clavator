@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as ReactModal from 'react-modal';
 import { observer } from 'mobx-react';
 import { observable, action } from 'mobx';
 import classnames from 'classnames';

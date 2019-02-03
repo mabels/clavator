@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const node_modules = fs.readdirSync('node_modules').filter(x => x !== '.bin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
@@ -53,7 +54,13 @@ module.exports = [{
   },
   devtool: 'source-map',
   resolve: {
-    extensions: ['.tsx', '.ts', '.webpack.js', '.web.js', '.js']
+    extensions: ['.tsx', '.ts', '.webpack.js', '.web.js', '.js'],
+    alias: {
+      "react": path.resolve('react-compat.js'),
+      "react-dom": "preact-compat",
+      'create-react-class': 'preact-compat/lib/create-react-class',
+      'react-dom-factories': 'preact-compat/lib/react-dom-factories'
+    }
   },
   plugins: [
     new ExtractTextPlugin('styles.css'),
@@ -86,7 +93,13 @@ module.exports = [{
   externals: node_modules,
   devtool: 'source-map',
   resolve: {
-    extensions: ['.tsx', '.ts', '.webpack.js', '.web.js', '.js']
+    extensions: ['.tsx', '.ts', '.webpack.js', '.web.js', '.js'],
+    alias: {
+      "react": "preact-compat",
+      "react-dom": "preact-compat",
+      'create-react-class': 'preact-compat/lib/create-react-class',
+      'react-dom-factories': 'preact-compat/lib/react-dom-factories'
+    }
   },
   plugins: [
     new webpack.EnvironmentPlugin({ PACKED: 'true' })
@@ -115,7 +128,13 @@ module.exports = [{
   externals: node_modules,
   devtool: 'source-map',
   resolve: {
-    extensions: ['.tsx', '.ts', '.webpack.js', '.web.js', '.js']
+    extensions: ['.tsx', '.ts', '.webpack.js', '.web.js', '.js'],
+    alias: {
+      "react": "preact-compat",
+      "react-dom": "preact-compat",
+      'create-react-class': 'preact-compat/lib/create-react-class',
+      'react-dom-factories': 'preact-compat/lib/react-dom-factories'
+    }
   },
   plugins: [
     new webpack.EnvironmentPlugin({ PACKED: 'true' })

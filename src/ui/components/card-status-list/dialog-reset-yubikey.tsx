@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as ReactModal from 'react-modal';
 
 import { Gpg2CardStatus } from '../../../gpg/types';
 import { Message } from '../../../model';

@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as ReactModal from 'react-modal';
 
 import { NestedFlag } from '../../../model';
 import { CreateKey } from './create-key';

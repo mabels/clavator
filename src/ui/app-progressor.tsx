@@ -1,6 +1,4 @@
 import * as React from 'react';
-import * as ReactModal from 'react-modal';
-import { AppState } from './model/app-state';
 import { observer } from 'mobx-react';
 import { Progressor, ProgressorState } from './components/controls/progressor';
 import { action } from 'mobx';

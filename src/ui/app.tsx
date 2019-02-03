@@ -1,6 +1,4 @@
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import * as ReactModal from 'react-modal';
 import { observable, configure, action, IObservableValue } from 'mobx';
 import { observer } from 'mobx-react';
 
@@ -74,12 +72,6 @@ class MyApp extends React.Component<MyAppProps, {}> {
   public constructor(props: MyAppProps) {
     super(props);
     this.appState = AppState.create();
-  }
-
-  public componentDidMount(): void {
-    const el = ReactDOM.findDOMNode(this).parentElement;
-    console.log(`ParentElement:${el}`);
-    ReactModal.setAppElement(el);
   }
 
   public componentWillUnmount(): void {

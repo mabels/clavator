@@ -52,7 +52,6 @@ export const CreateKeyForm = ((props: CreateKeyFormProps): JSX.Element => {
         idx={null}
       />
       <CreateKeyLong  compact={props.compact} keyGen={props.keyGen} />
-      {/*
       <CreateKeyCompact compact={props.compact} keyGen={props.keyGen} />
       <CreateKeyCreate
           createKey={props.createKey}
@@ -60,7 +59,6 @@ export const CreateKeyForm = ((props: CreateKeyFormProps): JSX.Element => {
           appState={props.appState}
           transaction={props.transaction}
         />
-        */}
     </ClavatorForm>
   );
 });
