@@ -100,7 +100,7 @@ export class InputPassword extends React.Component<InputPasswordProps, {}> {
   public render(): JSX.Element {
     return (
       <FormControl>
-        <InputLabel htmlFor="adornment-password">{this.props.label}</InputLabel>
+        <InputLabel htmlFor={this.props.name}>{this.props.label}</InputLabel>
         <InputValid
           label={this.props.label}
           activeType={this.inputType}
@@ -120,12 +120,12 @@ export class InputPassword extends React.Component<InputPasswordProps, {}> {
                   <VisibilityOff />
                 )}
               </IconButton>
-              {this.valid !== undefined  ? <></> :
+              {/* {this.valid !== undefined  ? <></> :
                 (this.valid ? (
                   <Visibility />
                 ) : (
                   <VisibilityOff />
-                ))}
+                ))} */}
             </InputAdornment>
           }
         />

@@ -29,9 +29,10 @@ export class DateValue extends ObjectId {
     this.formatDate.observe(action((chg: IValueDidChange<string>) => {
       this.date.set(new Date(chg.newValue));
     }));
-    this.formatDate.set(format_date(v));
+    action(() => this.formatDate.set(format_date(v)))();
   }
 
+  @action
   public fill(js: DateValueObj): void {
     this.formatDate.set(js.formatDate);
     this.errText = js.errText;

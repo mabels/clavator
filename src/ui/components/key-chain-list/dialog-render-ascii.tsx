@@ -2,8 +2,8 @@ import * as React from 'react';
 import { observer } from 'mobx-react';
 
 import { Dispatch } from '../../model';
-import { ReadAsciiRespond } from '../controls';
-import { IObservableValue, IObservableArray } from 'mobx';
+import { ReadAsciiRespond, CopyToClipboardBotton } from '../controls';
+import { IObservableValue, IObservableArray, observable } from 'mobx';
 import { KeyChainDialogQItem } from './key-chain-list';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@material-ui/core';
 
@@ -16,14 +16,21 @@ interface DialogRenderAsciiProps {
   // readonly passPhrase: IObservableValue<string>;
 }
 
-export const DialogRenderAscii = observer((props: DialogRenderAsciiProps) => {
+@observer
+export class DialogRenderAscii extends React.Component<DialogRenderAsciiProps> {
+
+  private readonly data: IObservableValue<string> = observable.box();
+
+  public render(): JSX.Element {
+    const props = this.props;
     return (
       <Dialog
         open={true}
         scroll={'paper'}
       >
         <DialogActions>
-        <Button onClick={props.onClose}>close</Button>
+          <CopyToClipboardBotton data={this.data.get()}/>
+          <Button onClick={props.onClose}>close</Button>
         </DialogActions>
         <DialogTitle>{props.current.action}:{props.current.secKey.fingerPrint.fpr}</DialogTitle>
         <DialogContent>
@@ -31,8 +38,9 @@ export const DialogRenderAscii = observer((props: DialogRenderAsciiProps) => {
           action={props.current.action}
           channel={props.channel}
           secKey={props.current.secKey}
-          // passPhrase={props.passPhrase.get()}
+          data={this.data}
          /></DialogContent>
       </Dialog>
     );
-  });
+  }
+}

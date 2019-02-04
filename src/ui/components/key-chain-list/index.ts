@@ -1,4 +1,3 @@
-export * from './ask-passphrase';
 export * from './create-key-compact';
 export * from './create-key-create';
 export * from './create-key-delete';

@@ -2,8 +2,6 @@ import * as React from 'react';
 import { IObservableValue, action, observable } from 'mobx';
 import { observer } from 'mobx-react';
 
-import * as CopyToClipboard from 'react-copy-to-clipboard';
-
 import { Dispatch } from '../../model';
 import { GpgKey } from '../../../gpg/types';
 import {
@@ -17,6 +15,7 @@ export interface ReadAsciiRespondProps extends React.Props<ReadAsciiRespond> {
   readonly passPhrase?: string;
   readonly channel: Dispatch;
   readonly secKey: GpgKey;
+  readonly data: IObservableValue<string>;
 }
 
 @observer
@@ -24,19 +23,18 @@ export class ReadAsciiRespond extends React.Component<
   ReadAsciiRespondProps,
   {}
 > {
-  public readonly data: IObservableValue<string>;
+  // public readonly data: IObservableValue<string>;
   public readonly transaction: Message.Transaction<RequestAscii>;
   public receiver: (action: Message.Header, data: string) => void;
 
   constructor(props: ReadAsciiRespondProps) {
     super(props);
-    this.data = observable.box();
     this.transaction = Message.newTransaction<RequestAscii>('RequestAscii');
   }
 
   @action
   public componentWillMount(): void {
-    console.log(`init ReadAsciiRespond`);
+    // console.log(`init ReadAsciiRespond`);
     this.receiver = this.props.channel.onMessage(
       action((header: Message.Header, data: string) => {
         if (
@@ -51,7 +49,7 @@ export class ReadAsciiRespond extends React.Component<
         if (this.props.secKey.fingerPrint.fpr != pem.fingerprint) {
           return;
         }
-        this.data.set(pem.data);
+        this.props.data.set(pem.data);
       }
     ));
     const ra = new RequestAscii({
@@ -67,16 +65,11 @@ export class ReadAsciiRespond extends React.Component<
   }
 
   public render(): JSX.Element {
-    if (!this.data.get()) {
+    if (!this.props.data.get()) {
       return <span>loading...</span>;
     } else {
       return (
-        <div>
-          <CopyToClipboard text={this.data.get()}>
-            <button>Copy to clipboard</button>
-          </CopyToClipboard>
-          <pre style={{ backgroundColor: '#ccc' }}>{this.data.get()}</pre>
-        </div>
+        <pre style={{ backgroundColor: '#ccc' }}>{this.props.data.get()}</pre>
       );
     }
   }

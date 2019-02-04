@@ -1,4 +1,9 @@
 import { DateValue, format_date } from '../src/model';
+import { configure, action } from 'mobx';
+
+configure({
+  enforceActions: 'always'
+});
 
 it('date-value round to full day constructor', () => {
   const n = new DateValue(new Date('2018-09-04 17:01:02'), 'what');
@@ -8,14 +13,14 @@ it('date-value round to full day constructor', () => {
 
 it('date-value round to full day date', () => {
   const n = new DateValue(new Date('2018-07-04 17:01:02'), 'what');
-  n.date.set(new Date('2018-09-04 17:01:02'));
+  action(() => n.date.set(new Date('2018-09-04 17:01:02')))();
   expect(n.date.get()).toEqual(new Date('2018-09-04'));
   expect(n.formatDate.get()).toEqual(format_date(new Date('2018-09-04')));
 });
 
 it('date-value round to full day format_date', () => {
   const n = new DateValue(new Date('2018-07-04 17:01:02'), 'what');
-  n.formatDate.set('2018-09-04');
+  action(() => n.formatDate.set('2018-09-04'))();
   expect(n.date.get()).toEqual(new Date('2018-09-04'));
   expect(n.formatDate.get()).toEqual(format_date(new Date('2018-09-04')));
 });
@@ -35,7 +40,7 @@ it('date-value round to full day fill', () => {
 
 it('date-value round to full day unformated formatDate', () => {
   const n = new DateValue(new Date('2018-07-04 17:01:02'), 'what');
-  n.formatDate.set('2018-09-04 17:01:03');
+  action(() => n.formatDate.set('2018-09-04 17:01:03'))();
   expect(n.date.get()).toEqual(new Date('2018-09-04'));
   expect(n.formatDate.get()).toEqual(format_date(new Date('2018-09-04')));
 });

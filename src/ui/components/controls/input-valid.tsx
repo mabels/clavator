@@ -27,6 +27,13 @@ export const InputTypeObservable  = {
   Email: observable.box(InputType.Email)
 };
 
+function toInputProps(props: InputValidProps): InputProps {
+  const ret = {...props};
+  delete ret.activeValue;
+  delete ret.activeType;
+  return ret;
+}
+
 export interface InputValidProps<T = string | number> extends InputProps {
   readonly label: string;
   readonly activeType?: IObservableValue<InputType>;
@@ -44,9 +51,9 @@ export interface InputValidProps<T = string | number> extends InputProps {
 export const InputValid = observer((props: InputValidProps) => {
   return (
     <FormControl>
-      <InputLabel htmlFor="adornment-password">{props.label}</InputLabel>
+      <InputLabel htmlFor={props.name}>{props.label}</InputLabel>
       <Input
-        {...(props as InputProps)}
+        {...toInputProps(props)}
         type={props.type || props.activeType.get()}
         name={props.name}
         readOnly={(typeof(props.readOnly) === 'boolean' && props.readOnly)}
@@ -63,21 +70,20 @@ export const InputValid = observer((props: InputValidProps) => {
         })}
         // pattern={props.passwordControl.password.match.source}
         value={props.activeValue.get()}
-        endAdornment={
-          <>
-            {props.endAdornment}
-            <InputAdornment position="end">
-              {!!props.valid &&
-                (props.valid !== undefined ? (
-                  <></>
-                ) : props.valid ? (
-                  <Done />
-                ) : (
-                  <></>
-                ))}
-            </InputAdornment>
-          </>
-        }
+        // endAdornment={
+        //   <>
+        //     {props.endAdornment}
+        //     <InputAdornment position="end">
+        //       {props.valid && (props.valid !== undefined ? (
+        //           <></>
+        //         ) : props.valid ? (
+        //           <Done />
+        //         ) : (
+        //           <></>
+        //         ))}
+        //     </InputAdornment>
+        //   </>
+        // }
       />
     </FormControl>
   );

@@ -15,3 +15,4 @@ export * from './rc-warrents';
 export * from './read-ascii-respond';
 export * from './clavator-fab';
 export * from './clavator-form';
+export * from './copy-to-clipboard-button';

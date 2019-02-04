@@ -56,10 +56,10 @@ module.exports = [{
   resolve: {
     extensions: ['.tsx', '.ts', '.webpack.js', '.web.js', '.js'],
     alias: {
-      "react": path.resolve('react-compat.js'),
-      "react-dom": "preact-compat",
-      'create-react-class': 'preact-compat/lib/create-react-class',
-      'react-dom-factories': 'preact-compat/lib/react-dom-factories'
+      "xreact": path.resolve('react-compat.js'),
+      "xreact-dom": "preact-compat",
+      'xcreate-react-class': 'preact-compat/lib/create-react-class',
+      'xreact-dom-factories': 'preact-compat/lib/react-dom-factories'
     }
   },
   plugins: [
@@ -95,10 +95,10 @@ module.exports = [{
   resolve: {
     extensions: ['.tsx', '.ts', '.webpack.js', '.web.js', '.js'],
     alias: {
-      "react": "preact-compat",
-      "react-dom": "preact-compat",
-      'create-react-class': 'preact-compat/lib/create-react-class',
-      'react-dom-factories': 'preact-compat/lib/react-dom-factories'
+      "xreact": "preact-compat",
+      "xreact-dom": "preact-compat",
+      'xcreate-react-class': 'preact-compat/lib/create-react-class',
+      'xreact-dom-factories': 'preact-compat/lib/react-dom-factories'
     }
   },
   plugins: [
@@ -130,10 +130,10 @@ module.exports = [{
   resolve: {
     extensions: ['.tsx', '.ts', '.webpack.js', '.web.js', '.js'],
     alias: {
-      "react": "preact-compat",
-      "react-dom": "preact-compat",
-      'create-react-class': 'preact-compat/lib/create-react-class',
-      'react-dom-factories': 'preact-compat/lib/react-dom-factories'
+      "xreact": "preact-compat",
+      "xreact-dom": "preact-compat",
+      'xcreate-react-class': 'preact-compat/lib/create-react-class',
+      'xreact-dom-factories': 'preact-compat/lib/react-dom-factories'
     }
   },
   plugins: [
