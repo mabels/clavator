@@ -2,26 +2,39 @@ import { ObjectId } from './object-id';
 import { IObservableValue, observable, computed, action, IValueDidChange } from 'mobx';
 import { format_date } from './helper';
 
+export interface DateValueObj {
+  readonly formatDate: string;
+  readonly errText: string;
+}
+
 export class DateValue extends ObjectId {
   public readonly date: IObservableValue<Date>;
   public readonly formatDate: IObservableValue<string>;
-  public readonly errText: string;
-
-  public static fill(js: any, dv: DateValue): void {
-    dv.date.set(js['date'] || dv.date);
-  }
+  public errText: string;
 
   public constructor(v: Date, e: string) {
     super('DateValue');
     this.errText = e;
-    this.date = observable.box(v);
-    this.formatDate = observable.box(format_date(v));
+    this.date = observable.box(undefined);
     this.date.observe(action((chg: IValueDidChange<Date>) => {
-      this.formatDate.set(format_date(chg.newValue));
+      const f = format_date(chg.newValue);
+      this.formatDate.set(f);
+      // chg.newValue.setHours(0);
+      // chg.newValue.setMinutes(0);
+      // chg.newValue.setSeconds(0);
+      // chg.newValue.setMilliseconds(0);
+      // console.log('observe fix', chg.newValue);
     }));
+    this.formatDate = observable.box(undefined);
     this.formatDate.observe(action((chg: IValueDidChange<string>) => {
       this.date.set(new Date(chg.newValue));
     }));
+    this.formatDate.set(format_date(v));
+  }
+
+  public fill(js: DateValueObj): void {
+    this.formatDate.set(js.formatDate);
+    this.errText = js.errText;
   }
 
   @computed
@@ -43,7 +56,10 @@ export class DateValue extends ObjectId {
     return this.date.get().toISOString();
   }
 
-  public toObj(): string {
-    return this.isoString;
+  public toObj(): DateValueObj {
+    return {
+      formatDate: this.formatDate.get(),
+      errText: this.errText
+    };
   }
 }

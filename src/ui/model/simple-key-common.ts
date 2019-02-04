@@ -55,7 +55,7 @@ export class SimpleKeyCommon {
   }
 
   public fill(warrents: Warrents, obj: any): void {
-    this.expireDate.date.set((new Date(obj['expireDate'])));
+    this.expireDate.fill(obj['expireDate']);
     this.keyParams.fill(obj['keyParams']);
     this.uids.fill({ pallets: obj['uids'] });
   }

@@ -113,7 +113,7 @@ export class SimpleYubikey {
 
   public toObj(): any {
     return {
-      smartCardId: this.smartCardId,
+      smartCardId: this.smartCardId.get(),
       warrents: this.warrents.toObj(),
       common: this.common.toObj(),
       passPhrase: this.passPhrase.toObj(),

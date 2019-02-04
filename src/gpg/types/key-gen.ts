@@ -174,7 +174,7 @@ export class KeyGen {
     // StringValue.fill(js['nameReal']||{}, kg.nameReal);
     // StringValue.fill(js['nameEmail']||{}, kg.nameEmail);
     // StringValue.fill(js['nameComment']||{}, kg.nameComment);
-    DateValue.fill(js['expireDate'] || {}, kg.expireDate);
+    kg.expireDate.fill(js['expireDate']);
     kg.subKeys.fill(js['subKeys']);
     // SubKeys.fill(js['subKeys']||[], kg.subKeys);
   }

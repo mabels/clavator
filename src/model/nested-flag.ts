@@ -1,4 +1,4 @@
-import { computed, observable, IObservableValue } from 'mobx';
+import { computed, observable, IObservableValue, action } from 'mobx';
 import { ObjectId } from './object-id';
 
 export class NestedFlag extends ObjectId {
@@ -28,11 +28,11 @@ export class NestedFlag extends ObjectId {
     return this.parent.is;
   }
 
-  // public set is(v: IObservableValue<boolean>) {
-  //   this.value.set(v.get());
-  //   // console.log(`SET:${this.objectId()}:`, this.value);
-  //   this.resetChildren();
-  // }
+  public set is(v: boolean) {
+    this.value.set(v);
+    // console.log(`SET:${this.objectId()}:`, this.value);
+    this.resetChildren();
+  }
 
   private resetChildren(): void {
     this.children.forEach(nf => {

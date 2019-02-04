@@ -77,7 +77,7 @@ grp:::::::::2DC62D282D308E58A8C7C4F7652955AC146860D2:
         rej(e);
       }
     });
-  });
+  }, 30000);
 
   it('listSecretKeys', () => {
     testListSecretKeys(createKeyFromString());

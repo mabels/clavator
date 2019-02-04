@@ -1,5 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
+import * as util from 'util';
 import * as rimraf from 'rimraf';
 import * as fsPromise from 'fs-extra';
 import * as uuid from 'uuid';
@@ -23,6 +24,7 @@ import {
 } from './types';
 import { RequestAscii, format_date } from '../model';
 import { Result, Mixed } from './result';
+import { exec } from 'child_process';
 
 export interface GpgCmd {
   cmd: string[];
@@ -765,18 +767,28 @@ export class Gpg {
   }
 }
 
-function findGpgMock(): Promise<string[]> {
+async function findGpgMock(): Promise<string[]> {
   let dirname: string;
   let pname = 'gpg-mock.js';
   let execPath = process.execPath;
   if (process.env.PACKED === 'true') {
     dirname = __filename;
   } else {
-    pname = 'index.ts';
-    dirname = path.join(__dirname, '../gpg-mock/index');
-    execPath = 'ts-node';
+    const distMock = path.resolve(__dirname, '../../dist/gpg-mock.js');
+    if (await util.promisify(fs.exists)(distMock)) {
+      // console.log('GPG-MOCK-JS:', distMock);
+      pname = 'gpg-mock.js';
+      dirname = distMock;
+      execPath = 'node';
+      console.log('GPG-MOCK-JS:', dirname);
+    } else {
+      pname = 'index.ts';
+      dirname = path.resolve(__dirname, '../gpg-mock/index.ts');
+      execPath = 'ts-node';
+      console.log('GPG-MOCK-TS:', dirname);
+    }
   }
-  // console.log('findGpgMock:Init', pname, dirname);
+  // console.log('findGpgMock:Init', pname, dirname, exec);
   let gm = '';
   let prevDirname = '';
   return new Promise<string[]>(async (res, rej) => {
@@ -784,7 +796,7 @@ function findGpgMock(): Promise<string[]> {
     do {
       prevDirname = dirname;
       dirname = path.dirname(dirname);
-      gm = path.resolve(path.join(dirname, pname));
+      gm = path.resolve(dirname, pname);
       // console.log('findGpgMock:GM:', dirname, pname, gm);
       gmExists = await fsPromise.pathExists(gm);
     } while (prevDirname != dirname && !gmExists);
