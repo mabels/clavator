@@ -25,14 +25,17 @@ function expireDate(): Date {
 }
 
 function keyGen(): KeyGen {
-  let keygen = new KeyGen();
+  const keygen = new KeyGen();
+  keygen.keyInfo.length._value.set(1024);
+  keygen.keyInfo.type._value.set('RSA');
   keygen.expireDate.date.set(expireDate());
   keygen.password._value.set('Gpg Test Jojo Akzu Luso');
-  let keyInfo = new KeyInfo();
+  const keyInfo = new KeyInfo();
+  keyInfo.length._value.set(1024);
   keyInfo.type._value.set('RSA');
   keyInfo.usage.values.replace(['sign', 'encr', 'auth']);
   keygen.subKeys.add(keyInfo);
-  let uid = new KeyGenUid();
+  const uid = new KeyGenUid();
   uid.email._value.set('gpg.sock@lodke.gpg');
   uid.name._value.set('Gpg Test Master');
   keygen.uids.add(uid);
